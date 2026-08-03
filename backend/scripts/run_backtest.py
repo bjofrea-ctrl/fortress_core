@@ -4,11 +4,12 @@ from app.core.data_ingestion import load_universe
 
 if __name__ == "__main__":
     tickers = ["SPY", "QQQ", "AAPL", "MSFT", "GOOGL", "AMZN", "NVDA"]
-    market_tickers = ["SPY", "EFA", "QQQ", "GLD", "DBC", "TIP", "TLT", "AGG", "VIX"]
+    market_tickers = ["SPY", "EFA", "QQQ", "GLD", "DBC", "TIP", "TLT", "AGG", "^VIX"]
 
     print("Descargando datos...")
-    price_data = load_universe(tickers, "2019-01-01", "2024-12-31")
+    # Download market_data first (wider date range) so cache covers full range
     market_data = load_universe(market_tickers, "2015-01-01", "2024-12-31")
+    price_data = load_universe(tickers, "2019-01-01", "2024-12-31")
 
     print("Ejecutando backtest...")
     engine = BacktestEngine(initial_capital=25000)

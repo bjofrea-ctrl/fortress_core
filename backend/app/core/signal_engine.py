@@ -43,6 +43,8 @@ class SignalEngine:
             return None
 
         stock_data = calculate_all_indicators(stock_data)
+        if len(stock_data) == 0:
+            return None
         latest = stock_data.iloc[-1]
         scores = self._factor_scores(stock_data)
         weights = self.factor_weights.get(regime_state, self.factor_weights[0])

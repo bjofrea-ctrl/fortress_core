@@ -63,13 +63,16 @@ ls /Volumes/EMPRESA/fortress_core_backups/
 
 ---
 
-## ✅ ESTADO ACTUAL (al cierre de Sesión 1)
+## ✅ ESTADO ACTUAL (al cierre de Sesión 2)
 
-- **Git**: 4 commits en `main`, sincronizado con GitHub
+- **Git**: 5+ commits en `main`, sincronizado con GitHub
 - **Test integral**: ✅ PASÓ — todas las pruebas (indicators, risk, regime, signals, parity, backtest)
-- **Métricas del backtest sintético**: Max DD -2.14%, Profit Factor 1.54, Sharpe 0.294, 364 trades
-- **Backup**: `/Volumes/EMPRESA/fortress_core_backups/` con `current/` + 3 snapshots
-- **Dependencias backend**: Instaladas en `backend/.venv` (Python 3.9.6)
+- **Backtest con datos reales**: ✅ PASÓ — Max DD -5.37%, PF 1.52, Sharpe 0.366, 550 trades
+- **Backend**: ✅ Corriendo en `http://localhost:8000` (uvicorn con --reload)
+- **Frontend**: ✅ Corriendo en `http://localhost:3000` (Vite dev server)
+- **BD**: ✅ SQLite en `backend/fortress.db` con 5 tablas creadas
+- **Backup**: `/Volumes/EMPRESA/fortress_core_backups/` con `current/` + snapshots
+- **Dependencias backend**: Instaladas en `backend/.venv` (Python 3.9.6, yfinance 1.2.0)
 - **Dependencias frontend**: Instaladas en `frontend/node_modules`
 
 ### Comandos que funcionan (sin Docker)
@@ -82,6 +85,12 @@ cd /Users/boris/Desktop/fortress_core/backend && PYTHONPATH=. .venv/bin/uvicorn 
 
 # Inicializar BD
 cd /Users/boris/Desktop/fortress_core/backend && PYTHONPATH=. .venv/bin/python scripts/init_db.py
+
+# Backtest con datos reales (yfinance)
+cd /Users/boris/Desktop/fortress_core/backend && PYTHONPATH=. .venv/bin/python scripts/run_backtest.py
+
+# Frontend
+cd /Users/boris/Desktop/fortress_core/frontend && npm run dev
 
 # Backup completo (GitHub + disco externo)
 bash /Users/boris/Desktop/fortress_core/scripts/backup.sh

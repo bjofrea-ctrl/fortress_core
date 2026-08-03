@@ -42,8 +42,9 @@ class GlobalRegimeClassifier:
         for t in ["TLT", "AGG"]:
             if t in price_data:
                 features[f"rates_{t}"] = price_data[t].close.pct_change(60)
-        if "VIX" in price_data:
-            features["vix_level"] = price_data["VIX"].close
+        vix_key = "VIX" if "VIX" in price_data else "^VIX" if "^VIX" in price_data else None
+        if vix_key:
+            features["vix_level"] = price_data[vix_key].close
         return pd.DataFrame(features).ffill().dropna()
 
     def _align_states(self, states: np.ndarray, features: pd.DataFrame) -> np.ndarray:
