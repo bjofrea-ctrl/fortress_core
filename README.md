@@ -2,6 +2,8 @@
 
 Sistema de trading cuantitativo con gestión de riesgo adaptativa, sin dependencias de IA en el loop crítico.
 
+> **🔑 PARA CLINE / ASISTENTES IA**: Lee [`CLINE_CONTEXT.md`](./CLINE_CONTEXT.md) para recuperar el contexto completo de sesiones anteriores. Consulta [`SESSION_LOG.md`](./SESSION_LOG.md) para el historial de trabajo.
+
 ## Inicio Rápido
 1. Copia `.env.example` a `.env`
 2. Ejecuta: `docker-compose up --build -d`
