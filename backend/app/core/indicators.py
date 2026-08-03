@@ -47,6 +47,15 @@ def adx(high: pd.Series, low: pd.Series, close: pd.Series, period=14) -> pd.Seri
     return dx.rolling(window=period).mean()
 
 
+def bollinger_bands(prices: pd.Series, period: int = 20, std_dev: float = 2.0) -> tuple:
+    """Calcula las Bandas de Bollinger (superior, media, inferior)."""
+    sma_vals = prices.rolling(window=period).mean()
+    std = prices.rolling(window=period).std()
+    upper = sma_vals + (std * std_dev)
+    lower = sma_vals - (std * std_dev)
+    return upper, sma_vals, lower
+
+
 def calculate_all_indicators(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
     df["ema20"] = ema(df.close, 20)
@@ -60,4 +69,11 @@ def calculate_all_indicators(df: pd.DataFrame) -> pd.DataFrame:
     df["volume_ratio"] = df.volume / df.volume_sma20
     df["momentum_12_1"] = df.close.pct_change(252) * 100
     df["trend_bullish"] = (df.close > df.ema50) & (df.ema50 > df.ema200)
+    # Bollinger Bands
+    df["bb_upper"], df["bb_middle"], df["bb_lower"] = bollinger_bands(df.close, 20, 2.0)
+    # Stochastic Oscillator
+    low_14 = df.low.rolling(window=14).min()
+    high_14 = df.high.rolling(window=14).max()
+    df["stoch_k"] = 100 * (df.close - low_14) / (high_14 - low_14)
+    df["stoch_d"] = df["stoch_k"].rolling(window=3).mean()
     return df.ffill().dropna()

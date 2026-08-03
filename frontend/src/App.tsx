@@ -8,12 +8,14 @@ import SymbolSummary from "./components/SymbolSummary"
 import TradesTable from "./components/TradesTable"
 import MonteCarloPanel from "./components/MonteCarloPanel"
 import RegimePanel from "./components/RegimePanel"
+import MarketOverview from "./components/MarketOverview"
+import TradeDistribution from "./components/TradeDistribution"
 
 const API_URL = "http://localhost:8000"
 
 export default function App() {
   const [selectedSymbol, setSelectedSymbol] = useState("SPY")
-  const [symbols, setSymbols] = useState<string[]>(["SPY", "QQQ", "AAPL", "MSFT", "GOOGL", "AMZN", "NVDA"])
+  const symbols = ["SPY", "QQQ", "AAPL", "MSFT", "GOOGL", "AMZN", "NVDA"]
 
   return (
     <div className="min-h-screen bg-dark-bg text-white">
@@ -33,7 +35,10 @@ export default function App() {
 
       {/* Main content */}
       <main className="max-w-[1600px] mx-auto px-6 py-6 space-y-6">
-        {/* Symbol selector */}
+        {/* Row 1: Market Overview */}
+        <MarketOverview apiUrl={API_URL} onSelectSymbol={setSelectedSymbol} />
+
+        {/* Row 2: Symbol selector */}
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-sm text-gray-400 mr-2">Activo:</span>
           {symbols.map((s) => (
@@ -51,16 +56,16 @@ export default function App() {
           ))}
         </div>
 
-        {/* Row 1: KPI Cards */}
+        {/* Row 3: KPI Cards */}
         <KPICards apiUrl={API_URL} />
 
-        {/* Row 2: Equity Curve + Drawdown */}
+        {/* Row 4: Equity Curve + Regime */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <EquityCurve apiUrl={API_URL} />
           <RegimePanel apiUrl={API_URL} />
         </div>
 
-        {/* Row 3: Price Chart + Symbol Summary */}
+        {/* Row 5: Price Chart + Symbol Summary */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
             <PriceChart apiUrl={API_URL} symbol={selectedSymbol} />
@@ -68,16 +73,21 @@ export default function App() {
           <SymbolSummary apiUrl={API_URL} symbol={selectedSymbol} />
         </div>
 
-        {/* Row 4: Technical Indicators */}
+        {/* Row 6: Technical Indicators */}
         <TechnicalIndicators apiUrl={API_URL} symbol={selectedSymbol} />
 
-        {/* Row 5: Trades Table + Monte Carlo */}
+        {/* Row 7: Trades Table + Trade Distribution + Monte Carlo */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
             <TradesTable apiUrl={API_URL} />
           </div>
-          <MonteCarloPanel apiUrl={API_URL} />
+          <div className="space-y-6">
+            <MonteCarloPanel apiUrl={API_URL} />
+          </div>
         </div>
+
+        {/* Row 8: Trade Distribution */}
+        <TradeDistribution apiUrl={API_URL} />
 
         {/* Footer */}
         <footer className="border-t border-dark-border pt-4 pb-8 text-center text-xs text-gray-500">
