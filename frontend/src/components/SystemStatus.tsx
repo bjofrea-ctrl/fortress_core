@@ -9,32 +9,20 @@ export default function SystemStatus() {
       .then(setStatus)
   }, [])
 
-  if (!status) {
-    return <div className="animate-pulse h-24 bg-dark-card rounded-lg"></div>
-  }
+  if (!status) return <div className="h-8 w-48 animate-pulse bg-dark-border rounded"></div>
 
   return (
-    <div className="bg-dark-card border border-dark-border rounded-lg p-6">
-      <h3 className="text-lg font-bold mb-4">Estado del Sistema</h3>
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-        <div>
-          <p className="text-gray-400">Fase</p>
-          <p className="font-mono">{status.phase}</p>
-        </div>
-        <div>
-          <p className="text-gray-400">Risk Manager</p>
-          <p className="font-mono text-accent-green">✅ Activo</p>
-        </div>
-        <div>
-          <p className="text-gray-400">Ceiling Absoluto</p>
-          <p className="font-mono text-accent-red">
-            {(status.absolute_ceiling * 100).toFixed(0)}%
-          </p>
-        </div>
-        <div>
-          <p className="text-gray-400">Agentes IA</p>
-          <p className="font-mono text-gray-400">🔒 Desactivados (Fase 2)</p>
-        </div>
+    <div className="flex items-center gap-4 text-xs">
+      <div className="flex items-center gap-1.5">
+        <span className="w-2 h-2 rounded-full bg-accent-green animate-pulse"></span>
+        <span className="text-gray-400">Risk Manager</span>
+        <span className="text-accent-green font-mono">ON</span>
+      </div>
+      <div className="text-gray-400">
+        Ceiling <span className="text-accent-red font-mono">{(status.absolute_ceiling * 100).toFixed(0)}%</span>
+      </div>
+      <div className="text-gray-400">
+        Fase <span className="font-mono text-white">{status.phase.split(" - ")[0]}</span>
       </div>
     </div>
   )

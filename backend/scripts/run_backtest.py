@@ -1,4 +1,6 @@
 from datetime import datetime
+import json
+import os
 from app.core.backtest_engine import BacktestEngine
 from app.core.data_ingestion import load_universe
 
@@ -27,3 +29,22 @@ if __name__ == "__main__":
     print("\n=== MONTE CARLO ===")
     for k, v in result["monte_carlo"].items():
         print(f"{k}: {v:.4f}" if isinstance(v, float) else f"{k}: {v}")
+
+    # Save results to JSON for the frontend dashboard
+    os.makedirs("data", exist_ok=True)
+
+    # Convert dates to strings for JSON serialization
+    for point in result.get("equity_curve", []):
+        if hasattr(point["date"], "strftime"):
+            point["date"] = point["date"].strftime("%Y-%m-%d")
+    for trade in result.get("trades", []):
+        if hasattr(trade["entry_date"], "strftime"):
+            trade["entry_date"] = trade["entry_date"].strftime("%Y-%m-%d")
+        if hasattr(trade["exit_date"], "strftime"):
+            trade["exit_date"] = trade["exit_date"].strftime("%Y-%m-%d")
+
+    with open("data/backtest_results.json", "w") as f:
+        json.dump(result, f, indent=2, default=str)
+
+    print(f"\n✅ Resultados guardados en data/backtest_results.json")
+    print(f"   Dashboard disponible en http://localhost:3000")
