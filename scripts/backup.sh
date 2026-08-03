@@ -70,39 +70,15 @@ else
 fi
 
 # ---- Paso 6: Backup al disco externo (copia espejo) ----
+EXCLUDES="--exclude=.git --exclude=.venv --exclude=venv --exclude=node_modules --exclude=.env --exclude=__pycache__ --exclude='*.pyc' --exclude=.DS_Store --exclude=fortress.db --exclude='*.sqlite' --exclude='*.sqlite3' --exclude=data/cache/ --exclude=frontend/dist/ --exclude=logs/"
+
 echo "💾 Copiando al disco externo..."
-rsync -av --delete \
-  --exclude='.git' \
-  --exclude='node_modules' \
-  --exclude='.env' \
-  --exclude='__pycache__' \
-  --exclude='*.pyc' \
-  --exclude='.DS_Store' \
-  --exclude='fortress.db' \
-  --exclude='*.sqlite' \
-  --exclude='*.sqlite3' \
-  --exclude='data/cache/' \
-  --exclude='frontend/dist/' \
-  --exclude='logs/' \
-  "$PROJECT_DIR/" "$BACKUP_DIR/current/"
+rsync -av --delete $EXCLUDES "$PROJECT_DIR/" "$BACKUP_DIR/current/"
 
 # ---- Paso 7: Copia versionada con timestamp ----
 TIMESTAMP_FILE=$(date "+%Y%m%d_%H%M%S")
 mkdir -p "$BACKUP_DIR/snapshots/fortress_core_$TIMESTAMP_FILE"
-rsync -a \
-  --exclude='.git' \
-  --exclude='node_modules' \
-  --exclude='.env' \
-  --exclude='__pycache__' \
-  --exclude='*.pyc' \
-  --exclude='.DS_Store' \
-  --exclude='fortress.db' \
-  --exclude='*.sqlite' \
-  --exclude='*.sqlite3' \
-  --exclude='data/cache/' \
-  --exclude='frontend/dist/' \
-  --exclude='logs/' \
-  "$PROJECT_DIR/" "$BACKUP_DIR/snapshots/fortress_core_$TIMESTAMP_FILE/"
+rsync -a $EXCLUDES "$PROJECT_DIR/" "$BACKUP_DIR/snapshots/fortress_core_$TIMESTAMP_FILE/"
 
 echo "✅ Snapshot versionado: $BACKUP_DIR/snapshots/fortress_core_$TIMESTAMP_FILE"
 echo ""
