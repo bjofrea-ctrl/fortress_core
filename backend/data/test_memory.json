@@ -1,0 +1,60 @@
+{
+  "short_term": [
+    {
+      "content": "AAPL tendencia alcista con RSI saludable",
+      "category": "pattern",
+      "timestamp": "2026-08-06 18:41:36.548974",
+      "importance": 0.8,
+      "tags": [
+        "AAPL",
+        "bull"
+      ],
+      "source": "system"
+    },
+    {
+      "content": "SPY en distribuci\u00f3n con CMF negativo",
+      "category": "warning",
+      "timestamp": "2026-08-06 18:41:36.549784",
+      "importance": 0.9,
+      "tags": [
+        "SPY",
+        "bear"
+      ],
+      "source": "system"
+    },
+    {
+      "content": "NVDA momentum fuerte 12m",
+      "category": "fact",
+      "timestamp": "2026-08-06 18:41:36.550136",
+      "importance": 0.6,
+      "tags": [
+        "NVDA"
+      ],
+      "source": "system"
+    }
+  ],
+  "long_term": [
+    {
+      "content": "AAPL tendencia alcista con RSI saludable",
+      "category": "pattern",
+      "timestamp": "2026-08-06 18:41:36.548974",
+      "importance": 0.8,
+      "tags": [
+        "AAPL",
+        "bull"
+      ],
+      "source": "system"
+    },
+    {
+      "content": "SPY en distribuci\u00f3n con CMF negativo",
+      "category": "warning",
+      "timestamp": "2026-08-06 18:41:36.549784",
+      "importance": 0.9,
+      "tags": [
+        "SPY",
+        "bear"
+      ],
+      "source": "system"
+    }
+  ]
+}
