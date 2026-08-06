@@ -3,7 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 import time
 
-from app.api.routes import risk, system, backtest, market
+from app.api.routes import risk, system, backtest, market, live, predict, governance
 from app.config import settings
 from app.models.database import init_db, engine
 from app.utils.logging import setup_logging, logger, get_request_id
@@ -29,6 +29,9 @@ app.include_router(risk.router)
 app.include_router(system.router)
 app.include_router(backtest.router)
 app.include_router(market.router)
+app.include_router(live.router)
+app.include_router(predict.router)
+app.include_router(governance.router)
 
 
 @app.middleware("http")
