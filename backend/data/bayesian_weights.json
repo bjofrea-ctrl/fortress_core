@@ -1,0 +1,11 @@
+{
+  "alpha": {
+    "momentum_12_1": 3.0
+  },
+  "beta": {
+    "momentum_12_1": 1.0
+  },
+  "weights": {
+    "momentum_12_1": 0.30000000000000004
+  }
+}

@@ -500,3 +500,106 @@ bash /Users/boris/Desktop/fortress_core/scripts/auto_backup.sh
 
 ---
 *Fin de Sesión 6 — 2026-08-06*
+
+---
+
+## Sesión 7 — Motor Probabilístico Avanzado (estilo Jim Simons)
+
+**Fecha**: 2026-08-06  
+**Autor**: Cline (asistente IA) + bjofrea-ctrl  
+**Estado**: Motor probabilístico avanzado implementado y validado con 8 pruebas
+
+### Contexto
+- El usuario pidió evaluar y mejorar el modelo probabilístico del sistema con enfoque matemático estilo Jim Simons
+- Se realizó un diagnóstico completo del modelo actual y se implementaron mejoras basadas en papers académicos
+
+### Diagnóstico del modelo actual
+| Componente | Método actual | Debilidad |
+|-----------|---------------|-----------|
+| Probabilidad | Logística simple con k fijo | No calibrado con datos |
+| Position sizing | Riesgo fijo 1.5% / ATR | No usa Kelly, no adapta a edge |
+| Monte Carlo | Bootstrap simple | No modela colas gruesas |
+| Correlaciones | Pearson 60d | No captura dependencia de colas |
+| Pesos | Fijos por régimen | No se actualizan con evidencia |
+| Backtest | In-sample | No walk-forward |
+
+### Implementación — `backend/app/core/probabilistic_engine.py`
+
+**7 módulos matemáticos implementados:**
+
+1. **ProbabilityCalibrator** — Platt scaling (Platt, 1999) + Isotonic regression (Zadrozny & Elkan, 2002)
+   - Optimiza A y B por máxima verosimilitud
+   - PAV algorithm para isotonic
+   - Persistencia de parámetros calibrados
+
+2. **KellyPositionSizer** — Kelly fraccional (Kelly, 1956; Thorp, 2006)
+   - f* = (p·b - q) / b
+   - 25% Kelly fraccional para reducir varianza
+   - Ajuste con edge del PROFESSOR
+
+3. **SignalQualityMetrics** — IC, RankIC, ICIR (Grinold & Kahn, 2000)
+   - Pearson IC y Spearman RankIC
+   - ICIR = mean(IC)/std(IC)
+   - Significancia estadística: |IC| > 2/√n
+
+4. **BayesianOnlineUpdater** — Actualización Bayesiana (Bayes, 1763)
+   - Prior Beta-Binomial conjugado
+   - Posterior mean ajusta pesos de señales
+   - Persistencia de pesos aprendidos
+
+5. **FatTailMonteCarlo** — t-Student + Cornish-Fisher
+   - Simulación con colas gruesas (t-Student)
+   - VaR con Cornish-Fisher expansion (1937)
+   - Expected Shortfall (Acerbi & Tasche, 2002)
+
+6. **CopulaRiskAnalyzer** — Cópulas Clayton/Gumbel
+   - Dependencia de cola inferior (Clayton, 1978)
+   - Dependencia de cola superior (Gumbel, 1960)
+   - Estimación por máxima verosimilitud con log-space
+
+7. **WalkForwardValidator** — Validación out-of-sample
+   - Ventanas de train/test deslizantes
+   - IC out-of-sample por ventana
+   - ICIR y % de ventanas positivas
+
+### Resultados de validación (8 pruebas)
+```
+✅ TEST 1: ProbabilityCalibrator — A=0.7644, B=-0.0301, probs calibradas
+✅ TEST 2: KellyPositionSizer — Kelly(0.6,2.0)=0.40, Kelly(0.4,1.0)=0.00
+✅ TEST 3: SignalQualityMetrics — IC=0.6911, RankIC=0.6759, ICIR=12.81
+✅ TEST 4: BayesianOnlineUpdater — momentum=0.38, rsi=0.01
+✅ TEST 5: FatTailMonteCarlo — VaR=-4.88%, ES=-7.54%
+✅ TEST 6: CopulaRiskAnalyzer — Clayton/Gumbel estimados sin overflow
+✅ TEST 7: WalkForwardValidator — 11 ventanas, MeanIC=0.28, ICIR=2.61
+✅ TEST 8: ProbabilisticEngine — Integrado, prob=0.887, shares=25
+```
+
+### Documentación generada
+📄 **`RESEARCH_PROBABILISTIC_IMPROVEMENTS.md`** — Documento de 5 secciones:
+1. Diagnóstico del modelo actual con debilidades
+2. 10 fórmulas académicas y experimentales (Platt, Kelly, BMA, SV-HMM, Cópulas, Cornish-Fisher, Walk-Forward, Stacking, Bayes, IC)
+3. Arquitectura del nuevo módulo
+4. Priorización en 3 fases (A: inmediato, B: significativo, C: avanzado)
+5. 20 referencias académicas
+
+### Pendiente para próximas sesiones
+- [ ] Integrar ProbabilisticEngine con PredictiveEngine (usar calibradores en vez de logística simple)
+- [ ] Integrar KellyPositionSizer con AdaptiveRiskManager
+- [ ] Conectar PROFESSOR con BayesianOnlineUpdater
+- [ ] Fase B: WalkForwardValidator en backtest_engine
+- [ ] Fase B: FatTailMonteCarlo en backtest_engine
+- [ ] Fase C: StochasticVolatilityHMM con GARCH
+- [ ] Fase C: EnsembleStacker con Gradient Boosting
+- [ ] Configurar NVIDIA NIM API key en `.env`
+- [ ] Conectar datos fundamentales reales (API Finnhub/AlphaVantage)
+- [ ] Conectar Polymarket API en tiempo real
+
+### Decisiones tomadas
+- 🔒 **Platt scaling como método principal** — Más robusto que isotonic para datos pequeños
+- 🔒 **25% Kelly fraccional** — Balance entre crecimiento óptimo y reducción de varianza
+- 🔒 **t-Student con dof=5** — Modela colas gruesas sin ser extremo
+- 🔒 **Log-space para cópulas** — Evita overflow numérico en estimación de Gumbel
+- 🔒 **Persistencia de calibradores** — Los parámetros aprendidos se guardan en `data/calibrators.json`
+
+---
+*Fin de Sesión 7 — 2026-08-06*

@@ -566,17 +566,24 @@ class CopulaRiskAnalyzer:
 
         C_θ(u,v) = exp(-[(-ln u)^θ + (-ln v)^θ]^(1/θ))
         """
-        u = np.clip(u, 1e-10, 1 - 1e-10)
-        v = np.clip(v, 1e-10, 1 - 1e-10)
+        u = np.clip(u, 1e-6, 1 - 1e-6)
+        v = np.clip(v, 1e-6, 1 - 1e-6)
 
         def neg_log_lik(theta):
-            if theta < 1:
+            if theta < 1 or theta > 20:
                 return 1e10
             lu = -np.log(u)
             lv = -np.log(v)
-            log_c = (np.log(theta) - theta * np.log(lu * lv)
-                     + (1/theta - 2) * np.log(lu**theta + lv**theta)
-                     + (lu**theta + lv**theta)**(1/theta))
+            # Usar log-space para evitar overflow
+            log_lu = np.log(lu)
+            log_lv = np.log(lv)
+            # log(lu^theta + lv^theta) = logsumexp(theta*log_lu, theta*log_lv)
+            max_term = np.maximum(theta * log_lu, theta * log_lv)
+            log_sum = max_term + np.log(np.exp(theta * log_lu - max_term) + np.exp(theta * log_lv - max_term))
+            # log((lu^theta + lv^theta)^(1/theta)) = log_sum / theta
+            log_c = (np.log(theta) - theta * (log_lu + log_lv)
+                     + (1/theta - 2) * log_sum
+                     + log_sum / theta)
             return -np.sum(log_c)
 
         result = minimize(neg_log_lik, x0=[2.0], method="Nelder-Mead",
