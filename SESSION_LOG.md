@@ -437,3 +437,66 @@ Razón final: Aprobado por controlador
 
 ---
 *Fin de Sesión 5 — 2026-08-06*
+
+---
+
+## Sesión 6 — Auto-backup automático cada 10 minutos (cron job)
+
+**Fecha**: 2026-08-06  
+**Autor**: Cline (asistente IA) + bjofrea-ctrl  
+**Estado**: Sistema de respaldo automático activo — nunca se pierde trabajo
+
+### Contexto
+- El usuario pidió protección contra pérdida de trabajo por cortes de energía, internet, créditos agotados o cualquier problema
+- Se implementó un cron job que respalda automáticamente cada 10 minutos
+
+### Lo que se hizo en esta sesión
+1. ✅ **Script `scripts/auto_backup.sh` creado** — Script inteligente que:
+   - Detecta si hay cambios sin commitear (si no hay, no hace nada)
+   - Hace `git add -A` + commit con timestamp
+   - Push a GitHub (si hay internet)
+   - Backup al disco externo EMPRESA (si está montado)
+   - Usa lockfile para evitar ejecución concurrente
+   - Log en `scripts/auto_backup.log` (mantiene últimas 200 líneas)
+2. ✅ **Cron job configurado** — `*/10 * * * * /Users/boris/Desktop/fortress_core/scripts/auto_backup.sh`
+   - Se ejecuta cada 10 minutos automáticamente
+   - No requiere intervención manual
+3. ✅ **Primera ejecución probada** — Funcionó perfectamente:
+   - Detectó el script nuevo
+   - Commit `ee5b810` con auto-backup
+   - Push a GitHub exitoso
+   - Backup a disco externo completado
+
+### Cómo verificar que funciona
+```bash
+# Ver cron activo
+crontab -l
+
+# Ver log del auto-backup
+cat /Users/boris/Desktop/fortress_core/scripts/auto_backup.log
+
+# Ejecutar manualmente si es necesario
+bash /Users/boris/Desktop/fortress_core/scripts/auto_backup.sh
+```
+
+### Protección en 3 niveles
+1. **Cron cada 10 min** — Commit local + push GitHub automático
+2. **Disco externo** — Backup a `/Volumes/EMPRESA` cuando está montado
+3. **Manual** — `scripts/backup.sh` para backup completo con snapshot
+
+### Pendiente para próximas sesiones
+- [ ] Configurar NVIDIA NIM API key en `.env`
+- [ ] Conectar datos fundamentales reales (API Finnhub/AlphaVantage)
+- [ ] Conectar Polymarket API en tiempo real
+- [ ] Calibrar pesos con optimización basada en backtest
+- [ ] Integrar análisis de manipulación con datos de nível 2 (order book)
+- [ ] Backtest con datos más recientes (2025-2026)
+- [ ] Implementar paper trading en vivo
+
+### Decisiones tomadas
+- 🔒 **Auto-backup cada 10 minutos** — Balance entre frecuencia suficiente y no saturar GitHub con commits vacíos
+- 🔒 **Lockfile** — Evita que dos ejecuciones concurrentes del cron causen conflictos
+- 🔒 **Log rotativo** — Solo mantiene las últimas 200 líneas para no llenar el disco
+
+---
+*Fin de Sesión 6 — 2026-08-06*

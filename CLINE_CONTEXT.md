@@ -100,7 +100,21 @@ bash /Users/boris/Desktop/fortress_core/scripts/backup.sh
 
 ## 🔒 BACKUP — CÓMO FUNCIONA
 
-### Script: `scripts/backup.sh`
+### Auto-backup automático (cron job cada 10 min)
+```
+Script: scripts/auto_backup.sh
+Cron:   */10 * * * * /Users/boris/Desktop/fortress_core/scripts/auto_backup.sh
+Log:    scripts/auto_backup.log
+```
+
+El sistema respalda automáticamente cada 10 minutos:
+1. Detecta cambios sin commitear (si no hay, no hace nada)
+2. git add -A + commit con timestamp
+3. Push a GitHub (si hay internet)
+4. Backup al disco externo (si está montado)
+5. Lockfile evita ejecución concurrente
+
+### Script manual: `scripts/backup.sh`
 ```
 1. Verifica que el disco externo /Volumes/EMPRESA esté montado
 2. git add -A + commit con timestamp
@@ -113,7 +127,14 @@ bash /Users/boris/Desktop/fortress_core/scripts/backup.sh
 **Exclusiones del backup**: `.git`, `.venv`, `venv`, `node_modules`, `.env`, `__pycache__`, DBs, cachés
 
 ### Regla de oro
-> **SIEMPRE ejecutar `bash scripts/backup.sh` al finalizar cada sesión de trabajo.**
+> **El auto-backup cron corre solo cada 10 min. SIEMPRE ejecutar `bash scripts/backup.sh` al finalizar cada sesión de trabajo para backup completo con snapshot.**
+
+### Verificar auto-backup
+```bash
+crontab -l                                      # Ver cron activo
+cat scripts/auto_backup.log                     # Ver log del auto-backup
+bash scripts/auto_backup.sh                     # Ejecutar manualmente
+```
 
 ---
 
