@@ -381,3 +381,59 @@ Razón final: Aprobado por controlador
 
 ---
 *Fin de Sesión 4 — 2026-05-08*
+
+---
+
+## Sesión 5 — Frontend: LiveTicker + GovernancePanel + commit de Sesiones 3-4
+
+**Fecha**: 2026-08-06  
+**Autor**: Cline (asistente IA) + bjofrea-ctrl  
+**Estado**: Frontend actualizado con LiveTicker y panel de gobernanza, trabajo pendiente commiteado
+
+### Contexto
+- Se retomó el proyecto después de las Sesiones 3-4 (motor predictivo + gobernanza multi-agente)
+- Se encontró trabajo sin commitear de las Sesiones 3-4 (16 archivos, 4,773 líneas)
+- El backend ya corría en `:8000` y el frontend en `:3000`
+
+### Lo que se hizo en esta sesión
+1. ✅ **Commit de Sesiones 3-4** — `103b81b` con 16 archivos (4,773 líneas):
+   - Motor predictivo (`predictive_engine.py`, `predictive_indicators.py`)
+   - Gobernanza multi-agente (`governance.py`, `advanced_agents.py`, `triad_agents.py`)
+   - Live data (`live.py`, `LiveTicker.tsx`)
+   - RAG/OKF (`knowledge_repo.py`)
+   - Backtest predictivo (`backtest_predictive.py`, `test_predictive.py`)
+   - Documentación (`RESEARCH_PREDICTIVE_INDICATORS.md`)
+2. ✅ **LiveTicker integrado en App.tsx** — Ticker de precios en vivo debajo del header, con actualización cada 30s y selección de símbolo al hacer clic
+3. ✅ **GovernancePanel.tsx creado** — Panel de gobernanza multi-agente en el dashboard:
+   - Consenso TRIAD (BULL/BEAR/CONTRARIAN scores)
+   - Score compuesto predictivo y decisión
+   - Probabilidades por horizonte (1-30d, 1-6m)
+   - Flujo de gobernanza (Controller aprobado, Juez veredicto, Decisión final)
+   - Estado del sistema (lecciones profesor, veredictos juez, conocimiento RAG, NVIDIA NIM)
+4. ✅ **TypeScript compilado sin errores** — `npx tsc --noEmit` pasó limpio
+5. ✅ **Endpoints verificados**:
+   - `GET /api/governance/status` → OK (professor, controller, judge, nvidia_nim, knowledge_repo)
+   - `GET /api/governance/analyze/SPY` → OK (SPY: COMPRAR, score +0.42, prob subida 59.4%)
+
+### Estado actual del sistema
+- **Backend**: Corriendo en `http://localhost:8000` con todos los routers (risk, system, backtest, market, live, predict, governance)
+- **Frontend**: Corriendo en `http://localhost:3000` con LiveTicker + GovernancePanel integrados
+- **Git**: 8 commits en `main`, sincronizado con GitHub
+- **NVIDIA NIM**: No configurado (modo determinista activo)
+
+### Pendiente para próximas sesiones
+- [ ] Configurar NVIDIA NIM API key en `.env`
+- [ ] Conectar datos fundamentales reales (API Finnhub/AlphaVantage)
+- [ ] Conectar Polymarket API en tiempo real
+- [ ] Calibrar pesos con optimización basada en backtest
+- [ ] Integrar análisis de manipulación con datos de nível 2 (order book)
+- [ ] Backtest con datos más recientes (2025-2026)
+- [ ] Implementar paper trading en vivo
+
+### Decisiones tomadas
+- 🔒 **LiveTicker con cache de 30s** — Evita sobrecargar Yahoo Finance con requests frecuentes
+- 🔒 **GovernancePanel con fetch dual** — Carga status del sistema + análisis del símbolo seleccionado en paralelo
+- 🔒 **Modo determinista por defecto** — NVIDIA NIM es opcional; el sistema funciona sin API key
+
+---
+*Fin de Sesión 5 — 2026-08-06*

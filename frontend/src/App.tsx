@@ -10,6 +10,8 @@ import MonteCarloPanel from "./components/MonteCarloPanel"
 import RegimePanel from "./components/RegimePanel"
 import MarketOverview from "./components/MarketOverview"
 import TradeDistribution from "./components/TradeDistribution"
+import LiveTicker from "./components/LiveTicker"
+import GovernancePanel from "./components/GovernancePanel"
 
 const API_URL = "http://localhost:8000"
 
@@ -32,6 +34,9 @@ export default function App() {
           <SystemStatus />
         </div>
       </header>
+
+      {/* Live Ticker */}
+      <LiveTicker apiUrl={API_URL} onSelectSymbol={setSelectedSymbol} />
 
       {/* Main content */}
       <main className="max-w-[1600px] mx-auto px-6 py-6 space-y-6">
@@ -88,6 +93,9 @@ export default function App() {
 
         {/* Row 8: Trade Distribution */}
         <TradeDistribution apiUrl={API_URL} />
+
+        {/* Row 9: Governance Panel */}
+        <GovernancePanel apiUrl={API_URL} symbol={selectedSymbol} />
 
         {/* Footer */}
         <footer className="border-t border-dark-border pt-4 pb-8 text-center text-xs text-gray-500">
