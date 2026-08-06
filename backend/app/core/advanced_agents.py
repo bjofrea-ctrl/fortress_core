@@ -51,15 +51,15 @@ NVIDIA_MODELS = {
 # Asignación de modelos LLM a agentes de la tríada
 TRIAD_LLM_MODELS = {
     "BULL": "deepseek-ai/deepseek-v4-flash",
-    "BEAR": "minimax/minimax-m3",
-    "CONTRARIAN": "zhipu/glm-5.2",
+    "BEAR": "minimaxai/minimax-m3",
+    "CONTRARIAN": "z-ai/glm-5.2",
 }
 
 # Asignación de modelos LLM a agentes de gobernanza
 GOVERNANCE_LLM_MODELS = {
-    "CONTROLLER": "deepseek-ai/deepseek-v4-flash",  # CONTROLADOR → DeepSeek V4 Flash
-    "PROFESSOR": "minimax/minimax-m3",              # PROFESOR → MiniMax M3
-    "JUDGE": "zhipu/glm-5.2",                       # JUEZ → GLM 5.2
+    "CONTROLLER": "deepseek-ai/deepseek-v4-flash",
+    "PROFESSOR": "minimaxai/minimax-m3",
+    "JUDGE": "z-ai/glm-5.2",
 }
 
 
