@@ -1,0 +1,302 @@
+{
+  "entries": [
+    {
+      "id": "macroeconomia_fed_pol\u00edtica_monetaria_0_1786056625",
+      "domain": "macroeconomia",
+      "topic": "fed_pol\u00edtica_monetaria",
+      "title": "Pol\u00edtica monetaria de la Fed y mercados",
+      "content": "La Fed controla la tasa de fondos federales. Recortes de tasas tienden a ser alcistas para acciones (liquidez), subidas tienden a ser bajistas. El mercado anticipa movimientos de la Fed a trav\u00e9s de futuros y markets de predicci\u00f3n.",
+      "source": "Bordo & Wheelock (2012), Wolfers & Zitzewitz (2004)",
+      "year": 2012,
+      "tags": [
+        "fed",
+        "tasas",
+        "liquidez",
+        "pol\u00edtica monetaria"
+      ],
+      "embeddings": null,
+      "created_at": "2026-08-06 18:50:24.594250"
+    },
+    {
+      "id": "macroeconomia_inflaci\u00f3n_y_tasas_1_1786056625",
+      "domain": "macroeconomia",
+      "topic": "inflaci\u00f3n_y_tasas",
+      "title": "Inflaci\u00f3n y su efecto en acciones",
+      "content": "Inflaci\u00f3n alta (>4%) erosiona m\u00faltiplos P/E y favorece commodities (oro, plata, petr\u00f3leo) y TIPS. Inflaci\u00f3n moderada en expansi\u00f3n puede ser alcista. Estanflaci\u00f3n (inflaci\u00f3n alta + crecimiento bajo) es muy negativa para acciones.",
+      "source": "Fama & French (1988), Novy-Marx (2013)",
+      "year": 1988,
+      "tags": [
+        "inflaci\u00f3n",
+        "tasas",
+        "commodities",
+        "estanflaci\u00f3n"
+      ],
+      "embeddings": null,
+      "created_at": "2026-08-06 18:50:24.595338"
+    },
+    {
+      "id": "macroeconomia_correlaciones_activos_2_1786056625",
+      "domain": "macroeconomia",
+      "topic": "correlaciones_activos",
+      "title": "Correlaciones hist\u00f3ricas entre activos",
+      "content": "DXY-Oro: -0.35 promedio hist\u00f3rico. DXY-S&P500: -0.25. Oro-Plata: +0.80. Cobre-S&P500: +0.45. DXY bajando + Oro subiendo = Risk-ON (alcista acciones). DXY subiendo + Oro bajando = Risk-OFF (bajista). Gold/Silver > 80 = miedo, < 65 = optimismo.",
+      "source": "An\u00e1lisis emp\u00edrico 1990-2024",
+      "year": 2024,
+      "tags": [
+        "dxy",
+        "oro",
+        "plata",
+        "correlaciones",
+        "risk-on",
+        "risk-off"
+      ],
+      "embeddings": null,
+      "created_at": "2026-08-06 18:50:24.595816"
+    },
+    {
+      "id": "macroeconomia_commodities_3_1786056625",
+      "domain": "macroeconomia",
+      "topic": "commodities",
+      "title": "Cobre como leading indicator",
+      "content": "El cobre es considerado 'Dr. Copper' por su capacidad predictiva. Cobre sobre MA200 = expansi\u00f3n econ\u00f3mica (alcista para acciones). Cobre bajo MA200 = contracci\u00f3n (bajista). Petr\u00f3leo subiendo >10% en 20d = presi\u00f3n inflacionaria (bajista).",
+      "source": "An\u00e1lisis emp\u00edrico + literatura de commodities",
+      "year": 2024,
+      "tags": [
+        "cobre",
+        "petr\u00f3leo",
+        "leading indicators",
+        "expansi\u00f3n"
+      ],
+      "embeddings": null,
+      "created_at": "2026-08-06 18:50:24.596396"
+    },
+    {
+      "id": "microeconomia_ratios_valoraci\u00f3n_4_1786056625",
+      "domain": "microeconomia",
+      "topic": "ratios_valoraci\u00f3n",
+      "title": "Ratios de valoraci\u00f3n y retornos",
+      "content": "P/E bajo predice mayores retornos (Basu 1977). Book-to-market alto predice retornos (Fama-French 1992). FCF Yield es el mejor valor predictivo de valoraci\u00f3n (Lakonishok et al. 1994). EV/EBITDA ajusta por estructura de capital (Loughran & Wellman 2011).",
+      "source": "Basu (1977), Fama & French (1992), Lakonishok et al. (1994), Loughran & Wellman (2011)",
+      "year": 1977,
+      "tags": [
+        "pe",
+        "pb",
+        "fcf",
+        "ev/ebitda",
+        "valor"
+      ],
+      "embeddings": null,
+      "created_at": "2026-08-06 18:50:24.596910"
+    },
+    {
+      "id": "microeconomia_rentabilidad_5_1786056625",
+      "domain": "microeconomia",
+      "topic": "rentabilidad",
+      "title": "Rentabilidad y retornos de acciones",
+      "content": "ROE alto predice retornos superiores (Fama-French 2006). Gross Margin es el 'gross profitability premium' (Novy-Marx 2013): empresas con margen bruto alto generan retornos superiores. ROA con cash flow real = calidad de ganancias (Sloan 1996).",
+      "source": "Fama & French (2006), Novy-Marx (2013), Sloan (1996)",
+      "year": 2013,
+      "tags": [
+        "roe",
+        "roa",
+        "gross margin",
+        "rentabilidad"
+      ],
+      "embeddings": null,
+      "created_at": "2026-08-06 18:50:24.597317"
+    },
+    {
+      "id": "microeconomia_estructura_capital_6_1786056625",
+      "domain": "microeconomia",
+      "topic": "estructura_capital",
+      "title": "Estructura de capital y riesgo",
+      "content": "Alto leverage (deuda/equity > 2) aumenta riesgo de quiebra (Altman Z-Score 1968). Empresas con deuda excesiva tienen retornos esperados menores ajustados por riesgo. Current Ratio < 1 = riesgo de liquidez (Graham & Dodd 1934).",
+      "source": "Altman (1968), Graham & Dodd (1934)",
+      "year": 1968,
+      "tags": [
+        "deuda",
+        "leverage",
+        "z-score",
+        "liquidez"
+      ],
+      "embeddings": null,
+      "created_at": "2026-08-06 18:50:24.597782"
+    },
+    {
+      "id": "microeconomia_calidad_ganancias_7_1786056625",
+      "domain": "microeconomia",
+      "topic": "calidad_ganancias",
+      "title": "Calidad de ganancias y accruals",
+      "content": "Accruals altos (ganancias contables sin cash) predicen retornos negativos (Sloan 1996). SUE (Standardized Unexpected Earnings) genera PEAD: drift post-anuncio de 60+ d\u00edas (Bernard & Thomas 1989). Sorpresas positivas de EPS contin\u00faan generando retornos.",
+      "source": "Sloan (1996), Bernard & Thomas (1989)",
+      "year": 1996,
+      "tags": [
+        "accruals",
+        "sue",
+        "pead",
+        "calidad ganancias"
+      ],
+      "embeddings": null,
+      "created_at": "2026-08-06 18:50:24.598311"
+    },
+    {
+      "id": "trading_gesti\u00f3n_riesgo_8_1786056625",
+      "domain": "trading",
+      "topic": "gesti\u00f3n_riesgo",
+      "title": "Gesti\u00f3n de riesgo esencial",
+      "content": "Nunca arriesgar m\u00e1s de 1.5% del equity por trade. Ceiling absoluto de drawdown 12%. Stops por r\u00e9gimen: 5% bull, 7% reflation, 8% stagflation, 3% deflation. Position sizing: riesgo 1.5% / ATR * 2. Posici\u00f3n m\u00e1xima 10% del equity.",
+      "source": "Van Tharp (1987), Wilder (1978)",
+      "year": 1987,
+      "tags": [
+        "riesgo",
+        "stops",
+        "position sizing",
+        "drawdown"
+      ],
+      "embeddings": null,
+      "created_at": "2026-08-06 18:50:24.598892"
+    },
+    {
+      "id": "trading_momentum_9_1786056625",
+      "domain": "trading",
+      "topic": "momentum",
+      "title": "Momentum como estrategia",
+      "content": "Momentum de 12 meses excluyendo el \u00faltimo mes (12-1) predice retornos ~1% mensual (Jegadeesh & Titman 1993). Momentum en ganancias (EPS revisiones) tambi\u00e9n predice (Chan et al. 1996). Comprar ganadores y vender perdedores.",
+      "source": "Jegadeesh & Titman (1993), Chan et al. (1996)",
+      "year": 1993,
+      "tags": [
+        "momentum",
+        "12-1",
+        "ganadores",
+        "perdedores"
+      ],
+      "embeddings": null,
+      "created_at": "2026-08-06 18:50:24.599769"
+    },
+    {
+      "id": "trading_mean_reversion_10_1786056625",
+      "domain": "trading",
+      "topic": "mean_reversion",
+      "title": "Reversi\u00f3n a la media",
+      "content": "RSI < 30 = sobrevendido (oportunidad), RSI > 70 = sobrecompra (riesgo). Precio bajo banda inferior de Bollinger = probable rebote. Osciladores estoc\u00e1sticos en extremos generan se\u00f1ales de reversi\u00f3n. M\u00e1s efectivo en mercados de rango.",
+      "source": "Wilder (1978), Lane (1984), Lento et al. (2007)",
+      "year": 1984,
+      "tags": [
+        "rsi",
+        "bollinger",
+        "estoc\u00e1stico",
+        "reversi\u00f3n"
+      ],
+      "embeddings": null,
+      "created_at": "2026-08-06 18:50:24.600659"
+    },
+    {
+      "id": "trading_manipulaci\u00f3n_institucional_11_1786056625",
+      "domain": "trading",
+      "topic": "manipulaci\u00f3n_institucional",
+      "title": "Manipulaci\u00f3n institucional del mercado",
+      "content": "El ciclo institucional: ACUMULAR en silencio \u2192 MARKUP con noticias \u2192 VENDER a retail en m\u00e1ximos \u2192 MARKDOWN con miedo \u2192 RECOMPRAR barato. Se\u00f1ales: divergencias RSI/precio, volumen alto sin nuevos m\u00e1ximos, CMF negativo, A/D Line cayendo, rallies sin volumen.",
+      "source": "Goldstein & Guembel (2008), Kyle (1985), Hendershott et al. (2011)",
+      "year": 2008,
+      "tags": [
+        "manipulaci\u00f3n",
+        "smart money",
+        "distribuci\u00f3n",
+        "institucional"
+      ],
+      "embeddings": null,
+      "created_at": "2026-08-06 18:50:24.601348"
+    },
+    {
+      "id": "indicadores_momentum_indicators_12_1786056625",
+      "domain": "indicadores",
+      "topic": "momentum_indicators",
+      "title": "Indicadores de momentum",
+      "content": "MACD (12/26/9): cruce sobre se\u00f1al = alcista. ADX > 25 = tendencia fuerte. Donchian 20d: breakout = entrada Turtle. Parabolic SAR: precio sobre SAR = tendencia alcista. Ichimoku: precio sobre nube = alcista. Momentum 12-1 es el m\u00e1s robusto.",
+      "source": "Appel (1979), Wilder (1978), Chong & Ng (2008)",
+      "year": 1979,
+      "tags": [
+        "macd",
+        "adx",
+        "donchian",
+        "sar",
+        "ichimoku",
+        "momentum"
+      ],
+      "embeddings": null,
+      "created_at": "2026-08-06 18:50:24.602021"
+    },
+    {
+      "id": "indicadores_reversion_indicators_13_1786056625",
+      "domain": "indicadores",
+      "topic": "reversion_indicators",
+      "title": "Indicadores de reversi\u00f3n",
+      "content": "RSI (14): >75 sobrecompra extrema, <25 sobrevendido extremo. Williams %R: <-80 sobrevendido, >-20 sobrecompra. CCI: >+100 sobrecompra, <-100 sobreventa. MFI combina precio y volumen. Estoc\u00e1stico %K >80 = sobrecompra.",
+      "source": "Wilder (1978), Lane (1984), Lambert (1980), Eom et al. (2019)",
+      "year": 1978,
+      "tags": [
+        "rsi",
+        "williams",
+        "cci",
+        "mfi",
+        "estoc\u00e1stico"
+      ],
+      "embeddings": null,
+      "created_at": "2026-08-06 18:50:24.603515"
+    },
+    {
+      "id": "indicadores_volatility_indicators_14_1786056625",
+      "domain": "indicadores",
+      "topic": "volatility_indicators",
+      "title": "Indicadores de volatilidad",
+      "content": "ATR mide rango promedio verdadero; esencial para position sizing y stops. VIX > 30 = miedo extremo (posible fondo), VIX < 15 = complacencia (riesgo). Volatilidad realizada > 40% = reducir tama\u00f1o. ATR% > 5% = alta volatilidad.",
+      "source": "Wilder (1978), Whaley (2000), Giot (2005)",
+      "year": 1978,
+      "tags": [
+        "atr",
+        "vix",
+        "volatilidad",
+        "riesgo"
+      ],
+      "embeddings": null,
+      "created_at": "2026-08-06 18:50:24.604635"
+    },
+    {
+      "id": "indicadores_volume_indicators_15_1786056625",
+      "domain": "indicadores",
+      "topic": "volume_indicators",
+      "title": "Indicadores de volumen",
+      "content": "OBV acumula volumen por direcci\u00f3n de precio. CMF > 0.2 = acumulaci\u00f3n fuerte, <-0.2 = distribuci\u00f3n. A/D Line mide flujo de acumulaci\u00f3n. Volumen > 2x media + precio sube = tendencia confirmada. Volumen alto sin nuevos m\u00e1ximos = distribuci\u00f3n.",
+      "source": "Granville (1963), Blume, Easley & O'Hara (1994), Amihud (2002)",
+      "year": 1963,
+      "tags": [
+        "obv",
+        "cmf",
+        "ad line",
+        "volumen",
+        "liquidez"
+      ],
+      "embeddings": null,
+      "created_at": "2026-08-06 18:50:24.607810"
+    },
+    {
+      "id": "indicadores_trend_indicators_16_1786056625",
+      "domain": "indicadores",
+      "topic": "trend_indicators",
+      "title": "Indicadores de tendencia",
+      "content": "Cruce SMA 50/200 (Golden Cross) = se\u00f1al alcista fuerte (Brock et al. 1992). EMA20 > EMA50 > EMA200 = tendencia alcista confirmada. ADX > 25 valida tendencia. Ichimoku Cloud combina tendencia y soporte/resistencia.",
+      "source": "Brock, Lakonishok & LeBaron (1992), Katsanos (2008)",
+      "year": 1992,
+      "tags": [
+        "sma",
+        "ema",
+        "golden cross",
+        "adx",
+        "ichimoku",
+        "tendencia"
+      ],
+      "embeddings": null,
+      "created_at": "2026-08-06 18:50:24.609026"
+    }
+  ]
+}

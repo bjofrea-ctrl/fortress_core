@@ -1,3 +1,49 @@
+# Fortress Core — Memoria de Sesiones (Última sesión resumida)
+
+## Sesión 5 — Sistema de Gobernanza Multi-Agente con RAG/OKF + LLMs NVIDIA NIM
+
+**Fecha**: 2026-05-08
+**Autor**: Cline + bjofrea-ctrl
+**Estado**: Sistema de gobernanza reestructurado y validado
+
+### Nuevo flujo de decisión implementado
+```
+Tríada (BULL, BEAR, CONTRARIAN) → CONTROLADOR → discusión CONTROLADOR ↔ PROFESOR
+→ Si no hay consenso → JUEZ decide finalmente
+```
+
+### Modelos LLM NVIDIA NIM asignados
+| Agente | Modelo |
+|--------|--------|
+| BULL | DeepSeek V4 Flash |
+| BEAR | MiniMax M3 |
+| CONTRARIAN | GLM 5.2 |
+| **CONTROLADOR** | **DeepSeek V4 Flash** |
+| **PROFESOR** | **MiniMax M3** |
+| **JUEZ** | **GLM 5.2** |
+
+### Sistema RAG/OKF de conocimiento
+- **KnowledgeRepository**: 17 entradas académicas en 4 dominios (macroeconomía, microeconomía, trading, indicadores)
+- **RAGMemorySystem**: memoria de enseñanza persistente para educar a los agentes
+- **OKF**: estructura jerárquica de conocimiento organizado
+
+### Archivos creados/modificados
+- `backend/app/core/knowledge_repo.py` — Repositorio RAG/OKF (NUEVO)
+- `backend/app/core/advanced_agents.py` — GovernanceSystem reestructurado con flujo Tríada→Controlador↔Profesor→Juez, RAG integrado
+- `backend/app/api/routes/governance.py` — Endpoints con nuevo flujo + búsqueda/agregado de conocimiento
+
+### Validación
+- Test motor predictivo: ✅
+- Test sistema original: ✅
+- Flujo gobernanza AAPL: final_decision=COMPRAR, Controlador aprobó, Juez no necesario (consenso)
+- Knowledge repo: 17 entradas | RAG memory operativa
+
+---
+*Fin de Sesión 5 — 2026-05-08*
+
+---
+
+
 # Fortress Core — Memoria de Sesiones
 
 > **Propósito**: Este archivo es la memoria persistente del proyecto. Cada sesión de trabajo debe actualizarlo con lo que se hizo, lo que sigue y decisiones tomadas. Así ninguna sesión se pierde.
