@@ -225,9 +225,14 @@ class NvidiaNIMClient:
 
     def __init__(self, model: str = None, api_key: str = None,
                  is_triad_client: bool = False, is_governance_client: bool = False):
+        # api_key="" explícito (para forzar modo determinista, p.ej. en
+        # tests/diagnósticos) NO debe caer al default de Settings: "" or X
+        # da X porque el string vacío es falsy en Python. Antes de este fix,
+        # NvidiaNIMClient(api_key="") usaba la key real igual si estaba
+        # configurada — invalidaba cualquier comparación "con LLM vs sin LLM".
         self.base_url = NVIDIA_NIM_CONFIG["base_url"]
-        self.model = model or NVIDIA_NIM_CONFIG["model"]
-        self.api_key = api_key or NVIDIA_NIM_CONFIG["api_key"]
+        self.model = model if model is not None else NVIDIA_NIM_CONFIG["model"]
+        self.api_key = api_key if api_key is not None else NVIDIA_NIM_CONFIG["api_key"]
         self.temperature = NVIDIA_NIM_CONFIG["temperature"]
         self.max_tokens = NVIDIA_NIM_CONFIG["max_tokens"]
         self.triad_clients: Dict[str, 'NvidiaNIMClient'] = {}

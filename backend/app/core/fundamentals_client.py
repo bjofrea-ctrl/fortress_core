@@ -46,7 +46,9 @@ FIELD_MAP = {
 
 class FinnhubClient:
     def __init__(self, api_key: Optional[str] = None):
-        self.api_key = api_key or settings.FINNHUB_API_KEY
+        # api_key="" explícito no debe caer al default de Settings (mismo
+        # bug encontrado y arreglado en NvidiaNIMClient — "" or X da X).
+        self.api_key = api_key if api_key is not None else settings.FINNHUB_API_KEY
         self.base_url = "https://finnhub.io/api/v1"
 
     def is_available(self) -> bool:
