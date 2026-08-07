@@ -1,4 +1,4 @@
-""API routes para el sistema de gobernanza de agentes Fortress Core.
+"""API routes para el sistema de gobernanza de agentes Fortress Core.
 
 Flujo: Tríada (BULL, BEAR, CONTRARIAN) → CONTROLADOR → discusión con PROFESOR
 → Si no hay consenso → JUEZ decide. PROFESOR educa usando RAG/OKF.
