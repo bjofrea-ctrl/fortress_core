@@ -9,6 +9,10 @@ from app.core.data_ingestion import download_data
 from app.core.predictive_engine import PredictiveEngine, format_recommendation
 from app.core.regime_classifier import GlobalRegimeClassifier
 from app.core.indicators import calculate_all_indicators
+from app.core.fundamentals_client import FinnhubClient
+from app.utils.logging import logger
+
+_finnhub_client = FinnhubClient()
 
 router = APIRouter(prefix="/api/predict", tags=["predict"])
 
@@ -66,11 +70,18 @@ SAMPLE_PREDICTION_DATA = {
 
 def get_fundamentals(symbol: str) -> Optional[dict]:
     """
-    Fundamentales de muestra hardcodeados (sólo 6 tickers) — NO son datos en
-    vivo. Se marcan explícitamente con _data_source para que tanto la API
-    como cualquier prompt de LLM que los reciba sepan que son sintéticos,
-    en vez de mezclarse silenciosamente con señales técnicas reales.
+    Fundamentales reales vía Finnhub si FINNHUB_API_KEY está configurada;
+    si no, cae al sample hardcodeado (sólo 6 tickers) — NO son datos en
+    vivo. Siempre se marca _data_source explícitamente para que tanto la
+    API como cualquier prompt de LLM que los reciba sepan si es sintético
+    o real, en vez de mezclarse silenciosamente con señales técnicas reales.
     """
+    if _finnhub_client.is_available():
+        live = _finnhub_client.get_fundamentals(symbol)
+        if live:
+            return live
+        logger.info("fundamentals_finnhub_fallback_to_sample", extra={"symbol": symbol})
+
     data = SAMPLE_FUNDAMENTALS.get(symbol.upper())
     if data is None:
         return None
@@ -90,7 +101,7 @@ def _load_macro_data() -> dict:
     return macro_data
 
 
-def _serialize_result(result) -> dict:
+def _serialize_result(result, fundamentals_source: str = "unavailable") -> dict:
     """Serializa PredictionResult a dict para JSON."""
     return {
         "symbol": result.symbol,
@@ -116,7 +127,7 @@ def _serialize_result(result) -> dict:
         "triad_bull": round(result.triad_consensus.bull_score, 4) if result.triad_consensus else 0.0,
         "triad_bear": round(result.triad_consensus.bear_score, 4) if result.triad_consensus else 0.0,
         "triad_contrarian": round(result.triad_consensus.contrarian_score, 4) if result.triad_consensus else 0.0,
-        "fundamentals_source": "sample_hardcoded_not_live" if symbol.upper() in SAMPLE_FUNDAMENTALS else "unavailable",
+        "fundamentals_source": fundamentals_source,
         "signals": [
             {
                 "name": s.name,
@@ -161,7 +172,8 @@ async def analyze_symbol(symbol: str, regime_state: int = Query(0, ge=0, le=3)):
             prediction_data=SAMPLE_PREDICTION_DATA,
         )
 
-        return _serialize_result(result)
+        fundamentals_source = fundamentals.get("_data_source", "unavailable") if fundamentals else "unavailable"
+        return _serialize_result(result, fundamentals_source=fundamentals_source)
 
     except HTTPException:
         raise

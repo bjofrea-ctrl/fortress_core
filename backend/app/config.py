@@ -16,6 +16,10 @@ class Settings(BaseSettings):
     NVIDIA_NIM_MODEL: str = "meta/llama-3.1-8b-instruct"
     NVIDIA_NIM_BASE_URL: str = "https://integrate.api.nvidia.com/v1"
 
+    # Fundamentales reales (free tier: https://finnhub.io/register) — sin
+    # esto, get_fundamentals() sigue usando el sample hardcodeado de 6 tickers.
+    FINNHUB_API_KEY: str = ""
+
     @property
     def cors_origins_list(self) -> list:
         return [o.strip() for o in self.CORS_ORIGINS.split(",") if o.strip()]
