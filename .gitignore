@@ -19,6 +19,7 @@ pythonenv*
 
 # Datos cacheados
 data/cache/
+data/cache_fundamentals/
 *.parquet
 
 # Node
