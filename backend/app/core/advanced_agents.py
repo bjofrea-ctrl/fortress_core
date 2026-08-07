@@ -31,8 +31,10 @@ from app.utils.persistence import atomic_write_json
 # ============================================================
 
 NVIDIA_NIM_CONFIG = {
-    "base_url": "https://integrate.api.nvidia.com/v1",
-    "model": "meta/llama-3.1-8b-instruct",
+    # .env.example documenta NVIDIA_NIM_MODEL/NVIDIA_NIM_BASE_URL como
+    # configurables — antes no se leían nunca y cambiarlos no tenía efecto.
+    "base_url": os.environ.get("NVIDIA_NIM_BASE_URL", "https://integrate.api.nvidia.com/v1"),
+    "model": os.environ.get("NVIDIA_NIM_MODEL", "meta/llama-3.1-8b-instruct"),
     "api_key_env": "NVIDIA_NIM_API_KEY",
     "temperature": 0.3,
     "max_tokens": 2048,

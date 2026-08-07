@@ -1,5 +1,7 @@
 """API routes para el motor predictivo Fortress Core Fase 2."""
 from fastapi import APIRouter, HTTPException, Query
+from starlette.concurrency import run_in_threadpool
+from typing import Optional
 import pandas as pd
 import os
 
@@ -62,6 +64,19 @@ SAMPLE_PREDICTION_DATA = {
 }
 
 
+def get_fundamentals(symbol: str) -> Optional[dict]:
+    """
+    Fundamentales de muestra hardcodeados (sólo 6 tickers) — NO son datos en
+    vivo. Se marcan explícitamente con _data_source para que tanto la API
+    como cualquier prompt de LLM que los reciba sepan que son sintéticos,
+    en vez de mezclarse silenciosamente con señales técnicas reales.
+    """
+    data = SAMPLE_FUNDAMENTALS.get(symbol.upper())
+    if data is None:
+        return None
+    return {**data, "_data_source": "sample_hardcoded_not_live"}
+
+
 def _load_macro_data() -> dict:
     """Carga datos macro desde cache o descarga."""
     macro_data = {}
@@ -101,6 +116,7 @@ def _serialize_result(result) -> dict:
         "triad_bull": round(result.triad_consensus.bull_score, 4) if result.triad_consensus else 0.0,
         "triad_bear": round(result.triad_consensus.bear_score, 4) if result.triad_consensus else 0.0,
         "triad_contrarian": round(result.triad_consensus.contrarian_score, 4) if result.triad_consensus else 0.0,
+        "fundamentals_source": "sample_hardcoded_not_live" if symbol.upper() in SAMPLE_FUNDAMENTALS else "unavailable",
         "signals": [
             {
                 "name": s.name,
@@ -129,11 +145,14 @@ async def analyze_symbol(symbol: str, regime_state: int = Query(0, ge=0, le=3)):
         macro_data = _load_macro_data()
 
         # Datos fundamentales de muestra
-        fundamentals = SAMPLE_FUNDAMENTALS.get(symbol.upper())
+        fundamentals = get_fundamentals(symbol)
 
         # Crear motor
         engine = PredictiveEngine()
-        result = engine.analyze(
+        # analyze() puede llamar a NIM (BULL/BEAR/CONTRARIAN) de forma
+        # síncrona; correrlo en threadpool evita congelar el event loop.
+        result = await run_in_threadpool(
+            engine.analyze,
             symbol=symbol.upper(),
             df=df,
             regime_state=regime_state,
@@ -167,8 +186,9 @@ async def analyze_universe(regime_state: int = Query(0, ge=0, le=3)):
             if len(df) < 200:
                 continue
 
-            fundamentals = SAMPLE_FUNDAMENTALS.get(symbol.upper())
-            result = engine.analyze(
+            fundamentals = get_fundamentals(symbol)
+            result = await run_in_threadpool(
+                engine.analyze,
                 symbol=symbol.upper(),
                 df=df,
                 regime_state=regime_state,

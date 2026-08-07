@@ -157,9 +157,24 @@ class HardinessChecker:
     }
 
     @staticmethod
+    def validate_fields(data: Dict) -> List[str]:
+        """Valida un dict ya parseado contra REQUIRED_FIELDS (tipo + rango)."""
+        errors = []
+        for field_name, (field_type, validator) in HardinessChecker.REQUIRED_FIELDS.items():
+            if field_name not in data:
+                errors.append(f"Campo requerido faltante: {field_name}")
+                continue
+            value = data[field_name]
+            if not isinstance(value, field_type):
+                errors.append(f"Campo {field_name} tiene tipo incorrecto: {type(value).__name__}")
+                continue
+            if not validator(value):
+                errors.append(f"Campo {field_name} fuera de rango: {value}")
+        return errors
+
+    @staticmethod
     def validate_json_response(response: str) -> Tuple[Optional[Dict], List[str]]:
         """Valida que la respuesta sea JSON válido con campos requeridos."""
-        errors = []
         try:
             # Extraer JSON del texto
             start = response.find("{")
@@ -171,18 +186,7 @@ class HardinessChecker:
         except json.JSONDecodeError as e:
             return None, [f"JSON inválido: {str(e)}"]
 
-        # Validar campos requeridos
-        for field_name, (field_type, validator) in HardinessChecker.REQUIRED_FIELDS.items():
-            if field_name not in data:
-                errors.append(f"Campo requerido faltante: {field_name}")
-                continue
-            value = data[field_name]
-            if not isinstance(value, field_type):
-                errors.append(f"Campo {field_name} tiene tipo incorrecto: {type(value).__name__}")
-                continue
-            if not validator(value):
-                errors.append(f"Campo {field_name} fuera de rango: {value}")
-
+        errors = HardinessChecker.validate_fields(data)
         return data if not errors else None, errors
 
     @staticmethod

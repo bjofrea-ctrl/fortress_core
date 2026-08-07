@@ -26,6 +26,7 @@ from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass, field
 
 from app.utils.logging import logger
+from app.core.prompt_engine import HardinessChecker
 
 
 @dataclass
@@ -393,7 +394,7 @@ class TriadEvaluator:
         self.contrarian_agent = ContrarianAgent()
         self.nim_client = nim_client
 
-    def _llm_enhance(self, agent: str, verdict: AgentVerdict, df: pd.DataFrame,
+    def _llm_enhance(self, agent: str, verdict: AgentVerdict, df: pd.DataFrame, symbol: str,
                      fundamentals: Optional[Dict], macro_data: Optional[Dict]) -> AgentVerdict:
         """
         Mejora el veredicto del agente usando su LLM específico de NVIDIA NIM.
@@ -402,10 +403,17 @@ class TriadEvaluator:
         if not self.nim_client or not self.nim_client.is_available():
             return verdict
 
+        # Resumen macro (antes se recibía macro_data pero nunca se usaba acá)
+        macro_summary = None
+        if macro_data:
+            spy = macro_data.get("SPY")
+            if spy is not None and len(spy) > 50:
+                macro_summary = {"spy_return_50d_pct": round(float(spy["close"].pct_change(50).iloc[-1] * 100), 2)}
+
         # Construir mensaje con datos del agente
         latest = df.iloc[-1]
         user_message = json.dumps({
-            "symbol": "ANALYSIS",
+            "symbol": symbol,
             "agent": agent,
             "deterministic_score": verdict.score,
             "signals": verdict.signals[:10],
@@ -419,6 +427,7 @@ class TriadEvaluator:
             "volume_ratio": float(latest.get("volume_ratio", 1)) if pd.notna(latest.get("volume_ratio")) else None,
             "cmf20": float(latest.get("cmf20", 0)) if pd.notna(latest.get("cmf20")) else None,
             "fundamentals": fundamentals,
+            "macro": macro_summary,
         })
 
         # Prompt específico por agente
@@ -451,12 +460,22 @@ class TriadEvaluator:
             logger.info("triad_llm_fallback_to_deterministic", extra={"agent": agent})
             return verdict
 
+        field_errors = HardinessChecker.validate_fields(llm_result)
+        if field_errors:
+            logger.warning("triad_llm_hardiness_failed", extra={"agent": agent, "errors": field_errors})
+            return verdict
+
         # Actualizar veredicto con análisis LLM
         try:
             new_score = float(llm_result.get("score", verdict.score))
             new_confidence = float(llm_result.get("confidence", verdict.confidence))
             new_reasoning = llm_result.get("reasoning", verdict.reasoning)
             new_signals = llm_result.get("signals", verdict.signals)
+
+            is_sane, reason = HardinessChecker.validate_against_deterministic(new_score, verdict.score)
+            if not is_sane:
+                logger.warning("triad_llm_deviation_rejected", extra={"agent": agent, "reason": reason})
+                return verdict
 
             return AgentVerdict(
                 agent=agent,
@@ -471,6 +490,7 @@ class TriadEvaluator:
     def evaluate(
         self,
         df: pd.DataFrame,
+        symbol: str = "UNKNOWN",
         fundamentals: Optional[Dict] = None,
         macro_data: Optional[Dict] = None,
     ) -> TriadConsensus:
@@ -480,9 +500,9 @@ class TriadEvaluator:
         contrarian = self.contrarian_agent.evaluate(df, fundamentals, macro_data)
 
         # Mejorar con LLMs de NVIDIA NIM si están disponibles
-        bull = self._llm_enhance("BULL", bull, df, fundamentals, macro_data)
-        bear = self._llm_enhance("BEAR", bear, df, fundamentals, macro_data)
-        contrarian = self._llm_enhance("CONTRARIAN", contrarian, df, fundamentals, macro_data)
+        bull = self._llm_enhance("BULL", bull, df, symbol, fundamentals, macro_data)
+        bear = self._llm_enhance("BEAR", bear, df, symbol, fundamentals, macro_data)
+        contrarian = self._llm_enhance("CONTRARIAN", contrarian, df, symbol, fundamentals, macro_data)
 
         # Consenso: bull - bear + contrarian (contrarian puede sumar o restar)
         consensus = bull.score - bear.score + contrarian.score * 0.5

@@ -1050,7 +1050,7 @@ class PredictiveEngine:
                       manip_signals + vol_signals + pred_market_signals
 
         # Evaluación TRIAD (triple validación independiente)
-        triad = self.triad_evaluator.evaluate(df, fundamentals, macro_data)
+        triad = self.triad_evaluator.evaluate(df, symbol=symbol, fundamentals=fundamentals, macro_data=macro_data)
 
         # Ajustar score compuesto con consenso TRIAD (20% peso)
         composite_with_triad = composite * 0.8 + triad.consensus_score * 0.2

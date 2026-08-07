@@ -4,11 +4,13 @@ Flujo: Tríada (BULL, BEAR, CONTRARIAN) → CONTROLADOR → discusión con PROFE
 → Si no hay consenso → JUEZ decide. PROFESOR educa usando RAG/OKF.
 """
 from fastapi import APIRouter, HTTPException, Query, Header, Depends
+from starlette.concurrency import run_in_threadpool
 import os
 
 from app.config import settings
 from app.core.data_ingestion import download_data
 from app.core.predictive_engine import PredictiveEngine
+from app.api.routes.predict import get_fundamentals, _load_macro_data, SAMPLE_PREDICTION_DATA
 from app.core.advanced_agents import (
     GovernanceSystem,
     NvidiaNIMClient,
@@ -94,7 +96,16 @@ async def analyze_with_governance(symbol: str, regime_state: int = Query(0, ge=0
             raise HTTPException(status_code=404, detail=f"Datos insuficientes para {symbol}")
 
         engine = PredictiveEngine()
-        result = engine.analyze(symbol=symbol.upper(), df=df, regime_state=regime_state)
+        # engine.analyze() puede hacer hasta 3 llamadas HTTP síncronas a NIM
+        # (BULL/BEAR/CONTRARIAN) — correrlo directo acá congelaría el event
+        # loop entero de FastAPI por el tiempo que tarde cada llamada.
+        result = await run_in_threadpool(
+            engine.analyze,
+            symbol=symbol.upper(), df=df, regime_state=regime_state,
+            fundamentals=get_fundamentals(symbol),
+            macro_data=_load_macro_data(),
+            prediction_data=SAMPLE_PREDICTION_DATA,
+        )
 
         triad_data = {
             "bull_score": result.triad_consensus.bull_score if result.triad_consensus else 0.0,
@@ -106,7 +117,9 @@ async def analyze_with_governance(symbol: str, regime_state: int = Query(0, ge=0
         }
 
         governance = GovernanceSystem()
-        governance_result = governance.process_governance(
+        # Misma razón: process_governance puede llamar al LLM de PROFESSOR.
+        governance_result = await run_in_threadpool(
+            governance.process_governance,
             symbol=symbol.upper(),
             triad_data=triad_data,
             composite_score=result.composite_score,
