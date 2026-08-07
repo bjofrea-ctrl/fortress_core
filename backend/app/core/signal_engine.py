@@ -3,17 +3,37 @@ import numpy as np
 from typing import Dict, List, Optional
 from app.core.indicators import calculate_all_indicators
 from app.core.regime_classifier import GlobalRegimeClassifier
+from app.core.probabilistic_engine import BayesianOnlineUpdater
 
 
 class SignalEngine:
-    def __init__(self, regime_classifier: GlobalRegimeClassifier):
+    def __init__(self, regime_classifier: GlobalRegimeClassifier,
+                 bayesian_updater: Optional[BayesianOnlineUpdater] = None):
         self.regime_classifier = regime_classifier
+        self.bayesian_updater = bayesian_updater
+        # Priors: usados como base_weight del posterior Bayesiano y como
+        # fallback mientras no haya evidencia suficiente para ese (régimen, factor)
         self.factor_weights = {
             0: {"momentum": 0.35, "technical": 0.65},
             1: {"momentum": 0.30, "technical": 0.70},
             2: {"momentum": 0.20, "technical": 0.80},
             3: {"momentum": 0.10, "technical": 0.90},
         }
+
+    def _get_factor_weights(self, regime_state: int) -> Dict[str, float]:
+        priors = self.factor_weights.get(regime_state, self.factor_weights[0])
+        if self.bayesian_updater is None:
+            return priors
+
+        raw = {}
+        for factor, prior_w in priors.items():
+            signal_name = f"{regime_state}_{factor}"
+            raw[factor] = self.bayesian_updater.get_weight(signal_name, default=prior_w)
+
+        total = sum(raw.values())
+        if total <= 0:
+            return priors
+        return {f: w / total for f, w in raw.items()}
 
     def _normalize(self, value, lo, hi) -> float:
         return float(np.clip((value - lo) / (hi - lo), 0, 1))
@@ -47,7 +67,7 @@ class SignalEngine:
             return None
         latest = stock_data.iloc[-1]
         scores = self._factor_scores(stock_data)
-        weights = self.factor_weights.get(regime_state, self.factor_weights[0])
+        weights = self._get_factor_weights(regime_state)
         overall = sum(scores[f] * weights[f] for f in weights)
 
         if not (latest.close > latest.ema50 > latest.ema200):

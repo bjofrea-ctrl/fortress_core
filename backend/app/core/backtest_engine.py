@@ -7,7 +7,7 @@ from app.core.signal_engine import SignalEngine
 from app.core.adaptive_risk import AdaptiveRiskManager
 from app.core.regime_classifier import GlobalRegimeClassifier
 from app.core.indicators import calculate_all_indicators
-from app.core.probabilistic_engine import ProbabilityCalibrator
+from app.core.probabilistic_engine import ProbabilityCalibrator, BayesianOnlineUpdater
 
 CALIBRATION_HORIZON_DAYS = 20  # ~1 mes hábil, alineado a "short_term_1_30d"
 CALIBRATION_STRIDE_DAYS = 5    # semanal, misma cadencia que el rebalanceo real
@@ -17,7 +17,8 @@ class BacktestEngine:
     def __init__(self, initial_capital: float = 25000.0):
         self.initial_capital = initial_capital
         self.regime_classifier = GlobalRegimeClassifier()
-        self.signal_engine = SignalEngine(self.regime_classifier)
+        self.bayesian_updater = BayesianOnlineUpdater()
+        self.signal_engine = SignalEngine(self.regime_classifier, bayesian_updater=self.bayesian_updater)
 
     def _build_calibration_dataset(
         self, indicators_cache: Dict[str, pd.DataFrame], train_end_date: datetime
@@ -28,8 +29,14 @@ class BacktestEngine:
         precio CALIBRATION_HORIZON_DAYS hábiles después. Usa regime_state=0 como
         aproximación (los filtros de entrada no cambian por régimen, salvo el
         bloqueo en régimen 3, que de todos modos no genera señal).
+
+        De paso, con el mismo replay hace un warm-start del BayesianOnlineUpdater
+        por (régimen=0, factor) para que el BMA no arranque en frío. Los regímenes
+        1-3 sólo se calibran online durante el loop principal del backtest, que sí
+        usa el régimen real de cada fecha.
         """
         scores, outcomes = [], []
+        priors = self.signal_engine.factor_weights[0]
         for symbol, df in indicators_cache.items():
             train_df = df[df.index < train_end_date]
             n = len(train_df)
@@ -41,9 +48,29 @@ class BacktestEngine:
                     continue
                 entry = train_df["close"].iloc[i]
                 future = train_df["close"].iloc[i + CALIBRATION_HORIZON_DAYS]
+                won = future > entry
                 scores.append(sig["score"])
-                outcomes.append(1.0 if future > entry else 0.0)
+                outcomes.append(1.0 if won else 0.0)
+
+                for factor, factor_score in sig["factors"].items():
+                    predicted_up = factor_score > 0.5
+                    self.bayesian_updater.update(
+                        f"0_{factor}", correct=(predicted_up == won), base_weight=priors[factor]
+                    )
         return np.array(scores), np.array(outcomes)
+
+    def _update_bayesian_weights(self, pos: Dict, pnl: float) -> None:
+        factors = pos.get("factors")
+        if not factors:
+            return
+        regime = pos.get("regime_state", 0)
+        won = pnl > 0
+        priors = self.signal_engine.factor_weights.get(regime, self.signal_engine.factor_weights[0])
+        for factor, score in factors.items():
+            predicted_up = score > 0.5
+            self.bayesian_updater.update(
+                f"{regime}_{factor}", correct=(predicted_up == won), base_weight=priors[factor]
+            )
 
     def run(
         self,
@@ -99,6 +126,7 @@ class BacktestEngine:
                 exit_price = current_prices.get(symbol, pos["entry_price"]) * (1 - slippage)
                 cash += exit_price * shares_to_sell * (1 - commission)
                 pnl = (exit_price - pos["entry_price"]) * shares_to_sell
+                self._update_bayesian_weights(pos, pnl)
 
                 trades.append({
                     "symbol": symbol,
@@ -124,6 +152,7 @@ class BacktestEngine:
                         exit_price = row.close * (1 - slippage)
                         cash += exit_price * pos["shares"] * (1 - commission)
                         pnl = (exit_price - pos["entry_price"]) * pos["shares"]
+                        self._update_bayesian_weights(pos, pnl)
 
                         trades.append({
                             "symbol": symbol,
@@ -175,6 +204,8 @@ class BacktestEngine:
                             "shares": shares,
                             "entry_price": sig["entry_price"],
                             "entry_date": date,
+                            "regime_state": sig["regime_state"],
+                            "factors": sig["factors"],
                         }
                         risk_manager.register_entry(sig["symbol"], sig["entry_price"], shares)
 
