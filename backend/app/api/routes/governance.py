@@ -3,9 +3,10 @@
 Flujo: Tríada (BULL, BEAR, CONTRARIAN) → CONTROLADOR → discusión con PROFESOR
 → Si no hay consenso → JUEZ decide. PROFESOR educa usando RAG/OKF.
 """
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, HTTPException, Query, Header, Depends
 import os
 
+from app.config import settings
 from app.core.data_ingestion import download_data
 from app.core.predictive_engine import PredictiveEngine
 from app.core.advanced_agents import (
@@ -24,6 +25,17 @@ from app.core.knowledge_repo import KnowledgeRepository, RAGMemorySystem, OKF_ST
 router = APIRouter(prefix="/api/governance", tags=["governance"])
 
 CACHE_DIR = "data/cache"
+
+
+def verify_api_key(x_api_key: str = Header(default=None, alias="X-API-Key")) -> None:
+    """
+    Protege rutas de escritura: requiere X-API-Key == settings.SECRET_KEY.
+    Escritas sin auth antes permitían que cualquiera inyecte contenido en el
+    repositorio RAG (leído después por el prompt de PROFESOR) o envenene el
+    historial de aciertos de los agentes vía /record-prediction.
+    """
+    if not x_api_key or x_api_key != settings.SECRET_KEY:
+        raise HTTPException(status_code=401, detail="X-API-Key inválida o faltante")
 
 
 @router.get("/status")
@@ -124,7 +136,7 @@ async def analyze_with_governance(symbol: str, regime_state: int = Query(0, ge=0
         raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
 
 
-@router.post("/record-prediction")
+@router.post("/record-prediction", dependencies=[Depends(verify_api_key)])
 async def record_prediction(agent: str, predicted_up: bool, actual_up: bool, prob: float):
     """Registra una predicción para que el PROFESSOR aprenda."""
     governance = GovernanceSystem()
@@ -177,7 +189,7 @@ async def search_knowledge(query: str, domain: str = None, top_k: int = 5):
     }
 
 
-@router.post("/knowledge/add")
+@router.post("/knowledge/add", dependencies=[Depends(verify_api_key)])
 async def add_knowledge(domain: str, topic: str, title: str, content: str, source: str,
                         year: int = 0, tags: str = ""):
     """Agrega una entrada al repositorio de conocimiento."""

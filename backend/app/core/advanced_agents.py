@@ -22,6 +22,8 @@ from dataclasses import dataclass, field
 from datetime import datetime
 
 from app.core.knowledge_repo import KnowledgeRepository, RAGMemorySystem
+from app.utils.logging import logger
+from app.utils.persistence import atomic_write_json
 
 
 # ============================================================
@@ -241,10 +243,11 @@ class NvidiaNIMClient:
     def generate(self, system_prompt: str, user_message: str, model: str = None) -> Optional[str]:
         if not self.is_available():
             return None
+        used_model = model or self.model
         try:
             headers = {"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json"}
             payload = {
-                "model": model or self.model,
+                "model": used_model,
                 "messages": [
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_message},
@@ -255,8 +258,21 @@ class NvidiaNIMClient:
             r = requests.post(f"{self.base_url}/chat/completions", headers=headers, json=payload, timeout=30)
             if r.status_code == 200:
                 return r.json()["choices"][0]["message"]["content"]
+            if r.status_code == 429:
+                logger.warning("nim_rate_limited", extra={"model": used_model, "status_code": r.status_code})
+            elif r.status_code in (401, 403):
+                logger.error("nim_auth_failed", extra={"model": used_model, "status_code": r.status_code})
+            else:
+                logger.warning("nim_bad_response", extra={"model": used_model, "status_code": r.status_code})
             return None
-        except Exception:
+        except requests.exceptions.Timeout:
+            logger.warning("nim_timeout", extra={"model": used_model})
+            return None
+        except requests.exceptions.ConnectionError:
+            logger.warning("nim_connection_error", extra={"model": used_model})
+            return None
+        except Exception as e:
+            logger.error("nim_unexpected_error", extra={"model": used_model, "error": str(e)})
             return None
 
     def generate_json(self, system_prompt: str, user_message: str, model: str = None) -> Optional[Dict]:
@@ -267,8 +283,9 @@ class NvidiaNIMClient:
             start = resp.find("{"); end = resp.rfind("}") + 1
             if start >= 0 and end > start:
                 return json.loads(resp[start:end])
-        except Exception:
-            pass
+            logger.warning("nim_response_no_json", extra={"model": model or self.model, "response_preview": resp[:200]})
+        except Exception as e:
+            logger.warning("nim_json_parse_failed", extra={"model": model or self.model, "error": str(e), "response_preview": resp[:200]})
         return None
 
     def generate_for_agent(self, agent: str, system_prompt: str, user_message: str) -> Optional[Dict]:
@@ -312,18 +329,19 @@ class ProfessorAgent:
                     self.lessons = data.get("lessons", [])
                     self.agent_history = data.get("agent_history", {})
                     self.weight_adjustments = data.get("weight_adjustments", {})
-            except Exception:
-                pass
+            except Exception as e:
+                logger.error(
+                    "professor_memory_load_failed",
+                    extra={"file": self.memory_file, "error": str(e)},
+                )
 
     def _save_memory(self):
-        os.makedirs(os.path.dirname(self.memory_file), exist_ok=True)
         data = {
             "lessons": self.lessons[-200:],
             "agent_history": self.agent_history,
             "weight_adjustments": self.weight_adjustments,
         }
-        with open(self.memory_file, "w") as f:
-            json.dump(data, f, indent=2)
+        atomic_write_json(self.memory_file, data)
 
     def record_prediction(self, agent: str, predicted_up: bool, actual_up: bool, prob: float):
         if agent not in self.agent_history:

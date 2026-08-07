@@ -23,6 +23,9 @@ from typing import Dict, List, Optional, Set, Tuple
 from dataclasses import dataclass, field
 from datetime import datetime
 
+from app.utils.logging import logger
+from app.utils.persistence import atomic_write_json
+
 
 # ============================================================
 # OKF — Estructura de Conocimiento Organizado
@@ -142,15 +145,13 @@ class KnowledgeRepository:
                 with open(self.repo_file, "r") as f:
                     data = json.load(f)
                     self.entries = [KnowledgeEntry(**e) for e in data.get("entries", [])]
-            except Exception:
-                pass
+            except Exception as e:
+                logger.error("knowledge_repo_load_failed", extra={"file": self.repo_file, "error": str(e)})
 
     def _save(self):
         """Guarda conocimiento persistente."""
-        os.makedirs(os.path.dirname(self.repo_file), exist_ok=True)
         data = {"entries": [e.__dict__ for e in self.entries]}
-        with open(self.repo_file, "w") as f:
-            json.dump(data, f, indent=2, default=str)
+        atomic_write_json(self.repo_file, data)
 
     def add_entry(self, domain: str, topic: str, title: str, content: str,
                   source: str, year: int = 0, tags: List[str] = None) -> KnowledgeEntry:
@@ -370,17 +371,15 @@ class RAGMemorySystem:
                     data = json.load(f)
                     self.lesson_history = data.get("lesson_history", [])
                     self.agent_knowledge = data.get("agent_knowledge", {})
-            except Exception:
-                pass
+            except Exception as e:
+                logger.error("rag_memory_load_failed", extra={"file": self.memory_file, "error": str(e)})
 
     def _save(self):
-        os.makedirs(os.path.dirname(self.memory_file), exist_ok=True)
         data = {
             "lesson_history": self.lesson_history[-200:],
             "agent_knowledge": self.agent_knowledge,
         }
-        with open(self.memory_file, "w") as f:
-            json.dump(data, f, indent=2, default=str)
+        atomic_write_json(self.memory_file, data)
 
     def record_lesson(self, agent: str, lesson: str, context: str, outcome: str):
         """Registra una lección enseña al agente."""

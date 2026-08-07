@@ -27,6 +27,9 @@ from typing import Dict, List, Optional, Tuple, Any
 from dataclasses import dataclass, field
 from datetime import datetime
 
+from app.utils.logging import logger
+from app.utils.persistence import atomic_write_json
+
 
 # ============================================================
 # 1. Memory System — Memoria Contextual
@@ -65,17 +68,15 @@ class MemorySystem:
                     data = json.load(f)
                 self.short_term = [MemoryItem(**i) for i in data.get("short_term", [])]
                 self.long_term = [MemoryItem(**i) for i in data.get("long_term", [])]
-            except Exception:
-                pass
+            except Exception as e:
+                logger.error("prompt_memory_load_failed", extra={"file": self.memory_file, "error": str(e)})
 
     def _save(self):
-        os.makedirs(os.path.dirname(self.memory_file), exist_ok=True)
         data = {
             "short_term": [i.__dict__ for i in self.short_term[-100:]],
             "long_term": [i.__dict__ for i in self.long_term[-500:]],
         }
-        with open(self.memory_file, "w") as f:
-            json.dump(data, f, indent=2, default=str)
+        atomic_write_json(self.memory_file, data)
 
     def add(self, content: str, category: str = "fact", importance: float = 0.5,
             tags: List[str] = None, source: str = "system"):

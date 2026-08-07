@@ -25,6 +25,8 @@ import json
 from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass, field
 
+from app.utils.logging import logger
+
 
 @dataclass
 class AgentVerdict:
@@ -446,6 +448,7 @@ class TriadEvaluator:
         llm_result = self.nim_client.generate_for_agent(agent, system_prompt, user_message)
 
         if not llm_result:
+            logger.info("triad_llm_fallback_to_deterministic", extra={"agent": agent})
             return verdict
 
         # Actualizar veredicto con análisis LLM

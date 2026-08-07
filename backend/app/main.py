@@ -20,9 +20,9 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_origins=settings.cors_origins_list,
+    allow_methods=["GET", "POST"],
+    allow_headers=["Content-Type", "X-API-Key"],
 )
 
 app.include_router(risk.router)
@@ -74,9 +74,12 @@ async def health():
         db_status = f"error: {str(e)}"
         logger.error("health_check_db_failed", extra={"error": str(e)})
 
+    from app.core.advanced_agents import NvidiaNIMClient
+    ai_layer = "enabled" if NvidiaNIMClient().is_available() else "disabled"
+
     return {
         "status": "ok" if db_status == "ok" else "degraded",
-        "ai_layer": "disabled",
+        "ai_layer": ai_layer,
         "database": db_status,
         "environment": settings.ENVIRONMENT,
     }
