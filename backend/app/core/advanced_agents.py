@@ -558,11 +558,12 @@ class GovernanceSystem:
             "take_profit_pct": ctrl_decision.take_profit_pct,
             "risk_checks": ctrl_decision.risk_checks,
             "confidence": ctrl_decision.confidence,
-            "llm_model": "deepseek-ai/deepseek-v4-flash",
+            "llm_model": None,  # CONTROLLER es 100% determinista, nunca llama a un LLM
         }
 
         # 3. PROFESOR discute con CONTROLADOR usando RAG/OKF
         professor_recommendation = "APPROVE"  # default
+        professor_llm_model = None
         if self.nim_client.is_available():
             rag_context = self.knowledge_repo.get_context_for_prompt(
                 f"{symbol} {triad_decision} {ctrl_decision.decision}", top_k=3
@@ -582,15 +583,13 @@ class GovernanceSystem:
                 "PROFESSOR", PROFESSOR_PROMPT, prof_msg
             )
             if llm_resp:
-                result["professor_llm_response"] = llm_resp[:500]
-                try:
-                    start = llm_resp.find("{"); end = llm_resp.rfind("}") + 1
-                    if start >= 0 and end > start:
-                        parsed = json.loads(llm_resp[start:end])
-                        if "recommendations" in parsed:
-                            professor_recommendation = "APPROVE" if any("approve" in r.lower() for r in parsed.get("recommendations", [])) else "REJECT"
-                except Exception:
-                    pass
+                professor_llm_model = "minimax/minimax-m3"
+                # generate_for_governance_agent ya devuelve un dict parseado, no un string
+                result["professor_llm_response"] = json.dumps(llm_resp)[:500]
+                if "recommendations" in llm_resp:
+                    professor_recommendation = "APPROVE" if any(
+                        re.search(r"\bapprove\b", r.lower()) for r in llm_resp.get("recommendations", [])
+                    ) else "REJECT"
 
         result["professor"] = {
             "recommendation": professor_recommendation,
@@ -598,7 +597,7 @@ class GovernanceSystem:
             "weight_adjustments": self.professor.weight_adjustments,
             "teaching_summary": self.professor.get_teaching_summary(),
             "knowledge_repo_stats": self.knowledge_repo.get_stats(),
-            "llm_model": "minimax/minimax-m3",
+            "llm_model": professor_llm_model,  # None si NIM no está disponible o no respondió
         }
 
         # 4. JUEZ — decide si CONTROLADOR y PROFESOR no hayan consenso
@@ -622,7 +621,7 @@ class GovernanceSystem:
                 "risk_assessment": judge_result.risk_assessment,
                 "confidence": judge_result.confidence,
                 "conditions": judge_result.conditions,
-                "llm_model": "zhipu/glm-5.2",
+                "llm_model": None,  # JUDGE es 100% determinista, nunca llama a un LLM
             }
             final_decision = judge_result.verdict
             final_reason = f"Juez resolvió conflicto. Sobrepasó: {', '.join(judge_result.overruled_agents) if judge_result.overruled_agents else 'ninguno'}"

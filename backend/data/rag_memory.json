@@ -1,0 +1,16 @@
+{
+  "lesson_history": [
+    {
+      "agent": "SYSTEM",
+      "lesson": "Conflicto resuelto en AAPL: COMPRAR",
+      "context": "Triad=COMPRAR, Controller=MANTENER, Professor=APPROVE",
+      "outcome": "Juez emiti\u00f3 veredicto final",
+      "timestamp": "2026-08-06 20:58:43.419165"
+    }
+  ],
+  "agent_knowledge": {
+    "SYSTEM": [
+      "Conflicto resuelto en AAPL: COMPRAR"
+    ]
+  }
+}

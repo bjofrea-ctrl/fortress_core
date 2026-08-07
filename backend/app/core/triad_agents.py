@@ -443,7 +443,7 @@ class TriadEvaluator:
         }
 
         system_prompt = agent_prompts.get(agent, "Eres un analista experto.")
-        llm_result = self.nim_client.generate_json_for_agent(agent, system_prompt, user_message)
+        llm_result = self.nim_client.generate_for_agent(agent, system_prompt, user_message)
 
         if not llm_result:
             return verdict
