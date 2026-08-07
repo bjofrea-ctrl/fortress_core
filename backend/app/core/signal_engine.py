@@ -63,14 +63,19 @@ class SignalEngine:
 
         atr_v = latest.atr14
         entry = latest.close
+        stop_loss = entry - 2.0 * atr_v
+        take_profit = entry + 4.0 * atr_v
+        risk = entry - stop_loss
+        payoff_ratio = (take_profit - entry) / risk if risk > 0 else 0.0
         return {
             "symbol": symbol,
             "date": stock_data.index[-1],
             "signal_type": "BUY",
             "score": float(overall),
             "entry_price": float(entry),
-            "stop_loss": float(entry - 2.0 * atr_v),
-            "take_profit": float(entry + 4.0 * atr_v),
+            "stop_loss": float(stop_loss),
+            "take_profit": float(take_profit),
+            "payoff_ratio": float(payoff_ratio),
             "regime_state": regime_state,
             "factors": scores,
             "atr": float(atr_v),

@@ -1,12 +1,16 @@
 import pandas as pd
 import numpy as np
-from typing import Dict, List
+from typing import Dict, List, Tuple
 from datetime import datetime
 from scipy.stats import norm
 from app.core.signal_engine import SignalEngine
 from app.core.adaptive_risk import AdaptiveRiskManager
 from app.core.regime_classifier import GlobalRegimeClassifier
 from app.core.indicators import calculate_all_indicators
+from app.core.probabilistic_engine import ProbabilityCalibrator
+
+CALIBRATION_HORIZON_DAYS = 20  # ~1 mes hábil, alineado a "short_term_1_30d"
+CALIBRATION_STRIDE_DAYS = 5    # semanal, misma cadencia que el rebalanceo real
 
 
 class BacktestEngine:
@@ -14,6 +18,32 @@ class BacktestEngine:
         self.initial_capital = initial_capital
         self.regime_classifier = GlobalRegimeClassifier()
         self.signal_engine = SignalEngine(self.regime_classifier)
+
+    def _build_calibration_dataset(
+        self, indicators_cache: Dict[str, pd.DataFrame], train_end_date: datetime
+    ) -> Tuple[np.ndarray, np.ndarray]:
+        """
+        Replay histórico previo a train_end_date: por cada fecha (cadencia semanal)
+        genera la señal que se habría emitido y la etiqueta como win/loss según el
+        precio CALIBRATION_HORIZON_DAYS hábiles después. Usa regime_state=0 como
+        aproximación (los filtros de entrada no cambian por régimen, salvo el
+        bloqueo en régimen 3, que de todos modos no genera señal).
+        """
+        scores, outcomes = [], []
+        for symbol, df in indicators_cache.items():
+            train_df = df[df.index < train_end_date]
+            n = len(train_df)
+            if n < 220:
+                continue
+            for i in range(200, n - CALIBRATION_HORIZON_DAYS, CALIBRATION_STRIDE_DAYS):
+                sig = self.signal_engine.generate_signal(train_df.iloc[: i + 1], symbol, regime_state=0)
+                if sig is None:
+                    continue
+                entry = train_df["close"].iloc[i]
+                future = train_df["close"].iloc[i + CALIBRATION_HORIZON_DAYS]
+                scores.append(sig["score"])
+                outcomes.append(1.0 if future > entry else 0.0)
+        return np.array(scores), np.array(outcomes)
 
     def run(
         self,
@@ -27,6 +57,10 @@ class BacktestEngine:
         indicators_cache = {s: calculate_all_indicators(df) for s, df in price_data.items()}
         train_market = {s: df[df.index < start_date] for s, df in market_data.items()}
         self.regime_classifier.fit(train_market)
+
+        calibrator = ProbabilityCalibrator(method="platt")
+        cal_scores, cal_outcomes = self._build_calibration_dataset(indicators_cache, start_date)
+        calibrator.fit(cal_scores, cal_outcomes)
 
         risk_manager = AdaptiveRiskManager(self.initial_capital)
         equity, cash = self.initial_capital, self.initial_capital
@@ -128,7 +162,11 @@ class BacktestEngine:
                     if sig["symbol"] in positions:
                         continue
 
-                    shares = risk_manager.compute_position_size(equity, sig["entry_price"], sig["atr"])
+                    win_prob = float(calibrator.predict(np.array([sig["score"]]))[0])
+                    shares = risk_manager.compute_position_size(
+                        equity, sig["entry_price"], sig["atr"],
+                        win_prob=win_prob, payoff_ratio=sig["payoff_ratio"],
+                    )
                     cost = sig["entry_price"] * shares * (1 + slippage) * (1 + commission)
 
                     if shares > 0 and cost < cash:

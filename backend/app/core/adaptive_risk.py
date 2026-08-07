@@ -46,13 +46,30 @@ class AdaptiveRiskManager:
         entry = self.state.entry_reference.get(symbol)
         return 0.0 if entry is None else (price - entry) / entry
 
-    def compute_position_size(self, equity: float, price: float, atr: float) -> int:
+    def compute_position_size(
+        self,
+        equity: float,
+        price: float,
+        atr: float,
+        win_prob: Optional[float] = None,
+        payoff_ratio: Optional[float] = None,
+        fractional_kelly: float = 0.25,
+    ) -> int:
         if atr <= 0 or price <= 0:
             return 0
         thresholds = self.get_thresholds()
         stop_distance = max(2.0 * atr, price * thresholds["position_stop"])
         shares_by_risk = (equity * self.RISK_PER_TRADE) / stop_distance
         max_shares = (equity * self.MAX_POSITION_PCT) / price
+
+        if win_prob is not None and payoff_ratio is not None:
+            p = min(max(win_prob, 0.01), 0.99)
+            b = max(payoff_ratio, 0.01)
+            kelly = max(0.0, (p * b - (1 - p)) / b) * fractional_kelly
+            if kelly > 0:
+                kelly_shares = (equity * kelly) / price
+                return int(min(kelly_shares, shares_by_risk, max_shares))
+
         return int(min(shares_by_risk, max_shares))
 
     def check_all_stops(
