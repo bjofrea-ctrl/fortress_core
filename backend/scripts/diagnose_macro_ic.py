@@ -46,12 +46,13 @@ def main():
 
     pooled = {}  # signal_name -> list of values
     pooled_returns_by_signal = {}  # signal_name -> list of forward returns
+    composite_values, composite_returns = [], []
 
     print(f"Evaluando {len(dates)} fechas (stride={STRIDE_DAYS})...")
     for i in range(0, len(dates) - HORIZON_DAYS, STRIDE_DAYS):
         date = dates[i]
         sliced_macro = {k: df[df.index <= date] for k, df in macro_data.items()}
-        signals, _ = engine._macro_signals(sliced_macro)
+        signals, composite = engine._macro_signals(sliced_macro)
         if not signals:
             continue
 
@@ -70,6 +71,9 @@ def main():
                 pooled.setdefault(sig.name, []).append(sig.signal)
                 pooled_returns_by_signal.setdefault(sig.name, []).append(fwd_return)
 
+            composite_values.append(composite)
+            composite_returns.append(fwd_return)
+
     print("\n=== IC POR REGLA MACRO (pooled, todos los símbolos) ===")
     results = []
     for name, values in pooled.items():
@@ -81,6 +85,11 @@ def main():
     results.sort(key=lambda r: abs(r[1]), reverse=True)
     for name, ic, rank_ic, n in results:
         print(f"{name:40s}  ic={ic:+.4f}  rank_ic={rank_ic:+.4f}  n={n}")
+
+    comp_ic = SignalQualityMetrics.compute_ic(pd.Series(composite_values), pd.Series(composite_returns))
+    comp_rank_ic = SignalQualityMetrics.compute_rank_ic(pd.Series(composite_values), pd.Series(composite_returns))
+    print(f"\n=== SCORE MACRO COMPUESTO (blend actual de _macro_signals) ===")
+    print(f"ic={comp_ic:+.4f}  rank_ic={comp_rank_ic:+.4f}  n={len(composite_values)}")
 
 
 if __name__ == "__main__":

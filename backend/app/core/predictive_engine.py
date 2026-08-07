@@ -612,6 +612,9 @@ class PredictiveEngine:
             copper = macro_data.get("HG=F")
 
         # Regla 1: DXY bajando + Oro subiendo → Risk-ON
+        # IC medido: +0.057, dirección correcta. Peso reponderado
+        # proporcional a |IC| junto con Petróleo y SPY (las 3 reglas con
+        # evidencia real).
         if dxy is not None and gold is not None and len(dxy) > 30 and len(gold) > 30:
             dxy_ret_20d = float(dxy["close"].pct_change(20).iloc[-1] * 100)
             gold_ret_20d = float(gold["close"].pct_change(20).iloc[-1] * 100)
@@ -626,9 +629,14 @@ class PredictiveEngine:
                 risk_on = self._normalize_signal(-dxy_ret_20d + gold_ret_20d, -5, 5) * 0.5
                 explain = "Señal combinada DXY/Oro"
             signals.append(SignalDetail("DXY vs Oro (Risk Switch)", "macro", dxy_ret_20d,
-                                        float(risk_on), 0.25, explain))
+                                        float(risk_on), 0.2588, explain))
 
         # Regla 2: Gold/Silver ratio
+        # IC medido (diagnose_macro_ic.py, pooled 2019-2024, n=2086): -0.024,
+        # débil. Se mantiene como contexto informativo (útil para que un
+        # humano entienda la recomendación) pero con weight=0 para que no
+        # mueva el score compuesto — no hay evidencia suficiente para
+        # confiar en la dirección de esta regla.
         if gold is not None and silver is not None:
             gs_ratio = compute_gold_silver_ratio(gold["close"], silver["close"]).iloc[-1]
             if gs_ratio > 80:
@@ -642,17 +650,20 @@ class PredictiveEngine:
                 gs_signal = float(gs_norm)
                 explain = "Gold/Silver ratio en rango neutral"
             signals.append(SignalDetail("Gold/Silver Ratio", "macro", float(gs_ratio),
-                                        gs_signal, 0.15, explain))
+                                        gs_signal, 0.0, explain))
 
         # Regla 3: Cobre como leading indicator
+        # IC medido: +0.015, prácticamente nulo. Igual tratamiento: se
+        # informa pero no pesa en el score.
         if copper is not None and len(copper) > 200:
             copper_above_200 = float(copper["close"].iloc[-1] > copper["close"].rolling(200).mean().iloc[-1])
             copper_signal = 0.8 if copper_above_200 else -0.8
             signals.append(SignalDetail("Cobre vs MA200 (Expansión)", "macro", copper_above_200,
-                                        copper_signal, 0.20,
+                                        copper_signal, 0.0,
                                         "Cobre sobre MA200 = expansión económica (alcista)"))
 
         # Regla 4: Bonds 10Y con Oro (estanflación)
+        # IC medido: +0.0097, esencialmente cero. Mismo tratamiento.
         if tlt is not None and gold is not None:
             tlt_recent = float(tlt["close"].pct_change(20).iloc[-1] * 100)
             gold_recent = float(gold["close"].pct_change(20).iloc[-1] * 100)
@@ -667,17 +678,26 @@ class PredictiveEngine:
                 stagflation = 0.0
                 explain = "Señal de bonos neutral"
             signals.append(SignalDetail("Bonos 10Y + Oro (Inflación)", "macro", tlt_recent,
-                                        stagflation, 0.15, explain))
+                                        stagflation, 0.0, explain))
 
         # Regla 5: SPY momentum como mercado general
+        # IC medido: -0.10 — la señal macro más fuerte de las 6, pero
+        # INVERTIDA: momentum fuerte del SPY predijo peor retorno futuro a
+        # 20 días para las acciones individuales (reversión a nivel índice
+        # en ese horizonte), no mejor. Se invierte el signo en vez de
+        # descartarla, porque la magnitud (4x más grande que Gold/Silver) y
+        # el tamaño de muestra (n=2086) dan confianza suficiente para
+        # confiar en la dirección opuesta, a diferencia de las reglas
+        # débiles de arriba.
         if sp500 is not None and len(sp500) > 50:
             spy_ret = float(sp500["close"].pct_change(50).iloc[-1] * 100)
-            spy_signal = self._normalize_signal(spy_ret, -10, 15)
-            signals.append(SignalDetail("S&P 500 Momentum 50d", "macro", spy_ret,
-                                        spy_signal, 0.15,
-                                        "Mercado general en tendencia"))
+            spy_signal = -self._normalize_signal(spy_ret, -10, 15)
+            signals.append(SignalDetail("S&P 500 Momentum 50d (invertido, IC medido)", "macro", spy_ret,
+                                        spy_signal, 0.4543,
+                                        "Momentum fuerte del mercado predijo peor retorno futuro (reversión)"))
 
         # Regla 6: Petróleo
+        # IC medido: +0.063, dirección correcta.
         if oil is not None and len(oil) > 20:
             oil_ret = float(oil["close"].pct_change(20).iloc[-1] * 100)
             # Petróleo baja = presión inflacionaria baja = alcista; sube mucho = inflación = bajista
@@ -688,7 +708,7 @@ class PredictiveEngine:
             else:
                 oil_signal = 0.0
             signals.append(SignalDetail("Petróleo (Inflación)", "macro", oil_ret,
-                                        oil_signal, 0.10, "Movimiento extremo de petróleo"))
+                                        oil_signal, 0.2869, "Movimiento extremo de petróleo"))
 
         if not signals:
             return [], 0.0
