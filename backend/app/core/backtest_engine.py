@@ -13,6 +13,7 @@ from app.core.probabilistic_engine import (
 
 CALIBRATION_HORIZON_DAYS = 20  # ~1 mes hábil, alineado a "short_term_1_30d"
 CALIBRATION_STRIDE_DAYS = 5    # semanal, misma cadencia que el rebalanceo real
+REGIME_REFIT_STRIDE_DAYS = 63  # ~trimestral: antes el HMM se fiteaba una sola vez y nunca más
 
 
 class BacktestEngine:
@@ -183,6 +184,7 @@ class BacktestEngine:
 
         spy = market_data.get("SPY")
         dates = spy[(spy.index >= start_date) & (spy.index <= end_date)].index
+        last_regime_refit = start_date
 
         for date in dates:
             current_prices, atrs = {}, {}
@@ -256,6 +258,16 @@ class BacktestEngine:
                         del positions[symbol]
 
             if date.dayofweek == 0 and risk_manager.can_open_new_position(date):
+                if (date - last_regime_refit).days >= REGIME_REFIT_STRIDE_DAYS:
+                    # Walk-forward real: reentrena con la ventana expansiva
+                    # hasta 'date' en vez de usar para siempre el fit hecho
+                    # antes de start_date.
+                    try:
+                        self.regime_classifier.fit({s: df[df.index < date] for s, df in market_data.items()})
+                        last_regime_refit = date
+                    except ValueError:
+                        pass  # ventana insuficiente todavía, seguir con el modelo anterior
+
                 regime_info = self.regime_classifier.predict_current_regime(
                     {s: df[df.index <= date] for s, df in market_data.items()}
                 )

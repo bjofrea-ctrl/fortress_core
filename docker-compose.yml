@@ -16,25 +16,16 @@ services:
         limits:
           memory: 2G
 
-  redis:
-    image: redis:7
-    ports:
-      - "6379:6379"
-    deploy:
-      resources:
-        limits:
-          memory: 512M
-
   backend:
     build: ./backend
     ports:
       - "8000:8000"
     depends_on:
       - db
-      - redis
+    env_file:
+      - .env
     environment:
       DATABASE_URL: postgresql://user:password@db:5432/fortress_db
-      REDIS_URL: redis://redis:6379/0
     volumes:
       - ./backend/data:/app/data
     deploy:

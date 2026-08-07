@@ -21,6 +21,7 @@ from typing import Dict, List, Optional, Set
 from dataclasses import dataclass, field
 from datetime import datetime
 
+from app.config import settings
 from app.core.knowledge_repo import KnowledgeRepository, RAGMemorySystem
 from app.utils.logging import logger
 from app.utils.persistence import atomic_write_json
@@ -31,11 +32,13 @@ from app.utils.persistence import atomic_write_json
 # ============================================================
 
 NVIDIA_NIM_CONFIG = {
-    # .env.example documenta NVIDIA_NIM_MODEL/NVIDIA_NIM_BASE_URL como
-    # configurables — antes no se leían nunca y cambiarlos no tenía efecto.
-    "base_url": os.environ.get("NVIDIA_NIM_BASE_URL", "https://integrate.api.nvidia.com/v1"),
-    "model": os.environ.get("NVIDIA_NIM_MODEL", "meta/llama-3.1-8b-instruct"),
-    "api_key_env": "NVIDIA_NIM_API_KEY",
+    # Antes leía os.environ directo, que nunca se populaba (nada llama a
+    # load_dotenv(), docker-compose.yml no pasa estas variables al
+    # contenedor) — la key de .env nunca llegaba al proceso real. Ahora sale
+    # de Settings, que sí parsea .env correctamente.
+    "base_url": settings.NVIDIA_NIM_BASE_URL,
+    "model": settings.NVIDIA_NIM_MODEL,
+    "api_key": settings.NVIDIA_NIM_API_KEY,
     "temperature": 0.3,
     "max_tokens": 2048,
 }
@@ -224,7 +227,7 @@ class NvidiaNIMClient:
                  is_triad_client: bool = False, is_governance_client: bool = False):
         self.base_url = NVIDIA_NIM_CONFIG["base_url"]
         self.model = model or NVIDIA_NIM_CONFIG["model"]
-        self.api_key = api_key or os.environ.get(NVIDIA_NIM_CONFIG["api_key_env"], "")
+        self.api_key = api_key or NVIDIA_NIM_CONFIG["api_key"]
         self.temperature = NVIDIA_NIM_CONFIG["temperature"]
         self.max_tokens = NVIDIA_NIM_CONFIG["max_tokens"]
         self.triad_clients: Dict[str, 'NvidiaNIMClient'] = {}

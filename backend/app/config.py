@@ -4,10 +4,17 @@ from pydantic_settings import BaseSettings
 class Settings(BaseSettings):
     # SQLite por defecto para desarrollo local sin Docker
     DATABASE_URL: str = "sqlite:///./fortress.db"
-    REDIS_URL: str = "redis://localhost:6379/0"
     SECRET_KEY: str = "change-me-in-production"
     ENVIRONMENT: str = "development"
     CORS_ORIGINS: str = "http://localhost:3000,http://localhost:5173"
+
+    # Antes NvidiaNIMClient leía estas variables directo de os.environ, que
+    # nunca se populaba (nada llama a load_dotenv(), y docker-compose.yml no
+    # las pasa al contenedor) — la key configurada en .env nunca llegaba al
+    # proceso real. Unificado bajo Settings, que sí lee .env correctamente.
+    NVIDIA_NIM_API_KEY: str = ""
+    NVIDIA_NIM_MODEL: str = "meta/llama-3.1-8b-instruct"
+    NVIDIA_NIM_BASE_URL: str = "https://integrate.api.nvidia.com/v1"
 
     @property
     def cors_origins_list(self) -> list:
