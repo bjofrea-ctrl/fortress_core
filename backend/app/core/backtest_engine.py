@@ -7,7 +7,9 @@ from app.core.signal_engine import SignalEngine
 from app.core.adaptive_risk import AdaptiveRiskManager
 from app.core.regime_classifier import GlobalRegimeClassifier
 from app.core.indicators import calculate_all_indicators
-from app.core.probabilistic_engine import ProbabilityCalibrator, BayesianOnlineUpdater
+from app.core.probabilistic_engine import (
+    ProbabilityCalibrator, BayesianOnlineUpdater, WalkForwardValidator, SignalQualityMetrics,
+)
 
 CALIBRATION_HORIZON_DAYS = 20  # ~1 mes hábil, alineado a "short_term_1_30d"
 CALIBRATION_STRIDE_DAYS = 5    # semanal, misma cadencia que el rebalanceo real
@@ -71,6 +73,82 @@ class BacktestEngine:
             self.bayesian_updater.update(
                 f"{regime}_{factor}", correct=(predicted_up == won), base_weight=priors[factor]
             )
+
+    def validate_signal_quality(
+        self, indicators_cache: Dict[str, pd.DataFrame], start_date: datetime, end_date: datetime
+    ) -> Dict:
+        """
+        Diagnóstico walk-forward (IC/RankIC/ICIR) de si el score compuesto
+        predice retornos futuros de forma genuina y estable fuera de muestra,
+        en vez de confiar en una sola corrida de backtest in-sample. Usa
+        regime_state=0 como aproximación uniforme (misma simplificación que
+        el resto del pipeline de calibración).
+        """
+        validator = WalkForwardValidator()
+        per_symbol = {}
+        for symbol, df in indicators_cache.items():
+            window = df[(df.index >= start_date) & (df.index <= end_date)].copy()
+            if len(window) < validator.train_window + validator.test_window:
+                continue
+            window["score"] = self.signal_engine.compute_score_series(window, regime_state=0)
+            result = validator.validate(window, signal_col="score", return_col="close",
+                                         horizon=CALIBRATION_HORIZON_DAYS)
+            if "error" not in result:
+                per_symbol[symbol] = result
+
+        if not per_symbol:
+            return {"error": "Ventana insuficiente para walk-forward"}
+
+        return {
+            "per_symbol": per_symbol,
+            "aggregate": {
+                "mean_ic": round(float(np.mean([r["mean_ic"] for r in per_symbol.values()])), 4),
+                "mean_rank_ic": round(float(np.mean([r["mean_rank_ic"] for r in per_symbol.values()])), 4),
+                "mean_icir": round(float(np.mean([r["icir"] for r in per_symbol.values()])), 4),
+                "mean_positive_ic_pct": round(float(np.mean([r["positive_ic_pct"] for r in per_symbol.values()])), 4),
+                "n_symbols": len(per_symbol),
+            },
+        }
+
+    def diagnose_factor_ic(
+        self, indicators_cache: Dict[str, pd.DataFrame], start_date: datetime, end_date: datetime,
+        horizon: int = CALIBRATION_HORIZON_DAYS,
+    ) -> Dict:
+        """
+        IC/RankIC de cada factor por separado (momentum, trend, rsi, adx),
+        calculado SOLO sobre días que pasarían el filtro duro de entrada
+        (eligible), pooleando todos los símbolos. A diferencia de
+        validate_signal_quality (que mide el score compuesto en todos los
+        días), esto aísla qué factor individual predice bien -o mal- dentro
+        de la población real de candidatos a trade.
+        """
+        pooled = {"momentum": [], "trend": [], "rsi": [], "adx": []}
+        pooled_returns = []
+        for symbol, df in indicators_cache.items():
+            window = df[(df.index >= start_date) & (df.index <= end_date)]
+            if len(window) < horizon + 30:
+                continue
+            frame = self.signal_engine.compute_factor_frame(window)
+            forward_returns = window["close"].shift(-horizon) / window["close"] - 1
+            mask = frame["eligible"] & forward_returns.notna()
+            if mask.sum() < 20:
+                continue
+            for factor in pooled:
+                pooled[factor].append(frame.loc[mask, factor])
+            pooled_returns.append(forward_returns[mask])
+
+        if not pooled_returns:
+            return {"error": "Muestra insuficiente en población elegible"}
+
+        all_returns = pd.concat(pooled_returns)
+        result = {"n_eligible_days": int(len(all_returns))}
+        for factor, series_list in pooled.items():
+            factor_series = pd.concat(series_list)
+            result[factor] = {
+                "ic": round(SignalQualityMetrics.compute_ic(factor_series, all_returns), 4),
+                "rank_ic": round(SignalQualityMetrics.compute_rank_ic(factor_series, all_returns), 4),
+            }
+        return result
 
     def run(
         self,
@@ -215,6 +293,7 @@ class BacktestEngine:
             "risk_events": risk_manager.state.risk_events,
             "metrics": self.calculate_metrics(equity_curve, trades),
             "monte_carlo": self.monte_carlo_simulation(trades),
+            "signal_quality": self.validate_signal_quality(indicators_cache, start_date, end_date),
         }
 
     def calculate_metrics(self, equity_curve: List[Dict], trades: List[Dict]) -> Dict:

@@ -39,13 +39,17 @@ class SignalEngine:
         return float(np.clip((value - lo) / (hi - lo), 0, 1))
 
     def _factor_scores(self, stock_data: pd.DataFrame) -> Dict[str, float]:
+        """
+        Cada componente contribuye siempre (favorable o no) en vez de sumar
+        sólo cuando es favorable. La asimetría anterior (sumar 1.0 sólo si la
+        tendencia estaba confirmada, sin penalizar cuando no) sesgaba el score
+        hacia arriba sin castigar el caso contrario — ver walk-forward IC.
+        """
         latest = stock_data.iloc[-1]
         mom = latest.get("momentum_12_1")
         momentum_score = self._normalize(mom, -50, 100) if pd.notna(mom) else 0.5
 
-        tech = []
-        if latest.close > latest.ema50 > latest.ema200:
-            tech.append(1.0)
+        tech = [1.0 if latest.close > latest.ema50 > latest.ema200 else 0.0]
 
         rsi_v = latest.get("rsi14")
         if pd.notna(rsi_v):
@@ -55,8 +59,64 @@ class SignalEngine:
         if pd.notna(adx_v):
             tech.append(0.9 if adx_v > 25 else 0.3)
 
-        technical_score = np.mean(tech) if tech else 0.5
+        technical_score = np.mean(tech)
         return {"momentum": momentum_score, "technical": technical_score}
+
+    def compute_score_series(self, indicators_df: pd.DataFrame, regime_state: int = 0) -> pd.Series:
+        """
+        Reproduce _factor_scores de forma vectorizada para toda la serie
+        (no sólo el último día). Se usa para diagnóstico walk-forward de la
+        calidad predictiva del score compuesto, independiente del filtro BUY.
+        """
+        mom = indicators_df.get("momentum_12_1", pd.Series(np.nan, index=indicators_df.index))
+        momentum_score = ((mom + 50) / 150).clip(0, 1)
+        momentum_score = momentum_score.where(mom.notna(), 0.5)
+
+        trend_up = (indicators_df["close"] > indicators_df["ema50"]) & (indicators_df["ema50"] > indicators_df["ema200"])
+        trend_component = pd.Series(np.where(trend_up, 1.0, 0.0), index=indicators_df.index)
+
+        rsi = indicators_df.get("rsi14", pd.Series(np.nan, index=indicators_df.index))
+        rsi_component = pd.Series(np.where(rsi.notna(), np.where(rsi.between(45, 70, inclusive="neither"), 0.8, 0.4), np.nan),
+                                   index=indicators_df.index)
+
+        adx = indicators_df.get("adx14", pd.Series(np.nan, index=indicators_df.index))
+        adx_component = pd.Series(np.where(adx.notna(), np.where(adx > 25, 0.9, 0.3), np.nan), index=indicators_df.index)
+
+        tech_df = pd.concat([trend_component, rsi_component, adx_component], axis=1)
+        technical_score = tech_df.mean(axis=1, skipna=True)
+
+        weights = self._get_factor_weights(regime_state)
+        return momentum_score * weights["momentum"] + technical_score * weights["technical"]
+
+    def compute_factor_frame(self, indicators_df: pd.DataFrame) -> pd.DataFrame:
+        """
+        Componentes de factor individuales (no combinados) + máscara de
+        elegibilidad reproduciendo los filtros duros de generate_signal.
+        Para diagnóstico de IC por factor dentro de la población de días
+        que realmente serían candidatos a señal, no en todos los días.
+        """
+        df = indicators_df
+        mom = df.get("momentum_12_1", pd.Series(np.nan, index=df.index))
+        momentum = ((mom + 50) / 150).clip(0, 1)
+
+        trend_ok = (df["close"] > df["ema50"]) & (df["ema50"] > df["ema200"])
+        trend = pd.Series(np.where(trend_ok, 1.0, 0.0), index=df.index)
+
+        rsi = df.get("rsi14", pd.Series(np.nan, index=df.index))
+        rsi_score = pd.Series(np.where(rsi.between(45, 70, inclusive="neither"), 0.8, 0.4), index=df.index)
+        rsi_score = rsi_score.where(rsi.notna())
+
+        adx = df.get("adx14", pd.Series(np.nan, index=df.index))
+        adx_score = pd.Series(np.where(adx > 25, 0.9, 0.3), index=df.index)
+        adx_score = adx_score.where(adx.notna())
+
+        vol_ratio = df.get("volume_ratio", pd.Series(np.nan, index=df.index))
+        eligible = trend_ok & (adx >= 20) & (rsi > 40) & (rsi < 75) & (vol_ratio >= 1.0)
+
+        return pd.DataFrame({
+            "momentum": momentum, "trend": trend, "rsi": rsi_score, "adx": adx_score,
+            "eligible": eligible.fillna(False), "close": df["close"],
+        }, index=df.index)
 
     def generate_signal(self, stock_data: pd.DataFrame, symbol: str, regime_state: int) -> Optional[Dict]:
         if len(stock_data) < 200 or regime_state == 3:

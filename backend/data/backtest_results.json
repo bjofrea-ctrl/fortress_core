@@ -13911,9 +13911,97 @@
     "deflated_sharpe": 1.0
   },
   "monte_carlo": {
-    "mean": 2290.146478976531,
-    "p5": 451.30017814237885,
-    "p95": 4099.938958708902,
-    "prob_loss": 0.021
+    "mean": 2278.0571465075936,
+    "p5": 649.250879332824,
+    "p95": 3864.329735854003,
+    "prob_loss": 0.014
+  },
+  "signal_quality": {
+    "per_symbol": {
+      "SPY": {
+        "n_windows": 15,
+        "mean_ic": -0.2375,
+        "std_ic": 0.3018,
+        "mean_rank_ic": -0.2877,
+        "icir": -0.7867,
+        "positive_ic_windows": 3,
+        "positive_ic_pct": 0.2,
+        "train_window": 504,
+        "test_window": 63
+      },
+      "QQQ": {
+        "n_windows": 15,
+        "mean_ic": -0.2583,
+        "std_ic": 0.3468,
+        "mean_rank_ic": -0.2773,
+        "icir": -0.7448,
+        "positive_ic_windows": 4,
+        "positive_ic_pct": 0.2667,
+        "train_window": 504,
+        "test_window": 63
+      },
+      "AAPL": {
+        "n_windows": 15,
+        "mean_ic": -0.287,
+        "std_ic": 0.2865,
+        "mean_rank_ic": -0.3065,
+        "icir": -1.0017,
+        "positive_ic_windows": 3,
+        "positive_ic_pct": 0.2,
+        "train_window": 504,
+        "test_window": 63
+      },
+      "MSFT": {
+        "n_windows": 15,
+        "mean_ic": -0.2932,
+        "std_ic": 0.2362,
+        "mean_rank_ic": -0.3083,
+        "icir": -1.2413,
+        "positive_ic_windows": 3,
+        "positive_ic_pct": 0.2,
+        "train_window": 504,
+        "test_window": 63
+      },
+      "GOOGL": {
+        "n_windows": 15,
+        "mean_ic": -0.355,
+        "std_ic": 0.3099,
+        "mean_rank_ic": -0.3822,
+        "icir": -1.1454,
+        "positive_ic_windows": 2,
+        "positive_ic_pct": 0.1333,
+        "train_window": 504,
+        "test_window": 63
+      },
+      "AMZN": {
+        "n_windows": 15,
+        "mean_ic": -0.3985,
+        "std_ic": 0.2459,
+        "mean_rank_ic": -0.4159,
+        "icir": -1.6209,
+        "positive_ic_windows": 1,
+        "positive_ic_pct": 0.0667,
+        "train_window": 504,
+        "test_window": 63
+      },
+      "NVDA": {
+        "n_windows": 15,
+        "mean_ic": -0.3478,
+        "std_ic": 0.2294,
+        "mean_rank_ic": -0.3442,
+        "icir": -1.5161,
+        "positive_ic_windows": 0,
+        "positive_ic_pct": 0.0,
+        "train_window": 504,
+        "test_window": 63
+      }
+    },
+    "aggregate": {
+      "mean_ic": -0.311,
+      "mean_rank_ic": -0.3317,
+      "mean_icir": -1.151,
+      "mean_positive_ic_pct": 0.1524,
+      "n_symbols": 7
+    }
   }
 }

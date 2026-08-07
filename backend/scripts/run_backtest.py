@@ -30,6 +30,14 @@ if __name__ == "__main__":
     for k, v in result["monte_carlo"].items():
         print(f"{k}: {v:.4f}" if isinstance(v, float) else f"{k}: {v}")
 
+    print("\n=== CALIDAD DE SEÑAL (walk-forward IC) ===")
+    sq = result.get("signal_quality", {})
+    if "error" in sq:
+        print(sq["error"])
+    else:
+        for k, v in sq.get("aggregate", {}).items():
+            print(f"{k}: {v:.4f}" if isinstance(v, float) else f"{k}: {v}")
+
     # Save results to JSON for the frontend dashboard
     os.makedirs("data", exist_ok=True)
 
