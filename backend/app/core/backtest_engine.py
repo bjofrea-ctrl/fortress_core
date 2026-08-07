@@ -83,6 +83,13 @@ class BacktestEngine:
         en vez de confiar en una sola corrida de backtest in-sample. Usa
         regime_state=0 como aproximación uniforme (misma simplificación que
         el resto del pipeline de calibración).
+
+        Restringido a días "eligible" (mismos filtros duros que generate_signal):
+        el score nunca se usa para operar fuera de esa población, así que
+        medir IC sobre todos los días -incluyendo los que jamás generarían un
+        trade real- responde una pregunta distinta a la que importa. Los días
+        no elegibles quedan como NaN y WalkForwardValidator/compute_ic ya los
+        descarta solo (dropna interno).
         """
         validator = WalkForwardValidator()
         per_symbol = {}
@@ -90,7 +97,9 @@ class BacktestEngine:
             window = df[(df.index >= start_date) & (df.index <= end_date)].copy()
             if len(window) < validator.train_window + validator.test_window:
                 continue
+            frame = self.signal_engine.compute_factor_frame(window)
             window["score"] = self.signal_engine.compute_score_series(window, regime_state=0)
+            window.loc[~frame["eligible"], "score"] = np.nan
             result = validator.validate(window, signal_col="score", return_col="close",
                                          horizon=CALIBRATION_HORIZON_DAYS)
             if "error" not in result:

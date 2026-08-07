@@ -11,13 +11,21 @@ class SignalEngine:
                  bayesian_updater: Optional[BayesianOnlineUpdater] = None):
         self.regime_classifier = regime_classifier
         self.bayesian_updater = bayesian_updater
-        # Priors: usados como base_weight del posterior Bayesiano y como
-        # fallback mientras no haya evidencia suficiente para ese (régimen, factor)
+        # Priors derivados de diagnose_factor_ic (pooled 2019-2024, SPY/QQQ/
+        # AAPL/MSFT/GOOGL/AMZN/NVDA, sólo días elegibles): momentum IC=0.064,
+        # rsi IC=0.032 -> peso proporcional a |IC|. trend y adx quedaron
+        # afuera del score ponderado porque trend es constante dentro de la
+        # población elegible (no discrimina) y adx mostró IC negativo
+        # (premiar ADX alto predecía PEOR retorno, no mejor) - ambos siguen
+        # como gates duros en generate_signal, sólo salieron del promedio.
+        # No hay evidencia por-régimen todavía; el mismo prior se usa en los
+        # 4 regímenes y el BayesianOnlineUpdater lo refina online con el
+        # régimen real de cada fecha a medida que cierran trades.
+        _momentum_ic, _rsi_ic = 0.0637, 0.0322
+        _mom_w = _momentum_ic / (_momentum_ic + _rsi_ic)
         self.factor_weights = {
-            0: {"momentum": 0.35, "technical": 0.65},
-            1: {"momentum": 0.30, "technical": 0.70},
-            2: {"momentum": 0.20, "technical": 0.80},
-            3: {"momentum": 0.10, "technical": 0.90},
+            regime: {"momentum": round(_mom_w, 4), "rsi": round(1 - _mom_w, 4)}
+            for regime in (0, 1, 2, 3)
         }
 
     def _get_factor_weights(self, regime_state: int) -> Dict[str, float]:
@@ -40,27 +48,21 @@ class SignalEngine:
 
     def _factor_scores(self, stock_data: pd.DataFrame) -> Dict[str, float]:
         """
-        Cada componente contribuye siempre (favorable o no) en vez de sumar
-        sólo cuando es favorable. La asimetría anterior (sumar 1.0 sólo si la
-        tendencia estaba confirmada, sin penalizar cuando no) sesgaba el score
-        hacia arriba sin castigar el caso contrario — ver walk-forward IC.
+        Sólo momentum y rsi entran al score ponderado: son los únicos factores
+        con IC positivo confirmado dentro de la población que pasa el filtro
+        duro de entrada (ver diagnose_factor_ic). trend y adx quedaron
+        afuera del promedio -siguen actuando como gates en generate_signal-
+        porque trend es constante entre los días elegibles (no discrimina) y
+        adx mostró IC negativo (ADX alto predecía peor retorno, no mejor).
         """
         latest = stock_data.iloc[-1]
         mom = latest.get("momentum_12_1")
         momentum_score = self._normalize(mom, -50, 100) if pd.notna(mom) else 0.5
 
-        tech = [1.0 if latest.close > latest.ema50 > latest.ema200 else 0.0]
-
         rsi_v = latest.get("rsi14")
-        if pd.notna(rsi_v):
-            tech.append(0.8 if 45 < rsi_v < 70 else 0.4)
+        rsi_score = (0.8 if 45 < rsi_v < 70 else 0.4) if pd.notna(rsi_v) else 0.5
 
-        adx_v = latest.get("adx14")
-        if pd.notna(adx_v):
-            tech.append(0.9 if adx_v > 25 else 0.3)
-
-        technical_score = np.mean(tech)
-        return {"momentum": momentum_score, "technical": technical_score}
+        return {"momentum": momentum_score, "rsi": rsi_score}
 
     def compute_score_series(self, indicators_df: pd.DataFrame, regime_state: int = 0) -> pd.Series:
         """
@@ -72,21 +74,12 @@ class SignalEngine:
         momentum_score = ((mom + 50) / 150).clip(0, 1)
         momentum_score = momentum_score.where(mom.notna(), 0.5)
 
-        trend_up = (indicators_df["close"] > indicators_df["ema50"]) & (indicators_df["ema50"] > indicators_df["ema200"])
-        trend_component = pd.Series(np.where(trend_up, 1.0, 0.0), index=indicators_df.index)
-
         rsi = indicators_df.get("rsi14", pd.Series(np.nan, index=indicators_df.index))
-        rsi_component = pd.Series(np.where(rsi.notna(), np.where(rsi.between(45, 70, inclusive="neither"), 0.8, 0.4), np.nan),
-                                   index=indicators_df.index)
-
-        adx = indicators_df.get("adx14", pd.Series(np.nan, index=indicators_df.index))
-        adx_component = pd.Series(np.where(adx.notna(), np.where(adx > 25, 0.9, 0.3), np.nan), index=indicators_df.index)
-
-        tech_df = pd.concat([trend_component, rsi_component, adx_component], axis=1)
-        technical_score = tech_df.mean(axis=1, skipna=True)
+        rsi_score = pd.Series(np.where(rsi.between(45, 70, inclusive="neither"), 0.8, 0.4), index=indicators_df.index)
+        rsi_score = rsi_score.where(rsi.notna(), 0.5)
 
         weights = self._get_factor_weights(regime_state)
-        return momentum_score * weights["momentum"] + technical_score * weights["technical"]
+        return momentum_score * weights["momentum"] + rsi_score * weights["rsi"]
 
     def compute_factor_frame(self, indicators_df: pd.DataFrame) -> pd.DataFrame:
         """
