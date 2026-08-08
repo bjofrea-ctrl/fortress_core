@@ -96,11 +96,20 @@ class GlobalRegimeClassifier:
         current = int(aligned[-1])
         probs = self.model.predict_proba(scaled)[-1]
 
+        # probs está indexado por el componente RAW del HMM (orden interno
+        # arbitrario), no por el estado semántico remapeado (0=GOLDILOCKS..
+        # 3=DEFLATION). current es el id remapeado -> indexar probs con él
+        # directamente lee la probabilidad de un componente distinto salvo
+        # que el remap sea la identidad. raw_states[-1] es el id correcto
+        # para indexar probs, y por construcción de _align_states siempre
+        # corresponde al mismo régimen que 'current' (remapeado o no).
+        raw_current = int(raw_states[-1])
+
         return {
             "state": current,
             "state_name": self.state_labels[current],
             "allocation": self.REGIME_ALLOCATION[current],
-            "confidence": float(probs[current]),
+            "confidence": float(probs[raw_current]),
         }
 
     def _default(self) -> Dict:
