@@ -15,6 +15,8 @@ from app.core.probabilistic_engine import (
 CALIBRATION_HORIZON_DAYS = 20  # ~1 mes hábil, alineado a "short_term_1_30d"
 CALIBRATION_STRIDE_DAYS = 5    # semanal, misma cadencia que el rebalanceo real
 REGIME_REFIT_STRIDE_DAYS = 63  # ~trimestral: antes el HMM se fiteaba una sola vez y nunca más
+CALIBRATOR_REFIT_STRIDE_DAYS = 63    # misma cadencia trimestral, mismo motivo
+CALIBRATOR_ROLLING_WINDOW_DAYS = 730  # ~2 años calendario, similar al train_window de WalkForwardValidator
 
 
 class BacktestEngine:
@@ -25,7 +27,8 @@ class BacktestEngine:
         self.signal_engine = SignalEngine(self.regime_classifier, bayesian_updater=self.bayesian_updater)
 
     def _build_calibration_dataset(
-        self, indicators_cache: Dict[str, pd.DataFrame], train_end_date: datetime
+        self, indicators_cache: Dict[str, pd.DataFrame], train_end_date: datetime,
+        update_bayesian: bool = True, train_start_date: datetime = None,
     ) -> Tuple[np.ndarray, np.ndarray]:
         """
         Replay histórico previo a train_end_date: por cada fecha (cadencia semanal)
@@ -38,11 +41,20 @@ class BacktestEngine:
         por (régimen=0, factor) para que el BMA no arranque en frío. Los regímenes
         1-3 sólo se calibran online durante el loop principal del backtest, que sí
         usa el régimen real de cada fecha.
+
+        update_bayesian=False evita ese warm-start — necesario para refits
+        periódicos del calibrador (walk-forward real): si se repitiera el
+        warm-start en cada refit, la evidencia de los primeros años se
+        re-contaría cada vez que la ventana se expande, sesgando el
+        posterior Bayesiano hacia la historia temprana en vez de aprender
+        online de verdad.
         """
         scores, outcomes = [], []
         priors = self.signal_engine.factor_weights[0]
         for symbol, df in indicators_cache.items():
             train_df = df[df.index < train_end_date]
+            if train_start_date is not None:
+                train_df = train_df[train_df.index >= train_start_date]
             n = len(train_df)
             if n < 220:
                 continue
@@ -56,11 +68,12 @@ class BacktestEngine:
                 scores.append(sig["score"])
                 outcomes.append(1.0 if won else 0.0)
 
-                for factor, factor_score in sig["factors"].items():
-                    predicted_up = factor_score > 0.5
-                    self.bayesian_updater.update(
-                        f"0_{factor}", correct=(predicted_up == won), base_weight=priors[factor]
-                    )
+                if update_bayesian:
+                    for factor, factor_score in sig["factors"].items():
+                        predicted_up = factor_score > 0.5
+                        self.bayesian_updater.update(
+                            f"0_{factor}", correct=(predicted_up == won), base_weight=priors[factor]
+                        )
         return np.array(scores), np.array(outcomes)
 
     def _update_bayesian_weights(self, pos: Dict, pnl: float) -> None:
@@ -119,6 +132,48 @@ class BacktestEngine:
                 "mean_positive_ic_pct": round(float(np.mean([r["positive_ic_pct"] for r in per_symbol.values()])), 4),
                 "n_symbols": len(per_symbol),
             },
+        }
+
+    def analyze_portfolio_tail_risk(
+        self, price_data: Dict[str, pd.DataFrame], start_date: datetime, end_date: datetime,
+    ) -> Dict:
+        """
+        Dependencia de cola (cópulas Clayton/Gumbel) entre TODOS los pares
+        de símbolos operados en el backtest — no macro genérico, que usa
+        nombres de clave (DXY/gold/silver) que no coinciden con los tickers
+        reales que pasa run_backtest.py. Esto es lo que de verdad importa
+        para el riesgo de cartera: si dos posiciones simultáneas se caen
+        juntas en la cola, el position sizing por activo (Kelly) no lo ve,
+        porque Kelly es de un solo activo a la vez.
+        """
+        analyzer = CopulaRiskAnalyzer()
+        symbols = list(price_data.keys())
+        pairs = {}
+        for i, sym_a in enumerate(symbols):
+            for sym_b in symbols[i + 1:]:
+                df_a = price_data[sym_a]
+                df_b = price_data[sym_b]
+                window_a = df_a[(df_a.index >= start_date) & (df_a.index <= end_date)]
+                window_b = df_b[(df_b.index >= start_date) & (df_b.index <= end_date)]
+                ret_a = window_a["close"].pct_change().dropna()
+                ret_b = window_b["close"].pct_change().dropna()
+                common_idx = ret_a.index.intersection(ret_b.index)
+                if len(common_idx) < 30:
+                    continue
+                result = analyzer.analyze_pair(
+                    ret_a.loc[common_idx].values, ret_b.loc[common_idx].values, sym_a, sym_b
+                )
+                if "error" not in result:
+                    pairs[f"{sym_a}_{sym_b}"] = result
+
+        if not pairs:
+            return {"error": "Datos insuficientes para análisis de cópulas"}
+
+        high_risk_pairs = [p for p, r in pairs.items() if r["risk_level"] == "ALTO"]
+        return {
+            "pairs": pairs,
+            "high_tail_risk_pairs": high_risk_pairs,
+            "n_pairs_analyzed": len(pairs),
         }
 
     def diagnose_factor_ic(
@@ -186,6 +241,7 @@ class BacktestEngine:
         spy = market_data.get("SPY")
         dates = spy[(spy.index >= start_date) & (spy.index <= end_date)].index
         last_regime_refit = start_date
+        last_calibrator_refit = start_date
 
         for date in dates:
             current_prices, atrs = {}, {}
@@ -259,6 +315,21 @@ class BacktestEngine:
                         del positions[symbol]
 
             if date.dayofweek == 0 and risk_manager.can_open_new_position(date):
+                if (date - last_calibrator_refit).days >= CALIBRATOR_REFIT_STRIDE_DAYS:
+                    # Walk-forward real del calibrador: antes se fiteaba una
+                    # sola vez antes de start_date y nunca más -mismo bug que
+                    # tenía el HMM-. Ventana móvil (no expansiva) de ~2 años
+                    # para no reprocesar toda la historia en cada refit, y
+                    # update_bayesian=False para no re-contar evidencia
+                    # temprana en el BayesianOnlineUpdater.
+                    refit_start = date - pd.Timedelta(days=CALIBRATOR_ROLLING_WINDOW_DAYS)
+                    new_scores, new_outcomes = self._build_calibration_dataset(
+                        indicators_cache, date, update_bayesian=False, train_start_date=refit_start
+                    )
+                    if len(new_scores) >= 20:
+                        calibrator.fit(new_scores, new_outcomes)
+                    last_calibrator_refit = date
+
                 if (date - last_regime_refit).days >= REGIME_REFIT_STRIDE_DAYS:
                     # Walk-forward real: reentrena con la ventana expansiva
                     # hasta 'date' en vez de usar para siempre el fit hecho
@@ -316,6 +387,7 @@ class BacktestEngine:
             "metrics": self.calculate_metrics(equity_curve, trades),
             "monte_carlo": self.monte_carlo_simulation(trades, equity_curve=equity_curve),
             "signal_quality": self.validate_signal_quality(indicators_cache, start_date, end_date),
+            "portfolio_tail_risk": self.analyze_portfolio_tail_risk(price_data, start_date, end_date),
         }
 
     # Deflated Sharpe (Bailey & López de Prado): n_trials debe reflejar

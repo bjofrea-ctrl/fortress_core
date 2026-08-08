@@ -42,6 +42,14 @@ if __name__ == "__main__":
         for k, v in sq.get("aggregate", {}).items():
             print(f"{k}: {v:.4f}" if isinstance(v, float) else f"{k}: {v}")
 
+    print("\n=== RIESGO DE COLA DE CARTERA (cópulas) ===")
+    tr = result.get("portfolio_tail_risk", {})
+    if "error" in tr:
+        print(tr["error"])
+    else:
+        print(f"pares analizados: {tr['n_pairs_analyzed']}")
+        print(f"pares de riesgo ALTO: {tr['high_tail_risk_pairs']}")
+
     # Save results to JSON for the frontend dashboard
     os.makedirs("data", exist_ok=True)
 

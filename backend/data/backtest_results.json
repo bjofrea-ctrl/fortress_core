@@ -10772,13 +10772,26 @@
     "win_rate": 0.3717948717948718,
     "profit_factor": 1.400606804995513,
     "total_trades": 312,
-    "deflated_sharpe": 0.9999999999999989
+    "deflated_sharpe": 1.0,
+    "deflated_sharpe_n_trials": 5
   },
   "monte_carlo": {
-    "mean": 1022.3962310377545,
-    "p5": -310.3178239033878,
-    "p95": 2266.365474066478,
-    "prob_loss": 0.096
+    "bootstrap": {
+      "mean": 1011.3734597561573,
+      "p5": -354.3874475922528,
+      "p95": 2333.7941646971763,
+      "prob_loss": 0.112
+    },
+    "fat_tail": {
+      "mean": 25839.085282768723,
+      "p5": 23253.413708291177,
+      "p95": 28411.98730755062,
+      "prob_loss": 0.3,
+      "var_95": -0.11,
+      "expected_shortfall_95": -0.28,
+      "n_sims": 1000,
+      "dof": 5
+    }
   },
   "signal_quality": {
     "per_symbol": {
@@ -10867,5 +10880,285 @@
       "mean_positive_ic_pct": 0.0,
       "n_symbols": 7
     }
+  },
+  "portfolio_tail_risk": {
+    "pairs": {
+      "SPY_QQQ": {
+        "pair": "SPY-QQQ",
+        "pearson": 0.9315,
+        "spearman": 0.9117,
+        "kendall": 0.7562,
+        "clayton_theta": 6.2036,
+        "gumbel_theta": 4.1018,
+        "tail_dependence_lower": 0.8943,
+        "tail_dependence_upper": 0.8159,
+        "risk_level": "ALTO",
+        "n": 1509
+      },
+      "SPY_AAPL": {
+        "pair": "SPY-AAPL",
+        "pearson": 0.7829,
+        "spearman": 0.7226,
+        "kendall": 0.5468,
+        "clayton_theta": 2.4132,
+        "gumbel_theta": 2.2066,
+        "tail_dependence_lower": 0.7503,
+        "tail_dependence_upper": 0.6309,
+        "risk_level": "ALTO",
+        "n": 1509
+      },
+      "SPY_MSFT": {
+        "pair": "SPY-MSFT",
+        "pearson": 0.8187,
+        "spearman": 0.7658,
+        "kendall": 0.5856,
+        "clayton_theta": 2.8266,
+        "gumbel_theta": 2.4133,
+        "tail_dependence_lower": 0.7825,
+        "tail_dependence_upper": 0.6673,
+        "risk_level": "ALTO",
+        "n": 1509
+      },
+      "SPY_GOOGL": {
+        "pair": "SPY-GOOGL",
+        "pearson": 0.7375,
+        "spearman": 0.7184,
+        "kendall": 0.5374,
+        "clayton_theta": 2.3236,
+        "gumbel_theta": 2.1618,
+        "tail_dependence_lower": 0.7421,
+        "tail_dependence_upper": 0.622,
+        "risk_level": "ALTO",
+        "n": 1509
+      },
+      "SPY_AMZN": {
+        "pair": "SPY-AMZN",
+        "pearson": 0.6503,
+        "spearman": 0.6675,
+        "kendall": 0.4964,
+        "clayton_theta": 1.971,
+        "gumbel_theta": 1.9855,
+        "tail_dependence_lower": 0.7035,
+        "tail_dependence_upper": 0.5822,
+        "risk_level": "ALTO",
+        "n": 1509
+      },
+      "SPY_NVDA": {
+        "pair": "SPY-NVDA",
+        "pearson": 0.6948,
+        "spearman": 0.6737,
+        "kendall": 0.4958,
+        "clayton_theta": 1.9665,
+        "gumbel_theta": 1.9833,
+        "tail_dependence_lower": 0.7029,
+        "tail_dependence_upper": 0.5816,
+        "risk_level": "ALTO",
+        "n": 1509
+      },
+      "QQQ_AAPL": {
+        "pair": "QQQ-AAPL",
+        "pearson": 0.8352,
+        "spearman": 0.792,
+        "kendall": 0.611,
+        "clayton_theta": 3.1417,
+        "gumbel_theta": 2.5709,
+        "tail_dependence_lower": 0.802,
+        "tail_dependence_upper": 0.6905,
+        "risk_level": "ALTO",
+        "n": 1509
+      },
+      "QQQ_MSFT": {
+        "pair": "QQQ-MSFT",
+        "pearson": 0.8792,
+        "spearman": 0.8508,
+        "kendall": 0.6759,
+        "clayton_theta": 4.1712,
+        "gumbel_theta": 3.0856,
+        "tail_dependence_lower": 0.8469,
+        "tail_dependence_upper": 0.7481,
+        "risk_level": "ALTO",
+        "n": 1509
+      },
+      "QQQ_GOOGL": {
+        "pair": "QQQ-GOOGL",
+        "pearson": 0.7932,
+        "spearman": 0.7747,
+        "kendall": 0.5943,
+        "clayton_theta": 2.9295,
+        "gumbel_theta": 2.4648,
+        "tail_dependence_lower": 0.7893,
+        "tail_dependence_upper": 0.6753,
+        "risk_level": "ALTO",
+        "n": 1509
+      },
+      "QQQ_AMZN": {
+        "pair": "QQQ-AMZN",
+        "pearson": 0.7713,
+        "spearman": 0.782,
+        "kendall": 0.6041,
+        "clayton_theta": 3.0518,
+        "gumbel_theta": 2.5259,
+        "tail_dependence_lower": 0.7968,
+        "tail_dependence_upper": 0.6842,
+        "risk_level": "ALTO",
+        "n": 1509
+      },
+      "QQQ_NVDA": {
+        "pair": "QQQ-NVDA",
+        "pearson": 0.7984,
+        "spearman": 0.7864,
+        "kendall": 0.6018,
+        "clayton_theta": 3.0224,
+        "gumbel_theta": 2.5112,
+        "tail_dependence_lower": 0.7951,
+        "tail_dependence_upper": 0.6821,
+        "risk_level": "ALTO",
+        "n": 1509
+      },
+      "AAPL_MSFT": {
+        "pair": "AAPL-MSFT",
+        "pearson": 0.7345,
+        "spearman": 0.6823,
+        "kendall": 0.5086,
+        "clayton_theta": 2.0696,
+        "gumbel_theta": 2.0348,
+        "tail_dependence_lower": 0.7154,
+        "tail_dependence_upper": 0.5941,
+        "risk_level": "ALTO",
+        "n": 1509
+      },
+      "AAPL_GOOGL": {
+        "pair": "AAPL-GOOGL",
+        "pearson": 0.6387,
+        "spearman": 0.6248,
+        "kendall": 0.4572,
+        "clayton_theta": 1.6843,
+        "gumbel_theta": 1.8422,
+        "tail_dependence_lower": 0.6626,
+        "tail_dependence_upper": 0.5432,
+        "risk_level": "ALTO",
+        "n": 1509
+      },
+      "AAPL_AMZN": {
+        "pair": "AAPL-AMZN",
+        "pearson": 0.5906,
+        "spearman": 0.6085,
+        "kendall": 0.4424,
+        "clayton_theta": 1.5869,
+        "gumbel_theta": 1.7934,
+        "tail_dependence_lower": 0.6461,
+        "tail_dependence_upper": 0.5282,
+        "risk_level": "ALTO",
+        "n": 1509
+      },
+      "AAPL_NVDA": {
+        "pair": "AAPL-NVDA",
+        "pearson": 0.6035,
+        "spearman": 0.5704,
+        "kendall": 0.411,
+        "clayton_theta": 1.3955,
+        "gumbel_theta": 1.6978,
+        "tail_dependence_lower": 0.6085,
+        "tail_dependence_upper": 0.4958,
+        "risk_level": "ALTO",
+        "n": 1509
+      },
+      "MSFT_GOOGL": {
+        "pair": "MSFT-GOOGL",
+        "pearson": 0.7365,
+        "spearman": 0.7257,
+        "kendall": 0.5494,
+        "clayton_theta": 2.4384,
+        "gumbel_theta": 2.2192,
+        "tail_dependence_lower": 0.7526,
+        "tail_dependence_upper": 0.6334,
+        "risk_level": "ALTO",
+        "n": 1509
+      },
+      "MSFT_AMZN": {
+        "pair": "MSFT-AMZN",
+        "pearson": 0.682,
+        "spearman": 0.6963,
+        "kendall": 0.5193,
+        "clayton_theta": 2.1603,
+        "gumbel_theta": 2.0802,
+        "tail_dependence_lower": 0.7255,
+        "tail_dependence_upper": 0.6045,
+        "risk_level": "ALTO",
+        "n": 1509
+      },
+      "MSFT_NVDA": {
+        "pair": "MSFT-NVDA",
+        "pearson": 0.6711,
+        "spearman": 0.6419,
+        "kendall": 0.467,
+        "clayton_theta": 1.7526,
+        "gumbel_theta": 1.8763,
+        "tail_dependence_lower": 0.6733,
+        "tail_dependence_upper": 0.5531,
+        "risk_level": "ALTO",
+        "n": 1509
+      },
+      "GOOGL_AMZN": {
+        "pair": "GOOGL-AMZN",
+        "pearson": 0.6446,
+        "spearman": 0.6725,
+        "kendall": 0.4969,
+        "clayton_theta": 1.9757,
+        "gumbel_theta": 1.9879,
+        "tail_dependence_lower": 0.7041,
+        "tail_dependence_upper": 0.5828,
+        "risk_level": "ALTO",
+        "n": 1509
+      },
+      "GOOGL_NVDA": {
+        "pair": "GOOGL-NVDA",
+        "pearson": 0.5804,
+        "spearman": 0.5579,
+        "kendall": 0.3992,
+        "clayton_theta": 1.3289,
+        "gumbel_theta": 1.6645,
+        "tail_dependence_lower": 0.5936,
+        "tail_dependence_upper": 0.4834,
+        "risk_level": "ALTO",
+        "n": 1509
+      },
+      "AMZN_NVDA": {
+        "pair": "AMZN-NVDA",
+        "pearson": 0.5781,
+        "spearman": 0.5926,
+        "kendall": 0.4287,
+        "clayton_theta": 1.5005,
+        "gumbel_theta": 1.7503,
+        "tail_dependence_lower": 0.6301,
+        "tail_dependence_upper": 0.5141,
+        "risk_level": "ALTO",
+        "n": 1509
+      }
+    },
+    "high_tail_risk_pairs": [
+      "SPY_QQQ",
+      "SPY_AAPL",
+      "SPY_MSFT",
+      "SPY_GOOGL",
+      "SPY_AMZN",
+      "SPY_NVDA",
+      "QQQ_AAPL",
+      "QQQ_MSFT",
+      "QQQ_GOOGL",
+      "QQQ_AMZN",
+      "QQQ_NVDA",
+      "AAPL_MSFT",
+      "AAPL_GOOGL",
+      "AAPL_AMZN",
+      "AAPL_NVDA",
+      "MSFT_GOOGL",
+      "MSFT_AMZN",
+      "MSFT_NVDA",
+      "GOOGL_AMZN",
+      "GOOGL_NVDA",
+      "AMZN_NVDA"
+    ],
+    "n_pairs_analyzed": 21
   }
 }
