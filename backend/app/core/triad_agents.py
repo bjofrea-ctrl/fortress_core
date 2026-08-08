@@ -30,6 +30,16 @@ from app.core.prompt_engine import HardinessChecker
 
 
 @dataclass
+class RuleComponent:
+    """Un componente individual del score de un agente — permite medir IC
+    por regla (diagnose_triad_ic.py) sin duplicar la lógica en el script."""
+    name: str
+    score: float
+    confidence: float
+    explanation: str
+
+
+@dataclass
 class AgentVerdict:
     agent: str  # "BULL", "BEAR", "CONTRARIAN"
     score: float  # -1 a +1
@@ -52,96 +62,86 @@ class TriadConsensus:
 class BullAgent:
     """Agente alcista: busca evidencia de que el precio subirá."""
 
-    def evaluate(self, df: pd.DataFrame, fundamentals: Optional[Dict] = None,
-                 macro_data: Optional[Dict] = None) -> AgentVerdict:
-        signals: List[str] = []
-        score = 0.0
-        confidence = 0.0
+    def rule_components(self, df: pd.DataFrame, fundamentals: Optional[Dict] = None,
+                        macro_data: Optional[Dict] = None) -> List[RuleComponent]:
+        """Cada regla como componente separado — permite medir IC por regla
+        (scripts/diagnose_triad_ic.py) sin duplicar la lógica. evaluate()
+        suma estos mismos componentes, así que ambos quedan sincronizados
+        por construcción."""
+        components: List[RuleComponent] = []
         latest = df.iloc[-1]
 
         # 1. Tendencia alcista (EMA 20 > EMA 50 > EMA 200)
         if "ema20" in latest and "ema50" in latest and "ema200" in latest:
             if latest["ema20"] > latest["ema50"] > latest["ema200"]:
-                score += 0.3
-                confidence += 0.15
-                signals.append("Tendencia alcista: EMA20 > EMA50 > EMA200")
+                components.append(RuleComponent("trend", 0.3, 0.15, "Tendencia alcista: EMA20 > EMA50 > EMA200"))
             elif latest["ema20"] > latest["ema50"]:
-                score += 0.1
-                confidence += 0.05
-                signals.append("Tendencia parcialmente alcista")
+                components.append(RuleComponent("trend", 0.1, 0.05, "Tendencia parcialmente alcista"))
 
         # 2. Momentum positivo
         if "momentum_12_1" in latest and pd.notna(latest["momentum_12_1"]):
             mom = float(latest["momentum_12_1"])
             if mom > 20:
-                score += 0.2
-                confidence += 0.10
-                signals.append(f"Momentum 12m fuerte: +{mom:.1f}%")
+                components.append(RuleComponent("momentum", 0.2, 0.10, f"Momentum 12m fuerte: +{mom:.1f}%"))
             elif mom > 0:
-                score += 0.1
-                confidence += 0.05
-                signals.append(f"Momentum 12m positivo: +{mom:.1f}%")
+                components.append(RuleComponent("momentum", 0.1, 0.05, f"Momentum 12m positivo: +{mom:.1f}%"))
 
         # 3. RSI en zona saludable (no sobrecompra)
         if "rsi14" in latest and pd.notna(latest["rsi14"]):
             rsi = float(latest["rsi14"])
             if 50 <= rsi <= 65:
-                score += 0.15
-                confidence += 0.08
-                signals.append(f"RSI en zona alcista saludable: {rsi:.1f}")
+                components.append(RuleComponent("rsi", 0.15, 0.08, f"RSI en zona alcista saludable: {rsi:.1f}"))
             elif 40 <= rsi < 50:
-                score += 0.05
-                confidence += 0.03
-                signals.append(f"RSI recuperándose: {rsi:.1f}")
+                components.append(RuleComponent("rsi", 0.05, 0.03, f"RSI recuperándose: {rsi:.1f}"))
 
         # 4. MACD alcista
         if "macd" in latest and "macd_signal" in latest:
             if pd.notna(latest["macd"]) and pd.notna(latest["macd_signal"]):
                 if latest["macd"] > latest["macd_signal"]:
-                    score += 0.15
-                    confidence += 0.08
-                    signals.append("MACD sobre línea de señal (alcista)")
+                    components.append(RuleComponent("macd", 0.15, 0.08, "MACD sobre línea de señal (alcista)"))
 
         # 5. Volumen confirmando subida
         if "volume_ratio" in latest and pd.notna(latest["volume_ratio"]):
             vr = float(latest["volume_ratio"])
             if vr > 1.2 and latest["close"] > latest.get("ema20", latest["close"]):
-                score += 0.1
-                confidence += 0.05
-                signals.append(f"Volumen confirmando: ratio {vr:.2f}")
+                components.append(RuleComponent("volume", 0.1, 0.05, f"Volumen confirmando: ratio {vr:.2f}"))
 
         # 6. CMF positivo (acumulación)
         if "cmf20" in latest and pd.notna(latest["cmf20"]):
             cmf = float(latest["cmf20"])
             if cmf > 0.1:
-                score += 0.1
-                confidence += 0.05
-                signals.append(f"CMF positivo: {cmf:.3f} (acumulación)")
+                components.append(RuleComponent("cmf", 0.1, 0.05, f"CMF positivo: {cmf:.3f} (acumulación)"))
 
         # 7. Fundamentales alcistas
         if fundamentals:
             if fundamentals.get("eps_growth") and float(fundamentals["eps_growth"]) > 10:
-                score += 0.1
-                confidence += 0.05
-                signals.append(f"EPS growth fuerte: +{fundamentals['eps_growth']}%")
+                components.append(RuleComponent("fundamentals_eps", 0.1, 0.05,
+                                                 f"EPS growth fuerte: +{fundamentals['eps_growth']}%"))
             if fundamentals.get("gross_margin") and float(fundamentals["gross_margin"]) > 40:
-                score += 0.05
-                confidence += 0.03
-                signals.append(f"Margen bruto alto: {fundamentals['gross_margin']}%")
+                components.append(RuleComponent("fundamentals_margin", 0.05, 0.03,
+                                                 f"Margen bruto alto: {fundamentals['gross_margin']}%"))
 
         # 8. Macro alcista
+        # IC medido en diagnose_macro_ic.py para la misma señal (S&P 500
+        # Momentum 50d) en _macro_signals: -0.10, invertida. Se invierte
+        # también acá por la misma evidencia.
         if macro_data:
             spy = macro_data.get("SPY")
             if spy is not None and len(spy) > 50:
                 spy_ret = float(spy["close"].pct_change(50).iloc[-1] * 100)
                 if spy_ret > 5:
-                    score += 0.1
-                    confidence += 0.05
-                    signals.append(f"Mercado general alcista: S&P +{spy_ret:.1f}% en 50d")
+                    components.append(RuleComponent("macro_spy", -0.1, 0.05,
+                                                     f"Mercado general con momentum fuerte (S&P +{spy_ret:.1f}% en 50d) "
+                                                     "— IC medido negativo, trata como señal de reversión, no de continuación"))
 
-        # Normalizar score a [-1, +1]
-        score = float(np.clip(score, -1, 1))
-        confidence = float(np.clip(confidence, 0, 1))
+        return components
+
+    def evaluate(self, df: pd.DataFrame, fundamentals: Optional[Dict] = None,
+                 macro_data: Optional[Dict] = None) -> AgentVerdict:
+        components = self.rule_components(df, fundamentals, macro_data)
+        score = float(np.clip(sum(c.score for c in components), -1, 1))
+        confidence = float(np.clip(sum(c.confidence for c in components), 0, 1))
+        signals = [c.explanation for c in components]
 
         reasoning = "Evidencia alcista encontrada" if score > 0.2 else (
             "Evidencia alcista débil" if score > 0 else "Sin evidencia alcista significativa")
@@ -158,84 +158,65 @@ class BullAgent:
 class BearAgent:
     """Agente bajista: busca evidencia de que el precio bajará."""
 
-    def evaluate(self, df: pd.DataFrame, fundamentals: Optional[Dict] = None,
-                 macro_data: Optional[Dict] = None) -> AgentVerdict:
-        signals: List[str] = []
-        score = 0.0
-        confidence = 0.0
+    def rule_components(self, df: pd.DataFrame, fundamentals: Optional[Dict] = None,
+                        macro_data: Optional[Dict] = None) -> List[RuleComponent]:
+        components: List[RuleComponent] = []
         latest = df.iloc[-1]
 
         # 1. Tendencia bajista
         if "ema20" in latest and "ema50" in latest and "ema200" in latest:
             if latest["ema20"] < latest["ema50"] < latest["ema200"]:
-                score += 0.3
-                confidence += 0.15
-                signals.append("Tendencia bajista: EMA20 < EMA50 < EMA200")
+                components.append(RuleComponent("trend", 0.3, 0.15, "Tendencia bajista: EMA20 < EMA50 < EMA200"))
             elif latest["ema20"] < latest["ema50"]:
-                score += 0.1
-                confidence += 0.05
-                signals.append("Tendencia parcialmente bajista")
+                components.append(RuleComponent("trend", 0.1, 0.05, "Tendencia parcialmente bajista"))
 
         # 2. Momentum negativo
         if "momentum_12_1" in latest and pd.notna(latest["momentum_12_1"]):
             mom = float(latest["momentum_12_1"])
             if mom < -20:
-                score += 0.2
-                confidence += 0.10
-                signals.append(f"Momentum 12m negativo: {mom:.1f}%")
+                components.append(RuleComponent("momentum", 0.2, 0.10, f"Momentum 12m negativo: {mom:.1f}%"))
             elif mom < 0:
-                score += 0.1
-                confidence += 0.05
-                signals.append(f"Momentum 12m negativo: {mom:.1f}%")
+                components.append(RuleComponent("momentum", 0.1, 0.05, f"Momentum 12m negativo: {mom:.1f}%"))
 
         # 3. RSI sobrecompra (probable corrección)
         if "rsi14" in latest and pd.notna(latest["rsi14"]):
             rsi = float(latest["rsi14"])
             if rsi > 75:
-                score += 0.2
-                confidence += 0.10
-                signals.append(f"RSI sobrecompra extrema: {rsi:.1f}")
+                components.append(RuleComponent("rsi", 0.2, 0.10, f"RSI sobrecompra extrema: {rsi:.1f}"))
             elif rsi > 70:
-                score += 0.1
-                confidence += 0.05
-                signals.append(f"RSI sobrecompra: {rsi:.1f}")
+                components.append(RuleComponent("rsi", 0.1, 0.05, f"RSI sobrecompra: {rsi:.1f}"))
 
         # 4. MACD bajista
         if "macd" in latest and "macd_signal" in latest:
             if pd.notna(latest["macd"]) and pd.notna(latest["macd_signal"]):
                 if latest["macd"] < latest["macd_signal"]:
-                    score += 0.15
-                    confidence += 0.08
-                    signals.append("MACD bajo línea de señal (bajista)")
+                    components.append(RuleComponent("macd", 0.15, 0.08, "MACD bajo línea de señal (bajista)"))
 
         # 5. Volumen en caída (distribución)
-        if "volume_divergence" in latest:
+        if "volume_divergence" in latest and pd.notna(latest["volume_divergence"]):
             vol_div = float(latest["volume_divergence"])
             if vol_div > 0.5:
-                score += 0.15
-                confidence += 0.08
-                signals.append("Precio sube con volumen decreciente (distribución)")
+                components.append(RuleComponent("volume_divergence", 0.15, 0.08,
+                                                 "Precio sube con volumen decreciente (distribución)"))
 
         # 6. CMF negativo (distribución)
         if "cmf20" in latest and pd.notna(latest["cmf20"]):
             cmf = float(latest["cmf20"])
             if cmf < -0.1:
-                score += 0.15
-                confidence += 0.08
-                signals.append(f"CMF negativo: {cmf:.3f} (distribución)")
+                components.append(RuleComponent("cmf", 0.15, 0.08, f"CMF negativo: {cmf:.3f} (distribución)"))
 
         # 7. Fundamentales bajistas
         if fundamentals:
             if fundamentals.get("debt_equity") and float(fundamentals["debt_equity"]) > 2:
-                score += 0.1
-                confidence += 0.05
-                signals.append(f"Deuda/Equity alto: {fundamentals['debt_equity']}")
+                components.append(RuleComponent("fundamentals_debt", 0.1, 0.05,
+                                                 f"Deuda/Equity alto: {fundamentals['debt_equity']}"))
             if fundamentals.get("pe_ratio") and float(fundamentals["pe_ratio"]) > 50:
-                score += 0.1
-                confidence += 0.05
-                signals.append(f"P/E elevado: {fundamentals['pe_ratio']}")
+                components.append(RuleComponent("fundamentals_pe", 0.1, 0.05,
+                                                 f"P/E elevado: {fundamentals['pe_ratio']}"))
 
         # 8. Macro bajista
+        # IC medido para la misma señal (DXY vs Oro, Risk Switch) en
+        # _macro_signals: +0.057, dirección correcta — no se toca.
         if macro_data:
             dxy = macro_data.get("DXY")
             gold = macro_data.get("gold")
@@ -243,13 +224,16 @@ class BearAgent:
                 dxy_ret = float(dxy["close"].pct_change(20).iloc[-1] * 100)
                 gold_ret = float(gold["close"].pct_change(20).iloc[-1] * 100)
                 if dxy_ret > 1 and gold_ret < -1:
-                    score += 0.15
-                    confidence += 0.08
-                    signals.append("Risk-OFF: DXY sube, Oro baja")
+                    components.append(RuleComponent("macro_dxy_gold", 0.15, 0.08, "Risk-OFF: DXY sube, Oro baja"))
 
-        # Normalizar
-        score = float(np.clip(score, -1, 1))
-        confidence = float(np.clip(confidence, 0, 1))
+        return components
+
+    def evaluate(self, df: pd.DataFrame, fundamentals: Optional[Dict] = None,
+                 macro_data: Optional[Dict] = None) -> AgentVerdict:
+        components = self.rule_components(df, fundamentals, macro_data)
+        score = float(np.clip(sum(c.score for c in components), -1, 1))
+        confidence = float(np.clip(sum(c.confidence for c in components), 0, 1))
+        signals = [c.explanation for c in components]
 
         reasoning = "Evidencia bajista encontrada" if score > 0.2 else (
             "Evidencia bajista débil" if score > 0 else "Sin evidencia bajista significativa")
