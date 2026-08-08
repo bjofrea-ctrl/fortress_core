@@ -87,30 +87,38 @@ class BullAgent:
                 components.append(RuleComponent("momentum", 0.1, 0.05, f"Momentum 12m positivo: +{mom:.1f}%"))
 
         # 3. RSI en zona saludable (no sobrecompra)
+        # IC medido (diagnose_bull_bear_ic.py, n=1841): -0.049, invertida —
+        # estar en la "zona sana" predijo peor retorno futuro, no mejor.
+        # Se invierte el signo.
         if "rsi14" in latest and pd.notna(latest["rsi14"]):
             rsi = float(latest["rsi14"])
             if 50 <= rsi <= 65:
-                components.append(RuleComponent("rsi", 0.15, 0.08, f"RSI en zona alcista saludable: {rsi:.1f}"))
+                components.append(RuleComponent("rsi", -0.15, 0.08, f"RSI en zona 'sana' ({rsi:.1f}) — IC medido negativo, trata como señal de reversión"))
             elif 40 <= rsi < 50:
-                components.append(RuleComponent("rsi", 0.05, 0.03, f"RSI recuperándose: {rsi:.1f}"))
+                components.append(RuleComponent("rsi", -0.05, 0.03, f"RSI recuperándose: {rsi:.1f} — IC medido negativo"))
 
         # 4. MACD alcista
+        # IC medido (test de diferencia de medias, regla binaria): diff
+        # -0.0009 sobre una base de +0.024 — sin efecto real. weight=0: se
+        # sigue mostrando en el razonamiento pero no mueve el score.
         if "macd" in latest and "macd_signal" in latest:
             if pd.notna(latest["macd"]) and pd.notna(latest["macd_signal"]):
                 if latest["macd"] > latest["macd_signal"]:
-                    components.append(RuleComponent("macd", 0.15, 0.08, "MACD sobre línea de señal (alcista)"))
+                    components.append(RuleComponent("macd", 0.0, 0.08, "MACD sobre línea de señal (alcista) — sin efecto medido, sólo informativo"))
 
         # 5. Volumen confirmando subida
+        # IC medido: diff -0.0068 sobre base +0.024 — débil, weight=0.
         if "volume_ratio" in latest and pd.notna(latest["volume_ratio"]):
             vr = float(latest["volume_ratio"])
             if vr > 1.2 and latest["close"] > latest.get("ema20", latest["close"]):
-                components.append(RuleComponent("volume", 0.1, 0.05, f"Volumen confirmando: ratio {vr:.2f}"))
+                components.append(RuleComponent("volume", 0.0, 0.05, f"Volumen confirmando: ratio {vr:.2f} — sin efecto medido, sólo informativo"))
 
         # 6. CMF positivo (acumulación)
+        # IC medido: diff -0.0071 sobre base +0.024 — débil, weight=0.
         if "cmf20" in latest and pd.notna(latest["cmf20"]):
             cmf = float(latest["cmf20"])
             if cmf > 0.1:
-                components.append(RuleComponent("cmf", 0.1, 0.05, f"CMF positivo: {cmf:.3f} (acumulación)"))
+                components.append(RuleComponent("cmf", 0.0, 0.05, f"CMF positivo: {cmf:.3f} — sin efecto medido, sólo informativo"))
 
         # 7. Fundamentales alcistas
         if fundamentals:
@@ -164,46 +172,56 @@ class BearAgent:
         latest = df.iloc[-1]
 
         # 1. Tendencia bajista
+        # IC medido (diagnose_bull_bear_ic.py, n=987): +0.0815 — invertida y
+        # fuerte: tendencia bajista confirmada predijo SUBAS, no bajas
+        # (reversión a 20 días). Se invierte el signo.
         if "ema20" in latest and "ema50" in latest and "ema200" in latest:
             if latest["ema20"] < latest["ema50"] < latest["ema200"]:
-                components.append(RuleComponent("trend", 0.3, 0.15, "Tendencia bajista: EMA20 < EMA50 < EMA200"))
+                components.append(RuleComponent("trend", -0.3, 0.15, "Tendencia bajista confirmada — IC medido invertido, trata como señal de rebote"))
             elif latest["ema20"] < latest["ema50"]:
-                components.append(RuleComponent("trend", 0.1, 0.05, "Tendencia parcialmente bajista"))
+                components.append(RuleComponent("trend", -0.1, 0.05, "Tendencia parcialmente bajista — IC medido invertido"))
 
         # 2. Momentum negativo
+        # IC medido (n=562): +0.0997 — invertida y fuerte, misma razón que trend.
         if "momentum_12_1" in latest and pd.notna(latest["momentum_12_1"]):
             mom = float(latest["momentum_12_1"])
             if mom < -20:
-                components.append(RuleComponent("momentum", 0.2, 0.10, f"Momentum 12m negativo: {mom:.1f}%"))
+                components.append(RuleComponent("momentum", -0.2, 0.10, f"Momentum 12m negativo: {mom:.1f}% — IC medido invertido"))
             elif mom < 0:
-                components.append(RuleComponent("momentum", 0.1, 0.05, f"Momentum 12m negativo: {mom:.1f}%"))
+                components.append(RuleComponent("momentum", -0.1, 0.05, f"Momentum 12m negativo: {mom:.1f}% — IC medido invertido"))
 
         # 3. RSI sobrecompra (probable corrección)
+        # IC medido: -0.0026, negligible. weight=0.
         if "rsi14" in latest and pd.notna(latest["rsi14"]):
             rsi = float(latest["rsi14"])
             if rsi > 75:
-                components.append(RuleComponent("rsi", 0.2, 0.10, f"RSI sobrecompra extrema: {rsi:.1f}"))
+                components.append(RuleComponent("rsi", 0.0, 0.10, f"RSI sobrecompra extrema: {rsi:.1f} — sin efecto medido, sólo informativo"))
             elif rsi > 70:
-                components.append(RuleComponent("rsi", 0.1, 0.05, f"RSI sobrecompra: {rsi:.1f}"))
+                components.append(RuleComponent("rsi", 0.0, 0.05, f"RSI sobrecompra: {rsi:.1f} — sin efecto medido, sólo informativo"))
 
         # 4. MACD bajista
+        # IC medido (diff de medias): +0.0009 sobre base +0.024 — sin efecto. weight=0.
         if "macd" in latest and "macd_signal" in latest:
             if pd.notna(latest["macd"]) and pd.notna(latest["macd_signal"]):
                 if latest["macd"] < latest["macd_signal"]:
-                    components.append(RuleComponent("macd", 0.15, 0.08, "MACD bajo línea de señal (bajista)"))
+                    components.append(RuleComponent("macd", 0.0, 0.08, "MACD bajo línea de señal (bajista) — sin efecto medido, sólo informativo"))
 
         # 5. Volumen en caída (distribución)
+        # IC medido: diff -0.0022 sobre base +0.024 — sin efecto. weight=0.
         if "volume_divergence" in latest and pd.notna(latest["volume_divergence"]):
             vol_div = float(latest["volume_divergence"])
             if vol_div > 0.5:
-                components.append(RuleComponent("volume_divergence", 0.15, 0.08,
-                                                 "Precio sube con volumen decreciente (distribución)"))
+                components.append(RuleComponent("volume_divergence", 0.0, 0.08,
+                                                 "Precio sube con volumen decreciente (distribución) — sin efecto medido, sólo informativo"))
 
         # 6. CMF negativo (distribución)
+        # IC medido: diff +0.0072 sobre base +0.024 — pequeño y ya contrario
+        # a la intención (CMF "bajista" prediciendo retorno más alto), pero
+        # con magnitud demasiado chica para flippear con confianza. weight=0.
         if "cmf20" in latest and pd.notna(latest["cmf20"]):
             cmf = float(latest["cmf20"])
             if cmf < -0.1:
-                components.append(RuleComponent("cmf", 0.15, 0.08, f"CMF negativo: {cmf:.3f} (distribución)"))
+                components.append(RuleComponent("cmf", 0.0, 0.08, f"CMF negativo: {cmf:.3f} — sin efecto medido, sólo informativo"))
 
         # 7. Fundamentales bajistas
         if fundamentals:

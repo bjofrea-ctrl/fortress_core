@@ -59,7 +59,8 @@ def main():
     for agent_name, records in (("BULL", bull_records), ("BEAR", bear_records)):
         df_records = pd.DataFrame(records)
         returns = df_records["_return"]
-        print(f"\n=== IC por regla — {agent_name} (n={len(df_records)}) ===")
+        baseline_mean = returns.mean()
+        print(f"\n=== IC por regla — {agent_name} (n={len(df_records)}, retorno base promedio={baseline_mean:+.4f}) ===")
         results = []
         for col in df_records.columns:
             if col == "_return":
@@ -68,6 +69,15 @@ def main():
             n_fired = values.notna().sum()
             if n_fired < 20:
                 print(f"{col:24s}  n_disparos={n_fired} (insuficiente, se salta)")
+                continue
+            fired_mean = returns[values.notna()].mean()
+            # IC (correlación) no sirve si la regla es binaria/valor fijo
+            # (varianza cero cuando dispara) -> comparar la media de retorno
+            # cuando dispara contra la media base es el test correcto ahí.
+            if values.dropna().nunique() <= 1:
+                diff = fired_mean - baseline_mean
+                print(f"{col:24s}  [binario] retorno_si_dispara={fired_mean:+.4f}  "
+                      f"vs base={baseline_mean:+.4f}  diff={diff:+.4f}  n_disparos={n_fired}")
                 continue
             ic = SignalQualityMetrics.compute_ic(values, returns)
             rank_ic = SignalQualityMetrics.compute_rank_ic(values, returns)
