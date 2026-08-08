@@ -9,6 +9,7 @@ from app.core.regime_classifier import GlobalRegimeClassifier
 from app.core.indicators import calculate_all_indicators
 from app.core.probabilistic_engine import (
     ProbabilityCalibrator, BayesianOnlineUpdater, WalkForwardValidator, SignalQualityMetrics,
+    FatTailMonteCarlo, CopulaRiskAnalyzer,
 )
 
 CALIBRATION_HORIZON_DAYS = 20  # ~1 mes hábil, alineado a "short_term_1_30d"
@@ -313,11 +314,22 @@ class BacktestEngine:
             "trades": trades,
             "risk_events": risk_manager.state.risk_events,
             "metrics": self.calculate_metrics(equity_curve, trades),
-            "monte_carlo": self.monte_carlo_simulation(trades),
+            "monte_carlo": self.monte_carlo_simulation(trades, equity_curve=equity_curve),
             "signal_quality": self.validate_signal_quality(indicators_cache, start_date, end_date),
         }
 
-    def calculate_metrics(self, equity_curve: List[Dict], trades: List[Dict]) -> Dict:
+    # Deflated Sharpe (Bailey & López de Prado): n_trials debe reflejar
+    # cuántas variantes de la estrategia se compararon antes de quedarse con
+    # ésta -no un número mágico-. Contando las corridas completas de
+    # backtest efectivamente comparadas en esta sesión sobre este mismo
+    # pipeline (signal_engine + backtest_engine): (1) baseline momentum+
+    # technical fijo, (2) +Kelly+calibración Platt, (3) +BMA Bayesiano,
+    # (4) +score técnico reponderado por IC medido, (5) +walk-forward real
+    # del HMM de régimen. Actualizar este número si se prueban más variantes.
+    DEFAULT_N_TRIALS = 5
+
+    def calculate_metrics(self, equity_curve: List[Dict], trades: List[Dict],
+                          n_trials: int = DEFAULT_N_TRIALS) -> Dict:
         if not equity_curve:
             return {}
 
@@ -338,7 +350,6 @@ class BacktestEngine:
         profit_factor = sum(wins) / abs(sum(losses)) if losses else float("inf")
 
         gamma = 0.5772156649
-        n_trials = 10
         e_max_sr = ((1 - gamma) * norm.ppf(1 - 1 / n_trials) + gamma * norm.ppf(1 - 1 / (n_trials * np.e)))
         sr_std = np.sqrt((1 + 0.5 * sharpe ** 2) / (len(returns) - 1)) if len(returns) > 1 else 1
         deflated_sharpe = float(
@@ -355,16 +366,37 @@ class BacktestEngine:
             "profit_factor": float(profit_factor),
             "total_trades": len(trades),
             "deflated_sharpe": deflated_sharpe,
+            "deflated_sharpe_n_trials": n_trials,
         }
 
-    def monte_carlo_simulation(self, trades: List[Dict], n_sims: int = 1000) -> Dict:
+    def monte_carlo_simulation(self, trades: List[Dict], equity_curve: List[Dict] = None,
+                               n_sims: int = 1000) -> Dict:
+        """
+        Combina dos Monte Carlo distintos, no uno reemplaza al otro:
+        - bootstrap: resamplea el PNL de los trades ya ocurridos (testea
+          sensibilidad al ORDEN de los trades, con la magnitud ya observada).
+        - fat_tail: simula retornos DIARIOS con t-Student (colas más gruesas
+          que la normal) y da VaR/ES vía Cornish-Fisher — testea la
+          MAGNITUD de escenarios que todavía no se observaron en el backtest.
+        """
         pnls = [t["pnl"] for t in trades]
-        if not pnls:
-            return {}
-        results = [np.sum(np.random.choice(pnls, size=len(pnls), replace=True)) for _ in range(n_sims)]
-        return {
-            "mean": float(np.mean(results)),
-            "p5": float(np.percentile(results, 5)),
-            "p95": float(np.percentile(results, 95)),
-            "prob_loss": float(np.mean(np.array(results) < 0)),
-        }
+        bootstrap = {}
+        if pnls:
+            results = [np.sum(np.random.choice(pnls, size=len(pnls), replace=True)) for _ in range(n_sims)]
+            bootstrap = {
+                "mean": float(np.mean(results)),
+                "p5": float(np.percentile(results, 5)),
+                "p95": float(np.percentile(results, 95)),
+                "prob_loss": float(np.mean(np.array(results) < 0)),
+            }
+
+        fat_tail = {}
+        if equity_curve:
+            df = pd.DataFrame(equity_curve).set_index("date")
+            returns = df["equity"].pct_change().dropna().values
+            if len(returns) >= 20:
+                fat_tail = FatTailMonteCarlo(n_sims=n_sims).monte_carlo_metrics(
+                    returns, initial_equity=self.initial_capital
+                )
+
+        return {"bootstrap": bootstrap, "fat_tail": fat_tail}

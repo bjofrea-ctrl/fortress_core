@@ -677,14 +677,19 @@ class CopulaRiskAnalyzer:
             ("gold", "silver"), ("SPY", "TLT"), ("gold", "TLT"),
         ]
 
+        # `da = macro_data.get(a) or macro_data.get(...)` rompía con
+        # ValueError ("the truth value of a DataFrame is ambiguous") apenas
+        # macro_data.get(a) devolvía un DataFrame real de más de una fila —
+        # nunca se probó con datos reales. `is None` en vez de truthiness.
+        alt_keys = {"DXY": "DX-Y.NYB", "gold": "GC=F", "silver": "SI=F",
+                    "SPY": "^GSPC", "VIX": "^VIX"}
         for a, b in key_pairs:
-            # Buscar claves alternativas
-            da = macro_data.get(a) or macro_data.get({"DXY": "DX-Y.NYB", "gold": "GC=F",
-                                                       "silver": "SI=F", "SPY": "^GSPC",
-                                                       "VIX": "^VIX"}.get(a, a))
-            db = macro_data.get(b) or macro_data.get({"DXY": "DX-Y.NYB", "gold": "GC=F",
-                                                       "silver": "SI=F", "SPY": "^GSPC",
-                                                       "VIX": "^VIX"}.get(b, b))
+            da = macro_data.get(a)
+            if da is None:
+                da = macro_data.get(alt_keys.get(a, a))
+            db = macro_data.get(b)
+            if db is None:
+                db = macro_data.get(alt_keys.get(b, b))
             if da is not None and db is not None and len(da) > 30 and len(db) > 30:
                 # Usar retornos para dependencia de colas
                 ret_a = da["close"].pct_change().dropna().values

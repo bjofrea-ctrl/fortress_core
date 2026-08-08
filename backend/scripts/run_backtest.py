@@ -26,8 +26,12 @@ if __name__ == "__main__":
     for k, v in result["metrics"].items():
         print(f"{k}: {v:.4f}" if isinstance(v, float) else f"{k}: {v}")
 
-    print("\n=== MONTE CARLO ===")
-    for k, v in result["monte_carlo"].items():
+    mc = result["monte_carlo"]
+    print("\n=== MONTE CARLO — bootstrap (resampling de trades) ===")
+    for k, v in mc.get("bootstrap", {}).items():
+        print(f"{k}: {v:.4f}" if isinstance(v, float) else f"{k}: {v}")
+    print("\n=== MONTE CARLO — colas gruesas (t-Student + Cornish-Fisher VaR/ES) ===")
+    for k, v in mc.get("fat_tail", {}).items():
         print(f"{k}: {v:.4f}" if isinstance(v, float) else f"{k}: {v}")
 
     print("\n=== CALIDAD DE SEÑAL (walk-forward IC) ===")
