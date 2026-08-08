@@ -541,54 +541,30 @@ class CopulaRiskAnalyzer:
     @staticmethod
     def fit_clayton(u: np.ndarray, v: np.ndarray) -> float:
         """
-        Estima theta de cópula de Clayton por máxima verosimilitud.
-
-        C_θ(u,v) = (u^(-θ) + v^(-θ) - 1)^(-1/θ)
+        Estima theta de Clayton vía tau de Kendall (Genest & Rivest 1993):
+        θ = 2τ / (1-τ). La log-verosimilitud original (MLE numérico) tenía
+        un error de signo y le faltaban términos — el optimizador siempre
+        convergía al límite theta≈0 sin importar los datos (verificado con
+        datos sintéticos de dependencia conocida). Este estimador cerrado
+        es el estándar de la literatura precisamente por ser más robusto
+        que MLE directo para cópulas Arquimedeanas de 1 parámetro.
         """
-        u = np.clip(u, 1e-10, 1 - 1e-10)
-        v = np.clip(v, 1e-10, 1 - 1e-10)
-
-        def neg_log_lik(theta):
-            if theta <= 0:
-                return 1e10
-            # Densidad de Clayton
-            log_c = (theta + 1) * np.log(u * v) - (2 * theta + 1) * np.log(u**(-theta) + v**(-theta) - 1)
-            return -np.sum(log_c)
-
-        result = minimize(neg_log_lik, x0=[1.0], method="Nelder-Mead",
-                          options={"maxiter": 500})
-        return float(result.x[0]) if result.success else 1.0
+        tau, _ = stats.kendalltau(u, v)
+        if pd.isna(tau) or tau <= 0:
+            return 1e-6  # Clayton sólo captura dependencia positiva
+        return float(2 * tau / (1 - tau))
 
     @staticmethod
     def fit_gumbel(u: np.ndarray, v: np.ndarray) -> float:
         """
-        Estima theta de cópula de Gumbel.
-
-        C_θ(u,v) = exp(-[(-ln u)^θ + (-ln v)^θ]^(1/θ))
+        Estima theta de Gumbel vía tau de Kendall: θ = 1/(1-τ). Mismo
+        motivo que fit_clayton — reemplaza el MLE numérico roto.
         """
-        u = np.clip(u, 1e-6, 1 - 1e-6)
-        v = np.clip(v, 1e-6, 1 - 1e-6)
-
-        def neg_log_lik(theta):
-            if theta < 1 or theta > 20:
-                return 1e10
-            lu = -np.log(u)
-            lv = -np.log(v)
-            # Usar log-space para evitar overflow
-            log_lu = np.log(lu)
-            log_lv = np.log(lv)
-            # log(lu^theta + lv^theta) = logsumexp(theta*log_lu, theta*log_lv)
-            max_term = np.maximum(theta * log_lu, theta * log_lv)
-            log_sum = max_term + np.log(np.exp(theta * log_lu - max_term) + np.exp(theta * log_lv - max_term))
-            # log((lu^theta + lv^theta)^(1/theta)) = log_sum / theta
-            log_c = (np.log(theta) - theta * (log_lu + log_lv)
-                     + (1/theta - 2) * log_sum
-                     + log_sum / theta)
-            return -np.sum(log_c)
-
-        result = minimize(neg_log_lik, x0=[2.0], method="Nelder-Mead",
-                          options={"maxiter": 500})
-        return float(result.x[0]) if result.success else 1.0
+        tau, _ = stats.kendalltau(u, v)
+        if pd.isna(tau) or tau <= 0:
+            return 1.0  # independencia
+        theta = 1 / (1 - tau)
+        return float(min(theta, 50.0))  # cap: evita overflow en tail_dependence_gumbel cuando tau->1
 
     @staticmethod
     def tail_dependence_clayton(theta: float) -> float:
