@@ -195,7 +195,7 @@ def build_sentiment_frame(trading_dates: pd.DatetimeIndex) -> pd.DataFrame:
     cot = fetch_cot_years(list(range(COT_START_YEAR, 2027)))
 
     def _align(series: pd.Series, name: str) -> pd.Series:
-        joined = pd.concat([series, trading], axis=1).iloc[:, 0]
+        joined = pd.concat([series, trading], axis=1).sort_index().iloc[:, 0]
         return joined.shift(1).ffill().reindex(trading_dates)
 
     def _growth(level: pd.Series, weeks: int = 4) -> pd.Series:
