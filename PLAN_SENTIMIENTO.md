@@ -1,7 +1,7 @@
-# PLAN — Variable Principal de Régimen: Sentimiento Inversor (v4)
+# PLAN — Variable de Régimen: Sentimiento Inversor (v4.2)
 
 **Fecha**: 2026-08-09
-**Estado**: Diseño aprobado por el usuario (tesis reformulada) — pendiente ola 2 y tests H1-H6
+**Estado**: Diseño aprobado por el usuario (tesis reformulada + método de prueba por bloques) — pendiente ola 2 y tests H1-H6
 **Dueño de la variable**: Agente CONTRARIAN (`triad_agents.py`)
 
 ---
@@ -27,13 +27,26 @@ variable central que lo gobierna es el **sentimiento del inversor minorista**:
    **cuestiona las demás variables del sistema contra ella** (si el sentimiento está en
    extremo, momentum/RSI/ER mienten).
 
+> **Método de integración (decisión del usuario — prueba por bloques)**: V1 NO es la
+> variable principal, ni se integra por contribución marginal. El método es una prueba de
+> hipótesis con dos grupos:
+>
+> - **Grupo 1 (baseline)**: las variables existentes del sistema, con sus pesos variables
+>   actuales (las que ya teníamos).
+> - **Grupo 2 (hipótesis)**: las variables del Grupo 1 + la variable V1 (sentimiento
+>   comprador/vendedor de la gente) con **efecto dominante**: un 50-70% del peso total.
+> - **Decisión**: si el Grupo 2 aporta un **efecto probabilístico mejor** que el Grupo 1
+>   (mejor calidad de probabilidad/accuracy/Brier en horizontes), V1 queda integrada con
+>   peso dominante. Si no mejora, se ajusta el peso o se descarta. V1 se **contrasta**
+>   contra el resto, no se impone ni se margina.
+
 ---
 
 ## 2. Variables del plan
 
 | Var | Nombre | Fuente | Estado |
 |-----|--------|--------|--------|
-| **V1** | **Sentimiento inversor directo** (PRINCIPAL) | AAII bull−bear spread, NAAIM exposure, put/call ratio CBOE | **Pendiente (ola 2)** |
+| **V1** | **Sentimiento inversor directo** (hipótesis de efecto dominante 50-70% del peso, validado por prueba de bloques) | AAII bull−bear spread, NAAIM exposure, put/call ratio CBOE | **Pendiente (ola 2)** |
 | V2 | Posiciones adoptadas EN FUNCIÓN del sentimiento | CFTC COT: NonRept (retail), Lev_Money (specs), Asset_Mgr, Dealer | Datos listos (ola 1) |
 | V3 | Liquidez como condición habilitadora | FRED: WALCL, RRPONTSYD, WRESBAL | Datos listos (ola 1) |
 | V4 | Velocidad (rápido/lento) | Kaufman ER10/20/60 + \|leg_ret\| | Medido (Fase V4) |
@@ -54,6 +67,7 @@ Si no, la narrativa sentimiento→posición no se sostiene y hay que revisarla.
 | **H4** | Liquidez como condición: el efecto H1 se POTENCIA cuando hay liquidez | 2×2 sentimiento × liquidez (celda sent_bajo × liq_alta debe ser la mejor) | ola 2 + ola 1 |
 | **H5** | Velocidad: subida lenta y persistente + sentimiento bajo → continúa (acumulación); subida rápida + sentimiento alto → cae (distribución) | 2×2 sentimiento × ER (o \|leg_ret\|) | ola 2 + Fase V4 |
 | **H6** | Cuestionamiento: en buckets de sentimiento extremo, momentum/RSI/ER cambian de signo o pierden potencia | IC condicional de momentum/rsi/er por bucket de V1 | ola 2 |
+| **H7** | **Prueba de bloques (decisión de integración)**: el Grupo 2 (variables existentes + V1 con 50-70% del peso) mejora la calidad probabilística vs el Grupo 1 (baseline) | Accuracy/Brier por horizonte (1/5/20/60d) de ambos grupos; V1 gana peso dominante SOLO si el Grupo 2 supera al Grupo 1 | ola 2 + motor actual |
 
 **Regla de significancia**: |IC| > 2/√n, consistencia entre horizontes, y rank_ic en la
 misma dirección. Los datos mandan: si una hipótesis de la narrativa falla, se documenta
@@ -73,6 +87,10 @@ y se descarta — no se fuerza.
 
 ### Integración — Variable de régimen
 - Nueva capa `sentiment_regime` sobre `REGIME_WEIGHTS` (`predictive_engine.py:1021`):
+  - **Prueba de bloques (H7) primero**: Grupo 1 (baseline, pesos actuales) vs Grupo 2
+    (baseline + V1 con 50-70% del peso). Solo si el Grupo 2 mejora la calidad
+    probabilística, V1 entra con peso dominante. Si no, se recalibra el peso (30%, 50%)
+    o se descarta.
   - Sentimiento en extremo → V1 gana peso de régimen; las demás variables se **cuestionan**
     (multiplicador o inversión según H6).
   - Subidas lentas y persistentes (ER bajo) con sentimiento bajo → confirmar continuidad.
@@ -93,8 +111,9 @@ y se descarta — no se fuerza.
 2. **Tests H1-H4**: IC directo de sentimiento, consistencia con COT, distribución retardada, liquidez como condición.
 3. **Test H5**: interacción sentimiento × velocidad (usa ER ya medido).
 4. **Test H6**: IC condicional de momentum/rsi/er por bucket de sentimiento → define el "cuestionamiento".
-5. **Integración**: `sentiment_regime` en `predictive_engine.py` + reglas en `ContrarianAgent`.
-6. **Cierre**: `pytest`, OOS si aplica, `SESSION_LOG.md`.
+5. **Test H7 (prueba de bloques)**: Grupo 1 vs Grupo 2 (V1 con 50-70% del peso) → accuracy/Brier por horizonte → decide si V1 se integra con peso dominante, con peso recalculado o se descarta.
+6. **Integración**: `sentiment_regime` en `predictive_engine.py` + reglas en `ContrarianAgent`.
+7. **Cierre**: `pytest`, OOS si aplica, `SESSION_LOG.md`.
 
 ---
 
