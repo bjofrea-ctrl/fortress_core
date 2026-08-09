@@ -421,12 +421,22 @@ class BacktestEngine:
         win_rate = len(wins) / len(trades) if trades else 0
         profit_factor = sum(wins) / abs(sum(losses)) if losses else float("inf")
 
+        # Deflated Sharpe (Bailey & López de Prado 2014): debe calcularse en
+        # la frecuencia nativa de 'returns' (diaria), no con el Sharpe ya
+        # anualizado — mezclar ambos invalidaba el z-score y hacía que
+        # n_trials casi no afectara el resultado (auditado y confirmado:
+        # saturaba en ~1.0 para cualquier n_trials con backtests de varios
+        # cientos de días). SR_0 debe escalarse por sr_std (el error
+        # estándar del estimador), no dividirse por sqrt(T) de nuevo.
         gamma = 0.5772156649
         e_max_sr = ((1 - gamma) * norm.ppf(1 - 1 / n_trials) + gamma * norm.ppf(1 - 1 / (n_trials * np.e)))
-        sr_std = np.sqrt((1 + 0.5 * sharpe ** 2) / (len(returns) - 1)) if len(returns) > 1 else 1
-        deflated_sharpe = float(
-            norm.cdf((sharpe - e_max_sr / np.sqrt(len(returns))) / sr_std)
-        ) if len(returns) > 1 else 0.0
+        sr_daily = returns.mean() / returns.std() if returns.std() > 0 else 0
+        if len(returns) > 1:
+            sr_std = np.sqrt((1 + 0.5 * sr_daily ** 2) / (len(returns) - 1))
+            sr_0 = sr_std * e_max_sr
+            deflated_sharpe = float(norm.cdf((sr_daily - sr_0) / sr_std))
+        else:
+            deflated_sharpe = 0.0
 
         return {
             "cagr": float(cagr),
