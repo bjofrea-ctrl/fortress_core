@@ -7,6 +7,22 @@ import numpy as np
 from typing import Tuple, Dict
 
 
+def compute_efficiency_ratio(close: pd.Series, period: int = 20) -> pd.Series:
+    """
+    Kaufman Efficiency Ratio (el del KAMA): |close_t - close_{t-period}| /
+    sum(|close_i - close_{i-1}|) en la ventana.
+
+    ER -> 1: movimiento lento, directo y sostenido (pasa desapercibido).
+    ER -> 0: movimiento ruidoso de ida y vuelta (genera entusiasmo/miedo).
+
+    Hipótesis V4 a validar: subidas lentas/eficientes predicen continuación;
+    picos rápidos/ineficientes predicen reversión.
+    """
+    direction = close.diff(period).abs()
+    volatility = close.diff().abs().rolling(window=period).sum()
+    return (direction / volatility.replace(0, np.nan)).replace([np.inf, -np.inf], np.nan)
+
+
 def williams_r(df: pd.DataFrame, period: int = 14) -> pd.Series:
     """Williams %R: Sobrevendido < -80, sobrecompra > -20."""
     highest = df["high"].rolling(window=period).max()
@@ -258,6 +274,11 @@ def calculate_predictive_indicators(df: pd.DataFrame) -> pd.DataFrame:
     else:
         df["bearish_divergence"] = 0
         df["bullish_divergence"] = 0
+
+    # 16. Kaufman Efficiency Ratio (V4: velocidad del movimiento)
+    df["er10"] = compute_efficiency_ratio(df["close"], period=10)
+    df["er20"] = compute_efficiency_ratio(df["close"], period=20)
+    df["er60"] = compute_efficiency_ratio(df["close"], period=60)
 
     return df
 
