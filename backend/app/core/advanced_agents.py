@@ -106,7 +106,12 @@ Analiza los datos históricos y actuales, identifica patrones, y genera:
 ## Formato de respuesta JSON:
 {"lessons": [{"agent": "...", "lesson": "...", "action": "..."}],
  "weight_adjustments": {...}, "alerts": [...], "recommendations": [...],
+ "decision": "APPROVE" | "REJECT",
  "confidence": 0.0-1.0}
+
+El campo "decision" es OBLIGATORIO y debe ser exactamente la palabra en
+inglés "APPROVE" o "REJECT" (no una frase, no en español) — es lo que el
+sistema usa para decidir si aprueba o rechaza la posición.
 """
 
 
@@ -614,10 +619,23 @@ class GovernanceSystem:
                 professor_llm_model = "minimax/minimax-m3"
                 # generate_for_governance_agent ya devuelve un dict parseado, no un string
                 result["professor_llm_response"] = json.dumps(llm_resp)[:500]
-                if "recommendations" in llm_resp:
-                    professor_recommendation = "APPROVE" if any(
-                        re.search(r"\bapprove\b", r.lower()) for r in llm_resp.get("recommendations", [])
-                    ) else "REJECT"
+                decision = str(llm_resp.get("decision", "")).strip().upper()
+                if decision in ("APPROVE", "REJECT"):
+                    professor_recommendation = decision
+                elif "recommendations" in llm_resp:
+                    # Fallback si el modelo ignoró el campo "decision" pedido
+                    # en el prompt: busca la intención en inglés O español,
+                    # ya que PROFESSOR_PROMPT está en español y el LLM puede
+                    # responder en cualquiera de los dos.
+                    text = " ".join(llm_resp.get("recommendations", [])).lower()
+                    approve_words = r"\bapprove\b|\baprobar\b|\baprueba\b|\baprobado\b"
+                    reject_words = r"\breject\b|\brechazar\b|\brechaza\b|\brechazado\b|\bno aprobar\b"
+                    if re.search(reject_words, text):
+                        professor_recommendation = "REJECT"
+                    elif re.search(approve_words, text):
+                        professor_recommendation = "APPROVE"
+                    else:
+                        professor_recommendation = "REJECT"  # default conservador si no hay señal clara
 
         result["professor"] = {
             "recommendation": professor_recommendation,

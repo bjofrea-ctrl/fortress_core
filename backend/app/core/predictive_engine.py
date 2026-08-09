@@ -1052,8 +1052,11 @@ class PredictiveEngine:
         regime_name = regime_names.get(regime_state, "Desconocido")
 
         # Probabilidades por horizonte
-        prob_up_short = self._probability_from_score(composite * weights.get("technical_reversion", 0) +
-                                                     tech_rev_score * 0.4 + vol_score * 0.25 +
+        # El término extra `composite * weights.get("technical_reversion", 0)`
+        # que había acá antes rompía el patrón de los otros dos horizontes
+        # (los 4 pesos ya suman 1.0) y contaba tech_rev_score dos veces
+        # (directo + diluido dentro de composite). Auditado y sacado.
+        prob_up_short = self._probability_from_score(tech_rev_score * 0.4 + vol_score * 0.25 +
                                                      sentiment_score * 0.20 + tech_mom_score * 0.15,
                                                      "short_term_1_30d")
         prob_up_medium = self._probability_from_score(tech_mom_score * 0.30 + tech_rev_score * 0.15 +
