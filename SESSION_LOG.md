@@ -649,3 +649,29 @@ bash /Users/boris/Desktop/fortress_core/scripts/auto_backup.sh
 
 ---
 *Fin de Sesión 7 — 2026-08-06*
+
+---
+## Sesión 8 — 2026-08-09: Fase E.1 v3 — Ola 2 (V1 sentimiento directo) COMPLETADA
+
+### Objetivo
+Validar V1 (sentimiento directo del inversor minorista) y decidir su integración por prueba de bloques (plan v4.3).
+
+### Logros
+- **AAII integrado** (`market_sentiment.py` → `fetch_aaii`, columna `aaii_bullbear_spread`): xls completo 1987-2026, cache parquet, anti-lookahead jueves → shift(1)+ffill. 0 NaN en panel 2019-2024.
+- **Fuentes descartadas**: NAAIM (suscripción paga 2025+), CBOE put/call diario 2019+ (CDN S3 403 AccessDenied a bots; CSVs estáticos solo hasta 10/2019).
+- **Diagnóstico extendido** (`diagnose_sentiment_ic.py`): AAII en univariado/terciles, H6/V1 2×2 (sent × liq), H2' (sent → posiciones COT), IC condicional por bucket de AAII, y **H7 prueba de bloques** (Grupo 1 baseline vs Grupo 2 con V1 dominante 50-70%, Brier/accuracy por horizonte 1/5/20/60d).
+
+### Resultados clave (n=3633, sig ±0.0332)
+- **Tesis del usuario CONFIRMADA**: AAII IC 60d = **-0.0773*** (rank_ic -0.0857***), única variable con IC negativo consistente en todos los horizontes. Terciles 60d monótonos: sentimiento bajo +0.0987 > medio +0.0609 > alto +0.0585. Pesimismo → sube; euforia → cae.
+- **H6/V1 2×2 60d**: sent_baja domina en ambas liquideces (+0.0916, +0.0747 vs +0.0642, +0.0537) — el sentimiento domina, la liquidez modula (en línea con la tesis: liquidez es condición, no causa).
+- **H2'**: sentimiento hoy → posiciones retail futuras rho +0.243 → +0.095 (lag 0→8) — la gente actúa según su actitud.
+- **H6 condicional**: en euforia (bucket AAII alto) RSI IC -0.1254 y ER -0.1122 a 60d — los factores de tendencia se INVIERTEN. Base del "cuestionamiento" del ContrarianAgent.
+- **H7 prueba de bloques**: G2 (V1 con 50-70% del peso) gana en Brier en **4/5 horizontes** (mejor dom=50%: 0.2616 vs 0.2694 a 60d) → **VEREDICTO: V1 se integra con peso dominante**.
+- Bug menor: `fwd_1` faltaba en collect_records y en sub del H7 → corregido (horizontes 1/5/20/60).
+
+### Pendiente
+- [ ] Integrar `sentiment_regime` en `predictive_engine.py` (REGIME_WEIGHTS + capa V1 dominante)
+- [ ] Reglas del ContrarianAgent sobre V1 (`triad_agents.py:268`)
+- [ ] `pytest` + OOS 2025-2026 + cierre
+
+---

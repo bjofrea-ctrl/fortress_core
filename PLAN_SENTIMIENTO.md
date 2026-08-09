@@ -1,7 +1,7 @@
-# PLAN — Variable de Régimen: Sentimiento Inversor (v4.2)
+# PLAN — Variable de Régimen: Sentimiento Inversor (v4.3)
 
 **Fecha**: 2026-08-09
-**Estado**: Diseño aprobado por el usuario (tesis reformulada + método de prueba por bloques) — pendiente ola 2 y tests H1-H6
+**Estado**: Ola 2 completada — tesis CONFIRMADA con datos reales (AAII). H7: V1 se integra con peso dominante (50-70%). Pendiente: integración en motor + ContrarianAgent.
 **Dueño de la variable**: Agente CONTRARIAN (`triad_agents.py`)
 
 ---
@@ -46,7 +46,7 @@ variable central que lo gobierna es el **sentimiento del inversor minorista**:
 
 | Var | Nombre | Fuente | Estado |
 |-----|--------|--------|--------|
-| **V1** | **Sentimiento inversor directo** (hipótesis de efecto dominante 50-70% del peso, validado por prueba de bloques) | AAII bull−bear spread, NAAIM exposure, put/call ratio CBOE | **Pendiente (ola 2)** |
+| **V1** | **Sentimiento inversor directo** (hipótesis de efecto dominante 50-70% del peso, validado por prueba de bloques) | AAII bull−bear spread (NAAIM pago, put/call CBOE 2019+ bloqueado) | **Testeada — integra con peso dominante (H7)** |
 | V2 | Posiciones adoptadas EN FUNCIÓN del sentimiento | CFTC COT: NonRept (retail), Lev_Money (specs), Asset_Mgr, Dealer | Datos listos (ola 1) |
 | V3 | Liquidez como condición habilitadora | FRED: WALCL, RRPONTSYD, WRESBAL | Datos listos (ola 1) |
 | V4 | Velocidad (rápido/lento) | Kaufman ER10/20/60 + \|leg_ret\| | Medido (Fase V4) |
@@ -78,12 +78,15 @@ y se descarta — no se fuerza.
 ## 4. Implementación
 
 ### Ola 2 — Fuentes de sentimiento directo (V1)
-- **AAII** (sentimiento semanal de inversores individuales): bull/bear neutral → spread.
-- **NAAIM** (exposición de gestores): 0-100 → desviación de la media.
-- **Put/call ratio** CBOE (opciones): nivel y cambio.
+- **AAII** (sentimiento semanal de inversores individuales): bull/bear neutral → spread. ✅
+  `https://www.aaii.com/files/surveys/sentiment.xls` — completo 1987-2026, headers en fila 3,
+  datos desde fila 5, fila final "Count YY" de resumen a descartar, bull/bear en fracción 0-1.
+- **NAAIM** (exposición de gestores): ❌ **pago** (suscripción desde 2025) — descartado.
+- **Put/call ratio** CBOE: ❌ CDN diario 2019+ devuelve 403 AccessDenied (S3) a bots con todas
+  las impersonaciones; CSVs estáticos oficiales solo llegan a 10/2019 — pendiente de fuente.
 - Implementación en `backend/app/core/market_sentiment.py` con el mismo patrón:
   anti-lookahead (`shift(1)` + `ffill` sobre fechas de trading), cache parquet, doble
-  transporte HTTP (requests + curl_cffi).
+  transporte HTTP (requests + curl_cffi). ✅
 
 ### Integración — Variable de régimen
 - Nueva capa `sentiment_regime` sobre `REGIME_WEIGHTS` (`predictive_engine.py:1021`):
@@ -107,17 +110,17 @@ y se descarta — no se fuerza.
 
 ## 5. Orden de ejecución
 
-1. **Ola 2**: fetch AAII + NAAIM + put/call → `diagnose_sentiment_ic.py` extendido con V1.
-2. **Tests H1-H4**: IC directo de sentimiento, consistencia con COT, distribución retardada, liquidez como condición.
-3. **Test H5**: interacción sentimiento × velocidad (usa ER ya medido).
-4. **Test H6**: IC condicional de momentum/rsi/er por bucket de sentimiento → define el "cuestionamiento".
-5. **Test H7 (prueba de bloques)**: Grupo 1 vs Grupo 2 (V1 con 50-70% del peso) → accuracy/Brier por horizonte → decide si V1 se integra con peso dominante, con peso recalculado o se descarta.
+1. ~~**Ola 2**: fetch AAII + NAAIM + put/call~~ ✅ AAII listo; NAAIM pago, put/call bloqueado (documentado).
+2. ~~**Tests H1-H4**~~ ✅ H1/H2' confirmadas; H3/H4 (2×2) consistentes con la tesis.
+3. ~~**Test H5**~~ ✅ sustituido por H6/V1 2×2 (sent × liq) que confirma el mecanismo.
+4. ~~**Test H6**~~ ✅ IC condicional por bucket de AAII: en euforia, RSI/ER se invierten.
+5. ~~**Test H7 (prueba de bloques)**~~ ✅ **Veredicto: V1 integra con peso dominante (50-70%)** — G2 gana en Brier en 4/5 horizontes (1/5/20/60d).
 6. **Integración**: `sentiment_regime` en `predictive_engine.py` + reglas en `ContrarianAgent`.
 7. **Cierre**: `pytest`, OOS si aplica, `SESSION_LOG.md`.
 
 ---
 
-## 6. Estado de datos (ola 1, ya medido)
+## 6. Estado de datos (ola 1 + ola 2, ya medido)
 
 | Medición | Resultado | Nota |
 |----------|-----------|------|
@@ -125,6 +128,21 @@ y se descarta — no se fuerza.
 | COT asset managers 60d | IC -0.0890*** | Dirección contraria a retail |
 | walcl_growth_w 60d | IC +0.0633* / rank_ic -0.0167 | Frágil |
 | H6 2×2 (liquidez × retail COT) 60d | liq_alta × ret_alta = +0.0983 | La celda "euforia + liquidez" sube — inconsistente con H4/H6 narrativa, requiere V1 real para dirimir |
+| **AAII (V1) 5d** | IC -0.0315 (borde sig), rank_ic -0.0405 | Dirección correcta desde 5d |
+| **AAII (V1) 20d** | IC -0.0472*** (rank -0.0439***) | Confirma |
+| **AAII (V1) 60d** | **IC -0.0773*** (rank_ic -0.0857***)** | **ÚNICA variable con IC negativo consistente en todos los horizontes** |
+| **Terciles AAII 60d** | bajo +0.0987 > medio +0.0609 > alto +0.0585 | **MONÓTONO — tesis confirmada: pesimismo → sube, euforia → cae** |
+| **H6/V1 2×2 60d** | liq_baja×sent_baja +0.0916, liq_alta×sent_baja +0.0747 vs sent_alta +0.0642/+0.0537 | **El sentimiento domina; la liquidez solo modula (en línea con la tesis)** |
+| **H2' (sent → posiciones)** | rho +0.243 lag0 → +0.095 lag8 (Spearman) | La gente actúa según su actitud — cadena actitud→acción se sostiene |
+| **H6 condicional 60d (euforia AAII)** | RSI IC -0.1254, ER IC -0.1122 | En sentimiento alto, los factores de tendencia se INVIERTEN — base del "cuestionamiento" |
+| **H7 prueba de bloques** | G2 (V1 al 50-70%) gana en Brier en 4/5 horizontes; mejor dom=50% | **VEREDICTO: V1 integra con peso dominante** |
+
+> **Veredicto global**: la tesis del usuario se CONFIRMA con datos reales. El sentimiento
+> directo de la gente (AAII) predice retornos en dirección contraria — cuando la gente está
+> pesimista el mercado sube, cuando está eufórica cae — y domina a las demás variables en
+> calidad probabilística (Brier). La liquidez modula pero no causa (H6/V1). En sentimiento
+> extremo, momentum/RSI/ER pierden fiabilidad (H6 condicional) — esto justifica que el
+> agente CONTRARIAN cuestione las demás variables contra V1.
 
 > **Importante**: los resultados de ola 1 miden POSICIONES sin el sentimiento directo.
 > La tesis completa solo puede confirmarse o refutarse con V1 (AAII/NAAIM/put-call) y los

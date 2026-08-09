@@ -7,9 +7,16 @@ Fuentes (100% públicas, sin API key — verificadas el 2026-08-09):
 - CFTC Financial COT (com_fin_txt_YYYY.zip -> FinComYY.txt): posicionamiento
   semanal del E-MINI S&P 500 por tipo de trader (Dealer, Asset_Mgr,
   Lev_Money/hedge funds, Other_Rept, NonRept/retail).
+- AAII (sentiment.xls, verificado 2026-08-09): encuesta semanal del sentimiento
+  inversor minorista (Bullish/Neutral/Bearish) desde 1987. Fuente principal de
+  V1: mide la ACTITUD de la gente, no posiciones (a diferencia del COT).
+  - NAAIM (exposure index): movió a suscripción paga (2025+) -> descartado.
+  - CBOE put/call: CDN diario 2019+ bloquea bots (403 AccessDenied); los CSVs
+    estáticos oficiales solo llegan a 10/2019 -> pendiente de fuente gratuita.
 
 Disciplina anti-lookahead (obligatoria):
-- COT se publica viernes tras el cierre; FRED semanal se publica miércoles.
+- COT se publica viernes tras el cierre; FRED semanal se publica miércoles;
+  AAII se publica jueves tras el cierre.
 - Por eso el valor del día t se construye con shift(1) + forward-fill: solo
   usa información publicada ANTES de t. Sin esto, el IC miente.
 """
@@ -80,6 +87,8 @@ COT_MARKET = "E-MINI S&P 500"
 COT_START_YEAR = 2019
 
 FRED_URL = "https://fred.stlouisfed.org/graph/fredgraph.csv?id={series}"
+
+AAII_URL = "https://www.aaii.com/files/surveys/sentiment.xls"
 
 
 def _cache_path(name: str) -> str:
@@ -174,6 +183,35 @@ def fetch_cot_years(years: list) -> pd.DataFrame:
     return combined.loc[~combined.index.duplicated(keep="last")]
 
 
+def fetch_aaii() -> pd.Series:
+    """Bull-Bear spread de la encuesta AAII (publicación jueves tras el cierre).
+
+    El xls tiene headers en la fila 3 (Date/Bullish/Neutral/Bearish/Total/
+    Mov Avg/Spread/Average), datos desde la fila 5 y una fila de resumen
+    final ('Count YY') que hay que descartar. Bullish/Bearish vienen en
+    fracción 0-1 -> se pasan a porcentaje. Retorna el spread (Bull-Bear)
+    en puntos porcentuales, indexado por fecha de publicación.
+    """
+    cache = _cache_path("aaii_spread.parquet")
+    if os.path.exists(cache):
+        return pd.read_parquet(cache)["value"]
+    resp = _get(AAII_URL, timeout=90)
+    resp.raise_for_status()
+    raw = pd.read_excel(io.BytesIO(resp.content), header=None)
+    hdr = raw.iloc[3].to_list()[:8]
+    data = raw.iloc[5:].copy()
+    data.columns = ["Date", "Bullish", "Neutral", "Bearish", "Total", "Mov Avg", "Spread", "Average"] + [
+        f"x{i}" for i in range(len(data.columns) - 8)
+    ]
+    data = data[pd.to_datetime(data["Date"], errors="coerce").notna()].copy()
+    data["Date"] = pd.to_datetime(data["Date"])
+    spread = (pd.to_numeric(data["Bullish"], errors="coerce") - pd.to_numeric(data["Bearish"], errors="coerce")) * 100
+    out = pd.Series(spread.to_numpy(), index=pd.DatetimeIndex(data["Date"])).dropna().sort_index()
+    os.makedirs(CACHE_DIR, exist_ok=True)
+    out.to_frame("value").to_parquet(cache)
+    return out
+
+
 def build_sentiment_frame(trading_dates: pd.DatetimeIndex) -> pd.DataFrame:
     """Panel diario de sentimiento/liquidez alineado a fechas de trading.
 
@@ -184,6 +222,7 @@ def build_sentiment_frame(trading_dates: pd.DatetimeIndex) -> pd.DataFrame:
       walcl_level, walcl_growth_w   (WALCL y su cambio semanal %)
       rrponsytd_level               (reverse repo diario)
       wresbal_level, wresbal_growth_w
+      aaii_bullbear_spread          (AAII Bull-Bear en puntos %, semanal)
       cot_lev_net_pct, cot_asset_net_pct, cot_retail_net_pct, cot_dealer_net_pct
         (netos como % del open interest — comparables a través del tiempo)
     """
@@ -193,6 +232,7 @@ def build_sentiment_frame(trading_dates: pd.DatetimeIndex) -> pd.DataFrame:
     rrpon = fetch_fred("RRPONTSYD")
     wresbal = fetch_fred("WRESBAL")
     cot = fetch_cot_years(list(range(COT_START_YEAR, 2027)))
+    aaii = fetch_aaii()
 
     def _align(series: pd.Series, name: str) -> pd.Series:
         joined = pd.concat([series, trading], axis=1).sort_index().iloc[:, 0]
@@ -208,6 +248,7 @@ def build_sentiment_frame(trading_dates: pd.DatetimeIndex) -> pd.DataFrame:
     out["rrponsytd_level"] = _align(rrpon, "rrpon")
     out["wresbal_level"] = _align(wresbal, "wresbal")
     out["wresbal_growth_w"] = _growth(out["wresbal_level"])
+    out["aaii_bullbear_spread"] = _align(aaii, "aaii")
 
     cot_pct = pd.DataFrame(index=cot.index)
     for col in ["cot_lev_net", "cot_asset_net", "cot_retail_net", "cot_dealer_net"]:
