@@ -7,3 +7,87 @@ AAII disponible en 2913/2913 días de trading
 
 Corriendo baseline (sin V1)...
 Corriendo V1-ranking (b)...
+
+--- MÉTRICAS POR PERÍODO ---
+
+  FULL 2019-2026
+    métrica                baseline           V1            Δ
+    cagr                     0.0012       0.0029      +0.0017
+    sharpe_ratio             0.0739       0.1746      +0.1007
+    sortino_ratio            0.0566       0.1365      +0.0799
+    max_drawdown            -0.0311      -0.0334      -0.0022
+    calmar_ratio             0.0389       0.0869      +0.0480
+    win_rate                 0.3548       0.3559      +0.0010
+    profit_factor            1.1746       1.2997      +0.1251
+    total_trades           341.0000     340.0000      -1.0000
+    deflated_sharpe          0.1047       0.1641      +0.0594
+
+  DESARROLLO 2019-2024
+    métrica                baseline           V1            Δ
+    cagr                     0.0041       0.0068      +0.0027
+    sharpe_ratio             0.2175       0.3890      +0.1715
+    sortino_ratio            0.1683       0.3127      +0.1443
+    max_drawdown            -0.0297      -0.0247      +0.0050
+    calmar_ratio             0.1365       0.2749      +0.1383
+    win_rate                 0.3597       0.3630      +0.0033
+    profit_factor            1.3643       1.6294      +0.2651
+    total_trades           303.0000     303.0000      +0.0000
+    deflated_sharpe          0.1778       0.3086      +0.1308
+
+  OOS 2025-2026
+    métrica                baseline           V1            Δ
+    cagr                    -0.0095      -0.0117      -0.0022
+    sharpe_ratio            -0.5952      -0.7237      -0.1286
+    sortino_ratio           -0.4307      -0.5033      -0.0726
+    max_drawdown            -0.0311      -0.0334      -0.0022
+    calmar_ratio            -0.3044      -0.3504      -0.0460
+    win_rate                 0.3158       0.2973      -0.0185
+    profit_factor            0.5964       0.5380      -0.0584
+    total_trades            38.0000      37.0000      -1.0000
+    deflated_sharpe          0.0139       0.0088      -0.0051
+
+--- MONTE CARLO (bootstrap) ---
+  baseline  mean=+558.9 p5=-879.5 p95=+1897.3 prob_loss=0.264
+  V1        mean=+894.5 p5=-470.1 p95=+2292.8 prob_loss=0.134
+
+--- TRADES OOS 2025-2026 ---
+  baseline  trades=38  wins=12  win_rate=0.316
+  V1        trades=37  wins=11  win_rate=0.297
+
+  V1-ranking: 340/340 trades con g2_score (media g2=+0.198, trades con g2>0.6 = 35)
+    g2<=0.5        n=292 win_rate=0.349 pnl_sum=+1087
+    0.5<g2<=0.7    n= 13 win_rate=0.615 pnl_sum=-266
+    g2>0.7         n= 35 win_rate=0.314 pnl_sum=+87
+
+========================================================================
+Out: data/cache/backtest_v1_costs_20260810_091011.txt
+
+========================================================================
+VEREDICTO (0b-v2 — variante (b) ranking, trial #8)
+========================================================================
+1) La variante (b) FUNCIONA mecánicamente: el gate técnico queda puro
+   (340 trades, ~igual que baseline 341) y el ranking usa G2. El
+   bloqueo matemático de la v1 quedó confirmado como problema de
+   escala, no de señal.
+2) PERO no crea edge demostrable:
+   - FULL: Sharpe 0.07 -> 0.17, DSR p=0.105 -> p=0.164 (n_trials=8).
+     Sigue LEJOS de significancia: no hay edge neto con costos.
+   - DESARROLLO 2019-2024: Sharpe 0.22 -> 0.39 (mejora fuerte, DSR
+     0.18 -> 0.31). La mejora vive SOLO acá.
+   - OOS 2025-2026 (la ventana que importa): Sharpe -0.60 -> -0.72
+     (EMPEORA), win_rate 0.316 -> 0.297, PF 0.60 -> 0.54.
+   Patrón clásico de mejora in-sample que no sobrevive fuera de
+   muestra: el ranking V1 no aporta pnl en el OOS congelado.
+3) Bootstrap full mejora (prob_loss 0.26 -> 0.13, p5 -880 -> -470)
+   pero está dominado por el desarrollo; no lo sobre-interpretar.
+4) Los buckets de g2 no discriminan pnl: g2>0.7 (señal favorece
+   fuerte) tiene win_rate 0.314, PEOR que g2<=0.5 (0.349). La señal
+   de ranking no ordena rentabilidad en la muestra.
+5) RESPONDE la pregunta del 0b: V1 (ni como blend de gate ni como
+   ranking H7) crea edge neto demostrable hoy. La integración del
+   motor predictivo (8c) siguió siendo razonable como diversificador
+   de RÉGIMEN (evidencia 0a), pero NO hay base para esperar que V1
+   convierta el sistema en rentable con costos.
+6) El sistema completo (baseline + V1) sigue sin edge neto: DSR p~0.1
+   en el mejor caso. No integrar más variantes de V1 sin evidencia
+   nueva (n_trials ya es 8; cada corrida más diluye el poder del DSR).

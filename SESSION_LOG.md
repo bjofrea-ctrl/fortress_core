@@ -748,3 +748,18 @@ Revisión de Claude Code antes del sí automático: (1) ¿fetch_aaii lee de cach
 - **Decisión de diseño pendiente del usuario** (3 opciones en el veredicto): (a) señal centrada [0,1] + re-ajuste de gate; (b) blend solo sobre ranking [-1,1] (lo pre-registrado en §7 — la más fiel al OOS); (c) V1 como modulador de riesgo (posición/stops) sin tocar el gate. NINGUNA se corre sin aprobación (spec congelada).
 - Cambios de código: `signal_engine.py` (parámetro sentiment_score + factor de trazabilidad), `backtest_engine.py` (sentiment_scores en run + filtro BMA + fórmula Lo completa), `scripts/backtest_v1_costs.py` (nuevo). Tests: 27 passed (signal_engine + sentiment_regime + market_sentiment + regime_classifier).
 - Gotcha: `generate_signal` recalcula `calculate_all_indicators` por llamada — el dataframe de test sintético necesita columnas open/high/low/volume.
+
+### Sesión 8g — Fase 0b-v2: variante (b) ranking H7, trial #8 COMPLETADA — 2026-08-10
+
+Decisión del usuario (argumento: (b) es la única que corresponde a lo que H7 validó — calidad de ranking, no gate binario; (a) y (c) serían hipótesis nuevas que gastan OOS sin validación previa). Marco corregido por el usuario: no estamos montando V1 sobre un sistema que funciona — estamos probando si V1 puede CREAR un edge. Trial #8 del conteo n_trials.
+
+- **Implementación (b)**: `signal_engine.compute_g2_rank_scores()` — G2 = 0.5·rank(score técnico con pesos FIJOS sin BMA) + 0.5·(-rank(aaii, causal 260d)). La señal es la pre-registrada en §7 (ranking), NO la normalización bounds ±35 del motor (la que 0b-v1 expuso como incompatible). Gate de entrada puro (generate_signal sin blend, revertido); `rank_signals` ordena por g2_score cuando existe (backward-compatible). `backtest_engine.run(sentiment_data={fecha: spread crudo})` precomputa G2 por símbolo; trades guardan g2_score. Pesos fijos en la serie histórica para no contaminar el rank con pesos BMA futuros.
+- **Resultados (huella `data/cache/backtest_v1_costs_20260810_091011.txt`)**:
+  - Mecánicamente funciona: 340 trades (baseline 341).
+  - FULL: Sharpe 0.07→0.17, DSR p=0.164 (n_trials=8) → SIN edge demostrable.
+  - DESARROLLO: Sharpe 0.22→0.39 (la mejora vive solo acá).
+  - **OOS 2025-2026: Sharpe -0.60→-0.72 (empeora), PF 0.60→0.54** → la mejora no sobrevive fuera de muestra.
+  - Buckets g2 no discriminan pnl: g2>0.7 tiene win_rate 0.314 (peor que g2≤0.5 con 0.349).
+- **Veredicto**: V1 (gate o ranking) NO crea edge neto demostrable hoy. La integración del motor (8c) queda como diversificador de régimen (evidencia 0a), sin base para esperar rentabilidad con costos. No integrar más variantes de V1 sin evidencia nueva (n_trials=8 diluye el poder del DSR).
+- Tests: 46/46 (5 nuevos en test_signal_engine: g2 sin sentiment, g2 rank causal del spread, ranking con g2, backward-compat, + peso priors). Gotcha del test: spread constante rankea +1 (s_v1=-1) — los tests usan tendencias, no constantes.
+- Siguiente: la Fase 1 (fundamentales QC) ataca el hueco más grande (SAMPLE_FUNDAMENTALS hardcode) — decisión pendiente del usuario.
