@@ -169,7 +169,8 @@ y se descarta — no se fuerza.
 | `triad_agents.py` — cuestionamiento reversión en euforia (H6) | ✅ ×0.5 reglas 1-5 |
 | `TriadEvaluator.evaluate(sentiment_data=...)` | ✅ Propagado |
 | `tests/test_sentiment_regime.py` | ✅ 10 tests (blend, H6, V4, backward-compat, agente) |
-| Data feeding (pipeline: descargar AAII y pasar `sentiment_data` en `predict.py`) | 🔲 Pendiente — requiere alinear fecha y pasar `{"aaii_bullbear_spread": X}` |
+| Data feeding (pipeline: descargar AAII y pasar `sentiment_data` en `predict.py`) | ✅ 2026-08-10: `_load_sentiment_data()` en ambos endpoints (`/analyze/{symbol}`, `/universe`) |
+| Guardas del data feeding (revisión): TTL semanal cache + degradado a baseline | ✅ `fetch_aaii()` con `AAII_CACHE_MAX_AGE_DAYS=7` (mtime): 1 descarga/semana máx, nunca por request; fallo con cache → stale; fallo sin cache → propaga y `_load_sentiment_data` captura → `None` → baseline. Guard formato xls: <400 filas no pisa cache bueno. Tests: `test_market_sentiment.py` (6) |
 | Pendientes de auditoría (no bloqueantes) | n_eff=36 en OOS 60d (confirmación ajustada); IC G1 negativo en 2025-2026 — revisar régimen HMM en próxima auditoría |
 
 ---

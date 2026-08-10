@@ -707,3 +707,14 @@ Validar V1 (sentimiento directo del inversor minorista) y decidir su integració
 - **Tests** `tests/test_sentiment_regime.py` (10): blend 0.50 pre-registrado, backward-compat (None vs {}), señal neutra diluye a 0.5 (fiel a H7), pánico/euforia desplazan el compuesto, cuestionamiento H6 presente en reporte, señal invertida respecto del spread, agente contrarian pánico/euforia. **Suite completa: 36/36 passed.**
 - Gotcha: el blend opera sobre el composite pre-TRIAD; el resultado expuesto (`composite_score`) lleva el ×0.8 del consenso — los tests se calibraron sobre la señal completa, no sobre el valor expuesto.
 - PLAN_SENTIMIENTO.md: §4 Integración marcada IMPLEMENTADA + nueva sección 8 (estado de integración). Pendiente documentado: data feeding en el pipeline (`predict.py`) — pasar `sentiment_data` alineado a la fecha; auditoría futura: régimen HMM 2025-2026 (G1 tuvo IC negativo OOS) y n_eff=36.
+
+### Sesión 8d — Data feeding V1 en predict.py + guardas de revisión COMPLETADA — 2026-08-10
+
+Revisión de Claude Code antes del sí automático: (1) ¿fetch_aaii lee de caché o re-descarga el xls en cada request? (2) ¿si el fetch falla, degrada a baseline o se cae la request?
+
+**Hallazgo de la verificación**: el cache parquet ya se leía, PERO sin TTL — una vez escrito, nunca se refrescaba (dato congelado en producción). El riesgo real no era "descarga por request" sino "cache eterno". Se corrigió con TTL semanal.
+
+- **Guarda 1 (TTL)**: `AAII_CACHE_MAX_AGE_DAYS = 7` en `market_sentiment.py` — cache fresco (mtime < 7d) → parquet; viejo → re-descarga (máx 1/semana, nunca por request). Si la descarga falla y hay cache → devuelve **stale** (dato viejo > nada). Si el xls viene con formato inesperado (< 400 filas) → NO pisa el cache bueno, tira el dato. Solo sin cache y con descarga fallida propaga (el caller degrada).
+- **Guarda 2 (degradado)**: `_load_sentiment_data()` en `predict.py` — alineación anti-lookahead (solo valores publicados antes de hoy, shift(1)); try/except → `None` → el motor corre baseline (backward-compatible). Conectado en `/analyze/{symbol}` y `/universe`.
+- **Verificación en vivo**: cache real (2026-08-09) fresco → lee parquet, 0 descargas → `{'aaii_bullbear_spread': -0.926}`.
+- **Tests**: `tests/test_market_sentiment.py` (6): cache fresco no descarga, stale refresca, stale degrada a stale, sin cache falla propaga, sin cache ok crea parquet, formato inesperado no pisa cache bueno. Suite: **42/42 passed**.

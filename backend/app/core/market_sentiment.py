@@ -31,6 +31,12 @@ import numpy as np
 
 CACHE_DIR = "data/cache"
 
+# AAII publica los jueves: el cache parquet expira a la semana. Con esto el
+# path en vivo descarga el xls como MÁXIMO una vez por semana (nunca por
+# request), y si la descarga falla se degrada al cache stale en vez de perder
+# el dato (ver fetch_aaii).
+AAII_CACHE_MAX_AGE_DAYS = 7
+
 _HEADERS = {
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) "
     "AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36"
@@ -183,6 +189,22 @@ def fetch_cot_years(years: list) -> pd.DataFrame:
     return combined.loc[~combined.index.duplicated(keep="last")]
 
 
+def _aaii_cache_path() -> str:
+    return _cache_path("aaii_spread.parquet")
+
+
+def _aaii_cache_age_days(path: str) -> float:
+    """Edad del cache en días (mtime). Infinito si no existe."""
+    try:
+        return (time.time() - os.path.getmtime(path)) / 86400.0
+    except OSError:
+        return float("inf")
+
+
+def _read_aaii_cache(path: str) -> pd.Series:
+    return pd.read_parquet(path)["value"]
+
+
 def fetch_aaii() -> pd.Series:
     """Bull-Bear spread de la encuesta AAII (publicación jueves tras el cierre).
 
@@ -191,25 +213,42 @@ def fetch_aaii() -> pd.Series:
     final ('Count YY') que hay que descartar. Bullish/Bearish vienen en
     fracción 0-1 -> se pasan a porcentaje. Retorna el spread (Bull-Bear)
     en puntos porcentuales, indexado por fecha de publicación.
+
+    Cache: parquet con TTL semanal (AAII publica los jueves). Si la descarga
+    falla y existe cache, devuelve el cache stale (dato viejo > nada) en vez
+    de propagar el error — el request en vivo degrada a baseline igual.
     """
-    cache = _cache_path("aaii_spread.parquet")
-    if os.path.exists(cache):
-        return pd.read_parquet(cache)["value"]
-    resp = _get(AAII_URL, timeout=90)
-    resp.raise_for_status()
-    raw = pd.read_excel(io.BytesIO(resp.content), header=None)
-    hdr = raw.iloc[3].to_list()[:8]
-    data = raw.iloc[5:].copy()
-    data.columns = ["Date", "Bullish", "Neutral", "Bearish", "Total", "Mov Avg", "Spread", "Average"] + [
-        f"x{i}" for i in range(len(data.columns) - 8)
-    ]
-    data = data[pd.to_datetime(data["Date"], errors="coerce").notna()].copy()
-    data["Date"] = pd.to_datetime(data["Date"])
-    spread = (pd.to_numeric(data["Bullish"], errors="coerce") - pd.to_numeric(data["Bearish"], errors="coerce")) * 100
-    out = pd.Series(spread.to_numpy(), index=pd.DatetimeIndex(data["Date"])).dropna().sort_index()
-    os.makedirs(CACHE_DIR, exist_ok=True)
-    out.to_frame("value").to_parquet(cache)
-    return out
+    cache = _aaii_cache_path()
+    if os.path.exists(cache) and _aaii_cache_age_days(cache) < AAII_CACHE_MAX_AGE_DAYS:
+        return _read_aaii_cache(cache)
+
+    # Cache viejo (o inexistente): intentar refrescar. Si falla y hay cache,
+    # devolver el stale (dato viejo > nada) — el request en vivo nunca se cae.
+    try:
+        resp = _get(AAII_URL, timeout=90)
+        resp.raise_for_status()
+        raw = pd.read_excel(io.BytesIO(resp.content), header=None)
+        hdr = raw.iloc[3].to_list()[:8]
+        data = raw.iloc[5:].copy()
+        data.columns = ["Date", "Bullish", "Neutral", "Bearish", "Total", "Mov Avg", "Spread", "Average"] + [
+            f"x{i}" for i in range(len(data.columns) - 8)
+        ]
+        data = data[pd.to_datetime(data["Date"], errors="coerce").notna()].copy()
+        data["Date"] = pd.to_datetime(data["Date"])
+        spread = (pd.to_numeric(data["Bullish"], errors="coerce") - pd.to_numeric(data["Bearish"], errors="coerce")) * 100
+        out = pd.Series(spread.to_numpy(), index=pd.DatetimeIndex(data["Date"])).dropna().sort_index()
+        if len(out) < 400:
+            # El xls cambió de formato (la serie completa arranca en 1987, ~2000+ semanas).
+            # No sobreescribir un cache bueno con basura — tirar el dato.
+            raise RuntimeError(f"AAII xls con formato inesperado: {len(out)} filas (< 400)")
+        os.makedirs(CACHE_DIR, exist_ok=True)
+        out.to_frame("value").to_parquet(cache)
+        return out
+    except Exception:
+        if os.path.exists(cache):
+            # Degradar al cache stale: mejor dato viejo que sin dato.
+            return _read_aaii_cache(cache)
+        raise
 
 
 def build_sentiment_frame(trading_dates: pd.DatetimeIndex) -> pd.DataFrame:

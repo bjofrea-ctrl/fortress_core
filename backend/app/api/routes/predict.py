@@ -101,6 +101,32 @@ def _load_macro_data() -> dict:
     return macro_data
 
 
+def _load_sentiment_data() -> Optional[dict]:
+    """Carga V1 (AAII bull-bear) para el request en vivo.
+
+    - fetch_aaii() lee el parquet con TTL semanal: la descarga del xls ocurre
+      como máximo 1 vez/semana, nunca por request; si la descarga falla,
+      degrada al cache stale.
+    - Alineación anti-lookahead: solo se usa el valor publicado ANTES de hoy
+      (AAII publica los jueves tras el cierre -> shift(1)).
+    - Cualquier fallo devuelve None: el motor degrada a baseline
+      (analyze(sentiment_data=None) es backward-compatible).
+    """
+    try:
+        from app.core.market_sentiment import fetch_aaii
+        aaii = fetch_aaii()
+        if aaii is None or len(aaii) == 0:
+            return None
+        cutoff = pd.Timestamp.now().normalize() - pd.Timedelta(days=1)
+        valid = aaii[aaii.index < cutoff]
+        if valid.empty:
+            return None
+        return {"aaii_bullbear_spread": float(valid.iloc[-1])}
+    except Exception:
+        logger.warning("sentiment_data_unavailable_degrading_to_baseline")
+        return None
+
+
 def _serialize_result(result, fundamentals_source: str = "unavailable") -> dict:
     """Serializa PredictionResult a dict para JSON."""
     return {
@@ -155,6 +181,9 @@ async def analyze_symbol(symbol: str, regime_state: int = Query(0, ge=0, le=3)):
         # Cargar datos macro
         macro_data = _load_macro_data()
 
+        # V1 (AAII): degrada a None (baseline) si el fetch falla
+        sentiment_data = _load_sentiment_data()
+
         # Datos fundamentales de muestra
         fundamentals = get_fundamentals(symbol)
 
@@ -170,6 +199,7 @@ async def analyze_symbol(symbol: str, regime_state: int = Query(0, ge=0, le=3)):
             fundamentals=fundamentals,
             macro_data=macro_data,
             prediction_data=SAMPLE_PREDICTION_DATA,
+            sentiment_data=sentiment_data,
         )
 
         fundamentals_source = fundamentals.get("_data_source", "unavailable") if fundamentals else "unavailable"
@@ -190,6 +220,7 @@ async def analyze_universe(regime_state: int = Query(0, ge=0, le=3)):
     files = [f.replace(".parquet", "") for f in os.listdir(CACHE_DIR) if f.endswith(".parquet")]
     engine = PredictiveEngine()
     macro_data = _load_macro_data()
+    sentiment_data = _load_sentiment_data()
     results = []
 
     for symbol in sorted(files):
@@ -207,6 +238,7 @@ async def analyze_universe(regime_state: int = Query(0, ge=0, le=3)):
                 fundamentals=fundamentals,
                 macro_data=macro_data,
                 prediction_data=SAMPLE_PREDICTION_DATA,
+                sentiment_data=sentiment_data,
             )
             results.append({
                 "symbol": result.symbol,
