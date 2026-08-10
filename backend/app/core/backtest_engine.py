@@ -311,6 +311,8 @@ class BacktestEngine:
                     "exit_reason": reason,
                     "g2_score": pos.get("g2_score"),
                     "g3_score": pos.get("g3_score"),
+                    "win_prob": pos.get("win_prob"),
+                    "regime_state": pos.get("regime_state"),
                 })
 
                 risk_manager.register_exit(symbol, shares_to_sell)
@@ -339,6 +341,8 @@ class BacktestEngine:
                             "exit_reason": "TECHNICAL",
                             "g2_score": pos.get("g2_score"),
                             "g3_score": pos.get("g3_score"),
+                            "win_prob": pos.get("win_prob"),
+                            "regime_state": pos.get("regime_state"),
                         })
 
                         risk_manager.register_exit(symbol, pos["shares"])
