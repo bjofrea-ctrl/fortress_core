@@ -688,3 +688,22 @@ Validar V1 (sentimiento directo del inversor minorista) y decidir su integració
   - G1 baseline OOS: ic_score NEGATIVO (-0.33 @60d) — el baseline falla OOS, V1 lo rescata.
   - **VEREDICTO: CONFIRMA → V1 se integra con peso dominante 0.50.**
 - Pendiente: integración `sentiment_regime` en predictive_engine.py + reglas ContrarianAgent (autorización del usuario), pytest, cierre.
+
+---
+
+### Sesión 8c — Integración de V1 (sentiment_regime) COMPLETADA — 2026-08-09
+
+**Autorizado por el usuario**: "dale, integrá sentiment_regime en predictive_engine.py y las reglas en ContrarianAgent, con peso 0.50 como quedó pre-registrado."
+
+- **Nuevo módulo** `app/core/sentiment_regime.py`: constantes pre-registradas §7 (dominancia 0.50, umbral extremo 0.50, pánico -15 / euforia +15, bound AAII ±35, ER lento 0.25 / rápido 0.60). Importado por engine y tríada sin ciclo (el módulo no depende de ninguno).
+- **predictive_engine.py**:
+  - `analyze(sentiment_data={"aaii_bullbear_spread": X})` — backward-compatible: sin datos → baseline idéntico.
+  - `_sentiment_regime_signal()`: s_v1 = -normalize(spread, ±35).
+  - Blend `composite = 0.5*composite + 0.5*s_v1` (pre-registrado).
+  - H6: euforia extrema (s_v1 < -0.5) → tech_mom/tech_rev ×0.5 antes del compuesto + señal de reporte.
+  - V4: ER20 < 0.25 con pesimismo → +0.10 (acumulación silenciosa); ER20 > 0.60 con euforia → -0.10 (distribución).
+  - Señales nuevas con categoría `sentiment_regime` en el reporte.
+- **triad_agents.py**: `ContrarianAgent.evaluate` acepta `sentiment_data`; regla 8 V1 (pánico < -15 → +0.3, euforia > +15 → -0.3, intermedio proporcional); en euforia extrema las señales de reversión (reglas 1-5) ×0.5 (H6). `TriadEvaluator.evaluate` propaga el param.
+- **Tests** `tests/test_sentiment_regime.py` (10): blend 0.50 pre-registrado, backward-compat (None vs {}), señal neutra diluye a 0.5 (fiel a H7), pánico/euforia desplazan el compuesto, cuestionamiento H6 presente en reporte, señal invertida respecto del spread, agente contrarian pánico/euforia. **Suite completa: 36/36 passed.**
+- Gotcha: el blend opera sobre el composite pre-TRIAD; el resultado expuesto (`composite_score`) lleva el ×0.8 del consenso — los tests se calibraron sobre la señal completa, no sobre el valor expuesto.
+- PLAN_SENTIMIENTO.md: §4 Integración marcada IMPLEMENTADA + nueva sección 8 (estado de integración). Pendiente documentado: data feeding en el pipeline (`predict.py`) — pasar `sentiment_data` alineado a la fecha; auditoría futura: régimen HMM 2025-2026 (G1 tuvo IC negativo OOS) y n_eff=36.
