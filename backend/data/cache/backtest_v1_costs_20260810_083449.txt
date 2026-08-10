@@ -7,3 +7,89 @@ AAII disponible en 2913/2913 días de trading
 
 Corriendo baseline (sin V1)...
 Corriendo V1 (blend 0.50)...
+
+--- MÉTRICAS POR PERÍODO ---
+
+  FULL 2019-2026
+    métrica                baseline           V1            Δ
+    cagr                     0.0012       0.0000      -0.0012
+    sharpe_ratio             0.0739       0.0000      -0.0739
+    sortino_ratio            0.0566       0.0000      -0.0566
+    max_drawdown            -0.0311       0.0000      +0.0311
+    calmar_ratio             0.0389       0.0000      -0.0389
+    win_rate                 0.3548       0.0000      -0.3548
+    profit_factor            1.1746          inf         +inf
+    total_trades           341.0000       0.0000    -341.0000
+    deflated_sharpe          0.1184       0.0828      -0.0356
+
+  DESARROLLO 2019-2024
+    métrica                baseline           V1            Δ
+    cagr                     0.0041       0.0000      -0.0041
+    sharpe_ratio             0.2175       0.0000      -0.2175
+    sortino_ratio            0.1683       0.0000      -0.1683
+    max_drawdown            -0.0297       0.0000      +0.0297
+    calmar_ratio             0.1365       0.0000      -0.1365
+    win_rate                 0.3597       0.0000      -0.3597
+    profit_factor            1.3643          inf         +inf
+    total_trades           303.0000       0.0000    -303.0000
+    deflated_sharpe          0.1972       0.0828      -0.1145
+
+  OOS 2025-2026
+    métrica                baseline           V1            Δ
+    cagr                    -0.0095       0.0000      +0.0095
+    sharpe_ratio            -0.5952       0.0000      +0.5952
+    sortino_ratio           -0.4307       0.0000      +0.4307
+    max_drawdown            -0.0311       0.0000      +0.0311
+    calmar_ratio            -0.3044       0.0000      +0.3044
+    win_rate                 0.3158       0.0000      -0.3158
+    profit_factor            0.5964          inf         +inf
+    total_trades            38.0000       0.0000     -38.0000
+    deflated_sharpe          0.0166       0.0828      +0.0661
+
+--- MONTE CARLO (bootstrap) ---
+  baseline  mean=+577.2 p5=-882.9 p95=+2050.5 prob_loss=0.259
+  V1        mean=+nan p5=+nan p95=+nan prob_loss=nan
+
+--- TRADES OOS 2025-2026 ---
+  baseline  trades=38  wins=12  win_rate=0.316
+  V1        trades=0  wins=0  win_rate=nan
+
+========================================================================
+Out: data/cache/backtest_v1_costs_20260810_083449.txt
+
+========================================================================
+VEREDICTO (0b — backtest con costos, spec congelada)
+========================================================================
+1) DEFLATED SHARPE — auditado contra Bailey & López de Prado (2014):
+   - Correcto: e_max_sr (Euler-Mascheroni), sr_std (Lo 2002 con T-1),
+     SR_0 = sr_std * E[max], DSR = Phi((SR - SR_0)/sr_std).
+   - Defecto corregido: faltaba skewness/kurtosis en la varianza del
+     estimador (asumía normalidad -> DSR optimista con colas gruesas).
+     Ahora usa 1 - g3*SR + (g4-1)/4*SR^2 (fórmula completa de Lo),
+     clampeado a 1e-8.
+2) BASELINE con costos sobre el universo real (7 simbolos, 2019-2026):
+   - 341 trades, win_rate 0.355, PF 1.17, CAGR +0.12%/año, Sharpe 0.07,
+     max_drawdown -3.1%. DSR p=0.118 con n_trials=7 -> SIN edge
+     estadisticamente demostrable después de costos.
+   - OOS 2025-2026: Sharpe -0.60, PF 0.60, win_rate 0.32 -> perdió neto.
+3) V1 (integración actual del motor, s_v1 = -clip((spread+35)/70) en
+   [-1, 0]): BLOQUEO MATEMÁTICO del gate de entrada (0.6):
+   blend = 0.5*overall + 0.5*s_v1 <= 0.5*overall <= 0.5 < 0.6 SIEMPRE.
+   Nunca entra una posición (0 trades en 2913 días). La señal AAII NO es
+   el problema (0a: IC OOS positivo por régimen); la ESCALA de
+   integración es incompatible con el gate. La integración en el motor
+   predictivo no tiene gate 0.6 (score continuo), pero arrastra el mismo
+   sesgo bajista sistemático (spread=0 -> s_v1=-0.5 -> el blend baja el
+   composite en 0.25) - comportamiento aprobado en 8c, ahora medible.
+4) DECISIÓN DE DISEÑO PENDIENTE (usuario): 3 caminos -
+   (a) señal centrada [0,1] con neutro 0.5: s_v1 = 1 - normalize(spread);
+       el gate 0.6 sigue exigiendo overall alto + pesimismo -> requiere
+       re-ajustar el gate (variante nueva, n_trials=8, pre-registrada).
+   (b) blend SOLO sobre el ranking (escala [-1,1] del OOS, que fue lo
+       pre-registrado en §7) y operar el gate técnico puro aparte: la
+       señal V1 modula el ranking de oportunidades, no la entrada.
+   (c) V1 como modulador de RIESGO (tamaño de posición / stops), sin
+       tocar el gate de entrada: conserva el efecto de 0a (evitar euforia)
+       sin bloquear la operación.
+   La opción (b) es la más fiel a lo validado en H7-OOS; la (c) es la
+   menos invasiva. Ninguna se corre sin aprobación (spec congelada).

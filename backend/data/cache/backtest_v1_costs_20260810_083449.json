@@ -1,0 +1,30 @@
+{
+  "baseline": {
+    "metrics_full": {
+      "cagr": 0.0012113802107733829,
+      "sharpe_ratio": 0.0739103280278626,
+      "sortino_ratio": 0.0566241441526144,
+      "max_drawdown": -0.031138659349693832,
+      "calmar_ratio": 0.038902773467840185,
+      "win_rate": 0.3548387096774194,
+      "profit_factor": 1.174580368416952,
+      "total_trades": 341,
+      "deflated_sharpe": 0.1183696120601826,
+      "deflated_sharpe_n_trials": 7
+    }
+  },
+  "v1": {
+    "metrics_full": {
+      "cagr": 0.0,
+      "sharpe_ratio": 0.0,
+      "sortino_ratio": 0.0,
+      "max_drawdown": 0.0,
+      "calmar_ratio": 0.0,
+      "win_rate": 0.0,
+      "profit_factor": Infinity,
+      "total_trades": 0,
+      "deflated_sharpe": 0.08275527344837202,
+      "deflated_sharpe_n_trials": 7
+    }
+  }
+}

@@ -735,3 +735,16 @@ Revisión de Claude Code antes del sí automático: (1) ¿fetch_aaii lee de cach
 - Caveat: n_eff OOS chico (30-136; STAGFLATION en el límite 30), dirección consistente en 1d/5d/20d/60d pero magnitudes con error amplio.
 - Gotcha del script: `predict` de hmmlearn decodifica con Viterbi global → para etiquetado histórico honesto hay que decodificar por ventana parcial (walk-forward), O(n²) pero trivial con 4 estados.
 - PLAN_SENTIMIENTO.md §8 actualizado con el veredicto y el archivo de huella.
+
+### Sesión 8f — Fase 0b: backtest con costos V1 vs baseline COMPLETADA (con hallazgo estructural) — 2026-08-10
+
+**Huella**: `data/cache/backtest_v1_costs_20260810_083449.txt` + JSON.
+
+- **Auditoría del deflated Sharpe** (backtest_engine.py `calculate_metrics`): implementación correcta en su forma simplificada (e_max_sr exacto del paper, Lo con T-1, SR_0 = sr_std·E[max]); defecto corregido: faltaba skewness/kurtosis en la varianza del estimador (asumía normalidad → DSR optimista con colas gruesas). Ahora usa la fórmula completa de Lo (1 - γ3·SR + (γ4-1)/4·SR²), clampeada.
+- **Inyección V1 en el backtest**: `signal_engine.generate_signal(..., sentiment_score=None)` con blend 0.50 pre-gate (backward-compatible; factor `sentiment_v1` en trades); `backtest_engine.run(..., sentiment_scores={fecha: s_v1})`; filtro en `_update_bayesian_weights` para que el BMA ignore factores sin prior (sentiment_v1 es externo al BMA — sin el filtro crasheaba con KeyError). Señal V1 = -clip((spread+35)/70, 0, 1) (misma definición que sentiment_regime.py), alineación anti-lookahead con build_sentiment_frame.
+- **Resultados**:
+  - Baseline (7 símbolos, 2019-2026, costos 0.10%+0.05%): 341 trades, win 0.355, PF 1.17, CAGR +0.12%/año, Sharpe 0.07, DSR p=0.118 → **sin edge neto demostrable**. OOS 2025-2026: Sharpe -0.60, PF 0.60 → perdió.
+  - V1: **0 trades** — bloqueo MATEMÁTICO: s_v1 ∈ [-1, 0] siempre → blend = 0.5·overall + 0.5·s_v1 ≤ 0.5 < gate 0.6. La integración por bounds del motor es incompatible con el gate de entrada del backtest. La señal AAII no es el problema (0a lo confirmó); la escala lo es.
+- **Decisión de diseño pendiente del usuario** (3 opciones en el veredicto): (a) señal centrada [0,1] + re-ajuste de gate; (b) blend solo sobre ranking [-1,1] (lo pre-registrado en §7 — la más fiel al OOS); (c) V1 como modulador de riesgo (posición/stops) sin tocar el gate. NINGUNA se corre sin aprobación (spec congelada).
+- Cambios de código: `signal_engine.py` (parámetro sentiment_score + factor de trazabilidad), `backtest_engine.py` (sentiment_scores en run + filtro BMA + fórmula Lo completa), `scripts/backtest_v1_costs.py` (nuevo). Tests: 27 passed (signal_engine + sentiment_regime + market_sentiment + regime_classifier).
+- Gotcha: `generate_signal` recalcula `calculate_all_indicators` por llamada — el dataframe de test sintético necesita columnas open/high/low/volume.
