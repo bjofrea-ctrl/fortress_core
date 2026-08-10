@@ -27,6 +27,10 @@ from dataclasses import dataclass, field
 
 from app.utils.logging import logger
 from app.core.prompt_engine import HardinessChecker
+from app.core.sentiment_regime import (
+    SENTIMENT_PANIC_SPREAD,
+    SENTIMENT_EUPHORIA_SPREAD,
+)
 
 
 @dataclass
@@ -269,9 +273,11 @@ class ContrarianAgent:
     """Agente contrarian: busca señales de reversión y manipulación."""
 
     def evaluate(self, df: pd.DataFrame, fundamentals: Optional[Dict] = None,
-                 macro_data: Optional[Dict] = None) -> AgentVerdict:
+                 macro_data: Optional[Dict] = None,
+                 sentiment_data: Optional[Dict] = None) -> AgentVerdict:
         signals: List[str] = []
-        score = 0.0
+        reversion_score = 0.0  # reglas 1-5 (reversión técnica)
+        sentiment_score = 0.0  # reglas 6-8 (sentimiento: gold/silver, VIX, V1)
         confidence = 0.0
         latest = df.iloc[-1]
 
@@ -279,22 +285,22 @@ class ContrarianAgent:
         if "rsi14" in latest and pd.notna(latest["rsi14"]):
             rsi = float(latest["rsi14"])
             if rsi < 25:
-                score += 0.3  # Sobrevendido = oportunidad de compra
+                reversion_score += 0.3  # Sobrevendido = oportunidad de compra
                 confidence += 0.15
                 signals.append(f"RSI sobrevendido extremo: {rsi:.1f} (oportunidad)")
             elif rsi > 80:
-                score -= 0.3  # Sobrecompra = riesgo de caída
+                reversion_score -= 0.3  # Sobrecompra = riesgo de caída
                 confidence += 0.15
                 signals.append(f"RSI sobrecompra extrema: {rsi:.1f} (riesgo)")
 
         # 2. Divergencias (manipulación)
         if "bearish_divergence" in latest and latest["bearish_divergence"]:
-            score -= 0.25
+            reversion_score -= 0.25
             confidence += 0.12
             signals.append("Divergencia bajista RSI/precio (distribución institucional)")
 
         if "bullish_divergence" in latest and latest["bullish_divergence"]:
-            score += 0.25
+            reversion_score += 0.25
             confidence += 0.12
             signals.append("Divergencia alcista RSI/precio (acumulación institucional)")
 
@@ -304,11 +310,11 @@ class ContrarianAgent:
             bb_upper = float(latest["bb_upper"])
             bb_lower = float(latest["bb_lower"])
             if close > bb_upper:
-                score -= 0.15
+                reversion_score -= 0.15
                 confidence += 0.08
                 signals.append("Precio sobre banda superior (probable reversión a la baja)")
             elif close < bb_lower:
-                score += 0.15
+                reversion_score += 0.15
                 confidence += 0.08
                 signals.append("Precio bajo banda inferior (probable rebote)")
 
@@ -319,11 +325,11 @@ class ContrarianAgent:
                 # Volumen extremo = evento de reversión
                 if "close" in latest and "ema20" in latest:
                     if latest["close"] < latest["ema20"]:
-                        score += 0.15
+                        reversion_score += 0.15
                         confidence += 0.08
                         signals.append(f"Volumen extremo en caída: ratio {vr:.1f} (capitulación)")
                     else:
-                        score -= 0.15
+                        reversion_score -= 0.15
                         confidence += 0.08
                         signals.append(f"Volumen extremo en subida: ratio {vr:.1f} (euforia)")
 
@@ -331,11 +337,11 @@ class ContrarianAgent:
         if "smi_proxy" in latest and pd.notna(latest["smi_proxy"]):
             smi = float(latest["smi_proxy"])
             if smi > 0.1:
-                score += 0.1
+                reversion_score += 0.1
                 confidence += 0.05
                 signals.append("Smart Money comprando al cierre")
             elif smi < -0.1:
-                score -= 0.1
+                reversion_score -= 0.1
                 confidence += 0.05
                 signals.append("Smart Money vendiendo al cierre")
 
@@ -346,11 +352,11 @@ class ContrarianAgent:
             if gold is not None and silver is not None:
                 gs = float(gold["close"].iloc[-1] / silver["close"].iloc[-1])
                 if gs > 80:
-                    score -= 0.1
+                    sentiment_score -= 0.1
                     confidence += 0.05
                     signals.append(f"Gold/Silver = {gs:.1f} > 80 (miedo extremo)")
                 elif gs < 65:
-                    score += 0.1
+                    sentiment_score += 0.1
                     confidence += 0.05
                     signals.append(f"Gold/Silver = {gs:.1f} < 65 (optimismo)")
 
@@ -360,12 +366,37 @@ class ContrarianAgent:
             if vix is not None and len(vix) > 20:
                 vix_val = float(vix["close"].iloc[-1])
                 if vix_val > 30:
-                    score += 0.2
+                    sentiment_score += 0.2
                     confidence += 0.10
                     signals.append(f"VIX = {vix_val:.1f} > 30 (miedo extremo, posible fondo)")
 
-        # Normalizar
-        score = float(np.clip(score, -1, 1))
+        # 8. V1: AAII bull-bear spread (sentimiento retail, principal variable)
+        aaii = None
+        if sentiment_data:
+            aaii = sentiment_data.get("aaii_bullbear_spread")
+            if aaii is not None and pd.notna(aaii):
+                aaii = float(aaii)
+                if aaii < SENTIMENT_PANIC_SPREAD:
+                    sentiment_score += 0.3
+                    confidence += 0.15
+                    signals.append(f"AAII bull-bear = {aaii:.1f} < {SENTIMENT_PANIC_SPREAD:.0f} "
+                                   "(máximo pesimismo: el sistema compra barato)")
+                elif aaii > SENTIMENT_EUPHORIA_SPREAD:
+                    sentiment_score -= 0.3
+                    confidence += 0.15
+                    signals.append(f"AAII bull-bear = {aaii:.1f} > {SENTIMENT_EUPHORIA_SPREAD:.0f} "
+                                   "(euforia retail: el sistema distribuye)")
+                else:
+                    sentiment_score -= 0.3 * float(np.clip(aaii / SENTIMENT_EUPHORIA_SPREAD, -1, 1))
+                    confidence += 0.10
+
+        # H6: en euforia extrema las señales de reversión pierden poder
+        # (IC condicional RSI/ER invierte en el bucket alto) -> se cuestionan
+        if aaii is not None and aaii > SENTIMENT_EUPHORIA_SPREAD:
+            reversion_score *= 0.5
+            signals.append(f"Euforia AAII ({aaii:.1f}): señales de reversión cuestionadas (H6)")
+
+        score = float(np.clip(reversion_score + sentiment_score, -1, 1))
         confidence = float(np.clip(confidence, 0, 1))
 
         reasoning = "Señales de reversión/manipulación detectadas" if abs(score) > 0.2 else (
@@ -495,11 +526,12 @@ class TriadEvaluator:
         symbol: str = "UNKNOWN",
         fundamentals: Optional[Dict] = None,
         macro_data: Optional[Dict] = None,
+        sentiment_data: Optional[Dict] = None,
     ) -> TriadConsensus:
         """Evalúa una señal con los tres agentes y produce consenso."""
         bull = self.bull_agent.evaluate(df, fundamentals, macro_data)
         bear = self.bear_agent.evaluate(df, fundamentals, macro_data)
-        contrarian = self.contrarian_agent.evaluate(df, fundamentals, macro_data)
+        contrarian = self.contrarian_agent.evaluate(df, fundamentals, macro_data, sentiment_data)
 
         # Mejorar con LLMs de NVIDIA NIM si están disponibles
         bull = self._llm_enhance("BULL", bull, df, symbol, fundamentals, macro_data)

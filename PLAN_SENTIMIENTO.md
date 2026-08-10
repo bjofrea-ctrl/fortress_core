@@ -88,18 +88,25 @@ y se descarta — no se fuerza.
   anti-lookahead (`shift(1)` + `ffill` sobre fechas de trading), cache parquet, doble
   transporte HTTP (requests + curl_cffi). ✅
 
-### Integración — Variable de régimen
-- Nueva capa `sentiment_regime` sobre `REGIME_WEIGHTS` (`predictive_engine.py:1021`):
-  - **Prueba de bloques (H7) primero**: Grupo 1 (baseline, pesos actuales) vs Grupo 2
-    (baseline + V1 con 50-70% del peso). Solo si el Grupo 2 mejora la calidad
-    probabilística, V1 entra con peso dominante. Si no, se recalibra el peso (30%, 50%)
-    o se descarta.
-  - Sentimiento en extremo → V1 gana peso de régimen; las demás variables se **cuestionan**
-    (multiplicador o inversión según H6).
-  - Subidas lentas y persistentes (ER bajo) con sentimiento bajo → confirmar continuidad.
-  - Subidas rápidas (ER alto) con sentimiento alto → señal de distribución → inclinar bear.
-- Reglas nuevas en `ContrarianAgent` (`triad_agents.py:268`): el agente lee V1 como su
-  variable principal y condiciona su voto a los extremos de sentimiento.
+### Integración — Variable de régimen (IMPLEMENTADA 2026-08-09)
+- Nueva capa `sentiment_regime` sobre `REGIME_WEIGHTS` (`predictive_engine.py`):
+  - **Prueba de bloques (H7)**: veredicto **CONFIRMA** con peso 0.50 (IS: Brier 4/4
+    con DM p<0.05 en 1d/5d; OOS 2025-2026: Brier 4/4 con DM p<0.05 en 4/4).
+  - Implementación (constantes en `app/core/sentiment_regime.py`, peso 0.50 fijo):
+    - Blend: `composite = 0.5*composite + 0.5*s_v1` con `s_v1 = -normalize(spread, ±35)`.
+      Sin datos de sentimiento → comportamiento idéntico al baseline (backward-compatible).
+    - **H6 — cuestionamiento en euforia** (`s_v1 < -0.5`): tech_mom y tech_rev se
+      multiplican por 0.5 antes del compuesto (IC condicional RSI/ER invierte en euforia).
+    - **V4 — velocidad**: ER20 < 0.25 con pesimismo (`s_v1 > 0.3`) → `composite += 0.10`
+      (acumulación silenciosa); ER20 > 0.60 con euforia (`s_v1 < -0.3`) → `composite -= 0.10`
+      (distribución). Señales agregadas al reporte con categoría `sentiment_regime`.
+  - Nota de diseño: con sentimiento neutro (spread=0) el blend diluye la convicción
+    base a la mitad — fiel al bloque H7 (`0.5*G1 + 0.5*0`), test cubierto.
+- Reglas nuevas en `ContrarianAgent` (`triad_agents.py`): V1 como variable principal
+  (regla 8: spread < -15 → +0.3 alcista, > +15 → -0.3 bajista, intermedio proporcional);
+  en euforia extrema las señales de reversión (reglas 1-5) se multiplican por 0.5 (H6).
+  `TriadEvaluator.evaluate` y `PredictiveEngine.analyze` aceptan `sentiment_data`
+  (backward-compatible).
 
 ### Validación
 - `pytest` completo tras integración.
@@ -131,11 +138,11 @@ y se descarta — no se fuerza.
 **Resultado (se llena DESPUÉS de la única corrida)**:
 | Horizonte | IC AAII | G1 Brier | G2/50 Brier | DM p |
 |-----------|---------|----------|-------------|------|
-| 1d | | | | |
-| 5d | | | | |
-| 20d | | | | |
-| 60d | | | | |
-**Veredicto OOS**:
+| 1d | — | 0.2764 | 0.2623 | 0.014 |
+| 5d | -0.0880 | 0.2789 | 0.2647 | 0.007 |
+| 20d | -0.1326 | 0.2952 | 0.2705 | 0.006 |
+| 60d | **-0.3567*** | 0.2978 | 0.2560 | 0.000 |
+**Veredicto OOS**: **CONFIRMA** — IC(AAII) < 0 en todos los horizontes (dirección correcta) Y G2/50 gana Brier en 4/4 con DM p<0.05 en 4/4 → **V1 se integra con 0.50**.
 
 ---
 
@@ -145,9 +152,25 @@ y se descarta — no se fuerza.
 2. ~~**Tests H1-H4**~~ ✅ H1/H2' confirmadas; H3/H4 (2×2) consistentes con la tesis.
 3. ~~**Test H5**~~ ✅ sustituido por H6/V1 2×2 (sent × liq) que confirma el mecanismo.
 4. ~~**Test H6**~~ ✅ IC condicional por bucket de AAII: en euforia, RSI/ER se invierten.
-5. ~~**Test H7 (prueba de bloques)**~~ ✅ **Veredicto: V1 integra con peso dominante (50-70%)** — G2 gana en Brier en 4/5 horizontes (1/5/20/60d).
-6. **Integración**: `sentiment_regime` en `predictive_engine.py` + reglas en `ContrarianAgent`.
-7. **Cierre**: `pytest`, OOS si aplica, `SESSION_LOG.md`.
+5. ~~**Test H7 (prueba de bloques)**~~ ✅ **Veredicto: V1 integra con peso 0.50** — IS: G2 gana Brier 4/4 con DM p<0.05 en 1d/5d (cumple criterio pre-registrado); OOS 2025-2026: **CONFIRMA** (Brier 4/4, DM p<0.05 4/4, IC 60d -0.3567***).
+6. ~~**Integración**: `sentiment_regime` en `predictive_engine.py` + reglas en `ContrarianAgent`~~ ✅ **2026-08-09**: blend 0.50, cuestionamiento H6 en euforia, reglas V4 de velocidad; tests `test_sentiment_regime.py` (10) + suite 36/36.
+7. ~~**Cierre**~~ ✅ `pytest` 36/36, `SESSION_LOG.md` Sesión 8b.
+
+---
+
+## 8. Estado de la integración (2026-08-09)
+
+| Componente | Estado |
+|------------|--------|
+| `app/core/sentiment_regime.py` (constantes pre-registradas) | ✅ Creado |
+| `predictive_engine.py` — `_sentiment_regime_signal()` | ✅ Blend 0.50 + H6 cuestionamiento + V4 velocidad |
+| `predictive_engine.py` — `analyze(sentiment_data=...)` | ✅ Backward-compatible (None → baseline) |
+| `triad_agents.py` — `ContrarianAgent` regla V1 (regla 8) | ✅ +0.3 pánico / -0.3 euforia / proporcional |
+| `triad_agents.py` — cuestionamiento reversión en euforia (H6) | ✅ ×0.5 reglas 1-5 |
+| `TriadEvaluator.evaluate(sentiment_data=...)` | ✅ Propagado |
+| `tests/test_sentiment_regime.py` | ✅ 10 tests (blend, H6, V4, backward-compat, agente) |
+| Data feeding (pipeline: descargar AAII y pasar `sentiment_data` en `predict.py`) | 🔲 Pendiente — requiere alinear fecha y pasar `{"aaii_bullbear_spread": X}` |
+| Pendientes de auditoría (no bloqueantes) | n_eff=36 en OOS 60d (confirmación ajustada); IC G1 negativo en 2025-2026 — revisar régimen HMM en próxima auditoría |
 
 ---
 
@@ -159,8 +182,7 @@ y se descarta — no se fuerza.
 | COT asset managers 60d | IC -0.0890*** | Dirección contraria a retail |
 | walcl_growth_w 60d | IC +0.0633* / rank_ic -0.0167 | Frágil |
 | H6 2×2 (liquidez × retail COT) 60d | liq_alta × ret_alta = +0.0983 | La celda "euforia + liquidez" sube — inconsistente con H4/H6 narrativa, requiere V1 real para dirimir |
-| **AAII (V1) 5d** | IC -0.0315 (borde sig), rank_ic -0.0405 | Dirección correcta desde 5d |
-| **AAII (V1) 20d** | IC -0.0472*** (rank -0.0439***) | Confirma |
+| **AAII (V1) 5d** | IC -0.0315 (borde sig), rank_ic -0.0405 | Dirección correcta desde 5d || **AAII (V1) 20d** | IC -0.0472*** (rank -0.0439***) | Confirma |
 | **AAII (V1) 60d** | **IC -0.0773*** (rank_ic -0.0857***)** | **ÚNICA variable con IC negativo consistente en todos los horizontes** |
 | **Terciles AAII 60d** | bajo +0.0987 > medio +0.0609 > alto +0.0585 | **MONÓTONO — tesis confirmada: pesimismo → sube, euforia → cae** |
 | **H6/V1 2×2 60d** | liq_baja×sent_baja +0.0916, liq_alta×sent_baja +0.0747 vs sent_alta +0.0642/+0.0537 | **El sentimiento domina; la liquidez solo modula (en línea con la tesis)** |

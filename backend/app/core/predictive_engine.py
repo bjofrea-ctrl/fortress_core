@@ -32,6 +32,13 @@ from app.core.predictive_indicators import (
 )
 from app.core.triad_agents import TriadEvaluator, TriadConsensus
 from app.core.advanced_agents import NvidiaNIMClient
+from app.core.sentiment_regime import (
+    SENTIMENT_REGIME_DOMINANCE,
+    SENTIMENT_EXTREME,
+    AAII_SPREAD_BOUND,
+    ER_SLOW,
+    ER_FAST,
+)
 
 
 # ============================================================
@@ -187,6 +194,29 @@ class PredictiveEngine:
 
     def _signal_from_binary(self, condition: bool, strength: float = 1.0) -> float:
         return strength if condition else -strength
+
+    def _sentiment_regime_signal(self, df: pd.DataFrame,
+                                 sentiment_data: Optional[Dict[str, float]]) -> Tuple[float, float, Optional[float]]:
+        """Señal V1 (AAII bull-bear) como variable de régimen.
+
+        Devuelve (s_v1, er20, spread):
+        - s_v1: -normalize(spread) en [-1, +1]. Positivo = pesimismo (alcista,
+          el sistema compra barato); negativo = euforia (bajista, el sistema
+          distribuye). Sin datos de sentimiento -> 0.0 (neutro).
+        - er20: Kaufman efficiency ratio del último día (default 0.5).
+        - spread: valor crudo AAII o None si no hay datos.
+        """
+        s_v1, spread = 0.0, None
+        if sentiment_data:
+            spread = sentiment_data.get("aaii_bullbear_spread")
+            if spread is not None and pd.notna(spread):
+                s_v1 = -self._normalize_signal(float(spread), -AAII_SPREAD_BOUND, AAII_SPREAD_BOUND)
+        if "er20" in df.columns and pd.notna(df["er20"].iloc[-1]):
+            er = float(df["er20"].iloc[-1])
+        else:
+            er = 0.5
+        return s_v1, er, spread
+
 
     # --------------------------------------------------------
     # 1. Señales técnicas (momentum y reversión)
@@ -972,6 +1002,7 @@ class PredictiveEngine:
         macro_data: Optional[Dict[str, pd.DataFrame]] = None,
         prediction_data: Optional[Dict[str, float]] = None,
         vix_data: Optional[pd.DataFrame] = None,
+        sentiment_data: Optional[Dict[str, float]] = None,
     ) -> PredictionResult:
         """
         Analiza un símbolo y genera recomendación probabilística.
@@ -984,6 +1015,9 @@ class PredictiveEngine:
             macro_data: Dict con DataFrames de DXY, gold, silver, etc.
             prediction_data: Dict con probabilidades de Polymarket-like
             vix_data: DataFrame con datos de VIX
+            sentiment_data: Dict con el valor de sentimiento alineado
+                (e.g., {"aaii_bullbear_spread": -23.4}). V1 entra al
+                compuesto con peso 0.50 (PLAN_SENTIMIENTO.md §7).
         """
         # Calcular indicadores predictivos
         df = df.copy()
@@ -1017,6 +1051,25 @@ class PredictiveEngine:
         # Inicializar growth_score
         growth_score = 0.0
 
+        # Capa de régimen de sentimiento V1 (pre-registrada §7: peso 0.50)
+        s_v1, er20, aaii_spread = self._sentiment_regime_signal(df, sentiment_data)
+        sentiment_regime_signals: List[SignalDetail] = []
+
+        # H6: en euforia extrema, momentum/RSI/ER pierden poder e invierten
+        # (IC condicional RSI -0.1254, ER -0.1122 @60d en el bucket alto) ->
+        # el régimen los cuestiona reduciendo su aporte antes del compuesto.
+        if aaii_spread is not None and s_v1 < -SENTIMENT_EXTREME:
+            tech_mom_score *= 0.5
+            tech_rev_score *= 0.5
+            sentiment_regime_signals.append(SignalDetail(
+                name="Cuestionamiento euforia (H6)",
+                category="sentiment_regime",
+                value=float(aaii_spread),
+                signal=-1.0,
+                weight=0.5,
+                explanation="Euforia AAII extrema: momentum/RSI/ER se cuestionan (IC condicional invierte)"
+            ))
+
         # Pesos según régimen
         weights = REGIME_WEIGHTS.get(regime_state, REGIME_WEIGHTS[0])
 
@@ -1034,6 +1087,40 @@ class PredictiveEngine:
             growth_weight = sum(s.weight for s in fund_signals if s.category == "fundamental_growth")
             growth_score = sum(s.signal * s.weight for s in fund_signals if s.category == "fundamental_growth") / growth_weight if growth_weight > 0 else 0
             composite += growth_score * weights.get("fundamental_growth", 0.10)
+
+        # V1 entra al compuesto con peso dominante 0.50 (blend pre-registrado §7)
+        if aaii_spread is not None:
+            composite = (1.0 - SENTIMENT_REGIME_DOMINANCE) * composite + SENTIMENT_REGIME_DOMINANCE * s_v1
+            sentiment_regime_signals.append(SignalDetail(
+                name="Sentiment Regime V1 (AAII)",
+                category="sentiment_regime",
+                value=float(aaii_spread),
+                signal=s_v1,
+                weight=SENTIMENT_REGIME_DOMINANCE,
+                explanation="AAII bull-bear con peso dominante 0.50 (PLAN_SENTIMIENTO.md §7)"
+            ))
+
+            # V4: velocidad de la subida + sentimiento
+            if er20 < ER_SLOW and s_v1 > 0.3:
+                composite += 0.10
+                sentiment_regime_signals.append(SignalDetail(
+                    name="Acumulación silenciosa (V4)",
+                    category="sentiment_regime",
+                    value=float(aaii_spread),
+                    signal=1.0,
+                    weight=0.10,
+                    explanation=f"Subida lenta (ER20={er20:.2f}) con pesimismo: acumulación, se confirma continuidad"
+                ))
+            elif er20 > ER_FAST and s_v1 < -0.3:
+                composite -= 0.10
+                sentiment_regime_signals.append(SignalDetail(
+                    name="Distribución en euforia (V4)",
+                    category="sentiment_regime",
+                    value=float(aaii_spread),
+                    signal=-1.0,
+                    weight=0.10,
+                    explanation=f"Subida rápida (ER20={er20:.2f}) con euforia: distribución, inclinación bajista"
+                ))
 
         # Determinar decisión
         decision = "MANTENER"
@@ -1070,10 +1157,11 @@ class PredictiveEngine:
 
         # Todos los detalles de señales
         all_signals = tech_mom_signals + tech_rev_signals + fund_signals + macro_signals + \
-                      manip_signals + vol_signals + pred_market_signals
+                      manip_signals + vol_signals + pred_market_signals + sentiment_regime_signals
 
         # Evaluación TRIAD (triple validación independiente)
-        triad = self.triad_evaluator.evaluate(df, symbol=symbol, fundamentals=fundamentals, macro_data=macro_data)
+        triad = self.triad_evaluator.evaluate(df, symbol=symbol, fundamentals=fundamentals,
+                                              macro_data=macro_data, sentiment_data=sentiment_data)
 
         # Ajustar score compuesto con consenso TRIAD (20% peso)
         composite_with_triad = composite * 0.8 + triad.consensus_score * 0.2

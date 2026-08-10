@@ -675,3 +675,16 @@ Validar V1 (sentimiento directo del inversor minorista) y decidir su integració
 - [ ] `pytest` + OOS 2025-2026 + cierre
 
 ---
+
+### Sesión 8b — Correcciones de rigor + OOS (spec congelada) — COMPLETADO
+
+**Pregunta del usuario**: ¿los *** corrigieron autocorrelación semanal (n_eff)? ¿el peso 50-70% fue pre-registrado o barrido? Ambas respuestas fueron NO → correcciones antes de integrar.
+
+- **F1 n_eff Newey-West** (`newey_west_neff` en diagnose_sentiment_ic.py): n_eff por símbolo con pesos Bartlett, L=ceil(h/stride), piso 1+L. Resultado: TODOS los *** del IS se cayeron (AAII 60d: n=3633 → n_eff=279). La dirección se mantiene: terciles 60d +0.0987 > +0.0609 > +0.0585.
+- **F2 H7 sin barrido**: V1_DOMINANCE=0.50 fijo, Diebold-Mariano con varianza NW (lag=ceil(h/5)). IS: G2/50 gana Brier 4/4, DM p<0.05 en 2/4 (5d p=0.001, 1d p=0.043) → cumple criterio pre-registrado.
+- **F3 OOS 2025-2026** (`diagnose_sentiment_oos.py`, spec congelada pre-registrada en PLAN §7, ranking rolling 260d causal, evaluación ≥2025-01-01, UNA corrida → data/cache/oos_result_20260809_213058.txt):
+  - IC AAII: 5d -0.0880, 20d -0.1326, 60d -0.3567*** (n_eff=36) — negativo en TODOS los horizontes.
+  - H7-OOS: G2/50 gana Brier 4/4 con DM p<0.05 en 4/4 (60d p=0.000).
+  - G1 baseline OOS: ic_score NEGATIVO (-0.33 @60d) — el baseline falla OOS, V1 lo rescata.
+  - **VEREDICTO: CONFIRMA → V1 se integra con peso dominante 0.50.**
+- Pendiente: integración `sentiment_regime` en predictive_engine.py + reglas ContrarianAgent (autorización del usuario), pytest, cierre.
