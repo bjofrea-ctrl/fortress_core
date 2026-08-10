@@ -223,7 +223,8 @@ class BacktestEngine:
         start_date: datetime,
         end_date: datetime,
         commission=0.001,
-        slippage=0.0005
+        slippage=0.0005,
+        sentiment_scores: Dict = None,
     ) -> Dict:
         indicators_cache = {s: calculate_all_indicators(df) for s, df in price_data.items()}
         train_market = {s: df[df.index < start_date] for s, df in market_data.items()}
@@ -348,7 +349,12 @@ class BacktestEngine:
                 signals = []
                 for symbol, df in indicators_cache.items():
                     if date in df.index:
-                        sig = self.signal_engine.generate_signal(df.loc[:date], symbol, regime_info["state"])
+                        sent_score = None
+                        if sentiment_scores:
+                            sent_score = sentiment_scores.get(date)
+                        sig = self.signal_engine.generate_signal(
+                            df.loc[:date], symbol, regime_info["state"], sentiment_score=sent_score
+                        )
                         if sig:
                             signals.append(sig)
 

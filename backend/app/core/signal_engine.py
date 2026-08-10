@@ -111,7 +111,8 @@ class SignalEngine:
             "eligible": eligible.fillna(False), "close": df["close"],
         }, index=df.index)
 
-    def generate_signal(self, stock_data: pd.DataFrame, symbol: str, regime_state: int) -> Optional[Dict]:
+    def generate_signal(self, stock_data: pd.DataFrame, symbol: str, regime_state: int,
+                        sentiment_score: Optional[float] = None) -> Optional[Dict]:
         if len(stock_data) < 200 or regime_state == 3:
             return None
 
@@ -122,6 +123,16 @@ class SignalEngine:
         scores = self._factor_scores(stock_data)
         weights = self._get_factor_weights(regime_state)
         overall = sum(scores[f] * weights[f] for f in weights)
+
+        # Blend V1 (pre-registrado 0.50): la señal de sentimiento modera el
+        # score técnico ANTES del gate de entrada y del ranking. Con
+        # sentiment_score=None el score es idéntico al baseline (backward-
+        # compatible). El factor queda en 'factors' para trazabilidad en
+        # trades y en el BMA no interviene (igual que en predictive_engine:
+        # el blend es sobre el compuesto, los factores se pesan puros).
+        if sentiment_score is not None:
+            overall = 0.5 * overall + 0.5 * sentiment_score
+            scores["sentiment_v1"] = sentiment_score
 
         if not (latest.close > latest.ema50 > latest.ema200):
             return None

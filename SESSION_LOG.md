@@ -718,3 +718,20 @@ Revisión de Claude Code antes del sí automático: (1) ¿fetch_aaii lee de cach
 - **Guarda 2 (degradado)**: `_load_sentiment_data()` en `predict.py` — alineación anti-lookahead (solo valores publicados antes de hoy, shift(1)); try/except → `None` → el motor corre baseline (backward-compatible). Conectado en `/analyze/{symbol}` y `/universe`.
 - **Verificación en vivo**: cache real (2026-08-09) fresco → lee parquet, 0 descargas → `{'aaii_bullbear_spread': -0.926}`.
 - **Tests**: `tests/test_market_sentiment.py` (6): cache fresco no descarga, stale refresca, stale degrada a stale, sin cache falla propaga, sin cache ok crea parquet, formato inesperado no pisa cache bueno. Suite: **42/42 passed**.
+
+### Sesión 8e — Fase 0a: auditoría del régimen HMM 2025-2026 COMPLETADA — 2026-08-10
+
+**Pregunta pre-registrada**: ¿el IC negativo del baseline G1 en OOS (2025-2026) se explica por un régimen de mercado anómalo respecto del IS?
+
+- **Script nuevo** `scripts/audit_regime_hmm.py` (huella: `data/cache/regime_audit_20260810_082318.txt`):
+  - Fit del `GlobalRegimeClassifier` SOLO con datos <= 2024-12-31 (sin lookahead en el fit).
+  - Etiquetado **walk-forward**: Viterbi sobre la ventana [2015, t] por fecha (evita el lookahead suave del Viterbi global que usaría fechas futuras); remap semántico con métricas del IS.
+  - Registros de señal idénticos al OOS (mismas constantes/pesos importados de `diagnose_sentiment_oos.py`), IS 2019-2024 vs OOS 2025-2026, IC por régimen con n_eff Newey-West.
+- **Resultados**:
+  - Distribución: OOS = 100% REFLATION (54.8%) + STAGFLATION (45.2%); GOLDILOCKS/DEFLATION 0% (vs 12.3%/14.3% IS).
+  - G1 60d por régimen: REFLATION +0.03 → **-0.29**; STAGFLATION +0.03 → **-0.42 (***, inversión de signo)**.
+  - V1 (aaii) 60d por régimen: REFLATION +0.11 → **+0.23**; STAGFLATION -0.05 → **+0.32** (mejora).
+- **Veredicto**: el deterioro G1 es TRANSVERSAL a los regímenes activos — no hay "excusa de régimen" (STAGFLATION era el régimen dominante del IS y ahí G1 era positivo). Implicación: Fase 0b (backtest con costos) es obligatoria. Bonus: V1 se comporta opuesto al baseline (pisa fuerte donde G1 falla) → la integración 0.50 gana apoyo con evidencia por régimen.
+- Caveat: n_eff OOS chico (30-136; STAGFLATION en el límite 30), dirección consistente en 1d/5d/20d/60d pero magnitudes con error amplio.
+- Gotcha del script: `predict` de hmmlearn decodifica con Viterbi global → para etiquetado histórico honesto hay que decodificar por ventana parcial (walk-forward), O(n²) pero trivial con 4 estados.
+- PLAN_SENTIMIENTO.md §8 actualizado con el veredicto y el archivo de huella.

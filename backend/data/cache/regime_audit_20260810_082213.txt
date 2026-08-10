@@ -1,0 +1,77 @@
+========================================================================
+FASE 0a — AUDITORÍA RÉGIMEN HMM (walk-forward, fit <= 2024-12-31)
+========================================================================
+HMM fiteado con 2516 días <= 2024-12-31
+
+--- 1. Distribución de regímenes (días de trading) ---
+    régimen      IS 2019-2024 OOS 2025-2026  share IS share OOS
+    GOLDILOCKS            295            0     0.123     0.000
+    REFLATION             580          218     0.242     0.548
+    STAGFLATION          1178          180     0.492     0.452
+    DEFLATION             343            0     0.143     0.000
+
+Registros: IS=2590  OOS=469
+
+--- 2. IC por régimen (G1 baseline) IS vs OOS ---
+
+  horizonte 5d — G1
+    régimen         IS ic IS n_eff  IS sig   OOS ic OOS n_eff OOS sig  OOS n
+    GOLDILOCKS       n<50        -          +7.0000      nan     ***
+    REFLATION     +0.0105      504         +1008.0000       -0     ***
+    STAGFLATION   +0.0319      606         +1211.0000       -0     ***
+    DEFLATION     -0.0524      182         +364.0000      nan     ***
+
+  horizonte 20d — G1
+    régimen         IS ic IS n_eff  IS sig   OOS ic OOS n_eff OOS sig  OOS n
+    GOLDILOCKS       n<50        -          +7.0000      nan     ***
+    REFLATION     -0.0076      202         +1008.0000       -0     ***
+    STAGFLATION   +0.0550      242         +1211.0000       -0     ***
+    DEFLATION     +0.1193       73         +364.0000      nan     ***
+
+  horizonte 60d — G1
+    régimen         IS ic IS n_eff  IS sig   OOS ic OOS n_eff OOS sig  OOS n
+    GOLDILOCKS       n<50        -          +7.0000      nan     ***
+    REFLATION     -0.1129       78         +1008.0000       -0     ***
+    STAGFLATION   +0.0293       93         +1211.0000       -0     ***
+    DEFLATION     +0.4463       30     *** +364.0000      nan     ***
+
+  horizonte 1d — G1
+    régimen         IS ic IS n_eff  IS sig   OOS ic OOS n_eff OOS sig  OOS n
+    GOLDILOCKS       n<50        -          +7.0000      nan     ***
+    REFLATION     -0.0474      504         +1008.0000        0     ***
+    STAGFLATION   +0.0374      606         +1211.0000       -0     ***
+    DEFLATION     +0.0328      182         +364.0000      nan     ***
+
+--- 3. IC de V1 (aaii) por régimen IS vs OOS ---
+
+  horizonte 5d — V1
+    régimen         IS ic IS n_eff  IS sig   OOS ic OOS n_eff OOS sig  OOS n
+    GOLDILOCKS       n<50        -          +7.0000      nan     ***
+    REFLATION     +0.0890      504         +1008.0000        0     ***
+    STAGFLATION   -0.0007      606         +1211.0000        0     ***
+    DEFLATION     +0.1042      182         +364.0000      nan     ***
+
+  horizonte 20d — V1
+    régimen         IS ic IS n_eff  IS sig   OOS ic OOS n_eff OOS sig  OOS n
+    GOLDILOCKS       n<50        -          +7.0000      nan     ***
+    REFLATION     +0.0449      202         +1008.0000        0     ***
+    STAGFLATION   +0.0074      242         +1211.0000        0     ***
+    DEFLATION     +0.3145       73     *** +364.0000      nan     ***
+
+  horizonte 60d — V1
+    régimen         IS ic IS n_eff  IS sig   OOS ic OOS n_eff OOS sig  OOS n
+    GOLDILOCKS       n<50        -          +7.0000      nan     ***
+    REFLATION     +0.1076       78         +1008.0000        0     ***
+    STAGFLATION   -0.0504       93         +1211.0000        0     ***
+    DEFLATION     +0.3853       30     *** +364.0000      nan     ***
+
+  horizonte 1d — V1
+    régimen         IS ic IS n_eff  IS sig   OOS ic OOS n_eff OOS sig  OOS n
+    GOLDILOCKS       n<50        -          +7.0000      nan     ***
+    REFLATION     +0.1999      504     *** +1008.0000       -0     ***
+    STAGFLATION   +0.0027      606         +1211.0000       -0     ***
+    DEFLATION     -0.1499      182     *** +364.0000      nan     ***
+
+========================================================================
+Veredicto pendiente: revisar tablas (concentrado / transversal / mixto).
+Out: data/cache/regime_audit_20260810_082213.txt
