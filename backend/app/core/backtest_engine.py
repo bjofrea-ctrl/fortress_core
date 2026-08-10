@@ -338,6 +338,7 @@ class BacktestEngine:
                             "pnl": pnl,
                             "exit_reason": "TECHNICAL",
                             "g2_score": pos.get("g2_score"),
+                            "g3_score": pos.get("g3_score"),
                         })
 
                         risk_manager.register_exit(symbol, pos["shares"])
@@ -415,6 +416,7 @@ class BacktestEngine:
                             "regime_state": sig["regime_state"],
                             "factors": sig["factors"],
                             "g2_score": sig.get("g2_score"),
+                            "g3_score": sig.get("g3_score"),
                         }
                         risk_manager.register_entry(sig["symbol"], sig["entry_price"], shares)
 

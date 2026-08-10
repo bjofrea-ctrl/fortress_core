@@ -132,6 +132,8 @@ def compute_fundamental_score_series(
             signal = pd.Series(np.where(raw > 0, -normed, 0.0), index=sub.index)
         else:
             signal = normed.where(active, 0.0)
+            if direction == "invert":
+                signal = -signal
         if mode == "damp":
             signal = signal * 0.7
 
