@@ -1,0 +1,14 @@
+{
+  "metrics": {
+    "cagr": 0.0031579243323998085,
+    "sharpe_ratio": 0.18975471919073852,
+    "sortino_ratio": 0.1439979956355963,
+    "max_drawdown": -0.026024245819940228,
+    "calmar_ratio": 0.12134546969196518,
+    "win_rate": 0.38006230529595014,
+    "profit_factor": 1.3331030316683952,
+    "total_trades": 321,
+    "deflated_sharpe": 0.25122881800266866,
+    "deflated_sharpe_n_trials": 5
+  }
+}
