@@ -121,15 +121,17 @@ class AdaptiveRiskManager:
 
         dd = self.drawdown_from_peak(equity)
         if dd <= -self.ABSOLUTE_CEILING:
-            for symbol in list(self.state.positions.keys()):
-                to_close.append((symbol, "PORTFOLIO_CEILING_BREACH"))
-            self._log(date, "CRITICAL", None, f"CEILING cartera: {dd:.2%}", "TOTAL_LIQUIDATION", True)
-            self.trigger_cooldown(date)
+            if self.state.positions:
+                for symbol in list(self.state.positions.keys()):
+                    to_close.append((symbol, "PORTFOLIO_CEILING_BREACH"))
+                self._log(date, "CRITICAL", None, f"CEILING cartera: {dd:.2%}", "TOTAL_LIQUIDATION", True)
+                self.trigger_cooldown(date)
         elif dd <= -thresholds["portfolio_stop"]:
-            for symbol in list(self.state.positions.keys()):
-                to_close.append((symbol, "PORTFOLIO_REGIME_STOP"))
-            self._log(date, "CRITICAL", None, f"Stop cartera: {dd:.2%}", "PARTIAL_LIQUIDATION_50PCT", True)
-            self.trigger_cooldown(date)
+            if self.state.positions:
+                for symbol in list(self.state.positions.keys()):
+                    to_close.append((symbol, "PORTFOLIO_REGIME_STOP"))
+                self._log(date, "CRITICAL", None, f"Stop cartera: {dd:.2%}", "PARTIAL_LIQUIDATION_50PCT", True)
+                self.trigger_cooldown(date)
 
         return to_close
 

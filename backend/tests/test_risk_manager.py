@@ -1,6 +1,10 @@
 import pytest
 
+import datetime
+
 from app.core.adaptive_risk import AdaptiveRiskManager
+
+D = datetime.datetime(2026, 8, 10)
 
 
 @pytest.fixture
@@ -60,3 +64,28 @@ def test_no_partial_below_2atr(rm):
     _force_regime(rm, 0)
     to_close = _reasons(rm, 25000, {"AAPL": 103.0}, {"AAPL": 2.0}, None)
     assert "AAPL" not in to_close, "por debajo de +2ATR no hay parcial"
+
+
+def test_no_cooldown_lock_without_positions(rm):
+    """Bug del lock permanente: con dd <= -5% pero SIN posiciones, el motor
+    rearmaba cooldown y logueaba violación TODOS los días, bloqueando las
+    entradas para siempre. Ahora: sin posiciones, sin cooldown, sin violación."""
+    _force_regime(rm, 0)
+    rm.update_peak(25000.0)
+    equity_in_dd = 23500.0  # dd = -6% <= portfolio_stop 5%
+    events_before = len(rm.state.risk_events)
+    reasons = _reasons(rm, equity_in_dd, {}, {}, D)
+    assert reasons == {}, "sin posiciones no debe liquidar nada"
+    assert rm.state.cooldown_until is None, "sin posiciones no debe rearmar cooldown"
+    assert len(rm.state.risk_events) == events_before, "sin posiciones no debe loguear violación"
+    assert rm.can_open_new_position(D) is True, "debe poder re-entrar"
+
+
+def test_cooldown_still_fires_with_positions_in_drawdown(rm):
+    _force_regime(rm, 0)
+    rm.update_peak(25000.0)
+    rm.register_entry("AAPL", entry_price=100.0, shares=100)
+    reasons = _reasons(rm, 23500.0, {"AAPL": 100.0}, {"AAPL": 2.0}, D)
+    assert reasons.get("AAPL") == ["PORTFOLIO_REGIME_STOP"], "con posiciones el stop de cartera sigue"
+    assert rm.state.cooldown_until is not None, "con posiciones el cooldown sigue disparando"
+    assert rm.can_open_new_position(D) is False

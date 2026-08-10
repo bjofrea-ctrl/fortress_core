@@ -79,6 +79,8 @@ def main():
     )
 
     pd.DataFrame(res_v1["trades"]).to_parquet(out_path.replace(".txt", "_trades.parquet"))
+    pd.DataFrame(res_v1["risk_events"]).to_parquet(out_path.replace(".txt", "_events.parquet"))
+    pd.DataFrame(res_v1["equity_curve"]).to_parquet(out_path.replace(".txt", "_equity.parquet"))
 
     engine = BacktestEngine(initial_capital=25000)
     cols = ["cagr", "sharpe_ratio", "sortino_ratio", "max_drawdown", "calmar_ratio",
