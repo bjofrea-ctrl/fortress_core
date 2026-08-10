@@ -1,0 +1,44 @@
+{
+  "baseline": {
+    "metrics_full": {
+      "cagr": 0.0012113802107733829,
+      "sharpe_ratio": 0.0739103280278626,
+      "sortino_ratio": 0.0566241441526144,
+      "max_drawdown": -0.031138659349693832,
+      "calmar_ratio": 0.038902773467840185,
+      "win_rate": 0.3548387096774194,
+      "profit_factor": 1.174580368416952,
+      "total_trades": 341,
+      "deflated_sharpe": 0.09388911799991606,
+      "deflated_sharpe_n_trials": 9
+    }
+  },
+  "v1": {
+    "metrics_full": {
+      "cagr": 0.0029007358832708885,
+      "sharpe_ratio": 0.174575773717394,
+      "sortino_ratio": 0.13648755794686412,
+      "max_drawdown": -0.03338543105529694,
+      "calmar_ratio": 0.08688627918166889,
+      "win_rate": 0.3558823529411765,
+      "profit_factor": 1.299719005581165,
+      "total_trades": 340,
+      "deflated_sharpe": 0.14928752593718236,
+      "deflated_sharpe_n_trials": 9
+    }
+  },
+  "v1_fund": {
+    "metrics_full": {
+      "cagr": 0.0031579243323998085,
+      "sharpe_ratio": 0.18975471919073852,
+      "sortino_ratio": 0.1439979956355963,
+      "max_drawdown": -0.026024245819940228,
+      "calmar_ratio": 0.12134546969196518,
+      "win_rate": 0.38006230529595014,
+      "profit_factor": 1.3331030316683952,
+      "total_trades": 321,
+      "deflated_sharpe": 0.15894287622964692,
+      "deflated_sharpe_n_trials": 9
+    }
+  }
+}
