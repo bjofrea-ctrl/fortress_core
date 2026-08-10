@@ -227,6 +227,7 @@ class BacktestEngine:
         commission=0.001,
         slippage=0.0005,
         sentiment_data: Dict = None,
+        fundamentals_by_symbol: Dict[str, pd.Series] = None,
     ) -> Dict:
         indicators_cache = {s: calculate_all_indicators(df) for s, df in price_data.items()}
         train_market = {s: df[df.index < start_date] for s, df in market_data.items()}
@@ -240,6 +241,19 @@ class BacktestEngine:
         if sentiment_data:
             for symbol, df in indicators_cache.items():
                 g2_by_symbol[symbol] = self.signal_engine.compute_g2_rank_scores(df, sentiment_data)
+
+        # Señal de RANKING G3 (trial 0b-v2-fund, Fase 1): mismo patrón que
+        # G2 pero con el score fundamental point-in-time del panel EDGAR
+        # (0.5*rank(score técnico) + 0.5*rank(score fundamental)). Símbolos
+        # sin cobertura (ETFs) no reciben g3_score -> el ranking usa el
+        # score puro (monótono en rank_tech, mismo orden).
+        g3_by_symbol = {}
+        if fundamentals_by_symbol:
+            for symbol, df in indicators_cache.items():
+                if symbol in fundamentals_by_symbol:
+                    g3_by_symbol[symbol] = self.signal_engine.compute_g3_rank_scores(
+                        df, fundamentals_by_symbol[symbol]
+                    )
 
         calibrator = ProbabilityCalibrator(method="platt")
         cal_scores, cal_outcomes = self._build_calibration_dataset(indicators_cache, start_date)
@@ -296,6 +310,7 @@ class BacktestEngine:
                     "pnl": pnl,
                     "exit_reason": reason,
                     "g2_score": pos.get("g2_score"),
+                    "g3_score": pos.get("g3_score"),
                 })
 
                 risk_manager.register_exit(symbol, shares_to_sell)
@@ -368,6 +383,10 @@ class BacktestEngine:
                                 g2 = g2_by_symbol[symbol].loc[date]
                                 if pd.notna(g2):
                                     sig["g2_score"] = float(g2)
+                            if g3_by_symbol:
+                                g3 = g3_by_symbol[symbol].loc[date]
+                                if pd.notna(g3):
+                                    sig["g3_score"] = float(g3)
                             signals.append(sig)
 
                 signals = self.signal_engine.rank_signals(signals)

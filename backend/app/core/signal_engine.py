@@ -154,6 +154,21 @@ class SignalEngine:
             "atr": float(atr_v),
         }
 
+    def _fixed_score_series(self, indicators_df: pd.DataFrame) -> pd.Series:
+        """Score técnico con pesos FIJOS (factor_weights[0], sin BMA online)
+        para toda la serie. Comparte definición con compute_g2_rank_scores."""
+        mom = indicators_df.get("momentum_12_1", pd.Series(np.nan, index=indicators_df.index))
+        momentum_score = ((mom + 50) / 150).clip(0, 1).where(mom.notna(), 0.5)
+
+        rsi = indicators_df.get("rsi14", pd.Series(np.nan, index=indicators_df.index))
+        rsi_score = pd.Series(
+            np.where(rsi.between(45, 70, inclusive="neither"), 0.8, 0.4),
+            index=indicators_df.index,
+        ).where(rsi.notna(), 0.5)
+
+        priors = self.factor_weights[0]
+        return momentum_score * priors["momentum"] + rsi_score * priors["rsi"]
+
     @staticmethod
     def _rolling_rank01(s: pd.Series, window: int = 260, min_periods: int = 60) -> pd.Series:
         """Percentil rolling causal en [-1,1]: rank del valor actual dentro de
@@ -183,18 +198,7 @@ class SignalEngine:
           que el motor degrada a baseline.
         - rank_score y s_v1 sin datos (warmup < 60 obs) quedan en 0.0.
         """
-        mom = indicators_df.get("momentum_12_1", pd.Series(np.nan, index=indicators_df.index))
-        momentum_score = ((mom + 50) / 150).clip(0, 1).where(mom.notna(), 0.5)
-
-        rsi = indicators_df.get("rsi14", pd.Series(np.nan, index=indicators_df.index))
-        rsi_score = pd.Series(
-            np.where(rsi.between(45, 70, inclusive="neither"), 0.8, 0.4),
-            index=indicators_df.index,
-        ).where(rsi.notna(), 0.5)
-
-        priors = self.factor_weights[0]
-        score_series = momentum_score * priors["momentum"] + rsi_score * priors["rsi"]
-        g2 = 0.5 * self._rolling_rank01(score_series)
+        g2 = 0.5 * self._rolling_rank01(self._fixed_score_series(indicators_df))
 
         if sentiment_data:
             spread = pd.Series(sentiment_data, dtype=float).reindex(indicators_df.index)
@@ -202,11 +206,31 @@ class SignalEngine:
 
         return g2.clip(-1.0, 1.0)
 
+    def compute_g3_rank_scores(self, indicators_df: pd.DataFrame,
+                               fundamental_series: pd.Series = None) -> pd.Series:
+        """
+        Señal G3 del trial 0b-v2-fund (Fase 1, categoría fundamental):
+
+            G3 = 0.5 * rank(score_técnico fijo) + 0.5 * rank(score_fundamental)
+
+        - score_fundamental: serie diaria point-in-time del blend de los
+          14 ratios del motor (compute_fundamental_score_series), sin
+          lookahead (fecha de filing real).
+        - Sin cobertura fundamental -> componente 0.0 (neutro), igual que
+          G2 sin AAII; los símbolos sin panel se rankean por score puro.
+        - Ranking causal 260d (misma definición que H7-OOS).
+        """
+        g3 = 0.5 * self._rolling_rank01(self._fixed_score_series(indicators_df))
+        if fundamental_series is not None:
+            f = fundamental_series.reindex(indicators_df.index).ffill().fillna(0.0)
+            g3 = g3 + 0.5 * self._rolling_rank01(f)
+        return g3.clip(-1.0, 1.0)
+
     def rank_signals(self, signals: List[Dict]) -> List[Dict]:
-        # Con g2_score presente, el ranking usa la señal de ranking H7
-        # (blend 0.50 sobre rankings); sin ella, el score técnico puro
-        # (backward-compatible).
-        return sorted(signals, key=lambda x: x.get("g2_score", x["score"]), reverse=True)
+        # Con g3_score presente, el ranking usa la señal de ranking H7
+        # (blend 0.50 sobre rankings); sin ella, g2_score; sin ambas, el
+        # score técnico puro (backward-compatible).
+        return sorted(signals, key=lambda x: x.get("g3_score", x.get("g2_score", x["score"])), reverse=True)
 
     def filter_by_regime_exposure(self, signals: List[Dict], regime_state: int, current_exposure: float) -> List[Dict]:
         max_exposure = self.regime_classifier.REGIME_ALLOCATION[regime_state]["equity"]

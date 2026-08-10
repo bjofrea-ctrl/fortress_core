@@ -52,6 +52,27 @@ RATIO_COLS = [
     "current_ratio", "asset_turnover", "book_value_growth", "sue_score",
 ]
 
+# Especificaciones del blend de fundamentales del motor (_fundamental_signals
+# en predictive_engine.py): (columna, lo, hi, dirección, peso, modo).
+# sue_score EXCLUIDO pre-registrado (no derivable de EDGAR: requiere
+# expectativas de consenso de analistas).
+_FUND_SPECS = [
+    ("pe_ratio", 5, 60, "invert", 0.12, "neg_eps"),
+    ("pb_ratio", 0.5, 10, "invert", 0.12, "positive"),
+    ("ev_ebitda", 3, 30, "invert", 0.08, "positive"),
+    ("roe", -5, 30, "asis", 0.12, None),
+    ("roa", -3, 15, "asis", 0.08, None),
+    ("debt_equity", 0, 3, "invert", 0.10, None),
+    ("fcf_yield", -2, 10, "asis", 0.12, None),
+    ("div_yield", 0, 6, "asis", 0.06, None),
+    ("eps_growth", -20, 50, "asis", 0.15, None),
+    ("gross_margin", 10, 60, "asis", 0.12, None),
+    ("peg", 0, 3, "invert", 0.05, "positive"),
+    ("current_ratio", 0.5, 3, "asis", 0.04, None),
+    ("asset_turnover", 0, 2, "asis", 0.04, None),
+    ("book_value_growth", -10, 30, "asis", 0.04, "damp"),
+]
+
 _panel_cache: Optional[pd.DataFrame] = None
 
 
@@ -71,6 +92,54 @@ def _load_panel() -> Optional[pd.DataFrame]:
         return p
     except Exception:
         return None
+
+
+def compute_fundamental_score_series(
+    panel: pd.DataFrame, symbol: str
+) -> pd.Series:
+    """Score fundamental continuo en [-1, +1] por día, replicando el blend
+    de _fundamental_signals del motor predictivo (mismos pesos,
+    normalizaciones y direcciones) sobre el panel point-in-time.
+
+    - Fidelidad al motor: componente activo si el ratio existe y es != 0
+      (equivalente al check `if f.get(col)` del motor con dicts EDGAR,
+      donde NaN llega como None). sue_score no participa (pre-registrado).
+    - Denominador por día = suma de pesos de componentes activos; sin
+      componentes activos -> 0.0 (igual que el motor con dict vacío).
+    """
+    import numpy as np
+
+    sub = panel[panel["symbol"] == symbol.upper()].set_index("date").sort_index()
+    if sub.empty:
+        return pd.Series(dtype=float)
+
+    numer = pd.Series(0.0, index=sub.index)
+    denom = pd.Series(0.0, index=sub.index)
+
+    for col, lo, hi, direction, weight, mode in _FUND_SPECS:
+        if col not in sub.columns:
+            continue
+        raw = sub[col].astype(float)
+        active = raw.notna() & (raw != 0.0)
+        normed = ((raw - lo) / (hi - lo) * 2 - 1).clip(-1, 1)
+
+        if mode == "neg_eps":
+            signal = pd.Series(
+                np.where(raw > 0, -normed, np.where(raw < 0, -0.8, 0.0)),
+                index=sub.index,
+            )
+        elif mode == "positive":
+            signal = pd.Series(np.where(raw > 0, -normed, 0.0), index=sub.index)
+        else:
+            signal = normed.where(active, 0.0)
+        if mode == "damp":
+            signal = signal * 0.7
+
+        numer = numer + signal.fillna(0.0) * weight
+        denom = denom + active.astype(float) * weight
+
+    score = numer.div(denom).fillna(0.0).clip(-1, 1)
+    return score
 
 
 def get_edgar_fundamentals(
