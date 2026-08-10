@@ -50,7 +50,7 @@ MARKET_TICKERS = ["SPY", "EFA", "QQQ", "GLD", "DBC", "TIP", "TLT", "AGG", "^VIX"
 START = "2019-01-01"
 END = "2026-08-04"
 DEVELOPMENT_END = "2024-12-31"
-N_TRIALS = 9
+N_TRIALS = 10
 
 
 def sentiment_map(trading_dates: pd.DatetimeIndex) -> dict:
@@ -93,9 +93,14 @@ def main():
             f.write(msg + "\n")
 
     log("=" * 72)
-    log("FASE 0b v2 — BACKTEST CON COSTOS: V1-RANKING (b) vs BASELINE vs V1+FUND (f)")
+    log("FASE 0b v2 — TRIAL #10 (pre-registrado): fix PARTIAL_TP único por posición")
+    log("  Bug auditado: check_all_stops re-disparaba el parcial cada día sobre +2ATR,")
+    log("  vendiendo 50%->25%->12.5%->... y generando filas fantasma (shares=0, pnl=0)")
+    log("  que contaminaban win_rate y total_trades (52% de filas en v1_fund).")
+    log("  Fix: flag partial_done + skip filas shares<=0 (métricas honestas).")
+    log("  Hipótesis: payoff realizado sube hacia 2:1 y win_rate honesto por leg.")
     log(f"Universo: {len(SYMBOLS)} símbolos | {START} -> {END} | comisión 0.10% + slippage 0.05% por lado")
-    log(f"G2 = 0.5*rank(score fijo) + 0.5*(-rank(aaii)) | G3 = 0.5*rank(score fijo) + 0.5*rank(score fund) | DSR n_trials={N_TRIALS} (trial #9)")
+    log(f"G2 = 0.5*rank(score fijo) + 0.5*(-rank(aaii)) | G3 = 0.5*rank(score fijo) + 0.5*rank(score fund) | DSR n_trials={N_TRIALS} (trial #10)")
     log("=" * 72)
 
     market_data = load_universe(MARKET_TICKERS, "2015-01-01", END)
@@ -119,7 +124,7 @@ def main():
         sentiment_data=sent_map,
     )
 
-    log("Corriendo V1+FUND (f, trial #9)...")
+    log("Corriendo V1+FUND (f, trial #10)...")
     res_fund = BacktestEngine(initial_capital=25000).run(
         price_data, market_data, pd.Timestamp(START), pd.Timestamp(END),
         fundamentals_by_symbol=fund_map,

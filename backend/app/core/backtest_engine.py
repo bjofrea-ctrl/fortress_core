@@ -295,6 +295,8 @@ class BacktestEngine:
 
                 pos = positions[symbol]
                 shares_to_sell = pos["shares"] // 2 if reason == "PARTIAL_TP" else pos["shares"]
+                if shares_to_sell <= 0:
+                    continue
                 exit_price = current_prices.get(symbol, pos["entry_price"]) * (1 - slippage)
                 cash += exit_price * shares_to_sell * (1 - commission)
                 pnl = (exit_price - pos["entry_price"]) * shares_to_sell

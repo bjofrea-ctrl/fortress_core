@@ -17,6 +17,7 @@ class RiskState:
     entry_reference: Dict[str, float] = field(default_factory=dict)
     highest_price: Dict[str, float] = field(default_factory=dict)
     positions: Dict[str, int] = field(default_factory=dict)
+    partial_done: Dict[str, bool] = field(default_factory=dict)
     cooldown_until: Optional[datetime] = None
     risk_events: List[Dict] = field(default_factory=list)
     current_regime: int = 0
@@ -107,7 +108,8 @@ class AdaptiveRiskManager:
 
             atr_val = atrs.get(symbol, 0)
 
-            if atr_val and (price - entry) >= 2.0 * atr_val:
+            if atr_val and (price - entry) >= 2.0 * atr_val and not self.state.partial_done.get(symbol, False):
+                self.state.partial_done[symbol] = True
                 to_close.append((symbol, "PARTIAL_TP"))
 
             high = self.state.highest_price.get(symbol, entry)
@@ -137,6 +139,7 @@ class AdaptiveRiskManager:
     def register_entry(self, symbol: str, entry_price: float, shares: int) -> None:
         self.state.entry_reference[symbol] = entry_price
         self.state.highest_price[symbol] = entry_price
+        self.state.partial_done[symbol] = False
         self.state.positions[symbol] = self.state.positions.get(symbol, 0) + shares
 
     def register_exit(self, symbol: str, shares_to_exit: int) -> None:
@@ -144,6 +147,7 @@ class AdaptiveRiskManager:
         if remaining <= 0:
             self.state.entry_reference.pop(symbol, None)
             self.state.highest_price.pop(symbol, None)
+            self.state.partial_done.pop(symbol, None)
             self.state.positions.pop(symbol, None)
         else:
             self.state.positions[symbol] = remaining
