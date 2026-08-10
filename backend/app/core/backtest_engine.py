@@ -385,9 +385,11 @@ class BacktestEngine:
                                 if pd.notna(g2):
                                     sig["g2_score"] = float(g2)
                             if g3_by_symbol:
-                                g3 = g3_by_symbol[symbol].loc[date]
-                                if pd.notna(g3):
-                                    sig["g3_score"] = float(g3)
+                                g3_series = g3_by_symbol.get(symbol)
+                                if g3_series is not None:
+                                    g3 = g3_series.loc[date]
+                                    if pd.notna(g3):
+                                        sig["g3_score"] = float(g3)
                             signals.append(sig)
 
                 signals = self.signal_engine.rank_signals(signals)
