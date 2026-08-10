@@ -9,3 +9,53 @@ AAII disponible en 2913/2913 días de trading
 
 Corriendo baseline (50 símbolos, sin V1)...
 Corriendo V1-ranking (50 símbolos, G2 con AAII)...
+
+--- W1 2020-2021 (baseline n=103, V1 n=99) ---
+    cagr                     0.0113       0.0018
+    sharpe_ratio             0.2562       0.0627
+    sortino_ratio            0.3097       0.0742
+    max_drawdown            -0.0513      -0.0442
+    calmar_ratio             0.2198       0.0411
+    win_rate                 0.6602       0.6162
+    profit_factor            1.3785       1.2073
+    total_trades           103.0000      99.0000
+    deflated_sharpe          0.0753       0.0435
+
+--- W2 2022-2023 (baseline n=10, V1 n=10) ---
+    cagr                    -0.0130      -0.0119
+    sharpe_ratio            -1.3696      -1.8480
+    sortino_ratio           -0.3020      -0.5267
+    max_drawdown            -0.0553      -0.0547
+    calmar_ratio            -0.2352      -0.2181
+    win_rate                 0.4000       0.4000
+    profit_factor            0.1951       0.2118
+    total_trades            10.0000      10.0000
+    deflated_sharpe          0.0000       0.0000
+
+--- W3 2024-2026 (baseline n=0, V1 n=0) ---
+    cagr                     0.0000       0.0000
+    sharpe_ratio             0.0000       0.0000
+    sortino_ratio            0.0000       0.0000
+    max_drawdown            -0.0553      -0.0547
+    calmar_ratio             0.0000       0.0000
+    win_rate                 0.0000       0.0000
+    profit_factor               inf          inf
+    total_trades             0.0000       0.0000
+    deflated_sharpe          0.0359       0.0359
+
+--- TRADES POR VENTANA (V1) ---
+  W1 2020-2021   trades= 99 wins= 61 win_rate=0.616 evaluable=True
+  W2 2022-2023   trades= 10 wins=  4 win_rate=0.400 evaluable=False
+  W3 2024-2026   trades=  0 wins=  0 win_rate=nan evaluable=False
+
+--- MONTE CARLO (bootstrap, V1) ---
+  mean=+524.2 p5=-1117.3 p95=+2167.9 prob_loss=0.301
+
+--- VEREDICTO vs CRITERIO (§9.4) ---
+  W1 2020-2021   n= 99 DSR=0.0435 no pasa
+  W2 2022-2023   n= 10 DSR=0.0000 no pasa (no evaluable: < piso de trades)
+  W3 2024-2026   n=  0 DSR=0.0359 no pasa (no evaluable: < piso de trades)
+
+  Ventanas que pasan: 0/3 -> criterio: NO CUMPLE
+
+Out: data/cache/universe50_phaseA_20260810_152810.txt
