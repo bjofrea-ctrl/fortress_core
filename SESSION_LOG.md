@@ -791,3 +791,13 @@ Decisión del usuario (argumento: (b) es la única que corresponde a lo que H7 v
   - **Veredicto trial #10**: el fix mejora todo in-sample y hace honesto el reporting, pero NO cambia el problema estructural OOS: frecuencia insuficiente + payoff < 1 OOS. Siguiente fase: definición del criterio + decisiones de arquitectura.
 - Script nuevo: `scripts/audit_gap_exits.py` (corre 1 backtest v1_fund y vuelca trades/events/equity a parquet; huellas `data/cache/audit_gap_exits_20260810_132028_*.parquet`).
 - Tests: 49/49.
+### Sesión 8j — Proyecto universo 50: Phase A (re-run post-fix) — VEREDICTO NO CUMPLE — 2026-08-10
+
+- **Bug #2 descubierto (lock permanente)**: la Phase A original (huella `universe50_phaseA_20260810_152810.txt`) quedó congelada: último trade 2022-01-25, 0 trades en 4.5 años, maxDD -5.5%. Causa: `trigger_cooldown` se rearmaba TODOS los días mientras el drawdown de cartera persistía (≤ -5% régimen 0) incluso con CERO posiciones (el loop de liquidación era no-op pero el cooldown y el log de violación corrían igual); con equity = cash fijo el drawdown nunca se recupera → `cooldown_until` se desliza para siempre → `can_open_new_position` = False eterno. Los runs de 7 símbolos nunca rompieron -3.3% → nunca se trabaron (por eso trials #9/#10 parecían sanos).
+- **Fix (aprobado por el usuario)**: guard `if self.state.positions:` en ambas ramas de drawdown de `check_all_stops` (adaptive_risk.py:122-132) — cooldown y violación solo cuando hay liquidación real. Tests de regresión: `test_no_cooldown_lock_without_positions`, `test_cooldown_still_fires_with_positions_in_drawdown` (tests/test_risk_manager.py). Suite 51/51.
+- **Re-run Phase A** (huella `universe50_phaseA_20260810_165713.txt`, N_TRIALS=16, mismas ventanas): **las 3 ventanas ahora evaluables** (99/49/119 trades — la hipótesis de frecuencia CONFIRMADA) pero **criterio NO CUMPLE 0/3**:
+  - W1 2020-2021: n=99, Sharpe 0.063, DSR 0.0435
+  - W2 2022-2023: n=49, Sharpe -0.736, DSR 0.0021 (bear market, esperado para long-only)
+  - W3 2024-2026: n=119, Sharpe +0.632, win 58.0%, PF 1.56, DSR 0.2337 (positivo y respetable, pero lejos de 0.90)
+  - Monte Carlo: prob_loss 4.7%, mean +$2,789 (era 0.301/medio en el run trabado).
+- **Freno pre-comprometido aplicado (§9.4)**: Phase A NO CUMPLE → proyecto cerrado SIN Phase B (EDGAR 50), pregunta de universo archivada. Lectura honesta: el universo dio el poder estadístico (49-119 trades/ventana vs 15) pero el edge no alcanza el umbral DSR ≥ 0.90 en ninguna ventana; W3 es genuinamente positivo (Sharpe 0.63, prob_loss 4.7%) — queda la pregunta de arquitectura abierta: qué significa "funciona" con estos números.
