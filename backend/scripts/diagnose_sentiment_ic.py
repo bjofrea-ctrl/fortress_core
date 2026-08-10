@@ -63,6 +63,39 @@ def significance_threshold(n: int) -> float:
     return 2.0 / np.sqrt(n)
 
 
+def newey_west_neff(records: pd.DataFrame, col: str, horizon: int) -> float:
+    """Tamaño de muestra efectivo (Newey-West, pesos Bartlett) para el IC.
+
+    El panel repite el predictor semanal forward-filled (AAII) y solapa los
+    retornos futuros (stride 5d contra horizonte h). Sin corrección, n=3633
+    infla la significancia. Se estima la autocorrelación de z_t = (x-xbar)(y-ybar)
+    por símbolo con L = ceil(horizon/stride) lags, y se suman los n_eff por
+    símbolo (series entre sí casi independientes).
+    """
+    fwd_col = f"fwd_{horizon}"
+    L = int(np.ceil(horizon / STRIDE_DAYS))
+    total = 0.0
+    for _, sub in records.groupby("symbol"):
+        sub = sub.dropna(subset=[col, fwd_col])
+        if len(sub) < 30:
+            continue
+        x = sub[col].to_numpy()
+        y = sub[fwd_col].to_numpy()
+        z = (x - x.mean()) * (y - y.mean())
+        n = len(z)
+        lag_max = min(L, n - 2)
+        if lag_max < 1:
+            total += n
+            continue
+        rho = np.array([np.corrcoef(z[:-j], z[j:])[0, 1] for j in range(1, lag_max + 1)])
+        rho = np.nan_to_num(rho, nan=0.0)
+        w = 1 - np.arange(1, len(rho) + 1) / (L + 1)
+        denom = 1 + 2 * np.sum(w * rho)
+        n_eff_sym = n / max(denom, 1 + L)  # piso: el peor caso rho=1 da 1+L
+        total += n_eff_sym
+    return max(total, 30.0)
+
+
 def collect_records(price_data: dict, sentiment: pd.DataFrame) -> pd.DataFrame:
     records = []
     for symbol in SYMBOLS:
@@ -92,9 +125,8 @@ def collect_records(price_data: dict, sentiment: pd.DataFrame) -> pd.DataFrame:
 def report_univariate(records: pd.DataFrame, horizon: int):
     fwd = records[f"fwd_{horizon}"]
     n = len(records)
-    thresh = significance_threshold(n)
-    print(f"\n  IC univariado {horizon}d (n={n}, sig=+/-{thresh:.4f}, base_ret={fwd.mean():+.4f}):")
-    print(f"    {'col':22s} {'ic':>8s} {'rank_ic':>8s} {'n':>6s}")
+    print(f"\n  IC univariado {horizon}d (n={n}, base_ret={fwd.mean():+.4f}):")
+    print(f"    {'col':22s} {'ic':>8s} {'rank_ic':>8s} {'n':>6s} {'n_eff':>7s} {'sig':>5s}")
     results = []
     for col in SENTIMENT_COLS:
         values = records[col]
@@ -104,11 +136,13 @@ def report_univariate(records: pd.DataFrame, horizon: int):
             continue
         ic = SignalQualityMetrics.compute_ic(values[mask], fwd[mask])
         rank_ic = SignalQualityMetrics.compute_rank_ic(values[mask], fwd[mask])
-        results.append((col, ic, rank_ic, mask.sum()))
-    results.sort(key=lambda r: abs(r[1]), reverse=True)
-    for col, ic, rank_ic, cnt in results:
+        n_eff = newey_west_neff(records, col, horizon)
+        thresh = significance_threshold(n_eff)
         sig = " ***" if abs(ic) > thresh else ""
-        print(f"    {col:22s} {ic:+8.4f} {rank_ic:+8.4f} {cnt:6d}{sig}")
+        results.append((col, ic, rank_ic, mask.sum(), n_eff, sig))
+    results.sort(key=lambda r: abs(r[1]), reverse=True)
+    for col, ic, rank_ic, cnt, n_eff, sig in results:
+        print(f"    {col:22s} {ic:+8.4f} {rank_ic:+8.4f} {cnt:6d} {n_eff:7.0f}{sig}")
 
 
 def report_terciles(records: pd.DataFrame, horizon: int, col: str, label: str):
@@ -120,7 +154,8 @@ def report_terciles(records: pd.DataFrame, horizon: int, col: str, label: str):
         sub["bucket"] = pd.qcut(sub[col], 3, labels=["bajo", "medio", "alto"], duplicates="drop")
     except ValueError:
         return
-    print(f"    [{label}] retorno {horizon}d por tercil de {col} (base={fwd.mean():+.4f}, n={len(sub)}):")
+    print(f"    [{label}] retorno {horizon}d por tercil de {col} (base={fwd.mean():+.4f}, n={len(sub)})"
+          f" — EVIDENCIA DIRECCIONAL, sin significancia (autocorrelación semanal/solapada):")
     for bucket in ["bajo", "medio", "alto"]:
         cell = sub[sub["bucket"] == bucket]
         print(f"      {bucket:6s}  retorno={cell[f'fwd_{horizon}'].mean():+.4f}  n={len(cell)}")
@@ -226,6 +261,45 @@ def _score_from_rank(s: pd.Series) -> pd.Series:
     return 1.0 / (1.0 + _np.exp(-1.5 * s))
 
 
+V1_DOMINANCE = 0.50  # peso pre-registrado del plan v4.2 (límite inferior del rango 50-70%)
+
+
+def _norm_pvalue(z: float) -> float:
+    """p-value de dos colas con distribución normal (sin dependencias extra)."""
+    import math
+
+    return 2.0 * (1.0 - 0.5 * (1.0 + math.erf(abs(z) / math.sqrt(2.0))))
+
+
+def diebold_mariano_nw(p1: np.ndarray, p2: np.ndarray, y: np.ndarray, horizon: int) -> float:
+    """Test de Diebold-Mariano sobre el diff de Brier, con varianza Newey-West.
+
+    d_t = (p1-y)^2 - (p2-y)^2  (negativo = G2 mejor calibrado).
+    H0: media de d = 0 (misma calidad de probabilidad). Varianza NW con pesos
+    Bartlett y L = ceil(horizon/stride) lags para errores solapados. Retorna
+    el p-value de dos colas.
+    """
+    d = (p1 - y) ** 2 - (p2 - y) ** 2
+    n = len(d)
+    if n < 30:
+        return 1.0
+    dbar = float(d.mean())
+    L = int(np.ceil(horizon / STRIDE_DAYS))
+    lag_max = min(L, n - 2)
+    gamma0 = float(np.mean((d - dbar) ** 2))
+    if gamma0 <= 0:
+        return 1.0
+    var = gamma0
+    for j in range(1, lag_max + 1):
+        gamma_j = float(np.mean((d[:-j] - dbar) * (d[j:] - dbar)))
+        w = 1 - j / (L + 1)
+        var += 2 * w * gamma_j
+    if var <= 0:
+        return 1.0
+    t = dbar / np.sqrt(var / n)
+    return _norm_pvalue(t)
+
+
 def report_block_test(records: pd.DataFrame):
     """H7 (plan v4.2): prueba de bloques — ¿V1 con efecto dominante mejora la
     calidad probabilística del motor frente al baseline de pesos actuales?
@@ -233,12 +307,18 @@ def report_block_test(records: pd.DataFrame):
     Grupo 1 (baseline): señales existentes con pesos RELATIVOS actuales del
       régimen (REGIME_WEIGHTS[0]): momentum .35, reversion .10, liquidez .05,
       sentimiento-posiciones .10 -> normalizados a suma 1.
-    Grupo 2 (hipótesis): Grupo 1 + V1 (AAII) con efecto dominante 50/60/70%
-      del peso total.
+    Grupo 2 (hipótesis): Grupo 1 + V1 (AAII) con peso PRE-REGISTRADO
+      V1_DOMINANCE = 0.50. Sin barrido de pesos: probar 0.60/0.70 y quedarse
+      con el mejor sería multiple testing (mismo problema que el deflated
+      Sharpe). La señal V1 entra con el signo que dictan los datos.
 
-    Métricas: Brier (menor = mejor calibración) y accuracy direccional por
-    horizonte 1/5/20/60d. La señal V1 entra con el signo que dictan los datos
-    (IC AAII negativo: sentimiento bajo -> sube).
+    Métricas: Brier por horizonte 1/5/20/60d, con significancia del diff de
+    Brier vía Diebold-Mariano + varianza Newey-West (corrige solapamiento).
+
+    VEREDICTO PRE-REGISTRADO:
+      - V1 integra con 0.50 si p<0.05 en >=1 horizonte Y diff<0 en >=3/4.
+      - Dirección consistente sin significancia -> recalibrar (30-50%).
+      - Si no -> descartar.
     """
     engine_w = {
         "momentum_12_1": 0.35,
@@ -259,49 +339,48 @@ def report_block_test(records: pd.DataFrame):
 
     score1 = (w1["momentum_12_1"] * s_mom + w1["rsi14"] * s_rsi +
               w1["walcl_growth_w"] * s_liq + w1["cot_retail_net_pct"] * s_ret)
+    score2 = (1 - V1_DOMINANCE) * score1 + V1_DOMINANCE * s_v1
 
     print("\n" + "=" * 72)
-    print("[H7] PRUEBA DE BLOQUES — V1 dominante vs baseline (pesos actuales)")
+    print("[H7] PRUEBA DE BLOQUES — V1 pre-registrado 0.50 vs baseline (pesos actuales)")
     print(f"    Grupo 1 (baseline): momentum {w1['momentum_12_1']:.2f}, reversion {w1['rsi14']:.2f}, "
           f"liquidez {w1['walcl_growth_w']:.2f}, posiciones {w1['cot_retail_net_pct']:.2f}")
-    print(f"    Grupo 2: (1-dom)*Grupo1 + dom*V1, dom en {{0.50, 0.60, 0.70}}")
-    print(f"    {'horizon':8s} {'grupo':9s} {'brier':>7s} {'acc_dir':>8s} {'ic_score':>9s} {'n':>6s}")
+    print(f"    Grupo 2: 0.50*G1 + 0.50*V1  (peso fijo, SIN barrido)")
+    print(f"    {'horizon':8s} {'grupo':9s} {'brier':>7s} {'acc_dir':>8s} {'ic_score':>9s} {'dm_p':>7s} {'n':>6s}")
 
-    for h in HORIZONS + [1]:
-        fwd = sub[f"fwd_{h}"]
-        y = (fwd > 0).astype(float)
-        rows = []
-        for label, score in [("G1", score1),
-                             ("G2/50", (1 - 0.50) * score1 + 0.50 * s_v1),
-                             ("G2/60", (1 - 0.60) * score1 + 0.60 * s_v1),
-                             ("G2/70", (1 - 0.70) * score1 + 0.70 * s_v1)]:
-            mask = fwd.notna()
-            p = _score_from_rank(score[mask])
-            brier = float(((p - y[mask]) ** 2).mean())
-            acc = float(((score[mask] > 0) == (fwd[mask] > 0)).mean())
-            ic = SignalQualityMetrics.compute_ic(score[mask], fwd[mask])
-            rows.append((label, brier, acc, ic, int(mask.sum())))
-        for label, brier, acc, ic, n in rows:
-            print(f"    {h:8d} {label:9s} {brier:.4f} {acc:.4f} {ic:+9.4f} {n:6d}")
-
-    # Veredicto: mejor G2 si gana en Brier O en accuracy en la MAYORIA de horizontes
     wins = 0
+    sig = 0
+    n_horizons = 0
     for h in HORIZONS + [1]:
         fwd = sub[f"fwd_{h}"]
         mask = fwd.notna()
-        p1 = _score_from_rank(score1[mask])
-        b1 = float(((p1 - (fwd[mask] > 0).astype(float)) ** 2).mean())
-        best_b2 = min(
-            float(((_score_from_rank(((1 - d) * score1 + d * s_v1)[mask]) - (fwd[mask] > 0).astype(float)) ** 2).mean())
-            for d in (0.50, 0.60, 0.70)
-        )
-        if best_b2 < b1:
+        if mask.sum() < 100:
+            continue
+        n_horizons += 1
+        y = (fwd[mask] > 0).astype(float).to_numpy()
+        rows = []
+        for label, score in [("G1", score1), ("G2/50", score2)]:
+            s = score[mask].to_numpy()
+            p = _score_from_rank(pd.Series(s)).to_numpy()
+            brier = float(((p - y) ** 2).mean())
+            acc = float(((s > 0) == (fwd[mask].to_numpy() > 0)).mean())
+            ic = SignalQualityMetrics.compute_ic(pd.Series(s), fwd[mask])
+            rows.append((label, brier, acc, ic))
+        p1 = _score_from_rank(score1[mask]).to_numpy()
+        p2 = _score_from_rank(score2[mask]).to_numpy()
+        dm_p = diebold_mariano_nw(p1, p2, y, h)
+        for label, brier, acc, ic in rows:
+            print(f"    {h:8d} {label:9s} {brier:.4f} {acc:.4f} {ic:+9.4f} {dm_p:7.3f} {int(mask.sum()):6d}")
+        if rows[1][1] < rows[0][1]:
             wins += 1
-    print(f"    -> G2 (V1 dominante) gana en Brier en {wins}/5 horizontes")
-    if wins >= 3:
-        print("    -> VEREDICTO: V1 se integra con peso dominante (50-70%)")
-    elif wins >= 1:
-        print("    -> VEREDICTO PARCIAL: recalibrar (30-50%) y re-testear")
+        if dm_p < 0.05:
+            sig += 1
+
+    print(f"    -> G2/50 gana en Brier en {wins}/{n_horizons} horizontes; diff significativo (p<0.05) en {sig}/{n_horizons}")
+    if sig >= 1 and wins >= 3:
+        print("    -> VEREDICTO: V1 se integra con peso dominante 0.50")
+    elif wins >= 3:
+        print("    -> VEREDICTO PARCIAL: dirección consistente sin significancia -> recalibrar (30-50%)")
     else:
         print("    -> VEREDICTO: V1 no mejora el baseline, descartar o revisar")
 

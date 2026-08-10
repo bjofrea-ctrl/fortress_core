@@ -108,6 +108,37 @@ y se descarta — no se fuerza.
 
 ---
 
+## 7. SPEC CONGELADA — Test OOS 2025-2026 (PRE-REGISTRADA, 2026-08-09, antes de correr)
+
+> **Disciplina**: el OOS se corre UNA sola vez, con esta spec tal cual. No se
+> re-testa con 0.60/0.70 ni se toca aunque el resultado decepcione. El ranking
+> causal se declara aquí: en el IS se usó rank global de la muestra; en OOS
+> sería lookahead, así que se usa **percentil rolling de 260 días (causal)**.
+
+**Spec congelada**:
+- Peso V1: **0.50 fijo** (sin barrido). Señal V1 = −percentil_rolling260(aaii_bullbear_spread) en [−1,1].
+- Señales Grupo 1 (pesos relativos del régimen, normalizados a suma 1):
+  momentum_12_1 .35 → 0.58, rsi14 .10 → 0.17 (invertida), walcl_growth_w .05 → 0.08, cot_retail_net_pct .10 → 0.17.
+- Score2 = 0.50·Score1 + 0.50·V1. Prob = sigmoid(1.5·score).
+- Universo SYMBOLS, stride 5d, warmup 260d, horizontes 1/5/20/60d (evaluación ≥ 2025-01-01).
+- Métricas: IC univariado con n_eff Newey-West, Brier G1 vs G2/50, Diebold-Mariano (varianza NW, lag=ceil(h/5)), accuracy direccional.
+- Criterio pre-registrado:
+  - **CONFIRMA** si IC(AAII) < 0 (dirección correcta) Y G2/50 gana Brier en ≥3/4 horizontes → integrar V1 con 0.50.
+  - **DIRECCIÓN SOLA** (IC correcto pero <3/4) → integrar, peso a discutir (30-50%).
+  - **NO CONFIRMA** → reportar tal cual; NO re-testar; descartar o revisar con el usuario.
+- Huella: salida con timestamp en `data/cache/oos_result_*.txt`.
+
+**Resultado (se llena DESPUÉS de la única corrida)**:
+| Horizonte | IC AAII | G1 Brier | G2/50 Brier | DM p |
+|-----------|---------|----------|-------------|------|
+| 1d | | | | |
+| 5d | | | | |
+| 20d | | | | |
+| 60d | | | | |
+**Veredicto OOS**:
+
+---
+
 ## 5. Orden de ejecución
 
 1. ~~**Ola 2**: fetch AAII + NAAIM + put/call~~ ✅ AAII listo; NAAIM pago, put/call bloqueado (documentado).
