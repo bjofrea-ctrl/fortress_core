@@ -1,0 +1,8 @@
+========================================================================
+FASE 0b v2 — BACKTEST CON COSTOS: V1-RANKING (b) vs BASELINE
+Universo: 7 símbolos | 2019-01-01 -> 2026-08-04 | comisión 0.10% + slippage 0.05% por lado
+G2 = 0.5*rank(score fijo) + 0.5*(-rank(aaii)) | gate técnico puro | DSR n_trials=8 (trial #8)
+========================================================================
+AAII disponible en 2913/2913 días de trading
+
+Corriendo baseline (sin V1)...

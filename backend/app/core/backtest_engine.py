@@ -226,11 +226,20 @@ class BacktestEngine:
         end_date: datetime,
         commission=0.001,
         slippage=0.0005,
-        sentiment_scores: Dict = None,
+        sentiment_data: Dict = None,
     ) -> Dict:
         indicators_cache = {s: calculate_all_indicators(df) for s, df in price_data.items()}
         train_market = {s: df[df.index < start_date] for s, df in market_data.items()}
         self.regime_classifier.fit(train_market)
+
+        # Señal de RANKING G2 (H7-OOS): blend 0.50 sobre rankings causales
+        # [-1,1], precomputada por símbolo. El gate de entrada sigue usando
+        # el score técnico puro (generate_signal); G2 sólo reordena las
+        # oportunidades candidatas (ver SignalEngine.compute_g2_rank_scores).
+        g2_by_symbol = {}
+        if sentiment_data:
+            for symbol, df in indicators_cache.items():
+                g2_by_symbol[symbol] = self.signal_engine.compute_g2_rank_scores(df, sentiment_data)
 
         calibrator = ProbabilityCalibrator(method="platt")
         cal_scores, cal_outcomes = self._build_calibration_dataset(indicators_cache, start_date)
@@ -286,6 +295,7 @@ class BacktestEngine:
                     "shares": shares_to_sell,
                     "pnl": pnl,
                     "exit_reason": reason,
+                    "g2_score": pos.get("g2_score"),
                 })
 
                 risk_manager.register_exit(symbol, shares_to_sell)
@@ -312,6 +322,7 @@ class BacktestEngine:
                             "shares": pos["shares"],
                             "pnl": pnl,
                             "exit_reason": "TECHNICAL",
+                            "g2_score": pos.get("g2_score"),
                         })
 
                         risk_manager.register_exit(symbol, pos["shares"])
@@ -351,13 +362,12 @@ class BacktestEngine:
                 signals = []
                 for symbol, df in indicators_cache.items():
                     if date in df.index:
-                        sent_score = None
-                        if sentiment_scores:
-                            sent_score = sentiment_scores.get(date)
-                        sig = self.signal_engine.generate_signal(
-                            df.loc[:date], symbol, regime_info["state"], sentiment_score=sent_score
-                        )
+                        sig = self.signal_engine.generate_signal(df.loc[:date], symbol, regime_info["state"])
                         if sig:
+                            if g2_by_symbol:
+                                g2 = g2_by_symbol[symbol].loc[date]
+                                if pd.notna(g2):
+                                    sig["g2_score"] = float(g2)
                             signals.append(sig)
 
                 signals = self.signal_engine.rank_signals(signals)
@@ -385,6 +395,7 @@ class BacktestEngine:
                             "entry_date": date,
                             "regime_state": sig["regime_state"],
                             "factors": sig["factors"],
+                            "g2_score": sig.get("g2_score"),
                         }
                         risk_manager.register_entry(sig["symbol"], sig["entry_price"], shares)
 

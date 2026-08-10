@@ -111,8 +111,7 @@ class SignalEngine:
             "eligible": eligible.fillna(False), "close": df["close"],
         }, index=df.index)
 
-    def generate_signal(self, stock_data: pd.DataFrame, symbol: str, regime_state: int,
-                        sentiment_score: Optional[float] = None) -> Optional[Dict]:
+    def generate_signal(self, stock_data: pd.DataFrame, symbol: str, regime_state: int) -> Optional[Dict]:
         if len(stock_data) < 200 or regime_state == 3:
             return None
 
@@ -123,16 +122,6 @@ class SignalEngine:
         scores = self._factor_scores(stock_data)
         weights = self._get_factor_weights(regime_state)
         overall = sum(scores[f] * weights[f] for f in weights)
-
-        # Blend V1 (pre-registrado 0.50): la señal de sentimiento modera el
-        # score técnico ANTES del gate de entrada y del ranking. Con
-        # sentiment_score=None el score es idéntico al baseline (backward-
-        # compatible). El factor queda en 'factors' para trazabilidad en
-        # trades y en el BMA no interviene (igual que en predictive_engine:
-        # el blend es sobre el compuesto, los factores se pesan puros).
-        if sentiment_score is not None:
-            overall = 0.5 * overall + 0.5 * sentiment_score
-            scores["sentiment_v1"] = sentiment_score
 
         if not (latest.close > latest.ema50 > latest.ema200):
             return None
@@ -165,8 +154,59 @@ class SignalEngine:
             "atr": float(atr_v),
         }
 
+    @staticmethod
+    def _rolling_rank01(s: pd.Series, window: int = 260, min_periods: int = 60) -> pd.Series:
+        """Percentil rolling causal en [-1,1]: rank del valor actual dentro de
+        la ventana de días anteriores (inclusive). Sin lookahead. Misma
+        definición que la usada en el diagnóstico H7-OOS."""
+        def _pct(w):
+            return 2.0 * (w <= w[-1]).mean() - 1.0
+
+        return s.rolling(window, min_periods=min_periods).apply(_pct, raw=True).fillna(0.0)
+
+    def compute_g2_rank_scores(self, indicators_df: pd.DataFrame,
+                               sentiment_data: Dict = None) -> pd.Series:
+        """
+        Señal G2 de la prueba de bloques H7-OOS (blend 0.50 sobre rankings
+        causales en [-1,1]) de forma vectorizada para toda la serie:
+
+            G2 = 0.5 * rank(score_técnico) + 0.5 * s_v1
+            s_v1 = -rank(aaii_bullbear_spread)
+
+        - score_técnico con pesos FIJOS (factor_weights[0], sin BMA online):
+          una serie histórica recomputada con pesos actuales contaminaría el
+          ranking con información futura. El gate de entrada del backtest
+          sigue usando el score real (con BMA) vía generate_signal — aquí
+          sólo se construye la señal de RANKING que H7 validó.
+        - sentiment_data: dict {fecha: spread crudo AAII} (anti-lookahead
+          ya resuelto por el caller). Sin dato -> s_v1 = 0 (neutro), igual
+          que el motor degrada a baseline.
+        - rank_score y s_v1 sin datos (warmup < 60 obs) quedan en 0.0.
+        """
+        mom = indicators_df.get("momentum_12_1", pd.Series(np.nan, index=indicators_df.index))
+        momentum_score = ((mom + 50) / 150).clip(0, 1).where(mom.notna(), 0.5)
+
+        rsi = indicators_df.get("rsi14", pd.Series(np.nan, index=indicators_df.index))
+        rsi_score = pd.Series(
+            np.where(rsi.between(45, 70, inclusive="neither"), 0.8, 0.4),
+            index=indicators_df.index,
+        ).where(rsi.notna(), 0.5)
+
+        priors = self.factor_weights[0]
+        score_series = momentum_score * priors["momentum"] + rsi_score * priors["rsi"]
+        g2 = 0.5 * self._rolling_rank01(score_series)
+
+        if sentiment_data:
+            spread = pd.Series(sentiment_data, dtype=float).reindex(indicators_df.index)
+            g2 = g2 + 0.5 * (-self._rolling_rank01(spread))
+
+        return g2.clip(-1.0, 1.0)
+
     def rank_signals(self, signals: List[Dict]) -> List[Dict]:
-        return sorted(signals, key=lambda x: x["score"], reverse=True)
+        # Con g2_score presente, el ranking usa la señal de ranking H7
+        # (blend 0.50 sobre rankings); sin ella, el score técnico puro
+        # (backward-compatible).
+        return sorted(signals, key=lambda x: x.get("g2_score", x["score"]), reverse=True)
 
     def filter_by_regime_exposure(self, signals: List[Dict], regime_state: int, current_exposure: float) -> List[Dict]:
         max_exposure = self.regime_classifier.REGIME_ALLOCATION[regime_state]["equity"]

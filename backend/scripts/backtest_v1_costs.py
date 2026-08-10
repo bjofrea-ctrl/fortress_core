@@ -1,25 +1,27 @@
 """
-FASE 0b — BACKTEST CON COSTOS: V1 vs BASELINE (SPEC CONGELADA).
+FASE 0b (v2) — BACKTEST CON COSTOS: V1-RANKING (b) vs BASELINE.
 
-Pregunta pre-registrada (PLAN_MEJORA): ¿la integración V1 (AAII, blend
-0.50) mejora el desempeño NETO (con costos) sobre el universo real?
+Misma spec de corrida que la v1 (mismos períodos, costos y métricas).
+La v1 (blend sobre el gate, señal por bounds ±35) quedó archivada en
+data/cache/backtest_v1_costs_20260810_083449.txt: bloqueó TODAS las
+entradas (blend <= 0.5 < gate 0.6, matemático).
 
-Spec (UNA corrida por variante, no se re-testea):
-- Universo: SPY/QQQ/AAPL/MSFT/GOOGL/AMZN/NVDA, 2019-01-01 a 2026-08-04.
-- Costos: comisión 0.10% + slippage 0.05% por lado (defaults del motor).
-- Señal V1: s_v1 = -clip((spread+35)/70, 0, 1) — misma definición que
-  sentiment_regime.py (AAII_SPREAD_BOUND=35). Alineación anti-lookahead
-  con build_sentiment_frame (shift(1) + ffill). Sin dato AAII -> None
-  -> baseline puro (igual que el motor degrada).
-- Blend: 0.5*técnico + 0.5*s_v1 antes del gate de entrada y del ranking.
-- DSR: n_trials=7 — las 5 variantes históricas documentadas en
-  backtest_engine.py + las 2 comparadas en esta corrida.
-- Métricas por período: full (2019-2026), desarrollo (2019-2024), OOS
-  (2025-2026).
-- Limitación declarada: la calibración Platt se entrena con scores sin
-  V1 (el histórico AAII empieza 2019-10, el dataset de calibración va
-  hasta 2018); con V1 el win_prob (Kelly) usa un mapeo entrenado en
-  scores puros — sesgo conocido, aceptado para esta corrida.
+Variante (b) — decisión del usuario 2026-08-10: implementa EXACTAMENTE
+lo que H7 validó en el OOS (calidad de RANKING, no de gate binario):
+- El gate de entrada sigue usando el score técnico puro (sin V1).
+- El ranking de oportunidades usa G2 = 0.5*rank(score técnico, pesos
+  fijos) + 0.5*s_v1 con s_v1 = -rank(aaii) (ranking causal 260d, la
+  señal pre-registrada en §7 — NO la normalización por bounds ±35 que
+  usa el motor predictivo y que el 0b-v1 expuso como incompatible).
+- Sin dato AAII -> s_v1 = 0 (neutro, el motor degrada a baseline).
+
+TRIAL #8 del conteo de n_trials del deflated Sharpe (conteo del
+usuario): 5 variantes históricas documentadas en backtest_engine.py +
+baseline-costos (0b-v1) + v1-gate (0b-v1) + v1-ranking (ésta, 0b-v2).
+
+Criterio de lectura (honesto, sin re-testear):
+- Si el DSR de la variante (b) despega a significancia real -> hay
+  edge. Si no -> respuesta honesta igual; mejor ahora que con plata.
 """
 import os
 import json
@@ -36,15 +38,15 @@ MARKET_TICKERS = ["SPY", "EFA", "QQQ", "GLD", "DBC", "TIP", "TLT", "AGG", "^VIX"
 START = "2019-01-01"
 END = "2026-08-04"
 DEVELOPMENT_END = "2024-12-31"
-N_TRIALS = 7
-AAII_BOUND = 35.0
+N_TRIALS = 8
 
 
-def s_v1_series(trading_dates: pd.DatetimeIndex) -> dict:
+def sentiment_map(trading_dates: pd.DatetimeIndex) -> dict:
+    """Spread AAII crudo por fecha de trading (anti-lookahead: build_sentiment_frame
+    ya aplica shift(1)+ffill). Sin dato -> no incluido (el motor degrada a neutro)."""
     sentiment = build_sentiment_frame(trading_dates)
     spread = sentiment["aaii_bullbear_spread"]
-    s_v1 = -(spread + AAII_BOUND).clip(0, 2 * AAII_BOUND) / (2 * AAII_BOUND)
-    return {ts: float(v) for ts, v in s_v1.items() if pd.notna(v)}
+    return {ts: float(v) for ts, v in spread.items() if pd.notna(v)}
 
 
 def period_metrics(equity_curve, trades, start: str, end: str, engine: BacktestEngine) -> dict:
@@ -65,27 +67,27 @@ def main():
             f.write(msg + "\n")
 
     log("=" * 72)
-    log("FASE 0b — BACKTEST CON COSTOS: V1 vs BASELINE (spec congelada)")
+    log("FASE 0b v2 — BACKTEST CON COSTOS: V1-RANKING (b) vs BASELINE")
     log(f"Universo: {len(SYMBOLS)} símbolos | {START} -> {END} | comisión 0.10% + slippage 0.05% por lado")
-    log(f"Blend V1: 0.50 fijo | s_v1 = -clip((spread+35)/70, 0, 1) | DSR n_trials={N_TRIALS}")
+    log(f"G2 = 0.5*rank(score fijo) + 0.5*(-rank(aaii)) | gate técnico puro | DSR n_trials={N_TRIALS} (trial #8)")
     log("=" * 72)
 
     market_data = load_universe(MARKET_TICKERS, "2015-01-01", END)
     price_data = load_universe(SYMBOLS, START, END)
 
     trading_dates = price_data["SPY"].index
-    sentiment_map = s_v1_series(trading_dates)
-    log(f"AAII disponible en {len(sentiment_map)}/{len(trading_dates)} días de trading")
+    sent_map = sentiment_map(trading_dates)
+    log(f"AAII disponible en {len(sent_map)}/{len(trading_dates)} días de trading")
 
     log("\nCorriendo baseline (sin V1)...")
     res_base = BacktestEngine(initial_capital=25000).run(
         price_data, market_data, pd.Timestamp(START), pd.Timestamp(END)
     )
 
-    log("Corriendo V1 (blend 0.50)...")
+    log("Corriendo V1-ranking (b)...")
     res_v1 = BacktestEngine(initial_capital=25000).run(
         price_data, market_data, pd.Timestamp(START), pd.Timestamp(END),
-        sentiment_scores=sentiment_map,
+        sentiment_data=sent_map,
     )
 
     engine = BacktestEngine(initial_capital=25000)
@@ -120,11 +122,17 @@ def main():
         wins = sum(1 for t in oos_trades if t["pnl"] > 0)
         log(f"  {label:9s} trades={len(oos_trades)}  wins={wins}  win_rate={wins / len(oos_trades) if oos_trades else float('nan'):.3f}")
 
-    v1_trades = [t for t in res_v1["trades"] if "sentiment_v1" in t.get("factors", {})]
+    v1_trades = [t for t in res_v1["trades"] if t.get("g2_score") is not None]
     if v1_trades:
-        spreads_used = [t["factors"]["sentiment_v1"] for t in v1_trades]
-        log(f"\n  V1: {len(v1_trades)}/{len(res_v1['trades'])} trades con factor V1 activo "
-            f"(media s_v1={pd.Series(spreads_used).mean():+.3f})")
+        g2_vals = pd.Series([t["g2_score"] for t in v1_trades])
+        favored = [t for t in v1_trades if t["g2_score"] > 0.6]
+        log(f"\n  V1-ranking: {len(v1_trades)}/{len(res_v1['trades'])} trades con g2_score "
+            f"(media g2={g2_vals.mean():+.3f}, trades con g2>0.6 = {len(favored)})")
+        for bucket, lo, hi in [("g2<=0.5", None, 0.5), ("0.5<g2<=0.7", 0.5, 0.7), ("g2>0.7", 0.7, None)]:
+            sel = [t for t in v1_trades if (lo is None or t["g2_score"] > lo) and (hi is None or t["g2_score"] <= hi)]
+            if len(sel) >= 5:
+                wins = sum(1 for t in sel if t["pnl"] > 0)
+                log(f"    {bucket:14s} n={len(sel):3d} win_rate={wins / len(sel):.3f} pnl_sum={sum(t['pnl'] for t in sel):+.0f}")
 
     log("\n" + "=" * 72)
     log(f"Out: {out_path}")

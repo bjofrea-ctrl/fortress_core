@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import pytest
 
 from app.core.indicators import calculate_all_indicators
@@ -116,3 +117,55 @@ def test_compute_factor_frame_eligible_matches_generate_signal_rejection(engine,
     # nunca puede devolver una señal para ese mismo día (el filtro duro es el mismo).
     if not last_eligible:
         assert sig is None
+
+
+# --- Fase 0b v2: señal de RANKING G2 (H7-OOS) ---
+
+def _g2_fixture_df(n: int = 300) -> pd.DataFrame:
+    """Serie sintética de momentum/rsi para compute_g2_rank_scores (no usa
+    OHLCV: la función es vectorizada sobre indicadores ya calculados)."""
+    idx = pd.date_range("2020-01-01", periods=n, freq="B")
+    mom = pd.Series(np.linspace(-20, 80, n), index=idx)
+    rsi = pd.Series(np.linspace(35, 75, n), index=idx)
+    return pd.DataFrame({"momentum_12_1": mom, "rsi14": rsi}, index=idx)
+
+
+def test_g2_without_sentiment_is_half_rank(engine):
+    df = _g2_fixture_df()
+    g2 = engine.compute_g2_rank_scores(df)
+    assert g2.between(-1.0, 1.0).all()
+    # Monótono en el score: el final (mom alto, rsi alto) debe rankear > 0
+    assert g2.iloc[-1] > 0.0
+    assert g2.iloc[0] == 0.0  # warmup < 60 obs -> neutro 0.0
+
+
+def test_g2_sentiment_ranks_spread_causally(engine):
+    df = _g2_fixture_df()
+    dates = df.index
+    # Tendencia a EUFORIA (spread subiendo a +30) vs PESIMISMO (bajando a -30):
+    # en el tramo final, la euforia debe rankear s_v1 negativo -> g2 más bajo
+    euphoria = {d: 30.0 * i / len(dates) for i, d in enumerate(dates)}
+    pessimism = {d: -30.0 * i / len(dates) for i, d in enumerate(dates)}
+    g2_euph = engine.compute_g2_rank_scores(df, euphoria)
+    g2_pess = engine.compute_g2_rank_scores(df, pessimism)
+    # Mismo score técnico -> mismo rank(score); el spread decide la diferencia
+    assert g2_pess.iloc[-1] > g2_euph.iloc[-1]
+    # El shock final de euforia hunde el g2 respecto del mismo mundo sin shock
+    neutral = {d: 0.0 for d in dates[:-1]}
+    neutral[dates[-1]] = 30.0
+    g2_shock = engine.compute_g2_rank_scores(df, neutral)
+    assert g2_shock.iloc[-1] < g2_pess.iloc[-1]
+    assert g2_shock.iloc[-1] < 0.0  # el shock rankea s_v1 fuertemente negativo
+
+
+def test_rank_signals_uses_g2_score_when_present(engine):
+    signals = [{"symbol": "A", "score": 0.9, "g2_score": -0.5},
+               {"symbol": "B", "score": 0.3, "g2_score": 0.8}]
+    ranked = engine.rank_signals(signals)
+    assert [s["symbol"] for s in ranked] == ["B", "A"]
+
+
+def test_rank_signals_backward_compatible_without_g2(engine):
+    signals = [{"symbol": "A", "score": 0.3}, {"symbol": "B", "score": 0.9}]
+    ranked = engine.rank_signals(signals)
+    assert [s["symbol"] for s in ranked] == ["B", "A"]
