@@ -419,6 +419,7 @@ class BacktestEngine:
                             "factors": sig["factors"],
                             "g2_score": sig.get("g2_score"),
                             "g3_score": sig.get("g3_score"),
+                            "win_prob": win_prob,
                         }
                         risk_manager.register_entry(sig["symbol"], sig["entry_price"], shares)
 
