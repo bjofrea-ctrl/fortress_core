@@ -202,3 +202,39 @@ y se descarta — no se fuerza.
 > La tesis completa solo puede confirmarse o refutarse con V1 (AAII/NAAIM/put-call) y los
 > tests H1-H6. El COT NonRept de 2026-08-04 ya está descartado por el bug de alineación
 > (fix: `sort_index()` en `_align`).
+
+---
+
+## 9. PROYECTO PRE-REGISTRADO — Expansión de universo a 50 símbolos (2026-08-10)
+
+**Contexto / justificación** (gap audit, Sesión 8i): con 7 símbolos el motor genera 15 trades OOS en 2025-26 → el criterio acordado (DSR OOS ≥ 0.90 en ≥2 de 3 ventanas) es **estructuralmente inalcanzable por falta de poder estadístico**, no por mecánica rota (trial #10: win_rate honesto 0.667 OOS, pero PF 0.848 y n=15). La expansión no busca más edge de señal: busca **frecuencia y poder estadístico**.
+
+### 9.1 Hipótesis del proyecto (pre-registrada)
+Con 50 símbolos líquidos de gran capitalización, el motor genera ≥ 30 trades por ventana OOS de 2 años (vs 15 en 7 símbolos) y el criterio DSR OOS ≥ 0.90 en ≥2 de 3 ventanas pasa a ser **evaluable**; la señal del gate (trend + ADX + RSI + vol, score momentum/RSI) sobrevive al costo 0.15%/lado a escala. No se cambia NADA de la mecánica: gate, salidas (parcial único, fix trial #10), régimen HMM, calibrador, cooldowns, lunes, top-5.
+
+### 9.2 Regla de selección de universo (sin lookahead)
+- Los 7 actuales (SPY, QQQ, AAPL, MSFT, GOOGL, AMZN, NVDA) se MANTIENEN (SPY/QQQ además como inputs de mercado para el HMM).
+- Se añaden 43 US-listed top-43 por market cap, corte estático 2026-08-01, historial yfinance ≥ 2015-01-01 (lista en `scripts/fetch_universe_data.py`; los ETFs SPY/QQQ siguen siendo tradeables como hoy).
+- La lista NO se re-elige después de ver resultados.
+
+### 9.3 Qué cambia vs trial #10
+| Componente | Estado |
+|---|---|
+| SYMBOLS 7 → 50 | CAMBIA (script Phase A2) |
+| N_TRIALS (DSR) | 10 → **16** (+6 por selección de universo: regla mecánica estática, penalización por haber elegido 1 lista de 50 de un menú de ~500 grandes caps) |
+| Gate / salidas / régimen / calibrador / cooldown / lunes / top-5 / costs | **NO cambian** |
+| Risk caps (5 concurrentes, 10% posición, Kelly 25%) | NO cambian en Phase A (sub-trial pre-registrado aparte si la capital queda infra-utilizada) |
+| Capa fundamentals EDGAR (g3) | FUERA de Phase A (cobertura 5/50 inútil); **Phase B gated**: solo si Phase A pasa el criterio se re-fetchea EDGAR para los 50 y se re-valida g3 |
+
+### 9.4 Ventanas de evaluación (pre-registradas, 3 no solapadas, 2 años cada una)
+- W1: 2020-01-01 → 2021-12-31
+- W2: 2022-01-01 → 2023-12-31
+- W3: 2024-01-01 → 2026-08-04 (fin de datos)
+- **Piso de evaluabilidad**: una ventana cuenta solo con ≥ 30 trades (con n menor, el DSR no es interpretable — lección del gap audit).
+- Criterio de éxito: DSR OOS ≥ 0.90 en **≥2 de 3** ventanas evaluables, con costos 0.15%/lado, n_trials=16. Freno pre-comprometido: si Phase A no lo cumple → el proyecto se cierra sin Phase B y la pregunta de universo se archiva.
+
+### 9.5 Fases y orden
+1. **A0 Data** — fetch 43 tickers yfinance → cache parquet (en curso 2026-08-10). Criterio: 50/50 tickers con ≥ 2,600 filas desde 2015.
+2. **A1 Pre-registration** — este §9 + N_TRIALS=16 + ventanas en el script.
+3. **A2 Phase A run** — V1 config (sin fundamentals) sobre 50 símbolos: baseline + V1, full + 3 ventanas, dump de trades (reusar `audit_gap_exits`). Runtime estimado: 3 backtests × ~30-45 min (el dataset de calibración y el loop diario crecen ~7×) → nohup + polling.
+4. **A3 Veredicto Phase A** — vs criterio 9.4. Si pasa → Phase B (EDGAR 50, re-validar g3) como sub-proyecto pre-registrado. Si no → cierre y archivo.
