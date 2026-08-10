@@ -1,0 +1,9 @@
+========================================================================
+FASE 0b — BACKTEST CON COSTOS: V1 vs BASELINE (spec congelada)
+Universo: 7 símbolos | 2019-01-01 -> 2026-08-04 | comisión 0.10% + slippage 0.05% por lado
+Blend V1: 0.50 fijo | s_v1 = -clip((spread+35)/70, 0, 1) | DSR n_trials=7
+========================================================================
+AAII disponible en 2913/2913 días de trading
+
+Corriendo baseline (sin V1)...
+Corriendo V1 (blend 0.50)...

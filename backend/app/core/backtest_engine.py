@@ -84,6 +84,8 @@ class BacktestEngine:
         won = pnl > 0
         priors = self.signal_engine.factor_weights.get(regime, self.signal_engine.factor_weights[0])
         for factor, score in factors.items():
+            if factor not in priors:
+                continue  # p.ej. sentiment_v1: el blend es externo al BMA, sin prior propio
             predicted_up = score > 0.5
             self.bayesian_updater.update(
                 f"{regime}_{factor}", correct=(predicted_up == won), base_weight=priors[factor]
@@ -434,11 +436,20 @@ class BacktestEngine:
         # saturaba en ~1.0 para cualquier n_trials con backtests de varios
         # cientos de días). SR_0 debe escalarse por sr_std (el error
         # estándar del estimador), no dividirse por sqrt(T) de nuevo.
+        # Auditado 2026-08-10 (Fase 0b): sr_std usa ahora la varianza
+        # completa de Lo (2002) con skewness y kurtosis reales (el paper
+        # original exige 1 - γ3·SR + (γ4-1)/4·SR² en el denominador);
+        # asumir normalidad (γ3=0, γ4=3) sobre-estimaba el DSR con colas
+        # gruesas. Clampeado a >= 1e-8 por si skew/kurt producen varianza
+        # negativa en muestras cortas.
         gamma = 0.5772156649
         e_max_sr = ((1 - gamma) * norm.ppf(1 - 1 / n_trials) + gamma * norm.ppf(1 - 1 / (n_trials * np.e)))
         sr_daily = returns.mean() / returns.std() if returns.std() > 0 else 0
-        if len(returns) > 1:
-            sr_std = np.sqrt((1 + 0.5 * sr_daily ** 2) / (len(returns) - 1))
+        if len(returns) > 3:
+            skew = float(returns.skew())
+            kurt = float(returns.kurtosis())
+            var_num = max(1.0 - skew * sr_daily + (kurt - 1) / 4.0 * sr_daily ** 2, 1e-8)
+            sr_std = np.sqrt(var_num / (len(returns) - 1))
             sr_0 = sr_std * e_max_sr
             deflated_sharpe = float(norm.cdf((sr_daily - sr_0) / sr_std))
         else:
