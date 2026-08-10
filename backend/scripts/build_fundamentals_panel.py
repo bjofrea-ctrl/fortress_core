@@ -276,7 +276,9 @@ def main():
     panel = pd.concat(daily)
     panel.index = panel.index.rename("date")
 
-    # book_value_growth / eps_growth / peg: YoY sobre serie diaria ffill
+    # book_value_growth / eps_growth / peg: YoY directo (shift 252d) sobre
+    # serie diaria ffill — el rolling mean del pct_change diario mezclaba
+    # ceros (días sin filing) con saltos y sesgaba los niveles.
     panel = panel.reset_index().rename(columns={"index": "date"})
     for symbol in SYMBOLS:
         sub_mask = panel["symbol"] == symbol
@@ -284,7 +286,7 @@ def main():
             col = panel.loc[sub_mask, base]
             if col.notna().sum() < 100:
                 continue
-            growth = col.pct_change(fill_method=None).rolling(252, min_periods=60).mean() * 100
+            growth = (col / col.shift(252) - 1) * 100
             panel.loc[sub_mask, target] = growth.values
         pe = panel.loc[sub_mask, "pe_ratio"]
         growth = panel.loc[sub_mask, "eps_growth"]

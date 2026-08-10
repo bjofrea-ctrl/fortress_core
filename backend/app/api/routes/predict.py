@@ -9,7 +9,7 @@ from app.core.data_ingestion import download_data
 from app.core.predictive_engine import PredictiveEngine, format_recommendation
 from app.core.regime_classifier import GlobalRegimeClassifier
 from app.core.indicators import calculate_all_indicators
-from app.core.fundamentals_client import FinnhubClient
+from app.core.edgar_fundamentals import get_fundamentals, SAMPLE_FUNDAMENTALS
 from app.utils.logging import logger
 
 _finnhub_client = FinnhubClient()
@@ -30,33 +30,9 @@ MACRO_TICKERS = {
     "copper": "HG=F",
 }
 
-# Datos fundamentales de ejemplo para testing (se pueden sustituir por API real)
-SAMPLE_FUNDAMENTALS = {
-    "AAPL": {"pe_ratio": 35.2, "pb_ratio": 55.3, "ev_ebitda": 24.5, "roe": 147.9, "roa": 31.6,
-             "debt_equity": 1.75, "fcf_yield": 0.6, "div_yield": 0.4, "eps_growth": 8.2,
-             "gross_margin": 46.2, "peg": 2.8, "current_ratio": 0.9,
-             "asset_turnover": 1.1, "book_value_growth": 12.1, "sue_score": 1.2},
-    "MSFT": {"pe_ratio": 36.8, "pb_ratio": 13.5, "ev_ebitda": 25.2, "roe": 44.1, "roa": 18.2,
-             "debt_equity": 0.42, "fcf_yield": 2.3, "div_yield": 0.7, "eps_growth": 15.8,
-             "gross_margin": 69.8, "peg": 2.3, "current_ratio": 1.3,
-             "asset_turnover": 0.6, "book_value_growth": 9.8, "sue_score": 2.1},
-    "NVDA": {"pe_ratio": 60.5, "pb_ratio": 45.2, "ev_ebitda": 40.1, "roe": 115.0, "roa": 65.4,
-             "debt_equity": 0.25, "fcf_yield": 1.1, "div_yield": 0.03, "eps_growth": 89.3,
-             "gross_margin": 75.8, "peg": 0.68, "current_ratio": 2.5,
-             "asset_turnover": 0.9, "book_value_growth": 35.4, "sue_score": 3.5},
-    "AMZN": {"pe_ratio": 38.9, "pb_ratio": 8.1, "ev_ebitda": 18.9, "roe": 22.3, "roa": 6.5,
-             "debt_equity": 0.62, "fcf_yield": 0.8, "div_yield": 0.0, "eps_growth": 30.1,
-             "gross_margin": 47.1, "peg": 1.3, "current_ratio": 1.0,
-             "asset_turnover": 1.3, "book_value_growth": 20.5, "sue_score": 2.8},
-    "GOOGL": {"pe_ratio": 26.1, "pb_ratio": 7.2, "ev_ebitda": 16.8, "roe": 30.5, "roa": 15.9,
-              "debt_equity": 0.08, "fcf_yield": 3.2, "div_yield": 0.5, "eps_growth": 18.4,
-              "gross_margin": 59.7, "peg": 1.4, "current_ratio": 2.2,
-              "asset_turnover": 0.7, "book_value_growth": 13.2, "sue_score": 1.8},
-    "SPY": {"pe_ratio": 26.5, "pb_ratio": 4.8, "ev_ebitda": 18.2, "roe": 19.8, "roa": 8.5,
-            "debt_equity": 1.1, "fcf_yield": 2.5, "div_yield": 1.2, "eps_growth": 6.8,
-            "gross_margin": 35.0, "peg": 3.9, "current_ratio": 1.0,
-            "asset_turnover": 0.5, "book_value_growth": 5.8, "sue_score": 0.5},
-}
+# Datos fundamentales point-in-time: panel EDGAR local (filing dates reales)
+# con degradación a sample marcado. SAMPLE_FUNDAMENTALS vive en
+# app/core/edgar_fundamentals.py (junto al cargador EDGAR).
 
 # Datos de predicción (Polymarket-like) — valores de ejemplo actualizables
 SAMPLE_PREDICTION_DATA = {
@@ -68,24 +44,18 @@ SAMPLE_PREDICTION_DATA = {
 }
 
 
-def get_fundamentals(symbol: str) -> Optional[dict]:
+def get_fundamentals_api(symbol: str) -> Optional[dict]:
     """
-    Fundamentales reales vía Finnhub si FINNHUB_API_KEY está configurada;
-    si no, cae al sample hardcodeado (sólo 6 tickers) — NO son datos en
-    vivo. Siempre se marca _data_source explícitamente para que tanto la
-    API como cualquier prompt de LLM que los reciba sepan si es sintético
-    o real, en vez de mezclarse silenciosamente con señales técnicas reales.
+    Fundamentales point-in-time: panel EDGAR local (filing dates reales de
+    SEC, ratios derivados con precio del día de trading siguiente). Si el
+    panel no cubre el símbolo/fecha, degrada al sample hardcodeado
+    (SAMPLE_FUNDAMENTALS) — siempre marcado en _data_source para que la API
+    y cualquier prompt de LLM sepan si es real o sintético.
     """
-    if _finnhub_client.is_available():
-        live = _finnhub_client.get_fundamentals(symbol)
-        if live:
-            return live
-        logger.info("fundamentals_finnhub_fallback_to_sample", extra={"symbol": symbol})
-
-    data = SAMPLE_FUNDAMENTALS.get(symbol.upper())
+    data = get_fundamentals(symbol)
     if data is None:
-        return None
-    return {**data, "_data_source": "sample_hardcoded_not_live"}
+        logger.info("fundamentals_unavailable", extra={"symbol": symbol})
+    return data
 
 
 def _load_macro_data() -> dict:
@@ -185,7 +155,7 @@ async def analyze_symbol(symbol: str, regime_state: int = Query(0, ge=0, le=3)):
         sentiment_data = _load_sentiment_data()
 
         # Datos fundamentales de muestra
-        fundamentals = get_fundamentals(symbol)
+        fundamentals = get_fundamentals_api(symbol)
 
         # Crear motor
         engine = PredictiveEngine()
@@ -229,7 +199,7 @@ async def analyze_universe(regime_state: int = Query(0, ge=0, le=3)):
             if len(df) < 200:
                 continue
 
-            fundamentals = get_fundamentals(symbol)
+            fundamentals = get_fundamentals_api(symbol)
             result = await run_in_threadpool(
                 engine.analyze,
                 symbol=symbol.upper(),

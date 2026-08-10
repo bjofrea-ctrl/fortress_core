@@ -10,7 +10,7 @@ import os
 from app.config import settings
 from app.core.data_ingestion import download_data
 from app.core.predictive_engine import PredictiveEngine
-from app.api.routes.predict import get_fundamentals, _load_macro_data, SAMPLE_PREDICTION_DATA
+from app.api.routes.predict import get_fundamentals_api, _load_macro_data, SAMPLE_PREDICTION_DATA
 from app.core.advanced_agents import (
     GovernanceSystem,
     NvidiaNIMClient,
@@ -102,7 +102,7 @@ async def analyze_with_governance(symbol: str, regime_state: int = Query(0, ge=0
         result = await run_in_threadpool(
             engine.analyze,
             symbol=symbol.upper(), df=df, regime_state=regime_state,
-            fundamentals=get_fundamentals(symbol),
+            fundamentals=get_fundamentals_api(symbol),
             macro_data=_load_macro_data(),
             prediction_data=SAMPLE_PREDICTION_DATA,
         )
