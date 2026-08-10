@@ -14,3 +14,64 @@ Score fundamental point-in-time en 5/7 símbolos (EDGAR panel)
 Corriendo baseline (sin V1)...
 Corriendo V1-ranking (b)...
 Corriendo V1+FUND (f, trial #10)...
+
+--- MÉTRICAS POR PERÍODO ---
+
+  FULL 2019-2026
+    métrica                baseline           V1         V1+F    Δ(F-base)
+    cagr                     0.0022       0.0045       0.0046      +0.0024
+    sharpe_ratio             0.1184       0.2441       0.2492      +0.1307
+    sortino_ratio            0.0955       0.2045       0.1977      +0.1021
+    max_drawdown            -0.0277      -0.0246      -0.0294      -0.0017
+    calmar_ratio             0.0798       0.1821       0.1562      +0.0764
+    win_rate                 0.6292       0.6404       0.6484      +0.0191
+    profit_factor            1.2379       1.4223       1.4589      +0.2210
+    total_trades            89.0000      89.0000      91.0000      +2.0000
+    deflated_sharpe          0.1060       0.1837       0.1869      +0.0809
+
+  DESARROLLO 2019-2024
+    métrica                baseline           V1         V1+F    Δ(F-base)
+    cagr                     0.0040       0.0067       0.0069      +0.0028
+    sharpe_ratio             0.1969       0.3469       0.3527      +0.1558
+    sortino_ratio            0.1618       0.2965       0.2827      +0.1208
+    max_drawdown            -0.0277      -0.0246      -0.0294      -0.0017
+    calmar_ratio             0.1451       0.2732       0.2335      +0.0884
+    win_rate                 0.6216       0.6351       0.6447      +0.0231
+    profit_factor            1.3352       1.5742       1.6350      +0.2998
+    total_trades            74.0000      74.0000      76.0000      +2.0000
+    deflated_sharpe          0.1376       0.2348       0.2381      +0.1005
+
+  OOS 2025-2026
+    métrica                baseline           V1         V1+F    Δ(F-base)
+    cagr                    -0.0038      -0.0032      -0.0032      +0.0006
+    sharpe_ratio            -0.2427      -0.1980      -0.1980      +0.0447
+    sortino_ratio           -0.1794      -0.1499      -0.1499      +0.0294
+    max_drawdown            -0.0235      -0.0227      -0.0237      -0.0002
+    calmar_ratio            -0.1637      -0.1416      -0.1353      +0.0284
+    win_rate                 0.6667       0.6667       0.6667      +0.0000
+    profit_factor            0.8020       0.8482       0.8482      +0.0462
+    total_trades            15.0000      15.0000      15.0000      +0.0000
+    deflated_sharpe          0.0302       0.0342       0.0342      +0.0040
+
+--- MONTE CARLO (bootstrap) ---
+  baseline  mean=+764.3 p5=-913.8 p95=+2484.8 prob_loss=0.232
+  V1        mean=+1231.3 p5=-371.0 p95=+2789.2 prob_loss=0.105
+  V1+F      mean=+1252.0 p5=-254.6 p95=+2810.1 prob_loss=0.097
+
+--- TRADES OOS 2025-2026 ---
+  baseline  trades=15  wins=10  win_rate=0.667
+  V1        trades=15  wins=10  win_rate=0.667
+  V1+F      trades=15  wins=10  win_rate=0.667
+
+  V1-ranking: 89/89 trades con g2_score (media g2=+0.251, trades con g2>0.6 = 11)
+    g2<=0.5        n= 68 win_rate=0.662 pnl_sum=+1100
+    0.5<g2<=0.7    n= 10 win_rate=0.600 pnl_sum=+37
+    g2>0.7         n= 11 win_rate=0.545 pnl_sum=+79
+
+  V1+F: 71/91 trades con g3_score (media g3=+0.425, trades con g3>0.6 = 23)
+    g3<=0.5        n= 39 win_rate=0.667 pnl_sum=+1045
+    0.5<g3<=0.7    n= 10 win_rate=0.600 pnl_sum=-365
+    g3>0.7         n= 22 win_rate=0.591 pnl_sum=+529
+
+========================================================================
+Out: data/cache/backtest_v1_costs_20260810_133723.txt
