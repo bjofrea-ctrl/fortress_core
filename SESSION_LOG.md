@@ -831,3 +831,16 @@ prioridad y se re-especifica como herramienta de tuning fino dentro de un enfoqu
 elegido, no de selección de dirección de investigación. Orden final: RMT → EVT →
 (paralelo: cross-sectional + re-test de sentimiento/fundamentales contra motor actual) →
 Kalman → GP-BO re-especificado. Cronograma en Gantt (Mermaid) dentro del documento.
+
+### Sesión — Auditoría académica independiente: 3 bugs de flujo + plan consolidado — 2026-08-11
+
+`PLAN_MEJORA_MATEMATICA.md` reescrito con auditoría independiente: (1) lookahead en
+`build_factor_panel.py:101` (regime del último día de la serie, no de `date` — invalida
+"macro contra-régimen"); (2) IC macro +0.13 in-sample (pesos calibrados y evaluados en la
+misma ventana; en panel amplio IC=-0.0247); (3) blend de comparación del trial de ridge
+roto por el macro sobreponderado (ridge le gana a un baseline negativo, no confiable tal
+como corrió); (4) confirmación con timestamps exactos de que trials #8/#9 corrieron
+pre-fix de PARTIAL_TP; discrepancia PF 1.46 vs 2.35 sin reconciliar. Nuevo orden: Fase -1
+(arreglar los 3 bugs de flujo, bloquea todo) → Fase 0 (re-correr ridge + rank_ic sobre
+panel limpio) → Fase 0.5 (re-test sentimiento/fundamentales) → Fase 1 (RMT/EVT) →
+Fase 2 (Kalman/GP-BO). Gantt actualizado en el documento.
