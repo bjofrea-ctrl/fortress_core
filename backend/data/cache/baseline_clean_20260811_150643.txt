@@ -50,8 +50,8 @@ Corriendo V1-ranking (50 símbolos, G2 con AAII)...
   W3 2024-2026   trades=119 wins= 69 win_rate=0.580 evaluable=True
 
 --- RECONCILIACIÓN vs referencias históricas (§3.4) ---
-  PF baseline W3 pre-fix (universe50_phaseA_20260810_165713.txt): 1.4878
-  PF baseline W3 post-fix trial #11 (universe50_phaseA_20260810_204559.txt): 1.3202
+  PF baseline W3 (universe50_phaseA_20260810_165713.txt, post-fix PARTIAL_TP/0e934cc·13:42, pre-trial#11): 1.4878
+  PF baseline W3 (universe50_phaseA_20260810_204559.txt, post-revert trial#11): 1.3202
   PF 2.35 citado en SESSION_LOG/PLAN_SENTIMIENTO (trial #10): SIN ARTEFACTO
 
 --- MONTE CARLO (bootstrap, V1) ---
