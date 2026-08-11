@@ -1,0 +1,16 @@
+========================================================================
+TRIAL #13 (PLAN §13) — Ridge_3f como score del motor
+Universo: 50 símbolos | 2019-01-01 -> 2026-08-04 | costos 0.15%/lado
+Cambio: score = predicción ridge_3f walk-forward (refit 63d, expansivo, StandardScaler fit en train, gate ridge_pred > 0)
+Ventanas: W1 2020-2021, W2 2022-2023, W3 2024-2026 | piso trades/ventana: 30
+Criterio: DSR OOS >= 0.90 en >= 2/3 ventanas evaluables | N_TRIALS=17
+========================================================================
+precios cargados: 50 símbolos
+
+Construyendo panel diario de features...
+panel diario: 133179 filas, 50 símbolos, 2664 fechas, eligible=14880
+
+Entrenando ridge walk-forward...
+refits ridge: 61 | símbolos con score: 50
+
+Corriendo baseline (50 símbolos, sin V1)...
