@@ -405,3 +405,19 @@ herramienta (solo interpretable con n≥5).
    alerta de concentración, track record real, bloqueo explicado, sobriedad).
 5. Notificador (`app/core/notifier.py` + plist launchd 16:30 ET) — HECHO,
    sin credenciales configuradas (placeholders en `.env`).
+
+### 9.3.1 Veredicto sub-trial de capital (2026-08-11, huella `capital_usage_20260811_074928.txt`)
+
+**El tope de 5 concurrentes NUNCA recortó: 0 señales de 257 en 332 días
+(0 días con >5 señales de gate).** Uso de capital: promedio 13.4%, mediana
+11.4%, máx 37.4%, 0 días >50%. Por régimen: REFLATION 11.3% / GOLDILOCKS
+9.8% / STAGFLATION 7.1% / DEFLATION 2.5% (mediana 0.0%, el gate bloquea).
+Oportunidades perdidas por top-5: 0 en W1/W2/W3.
+
+**Conclusión: el cuello de botella es la FRECUENCIA de señal del gate
+(1.9 señales/día en 41.6% de los días), no los topes.** Relajar 5
+concurrentes / 10% posición / Kelly 25% no desplegaría más capital →
+el trial de relajación (antes propuesto como N_TRIALS 16→17) queda
+**ARCHIVADO sin correr**; la capital infra-utilizada se acepta como
+característica del motor y se re-enmarca en la herramienta de sugerencias
+(§10): avisar al humano cuando haya, no forzar más trades.
