@@ -1,0 +1,13 @@
+========================================================================
+FASE 0.5b (§4.2) — RMT / Marchenko-Pastur, factor de mercado removido
+Universo: 50 símbolos | 2019-01-01 -> 2026-08-04
+Estandarización rodante: 252d | min fechas comunes: 180
+========================================================================
+precios cargados: 50 símbolos
+Matriz: N=50 símbolos x T=1658 días (q=N/T=0.0302)
+Tras estandarización rodante (dropna): N=50 x T=1599
+q=0.0313 | λ₊ (umbral MP) = 1.385
+
+--- Espectro completo (con mercado) ---
+  λ_max=15.413 | λ₂=5.127 | λ₃=2.661
+  autovalores sobre λ₊=1.385: 5

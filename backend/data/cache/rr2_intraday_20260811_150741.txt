@@ -1,0 +1,22 @@
+========================================================================
+FASE 0.5a (§4.1) — rank IC INTRA-DÍA con Newey-West
+Panel: factor_panel_20260811_144857.parquet | filas eligible: 2069
+Horizonte: 20d | stride: 5d | lags NW: 4 | min símbolos/fecha: 5
+Criterio: |t| > 2 y signo esperado -> significativo (W3); no -> W2.
+========================================================================
+
+Fechas en panel: 346 | símbolos/fecha promedio: 6.0
+
+factor            n_days   mean_IC    SE_NW       t    pooled    veredicto
+momentum_score       187   -0.0100   0.0359   -0.28   -0.0081  no sig (W2)
+rsi_score            164   +0.0404   0.0294   +1.38   +0.0380  no sig (W2)
+trend_score            0      +nan      nan    +nan      +nan  no sig (W2)
+adx_score            151   +0.0679   0.0294   +2.31   +0.0219 SIGNIFICATIVO (W3)
+
+--- INTERPRETACIÓN (§4.1) ---
+  El pooled se incluye SOLO para documentar el contraste de
+  especificación: puede diferir del intra-día (inflado por el
+  movimiento común del mercado). El que decide es el intra-día.
+  Veredicto conjunto del gate: lo dan 0.5a + 0.5b (RMT) + 0.5c (ridge).
+
+Out: data/cache/rr2_intraday_20260811_150741.txt

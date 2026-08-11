@@ -1,0 +1,26 @@
+========================================================================
+FASE 0.5b (§4.2) — RMT / Marchenko-Pastur, factor de mercado removido
+Universo: 50 símbolos | 2019-01-01 -> 2026-08-04
+Estandarización rodante: 252d | min fechas comunes: 180
+========================================================================
+precios cargados: 50 símbolos
+Matriz: N=50 símbolos x T=1658 días (q=N/T=0.0302)
+Tras estandarización rodante (dropna): N=50 x T=1599
+q=0.0313 | λ₊ (umbral MP) = 1.385
+
+--- Espectro completo (con mercado) ---
+  λ_max=15.413 | λ₂=5.127 | λ₃=2.661
+  autovalores sobre λ₊=1.385: 5
+
+--- Espectro RESIDUAL (mercado removido, §4.2) ---
+  varianza explicada por PC1 (mercado): 30.8%
+  λ_max_res=7.589 | λ₂=3.850 | λ₃=2.882 | λ₄=2.003
+  autovalores residuales sobre λ₊=1.385: 8
+  [ λ=7.59, λ=3.85, λ=2.88, λ=2.00, λ=1.74, λ=1.64, λ=1.52, λ=1.40 ]
+  dominancia 1er factor residual: 15.2% de la varianza residual
+
+--- INTERPRETACIÓN (§4.2/§4.5) ---
+  Estructura residual real amplia -> consistente con W3.
+  (Veredicto conjunto: 0.5a rr2 + 0.5b RMT + 0.5c ridge — este script solo informa)
+
+Out: data/cache/rmt_mp_20260811_150849.txt
