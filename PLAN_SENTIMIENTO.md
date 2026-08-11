@@ -600,3 +600,32 @@ predicción de ridge_3f (retorno esperado a 20d). TODO lo demás es idéntico:
   estado actual de producción), ridge (EL trial). Veredicto sobre ridge.
 
 **13.5 Resultado**: pendiente — huella `trial13_ridge_motor_<ts>.txt` en data/cache.
+
+### 13.5 Veredicto trial #13 (2026-08-11, huella `trial13_ridge_motor_20260811_120029.txt`)
+
+**NO CUMPLE el criterio — 0/3 ventanas. Ridge_3f como score del motor REFUTADO.**
+
+El usuario lo advirtió y el backtest pre-registrado lo confirmó: "+0.0285 de
+mejora en IC es evidencia de calidad de señal, no de plata". DSR OOS por
+ventana (n_trials=17):
+
+| Ventana | baseline | V1 (AAII) | ridge_3f | trades ridge | ¿PASA? |
+|---|---|---|---|---|---|
+| W1 2020-2021 | 0.0714 | 0.0410 | 0.0538 | 118 | no |
+| W2 2022-2023 | 0.0284 | 0.0020 | 0.0010 | 77 | no |
+| W3 2024-2026 | 0.1727 | 0.2253 | 0.1803 | 163 | no |
+
+Lectura: el ridge generó MÁS trades (118/77/163 vs 103/47/113 baseline) con
+win_rate similar (0.661/0.533/0.601) pero sin traducir el IC en PnL — Sharpe
+W2 -0.820 y W3 0.554 (por debajo del baseline 0.530 y V1 0.632). La mejora
+de IC medida en 1b era real pero pequeña (+0.0156 pooled) y se diluye al
+pasar por la mecánica completa (gates, sizing, costos, salidas): IC != PnL.
+El criterio 0.90 congelado hizo exactamente su trabajo: la evidencia de
+señal NO sobrevive la traducción a plata.
+
+**Acción tomada (pre-registrada en §13.4)**: revertir = borrar el script
+`backend/scripts/trial13_ridge_motor.py`. La producción NO se tocó (la
+inyección era por subclase dentro del script). Evidencia completa archivada:
+huella txt + trades/equity/events parquet en data/cache. El motor queda como
+estaba (trial #10/V1). La combinación ridge_3f queda documentada como
+señal de DIAGNÓSTICO (IC/ICIR), no como score de producción.

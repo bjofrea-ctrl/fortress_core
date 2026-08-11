@@ -844,3 +844,29 @@ pre-fix de PARTIAL_TP; discrepancia PF 1.46 vs 2.35 sin reconciliar. Nuevo orden
 (arreglar los 3 bugs de flujo, bloquea todo) → Fase 0 (re-correr ridge + rank_ic sobre
 panel limpio) → Fase 0.5 (re-test sentimiento/fundamentales) → Fase 1 (RMT/EVT) →
 Fase 2 (Kalman/GP-BO). Gantt actualizado en el documento.
+
+### Sesión — Proyecto §11 Fase 0-3 + Trial #13 (ridge como score) REFUTADO — 2026-08-11
+
+- **Proyecto §11 completado** (huellas en data/cache, commit bafeae8): panel
+  `factor_panel_20260811_092828.parquet` (18,900 filas, 2,069 eligible, 50 símbolos,
+  378 fechas, régimen HMM real con refit trimestral). Fase 1a correlaciones PASA
+  (máx |rho| 0.295). Fase 1b ridge purgado PASA: ridge_3f IC OOS +0.0156, ICIR 0.78,
+  4/5 folds positivos vs blend −0.0129 (delta +0.0285); ridge+sent IC −0.0127
+  (sentimiento refutado OTRA vez). Fase 2: score del motor estable en los 4 regímenes
+  (0.086/0.049/0.040/0.086) → pesos por régimen ARCHIVADO; macro es CONTRARÉGIMEN
+  (+0.198 GOLDILOCKS / −0.133 REFLATION / −0.173 DEFLATION). Fase 3 PBO=0.5 exacto
+  (nulo de selección, sin sobreajuste sistemático).
+- **Proyecto §12 pares CERRADO**: Fase 4a cointegración NO PASA (mejor par 47% MA-CRM,
+  4 pares > 40%, media 18.1%) → 4b nunca se corre; cópulas quedan SOLO como riesgo.
+- **Trial #13 (PLAN §13, aprobado por el usuario) — ridge_3f como score del motor**:
+  inyección por subclase dentro del script (producción intocada), score =
+  predicción ridge walk-forward (refit 63d expansivo, StandardScaler fit en train,
+  gate ridge_pred > 0), sin sentiment (ridge como ranking/entrada puro). Corridas
+  baseline + V1 + ridge. **VEREDICTO NO CUMPLE 0/3** (huella
+  `trial13_ridge_motor_20260811_120029.txt`): W1 DSR 0.0538, W2 0.0010, W3 0.1803.
+  El ridge generó MÁS trades (118/77/163 vs 103/47/113) con win_rate similar pero
+  Sharpe W2 −0.820, W3 0.554 — la mejora de IC (+0.0285) NO se tradujo en PnL.
+  **El criterio 0.90 congelado hizo exactamente su trabajo: IC != plata.**
+- **Revert aplicado (pre-registrado §13.4)**: script `trial13_ridge_motor.py` borrado;
+  producción nunca se tocó (inyección por subclase). Evidencia completa en
+  data/cache (txt + parquets de trades/equity/events). El motor queda en trial #10/V1.

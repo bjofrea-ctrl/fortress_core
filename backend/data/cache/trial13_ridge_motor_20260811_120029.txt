@@ -16,3 +16,53 @@ refits ridge: 61 | símbolos con score: 50
 Corriendo baseline (50 símbolos, sin V1)...
 Corriendo V1-ranking (50 símbolos, G2 con AAII)...
 Corriendo ridge_3f como score (EL trial)...
+
+--- W1 2020-2021 (baseline n=103, V1 n=99, ridge n=118) ---
+    cagr                     0.0113       0.0018       0.0053
+    sharpe_ratio             0.2562       0.0627       0.1552
+    sortino_ratio            0.3097       0.0742       0.1819
+    max_drawdown            -0.0513      -0.0442      -0.0276
+    calmar_ratio             0.2198       0.0411       0.1928
+    win_rate                 0.6602       0.6162       0.6610
+    profit_factor            1.3785       1.2073       1.3262
+    total_trades           103.0000      99.0000     118.0000
+    deflated_sharpe          0.0714       0.0410       0.0538
+
+--- W2 2022-2023 (baseline n=47, V1 n=49, ridge n=77) ---
+    cagr                    -0.0011      -0.0111      -0.0179
+    sharpe_ratio            -0.0542      -0.7359      -0.8201
+    sortino_ratio           -0.0436      -0.4993      -0.5567
+    max_drawdown            -0.0650      -0.0748      -0.0737
+    calmar_ratio            -0.0173      -0.1485      -0.2429
+    win_rate                 0.5532       0.4694       0.5325
+    profit_factor            1.0882       0.7710       0.7092
+    total_trades            47.0000      49.0000      77.0000
+    deflated_sharpe          0.0284       0.0020       0.0010
+
+--- W3 2024-2026 (baseline n=113, V1 n=119, ridge n=163) ---
+    cagr                     0.0231       0.0263       0.0222
+    sharpe_ratio             0.5299       0.6320       0.5542
+    sortino_ratio            0.7342       0.8878       0.6771
+    max_drawdown            -0.0378      -0.0531      -0.0674
+    calmar_ratio             0.6111       0.4956       0.3288
+    win_rate                 0.5487       0.5798       0.6012
+    profit_factor            1.4878       1.5604       1.4617
+    total_trades           113.0000     119.0000     163.0000
+    deflated_sharpe          0.1727       0.2253       0.1803
+
+--- TRADES POR VENTANA (ridge) ---
+  W1 2020-2021   trades=118 wins= 78 win_rate=0.661 evaluable=True
+  W2 2022-2023   trades= 77 wins= 41 win_rate=0.532 evaluable=True
+  W3 2024-2026   trades=163 wins= 98 win_rate=0.601 evaluable=True
+
+--- MONTE CARLO (bootstrap, ridge) ---
+  mean=+2390.5 p5=-257.2 p95=+4853.8 prob_loss=0.068
+
+--- VEREDICTO vs CRITERIO (§9.4) ---
+  W1 2020-2021   n=118 DSR=0.0538 no pasa
+  W2 2022-2023   n= 77 DSR=0.0010 no pasa
+  W3 2024-2026   n=163 DSR=0.1803 no pasa
+
+  Ventanas que pasan: 0/3 -> criterio: NO CUMPLE
+
+Out: data/cache/trial13_ridge_motor_20260811_120029.txt
