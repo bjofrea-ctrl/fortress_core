@@ -1,0 +1,11 @@
+========================================================================
+TRIAL #11 (PLAN §9.6) — Piso de stop sobre universo 50 símbolos
+Universo: 50 símbolos | 2019-01-01 -> 2026-08-04 | costos 0.15%/lado
+Cambio: position_stop de régimen topado a base 0.05 (POSITION_STOP_FLOOR)
+Ventanas: W1 2020-2021, W2 2022-2023, W3 2024-2026 | piso trades/ventana: 30
+Criterio: DSR OOS >= 0.90 en >= 2/3 ventanas evaluables | N_TRIALS=17
+========================================================================
+precios cargados: 50 símbolos
+AAII disponible en 2913/2913 días de trading
+
+Corriendo baseline (50 símbolos, sin V1)...

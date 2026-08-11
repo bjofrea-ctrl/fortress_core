@@ -1,17 +1,14 @@
 """
-PROYECTO PRE-REGISTRADO — Phase A: expansión de universo a 50 símbolos.
+TRIAL #11 (PLAN §9.6) — Piso de stop sobre universo 50 símbolos.
 
-(Ver PLAN_SENTIMIENTO.md §9.) Hipótesis: con 50 símbolos el motor genera
->= 30 trades por ventana OOS de 2 años y el criterio DSR OOS >= 0.90 en
->= 2 de 3 ventanas pasa a ser evaluable. Nada de la mecánica cambia:
-gate, salidas (parcial único, fix trial #10), régimen HMM, calibrador,
-cooldowns, lunes, top-5, costos 0.15%/lado.
+Cambio vs Phase A original: position_stop de régimen nunca más profundo que
+0.05 (get_thresholds aplica POSITION_STOP_FLOOR). Solo ese parámetro cambia.
 
-- Configs: baseline (sin V1) + V1 (ranking G2 con AAII).
-- Sin fundamentals (Phase B gated; cobertura 5/50 inútil).
-- Ventanas (no solapadas, 2 años): W1 2020-2021, W2 2022-2023,
-  W3 2024-2026-08-04. Piso de evaluabilidad: >= 30 trades por ventana.
-- N_TRIALS = 16 (10 del historial + 6 por selección de universo).
+Criterio: el ORIGINAL de §9.4 — DSR OOS >= 0.90 en >= 2/3 ventanas evaluables.
+N_TRIALS = 17 (16 + 1 por este trial).
+Hipótesis: el REGIME_STOP_HIT (-7%/-8% en regímenes 1/2) era el leak real de
+PnL (41 posiciones, 0% win, -$5,857); toparlo al -5% recupera parte del leak.
+Ventanas: W1 2020-2021, W2 2022-2023, W3 2024-2026-08-04. Piso: >= 30 trades.
 """
 import datetime
 import os
@@ -27,7 +24,7 @@ SYMBOLS = ["SPY", "QQQ", "AAPL", "MSFT", "GOOGL", "AMZN", "NVDA"] + NEW_UNIVERSE
 MARKET_TICKERS = ["SPY", "EFA", "QQQ", "GLD", "DBC", "TIP", "TLT", "AGG", "^VIX"]
 START = "2019-01-01"
 END = "2026-08-04"
-N_TRIALS = 16
+N_TRIALS = 17
 WINDOWS = [
     ("W1 2020-2021", "2020-01-01", "2021-12-31"),
     ("W2 2022-2023", "2022-01-01", "2023-12-31"),
@@ -52,8 +49,9 @@ def main():
             f.write(msg + "\n")
 
     log("=" * 72)
-    log("PROYECTO PRE-REGISTRADO (PLAN §9) — Phase A: universo 50 símbolos")
+    log("TRIAL #11 (PLAN §9.6) — Piso de stop sobre universo 50 símbolos")
     log(f"Universo: {len(SYMBOLS)} símbolos | {START} -> {END} | costos 0.15%/lado")
+    log(f"Cambio: position_stop de régimen topado a base 0.05 (POSITION_STOP_FLOOR)")
     log(f"Ventanas: {', '.join(w[0] for w in WINDOWS)} | piso trades/ventana: {TRADE_FLOOR}")
     log(f"Criterio: DSR OOS >= 0.90 en >= 2/3 ventanas evaluables | N_TRIALS={N_TRIALS}")
     log("=" * 72)

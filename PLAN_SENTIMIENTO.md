@@ -238,3 +238,26 @@ Con 50 símbolos líquidos de gran capitalización, el motor genera ≥ 30 trade
 2. **A1 Pre-registration** — este §9 + N_TRIALS=16 + ventanas en el script.
 3. **A2 Phase A run** — V1 config (sin fundamentals) sobre 50 símbolos: baseline + V1, full + 3 ventanas, dump de trades (reusar `audit_gap_exits`). Runtime estimado: 3 backtests × ~30-45 min (el dataset de calibración y el loop diario crecen ~7×) → nohup + polling.
 4. **A3 Veredicto Phase A** — vs criterio 9.4. Si pasa → Phase B (EDGAR 50, re-validar g3) como sub-proyecto pre-registrado. Si no → cierre y archivo.
+
+### 9.6 Trial #11 (2026-08-10) — Piso de stop (pre-registrado tras auditoría de exits)
+
+**Evidencia (auditoría Session 8j, trades 165713)**: el leak real de PnL no es la
+salida técnica (refutada: 16/16 riders en parcial terminaron en TECHNICAL con 100%
+win, +$103 vs +$66 y 70% win de los TRAILING) sino `REGIME_STOP_HIT`: 41 posiciones,
+0% win, -$5,857 = 68% de lo que produce TRAILING_STOP (+$6,187). Pérdida promedio
+-$143 vs -$43 de las técnicas: el stop de régimen (0.07 en régimen 1, 0.08 en 2)
+deja correr perdedores ~3x más profundo que el base.
+
+**Hipótesis del trial**: topar el stop de posición de régimen al ancho base (nunca
+más profundo que -5%) recupera parte del leak sin tocar el resto del protocolo
+(exposición, cooldown, portfolio stop).
+
+**Cambio**: `position_stop` efectivo = min(regime position_stop, 0.05). Solo ese
+parámetro — portfolio_stop, max_exposure, cooldown NO cambian. Aplica en sizing y
+en checks (vía `get_thresholds`, punto único).
+
+**Criterio**: el ORIGINAL de §9.4 (DSR OOS ≥ 0.90 en ≥2/3 ventanas evaluables) —
+no cambia. N_TRIALS 16 → **17** (+1 por este trial). Advertencia pre-registrada:
+esperado no alcanzar 0.90; el trial mide mejora real del sistema, no fabrica el umbral.
+
+**Freno**: si el leak no se reduce, se archiva el trail del stop de régimen sin más cambios.

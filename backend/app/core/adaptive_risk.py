@@ -10,6 +10,11 @@ REGIME_THRESHOLDS = {
     3: {"position_stop": 0.03, "portfolio_stop": 0.03, "max_exposure": 0.20, "cooldown_days": 15},
 }
 
+# Trial #11 (PLAN §9.6): el stop de régimen nunca más profundo que el base -5%.
+# El REGIME_STOP_HIT de regímenes 1/2 (-7%/-8%) era el leak real de PnL
+# (41 posiciones, 0% win, -$5,857 = 68% de lo que produce el trailing).
+POSITION_STOP_FLOOR = 0.05
+
 
 @dataclass
 class RiskState:
@@ -32,7 +37,8 @@ class AdaptiveRiskManager:
         self.VIOLATION_WINDOW_DAYS = settings.VIOLATION_WINDOW_DAYS
 
     def get_thresholds(self) -> dict:
-        return REGIME_THRESHOLDS.get(self.state.current_regime, REGIME_THRESHOLDS[0])
+        t = REGIME_THRESHOLDS.get(self.state.current_regime, REGIME_THRESHOLDS[0])
+        return {**t, "position_stop": min(t["position_stop"], POSITION_STOP_FLOOR)}
 
     def update_regime(self, regime_state: int) -> None:
         self.state.current_regime = regime_state
