@@ -393,3 +393,9 @@ residual (8 factores, consistente con `rmt_mp_20260811_150849.txt`). La huella f
   (GP-BO).
 - Ningún número se relaya sin verificar contra su artefacto.
 - Ninguna señal en vivo se muestra al usuario antes de pasar el gate de señal (Fase 0.5).
+- La corrección de múltiples comparaciones (p.ej. Bonferroni) se declara en el PRE-REGISTRO
+  del script, antes de correr — agregarla post-hoc en la interpretación viola este mismo
+  principio. Lección 0.5a (2026-08-11, auditado por el usuario): ADX pasó |t|>2 nominal
+  (t=+2.31) pero no Bonferroni-4; la conclusión W2 se sostiene por las otras 2 fuentes
+  (trial #13, 0.5c), pero el criterio final no estaba en el script. Próximo script:
+  umbrales corregidos por múltiples comparaciones van en el código desde el inicio.
