@@ -3,3 +3,34 @@ SUB-TRIAL §9.3 — Diagnóstico de uso de capital (universo 50, V1)
 Deliverable: INFORME. No cambia mecánica. No consume N_TRIALS.
 ========================================================================
 Corriendo V1-ranking con instrumentación de capital...
+
+Días con señales en el log: 332
+Capital inicial: $25,000 | TOPES: 5 concurrentes / 10% por posición / Kelly 25%
+
+--- USO DE CAPITAL (todos los días) ---
+  promedio: 13.4% | mediana: 11.4% | p25: 7.4% | p90: 25.7% | máx: 37.4%
+  días con <10% desplegado: 69.6% (231/332)
+  días con >50% desplegado: 0.0% (0/332)
+
+--- USO DE CAPITAL POR RÉGIMEN ---
+  REFLATION    n_dias=   92 mean=11.3% mediana=10.3% máx=33.4%
+  GOLDILOCKS   n_dias=   58 mean=9.8% mediana=8.3% máx=37.4%
+  STAGFLATION  n_dias=  102 mean=7.1% mediana=5.8% máx=31.6%
+  DEFLATION    n_dias=   80 mean=2.5% mediana=0.0% máx=31.9%
+
+--- SEÑALES DEL GATE vs TOMADAS (top-5) ---
+  días con >=1 señal de gate: 138/332 (41.6%)
+  señales de gate por día (cuando hay): mean=1.9 mediana=2 máx=5
+  días donde el gate dio >5 señales (top-5 recorta): 0 (0.0% de días con señales)
+  señales totales de gate: 257 | recortadas por top-5: 0
+
+--- POSICIONES SIMULTÁNEAS ---
+  mean=1.14 mediana=1 máx=7
+  días con 0 posiciones: 44.3% | con >=2: 30.7% | con 5 (tope): 2.1%
+
+--- OPORTUNIDADES PERDIDAS POR TOP-5, POR VENTANA OOS ---
+  W1 2020-2021   señales gate=   89  perdidas por top-5=    0  (0%)
+  W2 2022-2023   señales gate=   45  perdidas por top-5=    0  (0%)
+  W3 2024-2026   señales gate=  103  perdidas por top-5=    0  (0%)
+
+Out: data/cache/capital_usage_20260811_074928.txt
