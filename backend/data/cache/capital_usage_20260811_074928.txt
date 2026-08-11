@@ -1,0 +1,5 @@
+========================================================================
+SUB-TRIAL §9.3 — Diagnóstico de uso de capital (universo 50, V1)
+Deliverable: INFORME. No cambia mecánica. No consume N_TRIALS.
+========================================================================
+Corriendo V1-ranking con instrumentación de capital...

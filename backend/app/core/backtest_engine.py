@@ -448,6 +448,7 @@ class BacktestEngine:
             "equity_curve": equity_curve,
             "trades": trades,
             "risk_events": risk_manager.state.risk_events,
+            "capital_usage_log": capital_usage_log,
             "metrics": self.calculate_metrics(equity_curve, trades),
             "monte_carlo": self.monte_carlo_simulation(trades, equity_curve=equity_curve),
             "signal_quality": self.validate_signal_quality(indicators_cache, start_date, end_date),
