@@ -552,6 +552,8 @@ class CopulaRiskAnalyzer:
         tau, _ = stats.kendalltau(u, v)
         if pd.isna(tau) or tau <= 0:
             return 1e-6  # Clayton sólo captura dependencia positiva
+        if tau >= 1.0:
+            return 1e6  # dependencia perfecta (series degeneradas): theta acotado
         return float(2 * tau / (1 - tau))
 
     @staticmethod
@@ -563,6 +565,8 @@ class CopulaRiskAnalyzer:
         tau, _ = stats.kendalltau(u, v)
         if pd.isna(tau) or tau <= 0:
             return 1.0  # independencia
+        if tau >= 1.0:
+            return 50.0  # dependencia perfecta (series degeneradas)
         theta = 1 / (1 - tau)
         return float(min(theta, 50.0))  # cap: evita overflow en tail_dependence_gumbel cuando tau->1
 

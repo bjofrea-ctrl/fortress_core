@@ -152,6 +152,14 @@ class SignalEngine:
             "regime_state": regime_state,
             "factors": scores,
             "atr": float(atr_v),
+            "indicators": {
+                "close": float(latest.close),
+                "ema50": float(latest.ema50),
+                "ema200": float(latest.ema200),
+                "adx14": float(latest.get("adx14", np.nan)),
+                "rsi14": float(latest.get("rsi14", np.nan)),
+                "volume_ratio": float(latest.get("volume_ratio", np.nan)),
+            },
         }
 
     def _fixed_score_series(self, indicators_df: pd.DataFrame) -> pd.Series:

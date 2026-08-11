@@ -140,16 +140,17 @@ def _build_opportunities(price_data, sentiment_map, regime_state, today) -> list
             if len(g2_series) and pd.notna(g2_series.iloc[-1]):
                 g2 = float(g2_series.iloc[-1])
 
+        ind = sig["indicators"]
         opportunities.append({
             "symbol": symbol,
             "score": round(float(sig["score"]), 4),
             "win_prob": round(win_prob, 4) if win_prob is not None else None,
             "factors": {k: round(float(v), 4) for k, v in sig["factors"].items()},
             "gates": {
-                "trend_ok": bool(latest["close"] > latest["ema50"] > latest["ema200"]),
-                "adx": round(float(latest["adx14"]), 2),
-                "rsi": round(float(latest["rsi14"]), 2),
-                "volume_ratio": round(float(latest["volume_ratio"]), 2),
+                "trend_ok": bool(ind["close"] > ind["ema50"] > ind["ema200"]),
+                "adx": round(ind["adx14"], 2),
+                "rsi": round(ind["rsi14"], 2),
+                "volume_ratio": round(ind["volume_ratio"], 2),
             },
             "entry_price": round(float(sig["entry_price"]), 2),
             "stop_loss": round(float(sig["stop_loss"]), 2),
@@ -218,7 +219,8 @@ async def opportunities_today():
         regime = _fit_regime(market_data)
         regime_state = int(regime["state"])
 
-        sentiment_map = _load_sentiment_map(price_data["SPY"].index)
+        ref_symbol = max(price_data, key=lambda s: len(price_data[s]))
+        sentiment_map = _load_sentiment_map(price_data[ref_symbol].index)
         opportunities = _build_opportunities(price_data, sentiment_map, regime_state, today)
 
         evaluation = evaluate_pending(price_data)
