@@ -899,3 +899,22 @@ Fase 2 (Kalman/GP-BO). Gantt actualizado en el documento.
   producto: 50 símbolos vs basket) pendiente de confirmación del usuario (§9).
 - 70/70 tests OK. Cambios: build_factor_panel.py, diagnose_ridge_combination.py,
   nuevos backtest_baseline_clean.py / diagnose_rr2_intraday.py / diagnose_rmt_mp.py.
+
+## 2026-08-11 — Corrección del veredicto del gate (revisión del usuario)
+
+- El usuario verificó los artefactos (las 3 corridas RMT chicas 150820/30/40 = cortes
+  incompletos del mismo script en arreglo, sin cherry-picking) e identificó una
+  tensión real en el §8: el script RMT imprime "Estructura residual real amplia ->
+  consistente con W3", pero el §8 lo había reescrito como evidencia de W2
+  ("sectorial débil, no explotada"). 8 autovalores reales de 49 dimensiones
+  residuales, ninguno dominante al 15.2%, es estructura DIFUSA sectorial real, no
+  ausencia de estructura.
+- §8 corregido: el veredicto ahora distingue (1) W2 SÓLIDO para el ranking individual
+  (momentum/RSI intra-día, trial #13, ridge crudo — 3 fuentes independientes) de
+  (2) lo NO resuelto por RMT: hay estructura sectorial real que los factores actuales
+  no tocan.
+- §9 completado: rama W2 CONFIRMADA por el usuario. Alcance corregido: la
+  re-evaluación compara TRES opciones — (a) basket único, (b) selección 50 símbolos
+  (descartada), (c) rotación sectorial/cluster (la única con evidencia positiva RMT).
+- Criterio: no pre-registrar trial de motor sobre sectores hasta tener diagnóstico
+  sectorial propio (mismo protocolo intra-día/Newey-West/pre-registrado).

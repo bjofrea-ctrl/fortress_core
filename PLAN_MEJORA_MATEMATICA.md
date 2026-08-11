@@ -324,7 +324,27 @@ resultante se registra en §9.*
 
 ---
 
-## 9. (pendiente) — Rama W2: re-evaluación de producto
+## 9. Rama W2 — re-evaluación de producto: CONFIRMADA (2026-08-11, usuario)
+
+Re-evaluación confirmada: no hace falta más matemática sobre momentum/RSI a nivel
+símbolo — la muerte del ranking individual tiene evidencia sólida de tres fuentes
+independientes (0.5a rr2 intra-día, trial #13, 0.5c ridge macro crudo).
+
+**Alcance corregido: la re-evaluación compara TRES opciones, no dos** (corrección del
+usuario sobre un alcance inicial de 2): cerrar prematuramente sobre "basket único"
+ignoraría la única evidencia positiva del gate:
+
+| Opción | Evidencia | Estado |
+|---|---|---|
+| (a) Timing sobre un basket único (ETF) | rr2: momentum/RSI no seleccionan intra-día; DSR baseline/basket ya mide el timing | candidata |
+| (b) Selección de 50 símbolos (arquitectura actual) | momentum/RSI/r ridge muertos a nivel símbolo (rr2, trial #13, 0.5c); cross-section operable ~6 símbolos/fecha | **descartada** con evidencia sólida |
+| (c) Rotación/asignación sectorial o por cluster | RMT: 8 factores residuales reales (de 49 dims), ninguno dominante (15.2%) = estructura sectorial difusa **sin explotar** por los factores actuales | candidata con la única evidencia **positiva** del gate |
+
+Criterio de la re-evaluación: no decidir (a) vs (c) por pre-registro de trial hasta que
+se defina qué activo subyacente y qué score sectorial — la estructura que RMT detecta
+no está tocada por momentum/RSI, así que cualquier trial de motor sobre sectores
+requiere su propio diagnóstico sectorial primero (mismo protocolo: intra-día, Newey-West,
+pre-registrado).
 
 ---
 
