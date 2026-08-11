@@ -870,3 +870,32 @@ Fase 2 (Kalman/GP-BO). Gantt actualizado en el documento.
 - **Revert aplicado (pre-registrado §13.4)**: script `trial13_ridge_motor.py` borrado;
   producción nunca se tocó (inyección por subclase). Evidencia completa en
   data/cache (txt + parquets de trades/equity/events). El motor queda en trial #10/V1.
+
+## 2026-08-11 — Fase -1 + Fase 0.5 ejecutadas (PLAN_MEJORA_MATEMATICA §8)
+
+- **Fase -1 bugs de flujo corregidos** (todo verificado contra artefacto):
+  1. Lookahead régimen (§3.1): `build_factor_panel.py` ahora corta `market_data` en
+     `date` para `predict_current_regime`. **260/378 fechas cambiaron de régimen** —
+     el bug era masivo. Panel limpio: `factor_panel_20260811_144857.parquet`.
+  2. **Hallazgo extra**: `MARKET_TICKERS` nunca incluyó DXY/gold/oil → el composite
+     macro (y el motor) usaba SOLO SPY+TLT desde siempre. Cargados los 3 faltantes;
+     panel ahora expone 4 features crudas (0 NaN) + composite con las 3 reglas.
+  3. Baseline único (§4.4.4): `baseline_clean_20260811_150643.txt` reproduce 1:1 la
+     huella post-fix `universe50_phaseA_20260810_165713.txt` (motor determinista).
+     **Los PF 1.46/2.35 de §3.4 NO tienen artefacto verificable** → descartados como
+     referencia; este baseline es el oficial para toda comparación futura.
+- **Gate 0 (panel limpio): PASADO.**
+- **Fase 0.5 — 3 sondas independientes**:
+  - 0.5a rr2 intra-día + Newey-West: momentum t=−0.28 (no sig), rsi t=+1.38 (no sig),
+    adx t=+2.31 (sig nominal, no resiste Bonferroni 4 tests). Cross-section operable
+    real: ~6 símbolos/fecha, no 50. Solo momentum es ranking continuo; rsi/adx son
+    gates binarios.
+  - 0.5b RMT/Marchenko-Pastur (mercado removido): PC1 = 30.8% de varianza; 8
+    autovalores residuales sobre λ₊=1.385, primero 15.2% → estructura sectorial débil,
+    no plano de selección explotable.
+  - 0.5c ridge macro crudo: delta −0.0046 vs blend, ICIR 0.174 → NO mejora nada.
+    Corrobora trial #13 (la combinación no es el problema).
+- **VEREDICTO GATE: W2 con matices** — timing, no selección. Rama W2 (re-evaluar
+  producto: 50 símbolos vs basket) pendiente de confirmación del usuario (§9).
+- 70/70 tests OK. Cambios: build_factor_panel.py, diagnose_ridge_combination.py,
+  nuevos backtest_baseline_clean.py / diagnose_rr2_intraday.py / diagnose_rmt_mp.py.

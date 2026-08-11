@@ -3,8 +3,8 @@
 Consolida: inventario de OpenCode (§1), evaluación crítica de Claude Code (§2),
 auditoría académica independiente #1 con 3 bugs de flujo + 1 confirmado de ejecución
 (§3), correcciones de auditoría académica independiente #2 (§4), plan de fases
-consolidado con cronograma (§5), evidencia post-plan de trial #13 (§6) y disciplina
-(§7).
+consolidado con cronograma (§5), evidencia post-plan de trial #13 (§6), resultado de
+las Fases -1 y 0.5 con gate W2/W3 (§8), rama resultante (§9) y disciplina (§10).
 
 Ver también: `RESUMEN_VALIDACION_VARIABLES.md`, `SESSION_LOG.md`.
 
@@ -233,7 +233,102 @@ gastar trials en la misma pregunta que trial #13 ya sugirió que no es donde est
 
 ---
 
-## 7. Disciplina sin excepción
+## 8. Resultado Fase -1 + Fase 0.5 — gate W2/W3 (2026-08-11)
+
+### Fase -1 — bugs de flujo corregidos (todo verificado contra artefacto)
+
+1. **§3.1 lookahead régimen** — corregido en `build_factor_panel.py`: `predict_current_regime`
+   ahora recibe `{s: df[df.index <= date] ...}`. Impacto medido: **260/378 fechas cambiaron
+   de régimen** (el bug era masivo). Panel limpio: `factor_panel_20260811_144857.parquet`.
+2. **§4.3 macro crudo** — hallazgo extra de auditoría: `MARKET_TICKERS` no incluye
+   DXY/gold/oil, así que el composite (y el motor) SOLO usaba SPY+TLT desde siempre.
+   Corregido cargando los 3 tickers faltantes. El panel ahora expone las 4 columnas crudas
+   (dxy_ret_20d, gold_ret_20d, spy_ret_50d, oil_ret_20d, 0 NaN) + composite con las 3 reglas.
+3. **§4.4.4 baseline único** — `baseline_clean_20260811_150643.txt`: reproduce **1:1**
+   (trades 103/47/113 baseline, 99/49/119 V1; PF 1.3785/1.0882/1.4878; DSR
+   0.0714/0.0284/0.1727) la huella post-fix `universe50_phaseA_20260810_165713.txt`
+   → el motor es DETERMINISTA. **Los PF 1.46 y 2.35 citados en §3.4 NO tienen artefacto
+   verificable en cache** → se descartan como referencias; toda comparación futura usa
+   este baseline. El 2.35 del trial #10 probablemente sea un estado pre-fix de PARTIAL_TP.
+
+**Gate 0: panel limpio — PASADO.** (Parquets: `factor_panel_20260811_144857`,
+`baseline_clean_20260811_150643` + trades/events/equity.)
+
+### Fase 0.5 — sonda conjunta W2 vs W3 (3 sondas independientes)
+
+**0.5a rr2 intra-día con Newey-West** (`rr2_intraday_20260811_150741.txt`, §4.1):
+por fecha, Spearman entre factor y fwd 20d entre los símbolos disponibles; promedio
+sobre fechas con SE Newey-West (L=4). Fechas elegibles: 346, promedio **6.0 símbolos/fecha**
+(el cross-section operable real es ~6, no 50).
+
+| factor | n_días | mean_IC | SE_NW | t | pooled | veredicto |
+|---|---|---|---|---|---|---|
+| momentum_score | 187 | −0.0100 | 0.0359 | −0.28 | −0.0081 | no sig |
+| rsi_score | 164 | +0.0404 | 0.0294 | +1.38 | +0.0380 | no sig |
+| trend_score | 0 | — | — | — | — | constante (=1.0, gate) |
+| adx_score | 151 | +0.0679 | 0.0294 | +2.31 | +0.0219 | sig (nominal) |
+
+Nota honesta: momentum (el ÚNICO ranking continuo del motor) NO selecciona intra-día.
+Los demás son gates binarios (rsi 0.4/0.8, adx 0.3/0.9 — `signal_engine.py`). ADX pasa el
+umbral nominal |t|>2 pero **NO resiste corrección de multiple testing** (4 factores →
+Bonferroni ≈2.5) → "marginal, no robusto".
+
+**0.5b RMT / Marchenko-Pastur** (`rmt_mp_20260811_150849.txt`, §4.2): N=50, T=1599,
+q=0.0313, λ₊=1.385. Mercado (PC1) explica 30.8% de la varianza; espectro residual
+(mercado removido): 8 autovalores sobre el umbral, primero = 15.2% de la varianza
+residual. El propio script lo tagea "consistente con W3" — es la lectura correcta de
+RMT aislado: 8 factores reales sobre 49 dimensiones residuales posibles, ninguno
+dominante, es estructura *difusa/sectorial real*, no ausencia de estructura. **Corrección
+sobre una primera redacción de este párrafo**: RMT NO apoya "no hay nada que seleccionar"
+— apoya "hay estructura sectorial sin explotar por los factores actuales". Ver matiz en
+el veredicto conjunto.
+
+**0.5c ridge macro crudo** (`ridge_comb_20260811_150859.txt`, §4.3): sobre panel limpio,
+con features macro crudas (4 columnas) en vez del composite.
+
+| modelo | IC OOS pooled | delta vs blend | ICIR | folds+ |
+|---|---|---|---|---|
+| blend_actual | −0.0016 | — | — | — |
+| ridge_3f (ref. histórica) | +0.0112 | +0.0128 | 0.996 | 4/5 |
+| ridge_3f+sent | −0.0175 | −0.0159 | 0.297 | 3/5 |
+| ridge_macro_crudo | −0.0062 | −0.0046 | 0.174 | 3/5 |
+| ridge_macro_crudo+sent | −0.0172 | −0.0156 | 0.073 | 2/5 |
+
+→ **El ridge con macro crudo NO mejora nada** (delta −0.0046, ICIR 0.174). Corrobora
+trial #13: el problema NO está en cómo se combinan los factores (§6: no re-intentar).
+
+### VEREDICTO DEL GATE (conjunto): W2 con matices — corregido tras revisión
+
+- **Sólido (W2 fuerte)**: los rankings de selección del motor a nivel símbolo
+  individual (momentum, RSI) **no tienen poder intra-día**; ADX (único con señal) no
+  resiste multiple testing; mejorar la función de combinación no rescata nada
+  (trial #13 + 0.5c). El ranking de 50 símbolos con los factores actuales está muerto,
+  con evidencia sólida — esto no necesita más análisis.
+- **No es lo mismo que "no hay estructura"**: RMT encuentra 8 factores residuales
+  reales (de 49 dimensiones posibles), ninguno dominante (15.2%) — estructura
+  sectorial/difusa real, sin explotar por los factores actuales. El script la tagea
+  "consistente con W3" y es la lectura correcta de RMT aislado. Una primera redacción
+  de este veredicto reescribió esto como "sectorial débil" apoyando W2 — es una
+  sobre-simplificación que no sostiene el propio artefacto.
+- **Lectura corregida**: no es "timing puro, no hay nada más que seleccionar" — es
+  "el ranking individual de 50 símbolos con estos factores está muerto, y lo que
+  queda sin explotar (si algo) es estructura sectorial, no símbolo-por-símbolo".
+  El siguiente paso no es más matemática sobre momentum/RSI a nivel símbolo — pero
+  la RAMA W2 (§9) debería evaluar tres opciones, no dos: (a) timing sobre un basket
+  único, (b) selección de 50 símbolos (descartada, sin evidencia a favor), (c)
+  rotación/asignación a nivel sector o cluster — la única opción con evidencia
+  positiva (RMT) detrás.
+
+*Nota: esta sección se escribió ANTES de confirmar la rama con el usuario — la rama
+resultante se registra en §9.*
+
+---
+
+## 9. (pendiente) — Rama W2: re-evaluación de producto
+
+---
+
+## 10. Disciplina sin excepción
 
 - Ningún resultado de un panel con bug de flujo conocido decide nada hasta reproducirse
   arreglado.
