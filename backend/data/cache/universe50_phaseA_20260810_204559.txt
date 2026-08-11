@@ -10,3 +10,53 @@ AAII disponible en 2913/2913 días de trading
 
 Corriendo baseline (50 símbolos, sin V1)...
 Corriendo V1-ranking (50 símbolos, G2 con AAII)...
+
+--- W1 2020-2021 (baseline n=103, V1 n=100) ---
+    cagr                    -0.0061      -0.0001
+    sharpe_ratio            -0.1146       0.0196
+    sortino_ratio           -0.1258       0.0225
+    max_drawdown            -0.0629      -0.0497
+    calmar_ratio            -0.0972      -0.0023
+    win_rate                 0.6214       0.5800
+    profit_factor            1.0752       1.0189
+    total_trades           103.0000     100.0000
+    deflated_sharpe          0.0233       0.0359
+
+--- W2 2022-2023 (baseline n=43, V1 n=53) ---
+    cagr                    -0.0196      -0.0096
+    sharpe_ratio            -1.0698      -0.4402
+    sortino_ratio           -0.6462      -0.3803
+    max_drawdown            -0.0846      -0.0361
+    calmar_ratio            -0.2320      -0.2650
+    win_rate                 0.4884       0.6226
+    profit_factor            0.5438       1.0439
+    total_trades            43.0000      53.0000
+    deflated_sharpe          0.0001       0.0068
+
+--- W3 2024-2026 (baseline n=93, V1 n=140) ---
+    cagr                     0.0096       0.0058
+    sharpe_ratio             0.2714       0.1604
+    sortino_ratio            0.3246       0.1961
+    max_drawdown            -0.0740      -0.0575
+    calmar_ratio             0.1292       0.1003
+    win_rate                 0.5484       0.5357
+    profit_factor            1.3202       1.1916
+    total_trades            93.0000     140.0000
+    deflated_sharpe          0.0841       0.0584
+
+--- TRADES POR VENTANA (V1) ---
+  W1 2020-2021   trades=100 wins= 58 win_rate=0.580 evaluable=True
+  W2 2022-2023   trades= 53 wins= 33 win_rate=0.623 evaluable=True
+  W3 2024-2026   trades=140 wins= 75 win_rate=0.536 evaluable=True
+
+--- MONTE CARLO (bootstrap, V1) ---
+  mean=+1329.9 p5=-1210.9 p95=+3753.0 prob_loss=0.183
+
+--- VEREDICTO vs CRITERIO (§9.4) ---
+  W1 2020-2021   n=100 DSR=0.0359 no pasa
+  W2 2022-2023   n= 53 DSR=0.0068 no pasa
+  W3 2024-2026   n=140 DSR=0.0584 no pasa
+
+  Ventanas que pasan: 0/3 -> criterio: NO CUMPLE
+
+Out: data/cache/universe50_phaseA_20260810_204559.txt
