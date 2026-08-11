@@ -330,3 +330,78 @@ pre-registrado DECIDE.
 **Estado final del código**: `adaptive_risk.py` vuelve al estado del trial #10
 (mejor conocido: W3 DSR 0.2337). El trail del stop de régimen queda ARCHIVADO
 sin más cambios.
+
+## 10. PROYECTO PRE-REGISTRADO — Herramienta de sugerencias transparente (2026-08-11)
+
+**Contexto / justificación** (Sesión 8k, decisión del usuario): el criterio 0.90
+sigue CONGELADO para automatización (lo defendió el usuario: salvó dos veces de
+falsos positivos, trials #8/#9). Pero la evidencia acumulada (trial #10: PF 2.35
+total, W3 DSR 0.2337) es útil si se presenta con honestidad. Cambio de paradigma:
+de auto-trading a **herramienta de aviso donde el humano decide**. El motor se
+re-enmarca: sugerencia honesta sub-umbral, NO señal validada contra 0.90.
+
+### 10.1 Hipótesis (pre-registrada)
+Un endpoint + dashboard + aviso diario que exponen el MISMO gate y score del
+backtest (sin top-5, con razón completa) permite al usuario tomar decisiones
+informadas, y el historial real de sugerencias (win_rate + Brier, solo n≥5)
+valida o refuta la utilidad de la herramienta — sin tocar NADA del motor ni
+del criterio 0.90.
+
+### 10.2 Definición de "oportunidad" (pre-registrada, SIN cambio de mecánica)
+Un símbolo HOY es oportunidad si y solo si:
+1. Gate completo de `generate_signal` (close > ema50 > ema200, ADX14 ≥ 20,
+   40 < RSI14 < 75, volume_ratio ≥ 1.0) — exactamente el gate del backtest.
+2. Score ponderado por régimen ≥ 0.6 (umbral `MIN_SCORE`, mismo del backtest).
+3. El endpoint NO aplica top-5: muestra todos los que pasan 1+2 (decisión
+   confirmada por el usuario: el top-5 ocultaba candidatos).
+
+Se muestra además, por candidato y sin maquillar: factores crudos, gates
+cumplidos, win_prob Platt calibrado (el número real, sin semáforos), plan de
+salida completo (parcial +2ATR, trailing −2ATR tras +1.5ATR, técnica ADX<20 o
+close<ema20<ema50, stop de régimen 5/7/8/3%), pares de cola ALTA entre
+candidatos del día (CopulaRiskAnalyzer), y el track record real de la
+herramienta (solo interpretable con n≥5).
+
+### 10.3 Regla de aviso diario (pre-registrada)
+- Cadencia: 1 vez al día, 16:30 ET (launchd `com.fortresscore.daily_notify`).
+- "Oportunidad nueva" = pasa 10.2 HOY + NO fue avisada en los últimos 7 días
+  naturales (dedup anti-spam, `data/cache/notified.json`).
+- Canales: Telegram (BotFather) + email como respaldo; cada canal es opcional
+  según credenciales en `.env` (sin credenciales → degradación silenciosa).
+- Régimen 3 (DEFLATION): el aviso explica el bloqueo por diseño; nunca lista
+  vacía muda.
+- Freno pre-comprometido: si el pipeline del endpoint difiere del backtest en
+  gate, score, costos o salidas → la herramienta se detiene y se audita.
+
+### 10.4 Evaluación de la herramienta (pre-registrada)
+- Cada sugerencia emitida se persiste (`data/cache/suggestions.json`) y se
+  evalúa a 20 días hábiles: outcome = close futuro > close del día (win/loss
+  binario, mismo horizonte CALIBRATION_HORIZON_DAYS del backtest).
+- Única métrica de juicio: win_rate y Brier con n ≥ 5. Debajo de n=5 se
+  muestra "insuficiente", nunca una cifra.
+- Cualquier cambio de gate/score/salidas en la herramienta requiere pre-registro
+  aquí y NO consume N_TRIALS (la herramienta no decide el motor).
+
+### 10.5 Límites explícitos (para no repetir errores)
+- El win_prob Platt del día es el número que sale del calibrador, sin ajuste
+  por conveniencia: 55% se muestra como 55%.
+- La concentración de cola NO se "resuelve": se alarma y se deja la decisión
+  al humano (el sizing por activo de Kelly no la descuenta).
+- Ningún caso individual cuenta como evidencia (regla anti-anécdota, NVDA).
+- El sub-trial de risk caps (§9.3) es SOLO informe: si la capital queda
+  infra-utilizada, relajar topes (5 concurrentes / 10% posición / Kelly 25%)
+  = trial NUEVO pre-registrado (N_TRIALS 16→17), decisión separada.
+
+### 10.6 Piezas y estado (2026-08-11)
+1. Diagnóstico de capital (sub-trial §9.3, `scripts/diagnose_capital_usage.py`) —
+   CORRIENDO en background (informe, no cambia mecánica).
+2. Endpoint GET `/api/opportunities/today` (`app/api/routes/opportunities.py`) —
+   HECHO, E2E validado con datos reales (2026-08-11: 4 candidatos, régimen 2,
+   3 pares de cola ALTA).
+3. Persistencia + track record (`app/core/suggestions_store.py`) — HECHO,
+   59/59 tests.
+4. Panel `OpportunitiesPanel.tsx` — HECHO, tsc limpio (mapea los 7 principios
+   del usuario: factores crudos, plan de salida con entrada, win_prob crudo,
+   alerta de concentración, track record real, bloqueo explicado, sobriedad).
+5. Notificador (`app/core/notifier.py` + plist launchd 16:30 ET) — HECHO,
+   sin credenciales configuradas (placeholders en `.env`).

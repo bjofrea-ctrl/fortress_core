@@ -10,6 +10,7 @@ from app.core.predictive_engine import PredictiveEngine, format_recommendation
 from app.core.regime_classifier import GlobalRegimeClassifier
 from app.core.indicators import calculate_all_indicators
 from app.core.edgar_fundamentals import get_fundamentals, SAMPLE_FUNDAMENTALS
+from app.core.fundamentals_client import FinnhubClient
 from app.utils.logging import logger
 
 _finnhub_client = FinnhubClient()

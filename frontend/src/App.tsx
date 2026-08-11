@@ -12,6 +12,7 @@ import MarketOverview from "./components/MarketOverview"
 import TradeDistribution from "./components/TradeDistribution"
 import LiveTicker from "./components/LiveTicker"
 import GovernancePanel from "./components/GovernancePanel"
+import OpportunitiesPanel from "./components/OpportunitiesPanel"
 
 const API_URL = "http://localhost:8000"
 
@@ -96,6 +97,9 @@ export default function App() {
 
         {/* Row 9: Governance Panel */}
         <GovernancePanel apiUrl={API_URL} symbol={selectedSymbol} />
+
+        {/* Row 10: Oportunidades de hoy */}
+        <OpportunitiesPanel apiUrl={API_URL} />
 
         {/* Footer */}
         <footer className="border-t border-dark-border pt-4 pb-8 text-center text-xs text-gray-500">

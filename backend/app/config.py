@@ -20,6 +20,17 @@ class Settings(BaseSettings):
     # esto, get_fundamentals() sigue usando el sample hardcodeado de 6 tickers.
     FINNHUB_API_KEY: str = ""
 
+    # Notificaciones diarias (Pieza 4): aviso de oportunidades 16:30 ET.
+    # Vacíos = canal desactivado; el notifier salta el canal sin fallar.
+    TELEGRAM_BOT_TOKEN: str = ""
+    TELEGRAM_CHAT_ID: str = ""
+    SMTP_HOST: str = ""
+    SMTP_PORT: int = 587
+    SMTP_USER: str = ""
+    SMTP_PASSWORD: str = ""
+    SMTP_FROM: str = ""
+    SMTP_TO: str = ""
+
     @property
     def cors_origins_list(self) -> list:
         return [o.strip() for o in self.CORS_ORIGINS.split(",") if o.strip()]
