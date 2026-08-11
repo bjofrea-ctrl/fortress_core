@@ -54,6 +54,12 @@ def main():
     print("Cargando precios...", flush=True)
     price_data = load_universe(SYMBOLS, START, END)
     market_data = load_universe(MARKET_TICKERS, "2015-01-01", END)
+    # FIX auditoría (2026-08-11): MARKET_TICKERS NO incluye DXY/gold/oil,
+    # así que el composite macro del panel (y del motor) solo recibía
+    # SPY+TLT — las reglas 1 (DXY/Oro), 6 (Petróleo) nunca entraban.
+    # Cargar los macro faltantes para el panel limpio de Fase -1/0.5.
+    macro_extra = load_universe(["DX-Y.NYB", "GC=F", "CL=F"], "2015-01-01", END)
+    market_data = {**market_data, **macro_extra}
     print(f"  {len(price_data)} símbolos, {len(market_data)} tickers de mercado", flush=True)
 
     trading_dates = price_data["SPY"].index
@@ -98,10 +104,37 @@ def main():
             except ValueError:
                 pass  # ventana insuficiente -> seguir con modelo anterior
             last_regime_refit = date
-        regime_state = int(regime_clf.predict_current_regime(market_data)["state"])
+        # FIX auditoría §3.1 (2026-08-11): antes se pasaba market_data
+        # COMPLETO (hasta END) -> cada fila recibía el régimen del último
+        # día de toda la serie (lookahead). Cortar en 'date' igual que el
+        # refit de arriba y que el backtest real (backtest_engine.py).
+        regime_state = int(regime_clf.predict_current_regime(
+            {s: df[df.index <= date] for s, df in market_data.items()}
+        )["state"])
 
         sliced_macro = {k: df[df.index <= date] for k, df in macro_data.items()}
         _, macro_composite = engine._macro_signals(sliced_macro)
+        # FIX auditoría §4.3 (2026-08-11): el ridge DEBE alimentarse de las
+        # 3 componentes macro CRUDAS como features separadas, no del
+        # composite re-ponderado (pesos |IC| tuneados in-sample, §3.2/§3.3).
+        # Retornos crudos, sin umbrales internos de cada regla. Se calculan
+        # sobre sliced_macro (<= date) — nunca sobre la serie completa.
+        def _ret(ticker, window, default=np.nan):
+            df = sliced_macro.get(ticker)
+            if df is None or len(df) <= window:
+                return default
+            return float(df["close"].pct_change(window).iloc[-1] * 100)
+
+        macro_raw = {
+            # Risk Switch (regla 1): DXY y Oro por separado, sin el umbral
+            # ±1% de la regla ni el weight 0.2588
+            "dxy_ret_20d": _ret("DXY", 20),
+            "gold_ret_20d": _ret("gold", 20),
+            # S&P momentum 50d (regla 5), crudo, sin invertir ni normalizar
+            "spy_ret_50d": _ret("SPY", 50),
+            # Petróleo 20d (regla 6), crudo, sin umbral ±10%
+            "oil_ret_20d": _ret("oil", 20),
+        }
         sentiment_v1 = sent_map.get(date, np.nan)
 
         for symbol, frame in factor_frames.items():
@@ -122,6 +155,7 @@ def main():
                 "adx_score": frame["adx"].iloc[pos],
                 "sentiment_v1": sentiment_v1,
                 "macro_composite": macro_composite,
+                **macro_raw,
                 "regime": regime_state,
                 "fwd_return_20d": future / close - 1.0,
                 "eligible": bool(frame["eligible"].iloc[pos]),

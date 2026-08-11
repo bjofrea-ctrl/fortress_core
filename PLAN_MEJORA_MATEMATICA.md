@@ -2,8 +2,9 @@
 
 Consolida: inventario de OpenCode (§1), evaluación crítica de Claude Code (§2),
 auditoría académica independiente #1 con 3 bugs de flujo + 1 confirmado de ejecución
-(§3), correcciones de auditoría académica independiente #2 (§4), y plan de fases
-consolidado con cronograma (§5).
+(§3), correcciones de auditoría académica independiente #2 (§4), plan de fases
+consolidado con cronograma (§5), evidencia post-plan de trial #13 (§6) y disciplina
+(§7).
 
 Ver también: `RESUMEN_VALIDACION_VARIABLES.md`, `SESSION_LOG.md`.
 
@@ -194,7 +195,45 @@ espera al gate de Fase 0.5 — no se muestra como sugerencia real un blend con I
 
 ---
 
-## 6. Disciplina sin excepción
+## 6. Trial #13 — evidencia post-plan (ridge_3f como score del motor, REFUTADO)
+
+Corrido en OpenCode el 2026-08-11, **antes** de que existieran las correcciones de §4 (rr2
+intra-día, RMT a Fase 0.5, macro crudo al ridge). Huella `trial13_ridge_motor_20260811_120029.txt`,
+commit `cf63e12`, verificado contra el archivo.
+
+**Resultado**: ridge_3f (Fase 1b: momentum+RSI+macro_composite vía ridge, IC OOS +0.0156, ICIR
+0.78) inyectado como score real del motor. DSR OOS, n_trials=17, criterio ≥0.90 en ≥2/3 ventanas:
+
+| Ventana | baseline | V1 (AAII) | ridge_3f | trades ridge | ¿pasa? |
+|---|---|---|---|---|---|
+| W1 2020-2021 | 0.0714 | 0.0410 | 0.0538 | 118 | no |
+| W2 2022-2023 | 0.0284 | 0.0020 | 0.0010 | 77 | no |
+| W3 2024-2026 | 0.1727 | 0.2253 | 0.1803 | 163 | no |
+
+0/3 → **NO CUMPLE**. Más trades (118/77/163 vs 103/47/113), win_rate similar, pero Sharpe W2
+−0.820 y W3 0.554, por debajo de baseline y V1. El IC mejor no se tradujo en plata al pasar por
+gates/sizing/costos/salidas. Revert pre-registrado aplicado (script borrado, producción nunca
+tocada — inyección era por subclase); motor queda en trial #10/V1.
+
+**Por qué no cierra el gate de Fase 0.5, y qué sí aporta**:
+- El ridge_3f de este trial se entrenó con el macro **composite** (pesos in-sample, §3.2/§3.3) y
+  su IC de referencia fue **pooled**, no intra-día (§4.1) — exactamente los dos sesgos que Fase -1
+  y Fase 0.5 existen para corregir. No es la prueba limpia de W2 vs W3.
+- Pero es una segunda señal independiente en la misma dirección que rr2 pooled≈0: mejorar la
+  *función de combinación* (blend simple → ridge) no mejoró el resultado del motor. Eso es
+  consistente con W2 (timing, no selección) — el problema no parece estar en cómo se combinan
+  los factores, sino en si hay algo cross-sectional real para combinar.
+- Valida el protocolo: criterio congelado antes de correr, veredicto binario, revert automático
+  sin tocar producción. Mantenerlo así para Fase 0.5 y en adelante.
+
+**Regla explícita que agrega**: no re-intentar un trial de "ridge/combinación como score del
+motor" hasta que el gate de Fase 0.5 (§4.5) resuelva W2 vs W3, y sólo si el veredicto es W3. Si
+sale W2, insistir con variantes de scoring/combinación sobre la arquitectura de 50 símbolos es
+gastar trials en la misma pregunta que trial #13 ya sugirió que no es donde está el problema.
+
+---
+
+## 7. Disciplina sin excepción
 
 - Ningún resultado de un panel con bug de flujo conocido decide nada hasta reproducirse
   arreglado.

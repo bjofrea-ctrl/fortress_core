@@ -26,12 +26,16 @@ Ninguno solo, ni el blend original a mano, cruzó DSR≥0.90 (barra de "funciona
 | Pares/cointegración (universo 50) | Fase 4 | 1225 pares, mejor 47%, media 18.1% — no cointegran |
 | ADX, trend como factor ponderado | auditoría original | IC negativo / sin discriminación |
 | BULL rsi, BEAR trend/momentum | auditoría triad | Invertidos, corregido el signo |
+| **ridge_3f como score del motor** (momentum+RSI+macro vía ridge) | #13 | DSR 0/3 ventanas (0.054/0.001/0.180 vs baseline 0.071/0.028/0.173) — IC mejor no se tradujo en PnL; revert aplicado, motor sigue en #10/V1 |
 
 ## 3. Mejora en combinación, no probado solo
 
 - **Ridge purgado (momentum+RSI+macro)**: IC OOS +0.0156, ICIR 0.78, +0.0285 sobre el blend
-  simple por \|IC\|. Factores poco correlacionados (\|ρ\|<0.3). Backtest de motor con costos
-  **aprobado y en curso** al momento de este documento — no se sabe aún si sobrevive costos.
+  simple por \|IC\|. Factores poco correlacionados (\|ρ\|<0.3). **Trial #13 (2026-08-11) lo
+  probó como score real del motor y lo refutó** (0/3 ventanas DSR, ver tabla arriba) — el IC
+  mejor no sobrevivió gates/sizing/costos/salidas. No re-intentar hasta que el gate de Fase
+  0.5 del `PLAN_MEJORA_MATEMATICA.md` resuelva W2 vs W3, y sólo si sale W3 (el ridge de este
+  trial se entrenó con macro composite + IC pooled, ambos corregidos en esa fase).
 - **BMA (BayesianOnlineUpdater)**: no es un factor, es el método que pondera los existentes
   con evidencia online en vez de un número fijo.
 

@@ -1,5 +1,5 @@
 """
-PLAN §11 Fase 1b — Ridge regularizado con validación purgada + embargo.
+PLAN §11 Fase 1b → PLAN_MEJORA_MATEMATICA.md §4.3 (2026-08-11).
 
 Pregunta: ¿una combinación LINEAL regularizada de momentum + rsi + macro
 (sentiment_v1 informativo) predice mejor que el blend actual por |IC|?
@@ -14,8 +14,15 @@ Método (todo lineal — caveat §11: nada no-lineal con esta muestra):
 - Benchmark: el blend actual del motor (pesos proporcionales a |IC|:
   momentum 0.0637, rsi 0.0322, macro 0.13 -> normalizados) y cada factor solo.
 
+Cambio §4.3 (auditoría #2): el ridge deja de usar macro_composite (re-ponderado
+con pesos |IC| tuneados in-sample, §3.2) y recibe las 3 componentes macro
+CRUDAS como features separadas (dxy_ret_20d, gold_ret_20d, spy_ret_50d,
+oil_ret_20d — retornos sin umbrales internos de cada regla, §3.3). El ridge
+aprende los pesos por datos. ridge_3f (composite) se mantiene solo como
+referencia histórica de trial #13, NO como candidato a re-intentar (regla §6).
+
 Criterio §11: IC_ridge > IC_blend_actual y ICIR estable (>= 0.0, mejor si
-positivo). Si no, el blend actual se queda y se archiva con evidencia.
+positivo). Veredicto final lo decide el gate de Fase 0.5 (W2 vs W3).
 """
 import datetime
 import glob
@@ -32,6 +39,7 @@ from app.core.probabilistic_engine import SignalQualityMetrics
 
 FEATURES = ["momentum_score", "rsi_score", "macro_composite"]
 FEATURES_PLUS_SENT = FEATURES + ["sentiment_v1"]
+MACRO_RAW_FEATURES = ["dxy_ret_20d", "gold_ret_20d", "spy_ret_50d", "oil_ret_20d"]
 TARGET = "fwd_return_20d"
 N_FOLDS = 5
 HORIZON = CALIBRATION_HORIZON_DAYS
@@ -83,12 +91,18 @@ def main():
             f.write(msg + "\n")
 
     panel = pd.read_parquet(path)
+    missing = [c for c in MACRO_RAW_FEATURES if c not in panel.columns]
+    if missing:
+        raise SystemExit(
+            f"Panel sin columnas macro crudas §4.3: {missing} — "
+            "re-corre build_factor_panel.py"
+        )
     df = panel[panel["eligible"] & panel[TARGET].notna()].copy()
     df = df.sort_values("date").reset_index(drop=True)
     dates = df["date"].values
 
     out("=" * 72)
-    out("PLAN §11 Fase 1b — Ridge purgado + embargo")
+    out("PLAN_MEJORA_MATEMATICA §4.3 — Ridge con macro crudo (purgado + embargo)")
     out(f"Panel: {os.path.basename(path)} | filas eligible: {len(df)} | folds: {N_FOLDS}")
     out(f"Horizonte: {HORIZON}d | purga/embargo: ±{int(HORIZON * 1.5)}d")
     out("=" * 72)
@@ -97,8 +111,10 @@ def main():
 
     models = {
         "blend_actual": None,   # pesos |IC|, sin entrenar
-        "ridge_3f": FEATURES,
+        "ridge_3f": FEATURES,   # referencia histórica (composite, trial #13)
         "ridge_3f+sent": FEATURES_PLUS_SENT,
+        "ridge_macro_crudo": ["momentum_score", "rsi_score"] + MACRO_RAW_FEATURES,
+        "ridge_macro_crudo+sent": ["momentum_score", "rsi_score", "sentiment_v1"] + MACRO_RAW_FEATURES,
     }
     for name, feats in models.items():
         if name == "blend_actual":
@@ -139,12 +155,14 @@ def main():
             f"{int(np.sum(ic_arr > 0))}/{N_FOLDS}")
         models[name] = oos
 
-    out("\n--- VEREDICTO vs criterio §11 1b ---")
+    out("\n--- VEREDICTO vs criterio (blend actual = benchmark) ---")
     b = models["blend_actual"]
-    for name in ["ridge_3f", "ridge_3f+sent"]:
+    for name in ["ridge_3f", "ridge_3f+sent", "ridge_macro_crudo", "ridge_macro_crudo+sent"]:
         r = models[name]
         delta = r["ic"] - b["ic"]
         out(f"  {name}: ic={r['ic']:+.4f} vs blend={b['ic']:+.4f} -> delta={delta:+.4f}")
+    out("  Nota: ridge_3f es REFERENCIA histórica (trial #13 refutado, regla §6:"
+        "\n        no reintentar como score del motor hasta gate Fase 0.5).")
     out(f"\nOut: {out_path}")
 
 
