@@ -310,3 +310,23 @@ al revés de lo esperado, y el spread de terciles (1.6pp sobre base 6pp) es
 pequeño — nada accionable. Lo único robusto (crashes rebotan) ya se sabía y es
 mean reversion general del sample long-only, no edge del ER. Regla anti-anécdota
 aplicada: NVDA no contó como evidencia.
+
+### 9.6.1 Veredicto trial #11 (2026-08-10, huella `universe50_phaseA_20260810_204559.txt`)
+
+**REFUTADO — 0/3 ventanas, freno aplicado, piso REVERTIDO.** El piso de stop
+empeoró el sistema: W3 DSR 0.2337 → **0.0584** (Sharpe 0.632→0.160, PF
+1.56→1.19, win 58.0%→53.6%, prob_loss 4.7%→18.3%); W1 plano; solo W2 mejoró
+leve (DSR 0.0021→0.0068, PF 0.77→1.04) sin acercarse al umbral.
+
+**Lección de proceso (importante)**: el "leak" de REGIME_STOP_HIT (-$5,857,
+41 posiciones, 0% win) medido en la auditoría 8j era una foto incompleta —
+el stop ancho de regímenes 1/2 (-7%/-8%) es lo que DA espacio a las
+posiciones para atravesar la volatilidad y llegar al trailing en el bull
+2024-26. El pnl aislado de un stop no es el leak; el efecto marginal sobre
+el sistema completo sí lo es. El piso cortó antes, convirtiendo recuperaciones
+en pérdidas realizadas. La auditoría de exits informó, pero solo el backtest
+pre-registrado DECIDE.
+
+**Estado final del código**: `adaptive_risk.py` vuelve al estado del trial #10
+(mejor conocido: W3 DSR 0.2337). El trail del stop de régimen queda ARCHIVADO
+sin más cambios.
