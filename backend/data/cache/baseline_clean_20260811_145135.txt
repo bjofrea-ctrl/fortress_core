@@ -1,0 +1,11 @@
+========================================================================
+FASE -1.3 (§4.4.4) — BASELINE ÚNICO POST-FIX (referencia para todos los trials)
+Universo: 50 símbolos | 2019-01-01 -> 2026-08-04 | costos 0.15%/lado
+Motor: producción tal cual (commit de corrida abajo en git describe)
+Ventanas: W1 2020-2021, W2 2022-2023, W3 2024-2026 | piso trades/ventana: 30
+Criterio de los trials que usarán este baseline: DSR OOS >= 0.90 | N_TRIALS=17
+========================================================================
+precios cargados: 50 símbolos
+AAII disponible en 2913/2913 días de trading
+
+Corriendo baseline (50 símbolos, sin V1)...
