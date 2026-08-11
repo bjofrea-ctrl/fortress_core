@@ -1,0 +1,40 @@
+========================================================================
+PLAN §11 Fase 2 — IC condicional por régimen real
+Panel: factor_panel_20260811_092828.parquet
+========================================================================
+
+--- Régimen 0 (n=113, días=26) ---
+  Momentum         ic=+0.1213  rank_ic=+0.0690  n=113
+  RSI              ic=-0.0664  rank_ic=-0.0547  n=113
+  Macro compuesto  ic=+0.1978  rank_ic=+0.2260  n=113
+  Score motor (priors) ic=+0.0856  rank_ic=+0.0535  n=113
+
+--- Régimen 1 (n=92, días=17) ---
+  Momentum         ic=+0.0629  rank_ic=+0.0301  n=92
+  RSI              ic=-0.0159  rank_ic=-0.0186  n=92
+  Macro compuesto  ic=-0.1331  rank_ic=-0.2205  n=92
+  Score motor (priors) ic=+0.0493  rank_ic=+0.0485  n=92
+
+--- Régimen 2 (n=1505, días=252) ---
+  Momentum         ic=+0.0213  rank_ic=-0.0258  n=1505
+  RSI              ic=+0.0447  rank_ic=+0.0316  n=1505
+  Macro compuesto  ic=-0.0078  rank_ic=+0.0016  n=1505
+  Score motor (priors) ic=+0.0396  rank_ic=-0.0097  n=1505
+
+--- Régimen 3 (n=359, días=51) ---
+  Momentum         ic=+0.0362  rank_ic=+0.0023  n=359
+  RSI              ic=+0.1104  rank_ic=+0.1100  n=359
+  Macro compuesto  ic=-0.1732  rank_ic=-0.1593  n=359
+  Score motor (priors) ic=+0.0859  rank_ic=+0.0293  n=359
+
+--- Resumen pooled (para comparación) ---
+  Momentum         ic=+0.0325  rank_ic=-0.0081  n=2069
+  RSI              ic=+0.0454  rank_ic=+0.0380  n=2069
+  Macro compuesto  ic=-0.0247  rank_ic=-0.0226  n=2069
+  Score motor (priors) ic=+0.0502  rank_ic=+0.0053  n=2069
+
+--- VEREDICTO §11 Fase 2 ---
+  IC del score motor por régimen: {0: 0.08560512508136364, 1: 0.049268268204772876, 2: 0.03955166711640057, 3: 0.08592159855529122}
+  Estable y positivo en todos los regímenes -> el promedio no esconde nada; se archiva.
+
+Out: data/cache/ic_by_regime_20260811_093205.txt

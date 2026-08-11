@@ -1,0 +1,107 @@
+========================================================================
+PLAN §11 Fase 1a — Correlación entre factores sobrevivientes
+Panel: factor_panel_20260811_092828.parquet
+========================================================================
+
+--- Correlación macro x sentimiento (n efectivo = días) ---
+  [pearson] macro x sentiment = -0.4983  (n días = 378)
+  [spearman] macro x sentiment = -0.4618  (n días = 378)
+
+--- Régimen 0 (pooled por fila) ---
+  n filas: 113 | días únicos: 26
+
+  [pearson]
+    momentum_score   x rsi_score        = -0.1238   OK (<0.5)
+    momentum_score   x macro_composite  = -0.1404   OK (<0.5)
+    momentum_score   x sentiment_v1     = +0.1471   OK (<0.5)
+    rsi_score        x macro_composite  = +0.0147   OK (<0.5)
+    rsi_score        x sentiment_v1     = +0.0280   OK (<0.5)
+    macro_composite  x sentiment_v1     = -0.7269   ARCHIVAR (>0.7)
+
+  [spearman]
+    momentum_score   x rsi_score        = -0.1317   OK (<0.5)
+    momentum_score   x macro_composite  = -0.2846   OK (<0.5)
+    momentum_score   x sentiment_v1     = +0.2341   OK (<0.5)
+    rsi_score        x macro_composite  = +0.0719   OK (<0.5)
+    rsi_score        x sentiment_v1     = +0.0201   OK (<0.5)
+    macro_composite  x sentiment_v1     = -0.6079   OJO (0.5-0.7)
+
+--- Régimen 1 (pooled por fila) ---
+  n filas: 92 | días únicos: 17
+
+  [pearson]
+    momentum_score   x rsi_score        = -0.0415   OK (<0.5)
+    momentum_score   x macro_composite  = +0.1652   OK (<0.5)
+    momentum_score   x sentiment_v1     = +0.1763   OK (<0.5)
+    rsi_score        x macro_composite  = -0.0203   OK (<0.5)
+    rsi_score        x sentiment_v1     = -0.0160   OK (<0.5)
+    macro_composite  x sentiment_v1     = +0.1645   OK (<0.5)
+
+  [spearman]
+    momentum_score   x rsi_score        = -0.0446   OK (<0.5)
+    momentum_score   x macro_composite  = +0.0870   OK (<0.5)
+    momentum_score   x sentiment_v1     = +0.2528   OK (<0.5)
+    rsi_score        x macro_composite  = -0.0630   OK (<0.5)
+    rsi_score        x sentiment_v1     = +0.0091   OK (<0.5)
+    macro_composite  x sentiment_v1     = +0.1796   OK (<0.5)
+
+--- Régimen 2 (pooled por fila) ---
+  n filas: 1505 | días únicos: 252
+
+  [pearson]
+    momentum_score   x rsi_score        = -0.0017   OK (<0.5)
+    momentum_score   x macro_composite  = -0.0218   OK (<0.5)
+    momentum_score   x sentiment_v1     = +0.1159   OK (<0.5)
+    rsi_score        x macro_composite  = +0.0282   OK (<0.5)
+    rsi_score        x sentiment_v1     = -0.0302   OK (<0.5)
+    macro_composite  x sentiment_v1     = -0.2664   OK (<0.5)
+
+  [spearman]
+    momentum_score   x rsi_score        = -0.0174   OK (<0.5)
+    momentum_score   x macro_composite  = -0.0134   OK (<0.5)
+    momentum_score   x sentiment_v1     = +0.1289   OK (<0.5)
+    rsi_score        x macro_composite  = +0.0255   OK (<0.5)
+    rsi_score        x sentiment_v1     = -0.0336   OK (<0.5)
+    macro_composite  x sentiment_v1     = -0.1655   OK (<0.5)
+
+--- Régimen 3 (pooled por fila) ---
+  n filas: 359 | días únicos: 51
+
+  [pearson]
+    momentum_score   x rsi_score        = -0.0853   OK (<0.5)
+    momentum_score   x macro_composite  = -0.0865   OK (<0.5)
+    momentum_score   x sentiment_v1     = +0.0780   OK (<0.5)
+    rsi_score        x macro_composite  = -0.0016   OK (<0.5)
+    rsi_score        x sentiment_v1     = +0.0134   OK (<0.5)
+    macro_composite  x sentiment_v1     = -0.7674   ARCHIVAR (>0.7)
+
+  [spearman]
+    momentum_score   x rsi_score        = -0.0806   OK (<0.5)
+    momentum_score   x macro_composite  = -0.0164   OK (<0.5)
+    momentum_score   x sentiment_v1     = +0.0376   OK (<0.5)
+    rsi_score        x macro_composite  = +0.0045   OK (<0.5)
+    rsi_score        x sentiment_v1     = +0.0248   OK (<0.5)
+    macro_composite  x sentiment_v1     = -0.6907   OJO (0.5-0.7)
+
+--- TODOS los regímenes (pooled por fila) ---
+  n filas: 2069 | días únicos: 346
+
+  [pearson]
+    momentum_score   x rsi_score        = -0.0256   OK (<0.5)
+    momentum_score   x macro_composite  = -0.0343   OK (<0.5)
+    momentum_score   x sentiment_v1     = +0.1126   OK (<0.5)
+    rsi_score        x macro_composite  = +0.0161   OK (<0.5)
+    rsi_score        x sentiment_v1     = -0.0180   OK (<0.5)
+    macro_composite  x sentiment_v1     = -0.3700   OK (<0.5)
+
+  [spearman]
+    momentum_score   x rsi_score        = -0.0345   OK (<0.5)
+    momentum_score   x macro_composite  = -0.0291   OK (<0.5)
+    momentum_score   x sentiment_v1     = +0.1163   OK (<0.5)
+    rsi_score        x macro_composite  = +0.0132   OK (<0.5)
+    rsi_score        x sentiment_v1     = -0.0214   OK (<0.5)
+    macro_composite  x sentiment_v1     = -0.2946   OK (<0.5)
+
+  Máx |rho| entre pares: 0.295 -> la combinación tiene sentido (1b)
+
+Out: data/cache/factor_corr_20260811_092953.txt

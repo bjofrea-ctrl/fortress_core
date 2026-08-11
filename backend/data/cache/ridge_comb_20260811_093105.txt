@@ -1,0 +1,32 @@
+========================================================================
+PLAN §11 Fase 1b — Ridge purgado + embargo
+Panel: factor_panel_20260811_092828.parquet | filas eligible: 2069 | folds: 5
+Horizonte: 20d | purga/embargo: ±30d
+========================================================================
+
+--- blend_actual (sin entrenar) ---
+  ic=-0.0129  rank_ic=-0.0249  n=2069
+
+--- ridge_3f (ridge purgado, alpha óptimo por fold) ---
+  ic OOS pooled=+0.0156  rank_ic=+0.0067  n=2069
+    fold 0: ic=-0.0134 rank_ic=-0.0234
+    fold 1: ic=+0.0053 rank_ic=-0.0667
+    fold 2: ic=+0.0089 rank_ic=+0.0367
+    fold 3: ic=+0.0586 rank_ic=+0.0124
+    fold 4: ic=+0.0894 rank_ic=+0.0890
+  ICIR (fold-level)=+0.780 | folds positivos: 4/5
+
+--- ridge_3f+sent (ridge purgado, alpha óptimo por fold) ---
+  ic OOS pooled=-0.0127  rank_ic=-0.0273  n=2069
+    fold 0: ic=-0.0137 rank_ic=-0.0239
+    fold 1: ic=-0.0293 rank_ic=-0.0972
+    fold 2: ic=-0.0581 rank_ic=-0.0668
+    fold 3: ic=+0.0583 rank_ic=+0.0122
+    fold 4: ic=+0.0877 rank_ic=+0.0880
+  ICIR (fold-level)=+0.163 | folds positivos: 2/5
+
+--- VEREDICTO vs criterio §11 1b ---
+  ridge_3f: ic=+0.0156 vs blend=-0.0129 -> delta=+0.0285
+  ridge_3f+sent: ic=-0.0127 vs blend=-0.0129 -> delta=+0.0002
+
+Out: data/cache/ridge_comb_20260811_093105.txt

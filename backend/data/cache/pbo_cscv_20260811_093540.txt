@@ -1,0 +1,42 @@
+========================================================================
+PLAN §11 Fase 3 — PBO/CSCV (Bailey & López de Prado 2015)
+Trades: universe50_phaseA_20260810_165713_trades.parquet | n=286
+Particiones: S=16, combinaciones C(16,8)=12870
+========================================================================
+
+Trades por partición: [17, 18, 18, 18, 18, 18, 18, 18, 17, 18, 18, 18, 18, 18, 18, 18]
+
+--- DISTRIBUCIÓN DEL LOGIT (sharpe_test - sharpe_train) ---
+  n combos: 12870
+  p5: -0.2332
+  p25: -0.0970
+  p50: +0.0000
+  p75: +0.0970
+  p95: +0.2332
+  media: -0.0000 | desv: 0.1407
+
+--- PBO (P[logit < 0]) ---
+  PBO = 0.5000
+  ADVERTENCIA METODOLÓGICA: con UNA configuración y submuestras balanceadas,
+  el logit es ANTISIMÉTRICO por construcción (cada combinación tiene su
+  complementaria con signo invertido) -> PBO converge a 0.5 SIEMPRE.
+  NO es '50% de sobreajuste': es el NULO de selección (no hay selección
+  entre configuraciones que medir). La información real está en la
+  DISPERSIÓN del logit: ¿cuánto varía el rendimiento IS vs OOS?
+
+  Lectura correcta (dispersión del logit, desv=0.141):
+    Dispersión moderada: la incertidumbre IS-vs-OOS es del orden del propio
+    rendimiento — W2 negativo confirma que no hay ventaja persistente global.
+
+--- COMPARACIÓN CON DSR MANUAL (n_trials=16) ---
+  La corrida reportó DSR W1=0.0435 W2=0.0021 W3=0.2337 (V1, N_TRIALS=16).
+  CSCV mide la ESTABILIDAD IS vs OOS de la misma configuración; el DSR
+  mide la probabilidad de que el Sharpe bruto sea casualidad. Son dos
+  lecturas complementarias de la misma pregunta.
+
+--- POR VENTANA OOS (estabilidad local) ---
+  W1 2020-2021: n=99 sharpe_trade=+0.0686
+  W2 2022-2023: n=49 sharpe_trade=-0.0874
+  W3 2024-2026: n=119 sharpe_trade=+0.1601
+
+Out: data/cache/pbo_cscv_20260811_093540.txt

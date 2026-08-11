@@ -421,3 +421,38 @@ el trial de relajación (antes propuesto como N_TRIALS 16→17) queda
 **ARCHIVADO sin correr**; la capital infra-utilizada se acepta como
 característica del motor y se re-enmarca en la herramienta de sugerencias
 (§10): avisar al humano cuando haya, no forzar más trades.
+
+## 12. PROYECTO PRE-REGISTRADO — Cópulas como señal: pares convergentes (2026-08-11)
+
+**Contexto / justificación** (§11, Fase 4): CopulaRiskAnalyzer ya mide dependencia
+de cola (riesgo). Con el universo de 50, la misma matemática sirve como SEÑAL:
+cuando dos activos históricamente cointegrados se separan, apostar a la
+convergencia. Es una familia de alpha nunca probada en este proyecto.
+
+**12.1 Alcance y límites**
+- Proyecto INDEPENDIENTE del motor principal: no toca N_TRIALS (16) ni el
+  criterio 0.90 del motor. Criterio propio abajo.
+- Todo lineal y de 2 activos: nada de multi-países/árboles/ensembles (caveat §11).
+- Sin selección a posteriori: la lista de pares candidatos se fija ANTES de
+  correr el backtest (barrido 4a), y el backtest (4b) usa SOLO estimaciones
+  walk-forward (cointegración + zscore con datos <= fecha de entrada).
+
+**12.2 Fases**
+1. **4a. Barrido de cointegración (diagnóstico)**: adfuller (stat 5%) sobre
+   el spread del log-precios en ventana 252d, para todos los pares del
+   universo 50 (C(50,2)=1225), muestreo trimestral 2019→2026. Salida: lista
+   de pares que son cointegrados en >= 60% de las ventanas muestreadas
+   (estabilidad de la relación, no un solo momento).
+2. **4b. Backtest de convergencia (trial)**: solo si 4a produce >= 8 pares
+   estables. Regla de entrada pre-registrada: |zscore del spread| >= 2.0
+   (zscore con media/desv de los últimos 60d, cointegración re-estimada
+   cada 63d); salida al volver a |z| < 0.5 o stop de régimen (-5%) o 30d.
+   Tamaño: 1/N_candidatos por par, solo 1 posición simultánea por par.
+   Costos 0.15%/lado. Ventanas W1/W2/W3 (mismas que §9.4).
+3. **Criterio de éxito (pre-registrado)**: Sharpe OOS >= 1.0 en >= 2 de 3
+   ventanas evaluables (>= 20 operaciones por ventana), con N_TRIALS = 50
+   del propio proyecto (1225 pares muestreados = selección múltiple masiva).
+   Freno pre-comprometido: si no cumple, el proyecto de pares se cierra y
+   las cópulas quedan SOLO como riesgo (rol actual).
+
+**12.3 Estado (2026-08-11)**: 4a en ejecución. 4b solo si 4a pasa el gate.
