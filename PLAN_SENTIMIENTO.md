@@ -529,3 +529,13 @@ ranking/entrada, manteniendo TODO lo demás (gate, salidas, régimen, costos):
 - Implementación: entrenar ridge en ventana expansiva walk-forward (mismo
   patrón que el calibrador: refit trimestral, purga ±30d), score estandarizado.
 - Si no pasa el criterio -> revertir y archivar con la evidencia de 1b.
+
+### 12.4 Veredicto Fase 4a (2026-08-11, huella `pairs_coint_20260811_093812.txt`)
+
+**NO PASA el gate — el proyecto de pares se CIERRA con evidencia.**
+1225 pares barridos, 43 ventanas trimestrales de 252d, umbral 60%:
+el par más estable llega a 47% (MA-CRM), solo 4 pares > 40%, media 18.1%.
+En grandes caps líquidos los spreads no mantienen cointegración estable —
+las relaciones son demasiado efímeras para un backtest de convergencia
+serio. 4b NO se corre. Las cópulas quedan SOLO como riesgo (rol actual),
+sin gastar N_TRIALS del motor ni el presupuesto del proyecto.
