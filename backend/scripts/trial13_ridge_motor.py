@@ -23,7 +23,7 @@ Entrenamiento del ridge (sin lookahead, §13.3):
 - Refit cada 63 días calendario (CALIBRATOR_REFIT_STRIDE_DAYS), ventana
   expansiva. RidgeCV(alphas=logspace(-4,2,30)) + StandardScaler fit solo
   en train. Min filas de train: 50.
-- Predicción para fechas (refit_previo, refit]: modelo del último refit.
+- Predicción para fechas [refit, siguiente_refit): modelo del refit.
 - Sin modelo o NaN -> sin señal (misma semántica que el warmup del motor).
 
 Si no pasa el criterio -> revertir = borrar este script y archivar la
@@ -37,11 +37,14 @@ import pandas as pd
 from sklearn.linear_model import RidgeCV
 from sklearn.preprocessing import StandardScaler
 
-from app.core.backtest_engine import BacktestEngine, CALIBRATION_HORIZON_DAYS, CALIBRATOR_REFIT_STRIDE_DAYS
+from app.core.backtest_engine import (
+    BacktestEngine, CALIBRATION_HORIZON_DAYS, CALIBRATOR_REFIT_STRIDE_DAYS,
+)
 from app.core.data_ingestion import load_universe
 from app.core.indicators import calculate_all_indicators
 from app.core.market_sentiment import build_sentiment_frame
 from app.core.predictive_engine import PredictiveEngine
+from app.core.probabilistic_engine import BayesianOnlineUpdater
 from app.core.regime_classifier import GlobalRegimeClassifier
 from app.core.signal_engine import SignalEngine
 from scripts.fetch_universe_data import NEW_UNIVERSE
@@ -63,6 +66,8 @@ WINDOWS = [
 TRADE_FLOOR = 30
 RIDGE_ALPHAS = np.logspace(-4, 2, 30)
 MIN_TRAIN_ROWS = 50
+
+FEATURES = ["momentum_score", "rsi_score", "macro_composite"]
 
 
 class RidgeSignalEngine(SignalEngine):
@@ -140,55 +145,55 @@ class RidgeMotorEngine(BacktestEngine):
     def __init__(self, initial_capital=25000.0, ridge_scores=None):
         self.initial_capital = initial_capital
         self.regime_classifier = GlobalRegimeClassifier()
-        self.bayesian_updater = __import__("app.core.probabilistic_engine", fromlist=["BayesianOnlineUpdater"]).BayesianOnlineUpdater()
+        self.bayesian_updater = BayesianOnlineUpdater()
         self.signal_engine = RidgeSignalEngine(
             self.regime_classifier, bayesian_updater=self.bayesian_updater, ridge_scores=ridge_scores
         )
 
 
 def build_daily_panel(price_data, market_data, log):
-    """Panel diario (stride 1) de features para el ridge: momentum_score,
-    rsi_score (compute_factor_frame), macro_composite (causal), eligible,
-    target_date (fecha en que el retorno a 20d hábiles se conoce)."""
+    """Panel diario (stride 1) de features para el ridge.
+
+    momentum_score/rsi_score/eligible salen de compute_factor_frame (el
+    MISMO código que usa el motor); macro_composite es causal (solo datos
+    <= fecha) y se cachea por fecha (no depende del símbolo). target_date
+    es la fecha en que el retorno a 20d hábiles se conoce; fwd_return es
+    ese retorno (NaN en la cola, donde todavía no existe).
+    """
     macro_data = {k: market_data.get(v) for k, v in MACRO_TICKERS.items()}
     macro_data = {k: v for k, v in macro_data.items() if v is not None}
     engine = PredictiveEngine()
-
-    rows = []
-    last_macro_date = None
+    signal_engine = SignalEngine(GlobalRegimeClassifier())
     macro_cache = {}
 
+    frames = {}
     for symbol, df in price_data.items():
         if len(df) < 220 + CALIBRATION_HORIZON_DAYS:
             continue
         ind = calculate_all_indicators(df)
-        frame = pd.DataFrame({
-            "momentum": ind["momentum_12_1"].pipe(lambda s: ((s + 50) / 150).clip(0, 1)),
-            "close": ind["close"],
-        })
-        trend_ok = (ind["close"] > ind["ema50"]) & (ind["ema50"] > ind["ema200"])
-        rsi = ind["rsi14"]
-        rsi_score = pd.Series(np.where(rsi.between(45, 70, inclusive="neither"), 0.8, 0.4), index=ind.index)
-        adx = ind["adx14"]
-        vol_ratio = ind["volume_ratio"]
-        eligible = trend_ok & (adx >= 20) & (rsi > 40) & (rsi < 75) & (vol_ratio >= 1.0)
-        frame["rsi_score"] = rsi_score
-        frame["eligible"] = eligible.fillna(False)
+        frames[symbol] = signal_engine.compute_factor_frame(ind)
 
-        for i in range(len(frame)):
-            date = frame.index[i]
+    rows = []
+    for symbol, frame in frames.items():
+        close = frame["close"]
+        for i, date in enumerate(frame.index):
             if date not in macro_cache:
                 sliced = {k: v[v.index <= date] for k, v in macro_data.items()}
                 _, composite = engine._macro_signals(sliced)
                 macro_cache[date] = float(composite)
+            if i + CALIBRATION_HORIZON_DAYS < len(frame):
+                target_date = frame.index[i + CALIBRATION_HORIZON_DAYS]
+                fwd_return = close.iloc[i + CALIBRATION_HORIZON_DAYS] / close.iloc[i] - 1.0
+            else:
+                target_date, fwd_return = pd.NaT, np.nan
             rows.append({
                 "date": date, "symbol": symbol,
                 "momentum_score": float(frame["momentum"].iloc[i]),
-                "rsi_score": float(frame["rsi_score"].iloc[i]),
+                "rsi_score": float(frame["rsi"].iloc[i]),
                 "macro_composite": macro_cache[date],
                 "eligible": bool(frame["eligible"].iloc[i]),
-                "target_date": frame.index[i + CALIBRATION_HORIZON_DAYS]
-                if i + CALIBRATION_HORIZON_DAYS < len(frame) else pd.NaT,
+                "target_date": target_date,
+                "fwd_return": float(fwd_return),
             })
 
     panel = pd.DataFrame(rows)
@@ -201,61 +206,54 @@ def walk_forward_ridge_scores(panel, log):
     """Entrena ridge_3f con refit cada CALIBRATOR_REFIT_STRIDE_DAYS (63d),
     ventana expansiva, y devuelve {symbol: pd.Series(predicción, index)}.
 
-    Sin lookahead: el train en la fecha de refit R usa SOLO filas con
-    target_date <= R (el retorno a 20d hábiles aún no se conoce después).
-    La predicción para fechas (refit_previo, R] usa el modelo del último
-    refit. Filas sin modelo -> NaN (sin señal).
+    Sin lookahead: en el refit de fecha R el train usa SOLO filas con
+    target_date <= R (el retorno a 20d hábiles no se conoce antes). Las
+    fechas [R, siguiente_refit) se predicen con el modelo fit en R. Filas
+    sin modelo -> NaN (sin señal, semántica de warmup).
     """
     panel = panel.sort_values("date").reset_index(drop=True)
-    symbols = sorted(panel["symbol"].unique())
-    scores = {s: pd.Series(index=pd.Index([], name="date"), dtype=float) for s in symbols}
+    all_dates = sorted(panel["date"].unique())
+
+    refits = [all_dates[0]]
+    for d in all_dates[1:]:
+        if (d - refits[-1]).days >= CALIBRATOR_REFIT_STRIDE_DAYS:
+            refits.append(d)
 
     train = panel[panel["eligible"] & panel["target_date"].notna()].copy()
     train["target_date"] = pd.to_datetime(train["target_date"])
 
-    model = None
-    scaler = None
-    n_refits = 0
-    refit_dates = sorted(panel["date"].unique()[::CALIBRATOR_REFIT_STRIDE_DAYS] if len(panel) else [])
-    first = pd.Timestamp(START)
-    refit_dates = [d for d in refit_dates if d >= first]
+    pred_buf = {s: [] for s in sorted(panel["symbol"].unique())}
+    model, scaler, n_refits = None, None, 0
 
-    # Para predicción: todas las filas (los gates duros filtran después).
-    pred_rows = panel[["date", "symbol", "momentum_score", "rsi_score", "macro_composite"]].copy()
-
-    segments = {}
-    all_dates = sorted(panel["date"].unique())
-    prev = first
-    for d in all_dates:
-        if (d - prev).days >= CALIBRATOR_REFIT_STRIDE_DAYS:
-            segments.setdefault(prev, []).append(d)
-            prev = d
-    if all_dates:
-        segments.setdefault(prev, []).append(all_dates[-1])
-
-    for refit_date, seg_dates in sorted(segments.items()):
-        if model is not None:
-            seg_rows = pred_rows[pred_rows["date"].between(refit_date, seg_dates[-1])]
-            feats = ["momentum_score", "rsi_score", "macro_composite"]
-            X = scaler.transform(seg_rows[feats].values)
-            preds = model.predict(X)
-            for sym, val, dt in zip(seg_rows["symbol"], preds, seg_rows["date"]):
-                if dt in scores[sym].index:
-                    scores[sym].loc[dt] = float(val)
-                else:
-                    scores[sym] = pd.concat([scores[sym], pd.Series([float(val)], index=[dt])])
-
-        # Refit en refit_date: train expansivo con target realizado.
+    for i, refit_date in enumerate(refits):
+        # Refit en refit_date: ventana expansiva con target realizado.
+        # El modelo solo ve filas con target_date <= refit_date (targets
+        # realizados a lo sumo ese día) -> predecir fechas >= refit_date
+        # con este modelo no tiene lookahead.
         usable = train[train["target_date"] <= refit_date]
         if len(usable) >= MIN_TRAIN_ROWS:
-            feats = ["momentum_score", "rsi_score", "macro_composite"]
-            X_tr = usable[feats].values
+            X_tr = usable[FEATURES].values
             y_tr = usable["fwd_return"].values
             scaler = StandardScaler().fit(X_tr)
             model = RidgeCV(alphas=RIDGE_ALPHAS).fit(scaler.transform(X_tr), y_tr)
             n_refits += 1
 
-    log(f"refits ridge: {n_refits} | símbolos con score: {sum(len(s) > 0 for s in scores.values())}")
+        # Predicción del segmento [refit_date, seg_end] con el modelo de
+        # este refit (si existe).
+        seg_end = refits[i + 1] - pd.Timedelta(days=1) if i + 1 < len(refits) else all_dates[-1]
+        if model is not None:
+            seg = panel[(panel["date"] >= refit_date) & (panel["date"] <= seg_end)]
+            if len(seg):
+                X = scaler.transform(seg[FEATURES].values)
+                for dt, sym, val in zip(seg["date"], seg["symbol"], model.predict(X)):
+                    pred_buf[sym].append((dt, float(val)))
+
+    scores = {}
+    for sym, buf in pred_buf.items():
+        if buf:
+            idx = pd.DatetimeIndex([d for d, _ in buf])
+            scores[sym] = pd.Series([v for _, v in buf], index=idx).sort_index()
+    log(f"refits ridge: {n_refits} | símbolos con score: {len(scores)}")
     return scores
 
 
@@ -293,17 +291,6 @@ def main():
 
     log("\nConstruyendo panel diario de features...")
     panel = build_daily_panel(price_data, market_data, log)
-    # fwd_return del target para entrenar (solo filas con target_date válido)
-    target_by_key = {}
-    for _, row in panel[panel["target_date"].notna()].iterrows():
-        sym_df = price_data[row["symbol"]]
-        if row["target_date"] in sym_df.index:
-            close_now = sym_df["close"].loc[row["date"]]
-            close_fut = sym_df["close"].loc[row["target_date"]]
-            target_by_key[(row["date"], row["symbol"])] = close_fut / close_now - 1.0
-    panel["fwd_return"] = panel.apply(
-        lambda r: target_by_key.get((r["date"], r["symbol"]), np.nan), axis=1
-    )
 
     log("\nEntrenando ridge walk-forward...")
     ridge_scores = walk_forward_ridge_scores(panel, log)
