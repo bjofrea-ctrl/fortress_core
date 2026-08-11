@@ -1,6 +1,8 @@
 """
 Diagnóstico V4 — Efficiency Ratio de Kaufman (velocidad del movimiento).
 
+TRIAL #12 (PLAN_SENTIMIENTO.md §9.7, pre-registrado 2026-08-10).
+
 Valida la hipótesis del usuario sobre la velocidad de las subidas/bajadas:
 - Movimiento LENTO y eficiente (ER -> 1): "quiere pasar desapercibido" ->
   predice CONTINUACIÓN (subida lenta sigue subiendo; caída lenta sigue cayendo).
@@ -9,6 +11,10 @@ Valida la hipótesis del usuario sobre la velocidad de las subidas/bajadas:
 
 Misma disciplina que los otros diagnósticos: IC real contra retornos futuros,
 separando tramos alcistas y bajistas (la hipótesis es dependiente de la pata).
+Universo: 50 símbolos (7 originales + 43 del proyecto universo 50), datos hasta
+2026-08-04. Freno Fase 1: sin IC direccional consistente + terciles no-monótonos
+-> V4 se archiva, no llega al backtest (Fase 2 gated, criterio original,
+N_TRIALS=18).
 """
 import pandas as pd
 import numpy as np
@@ -17,12 +23,15 @@ from app.core.data_ingestion import load_universe
 from app.core.indicators import calculate_all_indicators
 from app.core.predictive_indicators import calculate_predictive_indicators
 from app.core.probabilistic_engine import SignalQualityMetrics
+from scripts.fetch_universe_data import NEW_UNIVERSE
 
 HORIZONS = [5, 20, 60]
 ER_PERIODS = [10, 20, 60]
 LEG_LOOKBACK = 20
 STRIDE_DAYS = 5
-SYMBOLS = ["SPY", "QQQ", "AAPL", "MSFT", "GOOGL", "AMZN", "NVDA"]
+SYMBOLS = ["SPY", "QQQ", "AAPL", "MSFT", "GOOGL", "AMZN", "NVDA"] + NEW_UNIVERSE
+START = "2019-01-01"
+END = "2026-08-04"
 WARMUP_DAYS = 260
 
 
@@ -113,7 +122,7 @@ def report_terciles(records: pd.DataFrame, horizon: int, mask, label: str):
 
 def main():
     print("Descargando datos...")
-    price_data = load_universe(SYMBOLS, "2019-01-01", "2024-12-31")
+    price_data = load_universe(SYMBOLS, START, END)
     indicators_cache = {s: build_full_indicators(df) for s, df in price_data.items()}
     records = collect_records(indicators_cache)
     print(f"Registros totales: {len(records)}")

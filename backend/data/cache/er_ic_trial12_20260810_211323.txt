@@ -1,0 +1,112 @@
+Descargando datos...
+Registros totales: 25993
+
+======================================================================
+=== HORIZONTE 5d ===
+  Base: retorno medio=+0.0042  sig=+/-0.0124
+
+  IC univariado (muestra completa):
+    [full sample] n=25993  sig_threshold=+/-0.0124  base_ret=+0.0042
+      er 10  ic=-0.0017  rank_ic=-0.0078  n=25993  
+      er 20  ic=+0.0082  rank_ic=+0.0041  n=25993  
+      er 60  ic=+0.0114  rank_ic=+0.0015  n=25993  
+
+  Tramo ALCISTA (leg_ret20 > 0, n=15533):
+    IC de ER vs retorno futuro — si subida lenta sigue subiendo, IC > 0; si el pico rápido revierte, el tercil ER_bajo debe dar negativo:
+    [up legs] n=15533  sig_threshold=+/-0.0160  base_ret=+0.0038
+      er 10  ic=-0.0168  rank_ic=-0.0181  n=15533  ***
+      er 20  ic=+0.0041  rank_ic=-0.0030  n=15533  
+      er 60  ic=-0.0065  rank_ic=-0.0219  n=15533  
+    [up legs] retorno futuro 5d por tercil de ER20 (base=+0.0038, n=15533):
+      ER_bajo    retorno=+0.0035  n=5178
+      ER_medio   retorno=+0.0044  n=5177
+      ER_alto    retorno=+0.0035  n=5178
+    Velocidad del tramo: |leg_ret20| alto (pico) debe predecir reversión -> IC( |leg_ret|, fwd ) < 0:
+      ic(abs_leg_ret20)=+0.0323  n=15533
+
+  Tramo BAJISTA (leg_ret20 < 0, n=10460):
+    IC de ER vs retorno futuro — si caída rápida rebota (fwd > 0) y caída lenta sigue cayendo (fwd < 0), el IC debe ser NEGATIVO:
+    [down legs] n=10460  sig_threshold=+/-0.0196  base_ret=+0.0049
+      er 10  ic=+0.0212  rank_ic=+0.0100  n=10460  ***
+      er 20  ic=+0.0207  rank_ic=+0.0233  n=10460  ***
+      er 60  ic=+0.0515  rank_ic=+0.0478  n=10460  ***
+    [down legs] retorno futuro 5d por tercil de ER20 (base=+0.0049, n=10460):
+      ER_bajo    retorno=+0.0039  n=3487
+      ER_medio   retorno=+0.0054  n=3486
+      ER_alto    retorno=+0.0053  n=3487
+      ic(abs_leg_ret20)=+0.0704  n=10460
+
+======================================================================
+=== HORIZONTE 20d ===
+  Base: retorno medio=+0.0170  sig=+/-0.0124
+
+  IC univariado (muestra completa):
+    [full sample] n=25993  sig_threshold=+/-0.0124  base_ret=+0.0170
+      er 10  ic=+0.0010  rank_ic=-0.0025  n=25993  
+      er 20  ic=+0.0081  rank_ic=+0.0002  n=25993  
+      er 60  ic=+0.0097  rank_ic=+0.0068  n=25993  
+
+  Tramo ALCISTA (leg_ret20 > 0, n=15533):
+    IC de ER vs retorno futuro — si subida lenta sigue subiendo, IC > 0; si el pico rápido revierte, el tercil ER_bajo debe dar negativo:
+    [up legs] n=15533  sig_threshold=+/-0.0160  base_ret=+0.0142
+      er 10  ic=+0.0066  rank_ic=+0.0008  n=15533  
+      er 20  ic=+0.0046  rank_ic=-0.0061  n=15533  
+      er 60  ic=-0.0100  rank_ic=-0.0223  n=15533  
+    [up legs] retorno futuro 20d por tercil de ER20 (base=+0.0142, n=15533):
+      ER_bajo    retorno=+0.0140  n=5178
+      ER_medio   retorno=+0.0138  n=5177
+      ER_alto    retorno=+0.0147  n=5178
+    Velocidad del tramo: |leg_ret20| alto (pico) debe predecir reversión -> IC( |leg_ret|, fwd ) < 0:
+      ic(abs_leg_ret20)=+0.0581  n=15533
+
+  Tramo BAJISTA (leg_ret20 < 0, n=10460):
+    IC de ER vs retorno futuro — si caída rápida rebota (fwd > 0) y caída lenta sigue cayendo (fwd < 0), el IC debe ser NEGATIVO:
+    [down legs] n=10460  sig_threshold=+/-0.0196  base_ret=+0.0212
+      er 10  ic=+0.0028  rank_ic=+0.0018  n=10460  
+      er 20  ic=+0.0337  rank_ic=+0.0299  n=10460  ***
+      er 60  ic=+0.0739  rank_ic=+0.0732  n=10460  ***
+    [down legs] retorno futuro 20d por tercil de ER20 (base=+0.0212, n=10460):
+      ER_bajo    retorno=+0.0173  n=3487
+      ER_medio   retorno=+0.0222  n=3486
+      ER_alto    retorno=+0.0241  n=3487
+      ic(abs_leg_ret20)=+0.1242  n=10460
+
+======================================================================
+=== HORIZONTE 60d ===
+  Base: retorno medio=+0.0503  sig=+/-0.0124
+
+  IC univariado (muestra completa):
+    [full sample] n=25993  sig_threshold=+/-0.0124  base_ret=+0.0503
+      er 10  ic=+0.0036  rank_ic=-0.0040  n=25993  
+      er 20  ic=+0.0020  rank_ic=-0.0018  n=25993  
+      er 60  ic=-0.0042  rank_ic=-0.0087  n=25993  
+
+  Tramo ALCISTA (leg_ret20 > 0, n=15533):
+    IC de ER vs retorno futuro — si subida lenta sigue subiendo, IC > 0; si el pico rápido revierte, el tercil ER_bajo debe dar negativo:
+    [up legs] n=15533  sig_threshold=+/-0.0160  base_ret=+0.0436
+      er 10  ic=+0.0107  rank_ic=+0.0042  n=15533  
+      er 20  ic=-0.0024  rank_ic=-0.0088  n=15533  
+      er 60  ic=-0.0098  rank_ic=-0.0208  n=15533  
+    [up legs] retorno futuro 60d por tercil de ER20 (base=+0.0436, n=15533):
+      ER_bajo    retorno=+0.0458  n=5178
+      ER_medio   retorno=+0.0410  n=5177
+      ER_alto    retorno=+0.0439  n=5178
+    Velocidad del tramo: |leg_ret20| alto (pico) debe predecir reversión -> IC( |leg_ret|, fwd ) < 0:
+      ic(abs_leg_ret20)=+0.0992  n=15533
+
+  Tramo BAJISTA (leg_ret20 < 0, n=10460):
+    IC de ER vs retorno futuro — si caída rápida rebota (fwd > 0) y caída lenta sigue cayendo (fwd < 0), el IC debe ser NEGATIVO:
+    [down legs] n=10460  sig_threshold=+/-0.0196  base_ret=+0.0604
+      er 10  ic=+0.0063  rank_ic=-0.0017  n=10460  
+      er 20  ic=+0.0368  rank_ic=+0.0405  n=10460  ***
+      er 60  ic=+0.0443  rank_ic=+0.0468  n=10460  ***
+    [down legs] retorno futuro 60d por tercil de ER20 (base=+0.0604, n=10460):
+      ER_bajo    retorno=+0.0507  n=3487
+      ER_medio   retorno=+0.0634  n=3486
+      ER_alto    retorno=+0.0669  n=3487
+      ic(abs_leg_ret20)=+0.1586  n=10460
+
+Interpretación (V4):
+- Subida lenta/eficiente (ER alto) predice continuación -> IC(er, fwd) > 0 en tramos alcistas
+- Subida rápida/ruidosa (ER bajo) predice reversión -> tercil ER_bajo con retorno < 0 en tramos alcistas
+- Caída lenta/persistente sigue cayendo y caída rápida rebota -> IC(er, fwd) < 0 en tramos bajistas

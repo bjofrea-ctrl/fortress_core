@@ -261,3 +261,52 @@ no cambia. N_TRIALS 16 → **17** (+1 por este trial). Advertencia pre-registrad
 esperado no alcanzar 0.90; el trial mide mejora real del sistema, no fabrica el umbral.
 
 **Freno**: si el leak no se reduce, se archiva el trail del stop de régimen sin más cambios.
+
+### 9.7 Trial #12 (2026-08-10) — V4 Kaufman Efficiency Ratio (pre-registrado)
+
+**Hipótesis del usuario (formalizada)**: los movimientos rápidos/volátiles (picos
+abruptos) atraen compra retail por FOMO y tienden a revertir; los movimientos
+lentos/sostenidos (acumulación institucional silenciosa) tienden a continuar.
+Conecta con el ciclo institucional de `knowledge_repo.py:291`
+(ACUMULAR en silencio → MARKUP → VENDER a retail → MARKDOWN → RECOMPRAR).
+
+**Variable**: Kaufman Efficiency Ratio — ER = |Close[t]-Close[t-n]| / Σ|ΔClose|
+en la ventana. ER→1 = movimiento eficiente/lento-sostenido; ER→0 = ruidoso.
+
+**Protocolo en fases (sin atajos, freno en cada una)**:
+1. **Fase 1 — diagnóstico IC** (`scripts/diagnose_er_ic.py`, ya pre-registrado en
+   su docstring, NUNCA ejecutado): IC + rank_ic + terciles de ER10/ER20/ER60 vs
+   retornos fwd 5/20/60d, SEPARADO por tramo alcista/bajista (la hipótesis es
+   dependiente de la pata), Newey-West n_eff, universo de 50 símbolos, datos
+   hasta 2026-08-04. Freno: si ER no muestra IC direccional consistente y
+   terciles no-monótonos → se archiva V4, NO se llega al backtest.
+2. **Fase 2 — backtest con costos** SOLO si Fase 1 mide algo real, sobre el
+   universo de 50, criterio ORIGINAL (DSR OOS ≥ 0.90 en ≥2/3 ventanas,
+   N_TRIALS 17 → **18**, +1 por este trial). Mismo freno que V1/fundamentals.
+3. **No se integra nada sin cruzar la barra.**
+
+**Regla anti-anécdota**: ningún caso individual (NVDA, semiconductores) cuenta
+como evidencia — solo el IC agregado sobre el universo.
+
+### 9.7.1 Veredicto Fase 1 (2026-08-10, huella `er_ic_trial12_20260810_211323.txt`)
+
+**V4 REFUTADO — freno aplicado, NO llega al backtest.** La hipótesis dependiente
+de la pata no se cumple en ninguna de las dos patas:
+
+- **Tramo alcista** (subida lenta continúa / pico revierte): FALSO. IC de ER ≈ 0
+  en todos los horizontes (er20 5d +0.004, 20d +0.005, 60d -0.002) y terciles
+  PLANOS (60d: 0.0458/0.0410/0.0439 — sin monoticidad). Además, la velocidad
+  del tramo predice CONTINUACIÓN, no reversión (ic(abs_leg_ret20) = +0.032 a 5d,
+  +0.058 a 20d, +0.099 a 60d) — es momentum, lo contrario de la hipótesis.
+- **Tramo bajista** (caída rápida rebota / lenta sigue cayendo): solo la primera
+  mitad se sostiene (abs_leg_ret +0.070/+0.124/+0.159 = los crashes rebotan),
+  pero el IC de ER es POSITIVO y significativo en 3/3 horizontes (er20 5d
+  +0.0207**, 20d +0.0337**, 60d +0.0368**) con terciles monótonos crecientes
+  (0.0507/0.0634/0.0669): las caídas EFICIENTES rebotan MÁS, no "siguen cayendo".
+  Dirección opuesta a la hipótesis pre-registrada (que pedía IC < 0).
+
+**Interpretación honesta**: el ER no predice nada en subidas; en caídas predice
+al revés de lo esperado, y el spread de terciles (1.6pp sobre base 6pp) es
+pequeño — nada accionable. Lo único robusto (crashes rebotan) ya se sabía y es
+mean reversion general del sample long-only, no edge del ER. Regla anti-anécdota
+aplicada: NVDA no contó como evidencia.
