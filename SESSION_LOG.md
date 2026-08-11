@@ -809,3 +809,25 @@ Decisión del usuario (argumento: (b) es la única que corresponde a lo que H7 v
 - **Trial #12 (V4 — Kaufman ER, PLAN §9.7)**: el script `diagnose_er_ic.py` ya existía pre-registrado pero NUNCA ejecutado; actualizado a universo 50 + datos hasta 2026-08-04. **Fase 1 REFUTADA (huella `er_ic_trial12_20260810_211323.txt`)**: tramo alcista IC≈0 y terciles planos (ER no predice); la velocidad del tramo predice CONTINUACIÓN (+0.032/+0.058/+0.099 — momentum, lo opuesto de "el pico revierte"); tramo bajista IC POSITIVO significativo 3/3 horizontes (er20 5d +0.021**, 20d +0.034**, 60d +0.037**) — las caídas eficientes rebotan MÁS, no "siguen cayendo" (dirección opuesta a la hipótesis pre-registrada). Regla anti-anécdota aplicada (NVDA no contó). Freno: no llega al backtest, V4 archivado.
 - **3 refutaciones seguidas de variable (sentimiento, fundamentales, velocidad)** → confirma que el hueco está en ejecución/arquitectura, no en variables nuevas.
 - **Corolario de arquitectura**: el sistema con mejor estado conocido (trial #10, W3 DSR 0.2337, PF 2.35 total) es genuinamente positivo pero no cruza el umbral 0.90; la pregunta de "qué significa funciona" sigue abierta, ahora con 3 caminos de variable cerrados por evidencia.
+
+### Sesión — Resumen de validación de variables + auditoría de confusores arquitectónicos — 2026-08-11
+
+Documento nuevo: `RESUMEN_VALIDACION_VARIABLES.md` — síntesis pedida por el usuario de
+todo lo probado (válido solo / refutado / mejora en combinación / pendiente). Hallazgo
+nuevo al reconstruir la cronología: **trials #8 (sentimiento) y #9 (fundamentales)
+corrieron ANTES del fix de PARTIAL_TP (8i) y de la expansión de universo (8j)** — sus
+métricas están contaminadas por filas fantasma y por poca frecuencia (9-15 trades OOS
+vs 49-119 actuales). Recomendación: re-testear ambas contra el motor actual antes de
+darlas por cerradas — es más barato que sumar variables nuevas. Ver el documento para
+el detalle completo, incluido el confusor de IC absoluto vs cross-sectional (sección 6.2).
+
+### Sesión — Plan de mejora matemática (RMT/EVT/Kalman/GP-BO) — 2026-08-11
+
+Documento nuevo: `PLAN_MEJORA_MATEMATICA.md` — inventario de OpenCode (Random Matrix
+Theory, Extreme Value Theory, Bayesian Optimization, Kalman/DLM) + evaluación crítica.
+Reparo aceptado: A3 (GP-BO) reencuadrado — con ~16 trials heterogéneos no hay datos
+suficientes para que un GP elija entre hipótesis cualitativamente distintas; se baja de
+prioridad y se re-especifica como herramienta de tuning fino dentro de un enfoque ya
+elegido, no de selección de dirección de investigación. Orden final: RMT → EVT →
+(paralelo: cross-sectional + re-test de sentimiento/fundamentales contra motor actual) →
+Kalman → GP-BO re-especificado. Cronograma en Gantt (Mermaid) dentro del documento.
