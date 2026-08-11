@@ -918,3 +918,22 @@ Fase 2 (Kalman/GP-BO). Gantt actualizado en el documento.
   (descartada), (c) rotación sectorial/cluster (la única con evidencia positiva RMT).
 - Criterio: no pre-registrar trial de motor sobre sectores hasta tener diagnóstico
   sectorial propio (mismo protocolo intra-día/Newey-West/pre-registrado).
+
+## 2026-08-11 — Diagnóstico sectorial endógeno (§9.c): NO pasa, (a) por defecto
+
+- Pre-registrado con restricciones del usuario: clusters ENDÓGENOS (autovectores
+  residuales RMT + jerárquico Ward sobre la misma matriz residual), PROHIBIDO GICS
+  (fuente externa, riesgo de lookahead de membership point-in-time); Bonferroni 8
+  clusters, umbral |t| > 2.73.
+- Primera corrida con bug detectado y corregido: usó autovectores de la matriz
+  COMPLETA (5 factores) en vez de la residual — el conteo de 8 de RMT es sobre
+  corr_res. Fix aplicado; huella final `sector_clusters_20260811_170235.txt`
+  consistente con `rmt_mp_20260811_150849.txt`.
+- RESULTADO: (c) NO pasa. autovectores t=+1.03, jerárquico t=+0.57 (umbral 2.73),
+  rank IC intra-día del momentum medio del cluster vs fwd 20d.
+- Lectura: la estructura RMT es co-movimiento (riesgo compartido), no
+  predictibilidad — §4.2 lo advertía. Momentum medio de cluster no predice.
+- Opción (a) basket único queda como candidata por defecto (requiere pre-registro
+  propio si llega a trial).
+- 70/70 tests OK (sin cambios en app/, solo scripts nuevos). Script:
+  `backend/scripts/diagnose_sector_clusters.py`.

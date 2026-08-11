@@ -346,6 +346,39 @@ no está tocada por momentum/RSI, así que cualquier trial de motor sobre sector
 requiere su propio diagnóstico sectorial primero (mismo protocolo: intra-día, Newey-West,
 pre-registrado).
 
+### Diagnóstico sectorial endógeno — EJECUTADO (2026-08-11, `sector_clusters_20260811_170235.txt`)
+
+Pre-registrado con las restricciones del usuario: clusters ENDÓGENOS (autovectores
+residuales de RMT y jerárquico Ward sobre la misma matriz residual; **prohibido GICS**
+— fuente externa con riesgo de lookahead de membership point-in-time), Bonferroni
+sobre 8 clusters → umbral |t| > 2.73.
+
+**Resultado: (c) NO pasa el diagnóstico sectorial previo.** Dos definiciones de
+cluster, ninguna significativa (protocolo 0.5a, rank IC intra-día de momentum medio
+del cluster vs retorno fwd 20d):
+
+| clusters (k=8) | n_días | mean_IC | SE_NW | t | veredicto |
+|---|---|---|---|---|---|
+| autovectores residuales | 378 | +0.0339 | 0.0330 | +1.03 | no sig (2.73) |
+| jerárquico Ward | 378 | +0.0230 | 0.0401 | +0.57 | no sig (2.73) |
+
+Lectura precisa de este resultado:
+- La **estructura** que RMT detecta sigue existiendo (8 factores reales, grupos
+  coherentes: Farma LLY/JNJ/ABBV/MRK, Energía XOM/CVX, Pagos V/MA, Retail WMT/COST),
+  pero es estructura de **co-movimiento (riesgo compartido)**, no de **predictibilidad**:
+  el momentum medio del cluster NO predice el retorno futuro del cluster intra-día.
+  §4.2 advertía exactamente este matiz: factores de co-movimiento ≠ alfa explotable.
+- Esto NO prueba que todo score sectorial sea imparable (solo momentum medio), pero el
+  factor que el motor ya usa era el único con hipótesis previa.
+- **Opción (a) basket único queda como candidata por defecto** — con la salvedad de que
+  un trial de basket requerirá su propio pre-registro (score de timing, mismas ventanas,
+  DSR ≥ 0.90, N_TRIALS=17).
+
+Nota de rigor: la primera corrida de este diagnóstico usó por error los autovectores de
+la matriz COMPLETA (con mercado → 5 factores, no 8); detectado y corregido a la matriz
+residual (8 factores, consistente con `rmt_mp_20260811_150849.txt`). La huella final es
+`170235`; la intermedia `170216` queda como artefacto del error, no como resultado.
+
 ---
 
 ## 10. Disciplina sin excepción

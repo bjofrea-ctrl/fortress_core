@@ -1,0 +1,48 @@
+========================================================================
+FASE §9(c) — Diagnóstico sectorial ENDÓGENO (pre-registrado)
+Umbral Bonferroni 8 clusters: |t| > 2.73 | carga > 0.283
+Panel: factor_panel_20260811_144857.parquet | min símbolos/cluster: 3
+========================================================================
+Matriz residual: N=50 x T=1599 | λ₊=1.385 | factores > λ₊: 8
+
+Cargas |carga| > 0.283 por factor (autovectores residuales):
+  F0: [ QQQ(0.32) ]
+  F1: [ CAT(0.36), JPM(0.32), BAC(0.31) ]
+  F2: [ MA(0.31) ]
+  F3: [ TMO(0.29) ]
+  F4: [ XOM(0.30), CVX(0.29) ]
+  F5: [ CVX(0.37), XOM(0.35) ]
+  F6: [ ORCL(0.36), V(0.34), MA(0.32), TXN(0.30) ]
+  F7: [ HD(0.37), CMCSA(0.29), V(0.29), DIS(0.28) ]
+
+--- Clusters por argmax|carga| sobre 8 factores ---
+  C0: n=12 | SPY, QQQ, NVDA, TSLA, AVGO, BRK-B, PG, JNJ, KO, PEP, AMD, PM
+  C1: n= 6 | JPM, BAC, ADBE, GE, INTU, CAT
+  C2: n= 3 | CRM, ACN, AMGN
+  C3: n= 6 | WMT, UNH, ABBV, TMO, MCD, PFE
+  C4: n= 5 | META, LLY, COST, MRK, CSCO
+  C5: n= 7 | GOOGL, AMZN, XOM, NFLX, CVX, LIN, SPGI
+  C6: n= 7 | AAPL, V, MA, ORCL, IBM, QCOM, TXN
+  C7: n= 4 | MSFT, HD, CMCSA, DIS
+
+--- Clusters jerárquicos Ward, k=8 ---
+  H1: n= 6 | LLY, JNJ, ABBV, MRK, AMGN, PFE
+  H2: n=12 | SPY, QQQ, NVDA, AVGO, PG, KO, PEP, AMD, MCD, QCOM, PM, TXN
+  H3: n= 2 | XOM, CVX
+  H4: n= 8 | BRK-B, JPM, BAC, CRM, ADBE, GE, INTU, CAT
+  H5: n= 2 | V, MA
+  H6: n=14 | AAPL, MSFT, GOOGL, AMZN, META, TSLA, UNH, HD, NFLX, CSCO, ACN, IBM
+  H7: n= 2 | WMT, COST
+  H8: n= 4 | ORCL, TMO, CMCSA, DIS
+
+--- Rank IC intra-día por cluster (protocolo 0.5a, Bonferroni 8) ---
+clusters               n_días  mean_IC   SE_NW       t      veredicto
+autovectores              378  +0.0339  0.0330   +1.03 no sig (umbral 2.73)
+jerárquico                378  +0.0230  0.0401   +0.57 no sig (umbral 2.73)
+
+--- INTERPRETACIÓN (§9.c) ---
+  Ninguna definición de cluster da rank IC intra-día significativo.
+  -> la rotación por momentum de cluster no rescata la selección;
+     opción (a) basket único queda como candidata por defecto.
+
+Out: data/cache/sector_clusters_20260811_170235.txt

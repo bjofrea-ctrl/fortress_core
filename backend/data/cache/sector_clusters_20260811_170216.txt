@@ -1,0 +1,39 @@
+========================================================================
+FASE §9(c) — Diagnóstico sectorial ENDÓGENO (pre-registrado)
+Umbral Bonferroni 8 clusters: |t| > 2.73 | carga > 0.283
+Panel: factor_panel_20260811_144857.parquet | min símbolos/cluster: 3
+========================================================================
+Matriz residual: N=50 x T=1599 | λ₊=1.385 | factores > λ₊: 5
+
+Cargas |carga| > 0.283 por factor (autovectores residuales):
+  F0: [  ]
+  F1: [ JNJ(0.29) ]
+  F2: [ XOM(0.36), CVX(0.35), CAT(0.35), JPM(0.31), BAC(0.31) ]
+  F3: [  ]
+  F4: [ WMT(0.32), PFE(0.30) ]
+
+--- Clusters por argmax|carga| sobre 5 factores ---
+  C0: n=15 | SPY, QQQ, AAPL, MSFT, GOOGL, AMZN, META, BRK-B, ORCL, HD, NFLX, CSCO
+  C1: n=10 | NVDA, TSLA, UNH, PG, JNJ, ABBV, KO, PEP, MCD, PM
+  C2: n= 6 | JPM, XOM, BAC, CVX, GE, CAT
+  C3: n=14 | AVGO, LLY, V, MA, MRK, CRM, ADBE, AMD, ACN, QCOM, INTU, TXN
+  C4: n= 5 | WMT, COST, TMO, IBM, PFE
+
+--- Clusters jerárquicos Ward, k=5 ---
+  H1: n= 6 | LLY, JNJ, ABBV, MRK, AMGN, PFE
+  H2: n=12 | SPY, QQQ, NVDA, AVGO, PG, KO, PEP, AMD, MCD, QCOM, PM, TXN
+  H3: n=10 | BRK-B, JPM, XOM, BAC, CRM, ADBE, CVX, GE, INTU, CAT
+  H4: n= 2 | V, MA
+  H5: n=20 | AAPL, MSFT, GOOGL, AMZN, META, TSLA, WMT, UNH, ORCL, COST, HD, NFLX
+
+--- Rank IC intra-día por cluster (protocolo 0.5a, Bonferroni 8) ---
+clusters               n_días  mean_IC   SE_NW       t      veredicto
+autovectores              378  +0.0111  0.0449   +0.25 no sig (umbral 2.73)
+jerárquico                378  -0.0328  0.0459   -0.71 no sig (umbral 2.73)
+
+--- INTERPRETACIÓN (§9.c) ---
+  Ninguna definición de cluster da rank IC intra-día significativo.
+  -> la rotación por momentum de cluster no rescata la selección;
+     opción (a) basket único queda como candidata por defecto.
+
+Out: data/cache/sector_clusters_20260811_170216.txt
