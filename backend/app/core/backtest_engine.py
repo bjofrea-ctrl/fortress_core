@@ -228,6 +228,7 @@ class BacktestEngine:
         slippage=0.0005,
         sentiment_data: Dict = None,
         fundamentals_by_symbol: Dict[str, pd.Series] = None,
+        track_capital_usage: bool = False,
     ) -> Dict:
         indicators_cache = {s: calculate_all_indicators(df) for s, df in price_data.items()}
         train_market = {s: df[df.index < start_date] for s, df in market_data.items()}
@@ -263,6 +264,7 @@ class BacktestEngine:
         equity, cash = self.initial_capital, self.initial_capital
         positions: Dict[str, Dict] = {}
         equity_curve, trades = [], []
+        capital_usage_log = [] if track_capital_usage else None
 
         spy = market_data.get("SPY")
         dates = spy[(spy.index >= start_date) & (spy.index <= end_date)].index
@@ -403,6 +405,19 @@ class BacktestEngine:
                 signals = self.signal_engine.filter_by_regime_exposure(
                     signals, regime_info["state"], current_exposure
                 )
+
+                if capital_usage_log is not None:
+                    capital_usage_log.append({
+                        "date": date,
+                        "regime": regime_info["state"],
+                        "regime_name": regime_info["state_name"],
+                        "equity": equity,
+                        "cash": cash,
+                        "positions_value": positions_value,
+                        "n_positions": len(positions),
+                        "n_gate_signals": len(signals),
+                        "capital_deployed_pct": (positions_value + cash) and (positions_value / (positions_value + cash)),
+                    })
 
                 for sig in signals[:5]:
                     if sig["symbol"] in positions:
