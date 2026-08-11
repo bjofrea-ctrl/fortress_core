@@ -2,3 +2,27 @@
 PLAN §12 Fase 4a — Barrido de cointegración (ventana 252d, muestreo 63d, 43 ventanas)
 Pares: C(50,2) = 1225 | umbral estabilidad: 60%
 ========================================================================
+
+=== RESULTADO (pares = 1225) ===
+Pares estables (>= 60% de ventanas): 0
+
+Top 15 por estabilidad:
+  MA     x CRM     stable=47% (20/43)
+  UNH    x INTU    stable=47% (20/43)
+  MA     x CAT     stable=44% (19/43)
+  UNH    x LIN     stable=42% (18/43)
+  PEP    x CMCSA   stable=40% (17/43)
+  AMZN   x ADBE    stable=40% (17/43)
+  PM     x TXN     stable=40% (17/43)
+  INTU   x CMCSA   stable=40% (17/43)
+  SPY    x ACN     stable=37% (16/43)
+  MSFT   x NVDA    stable=37% (16/43)
+  UNH    x TXN     stable=37% (16/43)
+  V      x CMCSA   stable=37% (16/43)
+  MA     x INTU    stable=37% (16/43)
+  MSFT   x ACN     stable=37% (16/43)
+  V      x UNH     stable=37% (16/43)
+
+Gate §12.2.2: NO PASA (< 8 pares) — el proyecto de pares se cierra
+
+Out: data/cache/pairs_coint_20260811_093812.txt

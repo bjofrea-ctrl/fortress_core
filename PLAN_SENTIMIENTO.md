@@ -456,3 +456,76 @@ convergencia. Es una familia de alpha nunca probada en este proyecto.
    las cópulas quedan SOLO como riesgo (rol actual).
 
 **12.3 Estado (2026-08-11)**: 4a en ejecución. 4b solo si 4a pasa el gate.
+
+## 11. PROYECTO PRE-REGISTRADO — Combinación multivariada de factores sobrevivientes (2026-08-11)
+
+**Contexto / justificación** (Sesión 8l, marco del usuario — "sombrero Jim Simons"):
+toda la semana se probaron factores UNO POR UNO contra el mismo umbral. El
+principio central de Renaissance: muchas ventajas chicas y DESCORRELACIONADAS
+superan a una ventaja grande. Momentum (IC 0.064), RSI (0.032) y macro
+compuesto (0.13) nunca se combinaron con matemática formal — solo pesos por
+|IC| + BMA online.
+
+**11.1 Hipótesis (pre-registrada)**
+Una combinación LINEAL regularizada (ridge) de momentum + rsi + macro supera
+al blend actual por |IC| en IC OOS con validación purgada + embargo, sobre la
+población eligible (gate completo). Nada no-lineal con esta muestra (caveat
+explícito: árboles/ensembles = sobreajuste garantizado con cientos de trades).
+
+**11.2 Fases y gates**
+1. **Fase 0 — Panel de factores unificado** (build_factor_panel.py): por
+   símbolo x fecha (stride 5d, 2019→2026-08-04, universo 50): scores de
+   factor, sentiment_v1, macro_composite, régime HMM real (refit trimestral
+   walk-forward), fwd_return_20d, eligible.
+2. **Fase 1a — Correlación** (diagnose_factor_correlation.py): si |rho| > 0.7
+   entre pares -> ARCHIVAR combinación; si < 0.5 -> tiene sentido.
+3. **Fase 1b — Ridge purgado** (diagnose_ridge_combination.py): RidgeCV
+   estandarizado, 5 folds temporales con purga ±30d + embargo; IC OOS vs
+   blend |IC|. Criterio: IC_ridge > IC_blend y ICIR estable.
+4. **Fase 2 — IC por régimen** (diagnose_ic_by_regime.py): si el score del
+   motor es estable y positivo en los 4 regímenes -> se archiva; si difiere
+   -> candidato a trial de pesos por régimen.
+5. **Fase 3 — PBO/CSCV** (pbo_cscv.py): logit de estabilidad sobre los trades
+   OOS del trial #10 (S=16, C(16,8)=12,870). Una configuración -> PBO=0.5 es
+   el NULO de selección (antisimetría combinatoria); la lectura es la
+   DISPERSIÓN del logit.
+6. **Gate motor**: si 1a+1b pasan -> TRIAL de motor propuesto (ridge como
+   score, N_TRIALS 16->17) — requiere aprobación del usuario.
+
+### 11.3 Resultados Fase 1-3 (2026-08-11, huellas factor_panel_20260811_092828.parquet,
+### factor_corr_20260811_092953.txt, ridge_comb_20260811_093105.txt,
+### ic_by_regime_20260811_093205.txt, pbo_cscv_20260811_093540.txt)
+
+**1a CORRELACIÓN: PASA.** Todas las |rho| < 0.3 pooled (máx 0.295
+macro x sentiment). Único aviso: régimen 3 macro x sentiment = -0.77
+(irrelevante: el motor no opera en régimen 3).
+
+**1b RIDGE PURGADO: PASA.** ridge_3f (momentum+rsi+macro): IC OOS +0.0156,
+ICIR fold-level +0.78, 4/5 folds positivos vs blend |IC| IC -0.0129 ->
+delta +0.0285. ridge_3f+sent: IC -0.0127 (sentimiento refutado OTRA vez
+como variable; solo sirve como ranking g2). El ridge aprendió implícitamente
+el signo correcto del macro (ver Fase 2).
+
+**2 IC POR RÉGIMEN: el score del motor es ESTABLE y positivo en los 4
+regímenes (0.086/0.049/0.040/0.086) -> se ARCHIVA el trial de pesos por
+régimen. HALLAZGO MATERIAL: los factores individuales SÍ difieren por
+régimen — macro compuesto es CONTRARÉGIMEN (+0.198 GOLDILOCKS, -0.133
+REFLATION, -0.173 DEFLATION); RSI se fortalece en regímenes turbulentos
+(+0.110 en DEFLATION, -0.066 en GOLDILOCKS); momentum positivo en todos
+(+0.121/+0.063/+0.021/+0.036). El blend pooled promedio y cancela esta
+estructura — el ridge 1b la capturó parcialmente.
+
+**3 PBO/CSCV: nulo de selección, no hay señal de sobreajuste sistemático.**
+PBO = 0.5000 exacto = NULO (antisimetría combinatoria con 1 configuración);
+desv del logit = 0.141 (dispersión moderada). Sharpe por trade por ventana:
+W1 +0.069, W2 -0.087, W3 +0.160 -> no hay ventaja persistente global; el
+DSR manual (n_trials=16) era la medida honesta correcta.
+
+### 11.4 TRIAL PROPUESTO (requiere aprobación del usuario)
+Reemplazar el score del motor (blend |IC| + BMA) por ridge_3f como score de
+ranking/entrada, manteniendo TODO lo demás (gate, salidas, régimen, costos):
+- N_TRIALS 16 -> 17 (1 trial por la nueva combinación).
+- Ventanas W1/W2/W3 §9.4, piso 30 trades, criterio DSR OOS >= 0.90 en >= 2/3.
+- Implementación: entrenar ridge en ventana expansiva walk-forward (mismo
+  patrón que el calibrador: refit trimestral, purga ±30d), score estandarizado.
+- Si no pasa el criterio -> revertir y archivar con la evidencia de 1b.
