@@ -539,3 +539,64 @@ En grandes caps líquidos los spreads no mantienen cointegración estable —
 las relaciones son demasiado efímeras para un backtest de convergencia
 serio. 4b NO se corre. Las cópulas quedan SOLO como riesgo (rol actual),
 sin gastar N_TRIALS del motor ni el presupuesto del proyecto.
+
+## 13. TRIAL #13 PRE-REGISTRADO — Ridge_3f como score del motor (2026-08-11, aprobado por el usuario)
+
+**Contexto**: §11.4 propuesto y aprobado por el usuario. La Fase 1b mostró
+ridge_3f (momentum+rsi+macro) con IC OOS +0.0156 vs blend |IC| -0.0129
+(delta +0.0285), ICIR 0.78, 4/5 folds positivos. El usuario recordó: "+0.0285
+de mejora en IC es evidencia de calidad de señal, no de plata; criterio 0.90
+en W1/W2/W3 SIN ablandar". También notó que el ridge aprendió implícitamente
+el comportamiento contrarégimen del macro sin programarlo a mano.
+
+**13.1 Hipótesis (pre-registrada)**
+Reemplazar el score del motor (blend |IC| + BMA) por la predicción walk-forward
+de ridge_3f mejora el DSR OOS de los trades reales. El score del motor es la
+misma señal que se midió con IC en 1b: si la señal es mejor, la mecánica
+(gate/salidas/régimen/costos) no cambia, así que el trial aísla el efecto del
+score. Criterio: el ORIGINAL de §9.4 — DSR OOS >= 0.90 en >= 2/3 ventanas
+evaluables, piso >= 30 trades, N_TRIALS = 17.
+
+**13.2 Cambio exacto (única diferencia vs trial #10/Phase A)**
+En `generate_signal`: el score deja de ser `blend |IC| + BMA` y pasa a ser la
+predicción de ridge_3f (retorno esperado a 20d). TODO lo demás es idéntico:
+- Gates duros intactos: close>ema50>ema200, adx14>=20, 40<rsi14<75,
+  volume_ratio>=1.0, bloqueo régimen 3, warmup 200d.
+- Gate de score: `overall >= 0.6` se reemplaza por `ridge_pred > 0` (el modelo
+  espera retorno positivo a 20d — análogo semántico del 0.6 en la nueva escala).
+- Stops (2 ATR), TP (4 ATR), payoff, salidas técnicas/parciales, régimen HMM
+  con refit trimestral walk-forward, costos 0.15%/lado, position sizing Kelly
+  con win_prob del calibrador Platt — sin cambios.
+- Ranking: por score de ridge (el trial corre SIN sentiment_data, para que el
+  ranking sea la predicción ridge y no el g2 de sentimiento — §11.4: ridge
+  como "score de ranking/entrada").
+- El calibrador Platt se re-entrena solo sobre los nuevos scores (usa
+  generate_signal internamente vía _build_calibration_dataset).
+
+**13.3 Entrenamiento walk-forward del ridge (sin lookahead)**
+- Panel diario (stride 1, no el stride 5 del panel de diagnóstico — el motor
+  puntúa todos los días): por símbolo x fecha, momentum_score y rsi_score de
+  compute_factor_frame (el MISMO código del motor), macro_composite de
+  _macro_signals (causal, datos <= fecha).
+- Rows de entrenamiento: SOLO filas eligible con target realizado en la fecha
+  de refit (date + 20d hábiles <= fecha de refit — el target se conoce 20d
+  después, no antes).
+- Refit cada 63 días calendario (CALIBRATOR_REFIT_STRIDE_DAYS, patrón del
+  calibrador), ventana EXPANSIVA (todo el historial disponible).
+- RidgeCV(alphas=logspace(-4,2,30)) + StandardScaler fit SOLO en train (mismo
+  pipeline que Fase 1b). Min filas de train: 50 (si no, se sigue con el
+  modelo anterior; sin modelo -> sin señal, igual que el warmup del motor).
+- Predicción para fechas (refit_previo, refit]: modelo del último refit.
+- Sin score (NaN) en: fechas sin modelo entrenado, símbolos sin datos. NaN ->
+  no hay señal (misma semántica que los gates).
+
+**13.4 Implementación (cero cambios en producción)**
+- `scripts/trial13_ridge_motor.py`: subclase `RidgeSignalEngine(SignalEngine)`
+  que recibe `ridge_scores: Dict[symbol, pd.Series]` y sobreescribe
+  `generate_signal` (mismos gates, score=predicción); subclase
+  `RidgeMotorEngine(BacktestEngine)` que la inyecta. Si falla el criterio,
+  revertir = borrar el script y dejar la evidencia (patrón trial #11).
+- Corridas en el mismo script: baseline (contexto), V1 con AAII (contexto,
+  estado actual de producción), ridge (EL trial). Veredicto sobre ridge.
+
+**13.5 Resultado**: pendiente — huella `trial13_ridge_motor_<ts>.txt` en data/cache.
