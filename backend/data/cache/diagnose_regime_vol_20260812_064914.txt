@@ -1,0 +1,27 @@
+========================================================================
+§12 — DIAGNÓSTICO régimen vs VOLATILIDAD REALIZADA (no retorno) — PRE-REGISTRADO
+Basket equal-weight 50 símbolos | horizonte 20d fwd | stride 5d
+Régimen HMM walk-forward (fit<=2024-12-31) | piso n>=200 por régimen
+Criterio: algún régimen con n>=200 difiere de la vol media global con |t-NW|>2
+========================================================================
+
+Cargando datos...
+
+Basket construido: 2915 días, 2019-01-01 -> 2026-08-07
+HMM fiteado con datos <= 2024-12-31
+
+Registros régimen-vs-volatilidad: 555 (estrided 5d, h=20d)
+Volatilidad realizada media global (todas las fechas): 0.1499
+
+    régimen          n  vol_media  vol_std delta_vs_global   t_NW sig>2  enough(n>=200)
+    GOLDILOCKS      59     0.1744   0.0748         +0.0245  +1.43                 False
+    REFLATION      160     0.1473   0.0970         -0.0025  -0.19                 False
+    STAGFLATION    268     0.1322   0.0645         -0.0177  -2.18   ***            True
+    DEFLATION       68     0.2042   0.1829         +0.0544  +1.47                 False
+
+--- VEREDICTO (§12, pre-registrado) ---
+Regímenes con muestra suficiente (n>=200): ['STAGFLATION']
+=> Régimen(es) con vol realizada significativamente distinta de la media global: ['STAGFLATION']
+RÉGIMEN_VOLATILIDAD: SEÑAL DE RIESGO REAL (candidato para vol-targeting)
+
+Out: data/cache/diagnose_regime_vol_20260812_064914.txt
