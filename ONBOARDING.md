@@ -144,3 +144,23 @@ en `PLAN_MEJORA_MATEMATICA.md`. No son sugerencias de estilo.
    `AUDITORIA_TECNICA.md` para el detalle exacto del hallazgo antes de arreglarlo a ciegas.
 4. Al terminar, actualizá `ROADMAP.md` (marcar cerrado o agregar lo nuevo) y comiteá con
    mensaje descriptivo.
+
+---
+
+## Ritual de cierre de sesión — no cerrar sin esto
+
+Cada sesión que toque código, documentos o estado deja el MISMO rastro, para que la próxima
+arranque sin preguntarte nada:
+
+1. **Estado**: actualizá `ROADMAP.md` (cerrar / agregar pendientes) y agregá una entrada con
+   timestamp a `SESSION_LOG.md` (qué se hizo, por qué, veredicto con artefacto).
+2. **Commit + push**: commit descriptivo (conventional commits) + `git push origin main`.
+   El auto-backup cada 10-20 min documenta, pero no explica decisiones — el commit a mano sí.
+3. **Espejo de recuperación**: sincronizá el disco externo:
+   `rsync -a --delete --exclude .git --exclude node_modules --exclude .venv --exclude __pycache__ ~/Desktop/fortress_core/ /Volumes/EMPRESA/fortress_core_backups/current/`
+4. **Memoria del agente**: guardar en Engram (proyecto **"boris"**) — qué se hizo, qué queda,
+   adónde apunta el próximo paso. Si el proyecto no está indexado, crearlo con esa clave.
+5. **Secretos**: si algo sensible cambió (claves, credenciales, tokens), re-cifrar la bóveda
+   `BOVEDA-CLAVES-FORTRESS-CORE.md.enc` (Escritorio + `/Volumes/EMPRESA`) SOLO con autorización
+   explícita del usuario. La passphrase vive únicamente en el Llavero de macOS
+   (servicio `BovedaFortressCoreMasterKey`) — nunca en archivos ni chats.
