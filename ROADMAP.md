@@ -34,7 +34,7 @@ gantt
     Auth mínima + SECRET_KEY que falla si no está :done, c3, 0, 1d
 
     section Código — P1
-    Fechas hardcodeadas de market.py (2015-2024)  :c4, after c3, 1d
+    Fechas hardcodeadas de market.py (2015-2024)  :done, c4, after c3, 1d
     Alinear Python Dockerfile vs venv real        :c5, after c3, 1d
     Corregir README (Redis, versión, endpoints)   :c6, after c3, 1d
     Corregir docstring Controller/Judge (no LLM)  :c7, after c3, 1d
@@ -62,7 +62,7 @@ gantt
 | Código P0 | Contrato GovernancePanel ↔ backend | 🟢 cerrado (2026-08-12) | — | Frontend consume contrato real (`triad.{bull,bear,contrarian}.score`, `controller.approved`, `judge.verdict|status`); 5 tests de regresión en `test_governance_contract.py` |
 | Código P0 | `except:` desnudo + 200 OK con error en body | 🟢 cerrado (2026-08-12) | — | `market.py`/`live.py` ahora levantan HTTPException 500; `except:` acotado a (AttributeError, TypeError, ValueError); 0 patrones restantes en routers |
 | Código P0 | Auth mínima global + `SECRET_KEY` que falla si no está seteado | 🟢 cerrado (2026-08-12) | — | `hmac.compare_digest` en `verify_api_key`; Settings valida SECRET_KEY fuera de development (default bloqueado: `test_secret_key_default_blocked_outside_development`). Nota: 25/27 endpoints siguen abiertos POR DECISIÓN (UI pública con repo público) — solo rutas de escritura RAG tienen key; el resto es deliberado mientras la UI sea pública |
-| Código P1 | Fechas hardcodeadas de `market.py` (2015-2024) | 🔴 sin empezar | — | Dashboard sirviendo datos de hace año y medio |
+| Código P1 | Fechas hardcodeadas de `market.py` (2015-2024) | 🟢 cerrado (2026-08-12) | — | Las 4 rutas ahora usan `download_data(symbol, "2015-01-01")` sin fin fijo (mismo patrón que predict.py/governance.py) — default a hoy. 80/80 tests sin regresión |
 | Código P1 | Python 3.11 (Dockerfile) vs 3.9.6 (venv real) | 🔴 sin empezar | — | Alinear una de las dos |
 | Código P1 | README desactualizado (Redis, versión, endpoints) | 🔴 sin empezar | — | Reescribir o borrar lo aspiracional |
 | Código P1 | Docstring Controller/Judge dice que usan LLM (no es cierto) | 🔴 sin empezar | — | Corregir comentario en `advanced_agents.py` |

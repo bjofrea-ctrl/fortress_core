@@ -23,7 +23,7 @@ async def get_symbols():
 async def get_prices(symbol: str, limit: int = 500):
     """Retorna datos de precios para un símbolo."""
     try:
-        df = download_data(symbol, "2015-01-01", "2024-12-31")
+        df = download_data(symbol, "2015-01-01")
         df = df.tail(limit)
 
         data = []
@@ -46,7 +46,7 @@ async def get_prices(symbol: str, limit: int = 500):
 async def get_indicators(symbol: str, limit: int = 500):
     """Retorna indicadores técnicos para un símbolo."""
     try:
-        df = download_data(symbol, "2015-01-01", "2024-12-31")
+        df = download_data(symbol, "2015-01-01")
         df = calculate_all_indicators(df)
         df = df.tail(limit)
 
@@ -82,7 +82,7 @@ async def get_indicators(symbol: str, limit: int = 500):
 async def get_symbol_summary(symbol: str):
     """Retorna un resumen completo con KPIs de un símbolo."""
     try:
-        df = download_data(symbol, "2015-01-01", "2024-12-31")
+        df = download_data(symbol, "2015-01-01")
         df = calculate_all_indicators(df)
 
         latest = df.iloc[-1]
@@ -158,7 +158,7 @@ async def get_market_overview():
 
     for symbol in sorted(files):
         try:
-            df = download_data(symbol, "2015-01-01", "2024-12-31")
+            df = download_data(symbol, "2015-01-01")
             if len(df) < 200:
                 continue
 
