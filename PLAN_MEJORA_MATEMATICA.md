@@ -394,36 +394,60 @@ opción (c) descartada por diagnóstico sectorial endógeno (§9.c: t=+1.03/+0.5
 refutados a nivel símbolo (0.5a) y cluster (§9.c). El score de timing del basket es:
 
 1. **ADX del basket** — la única señal con evidencia real en todo el gate
-   (0.5a: t=+2.31 nominal a nivel símbolo; a nivel UN activo no hay Bonferroni,
-   el umbral vuelve a |t|>2). Regla: long del basket cuando `adx_score ≥ 0.9`
-   (ADX > 25, umbral ya usado por el motor, `signal_engine.py:103`); flat en
-   caso contrario. El score NO es el momentum del basket.
-2. **Condicionamiento de régimen** — exposición según `REGIME_ALLOCATION`
-   del HMM existente (`regime_classifier.py:9`): GOLDILOCKS equity 0.60,
-   REFLATION 0.40, STAGFLATION 0.15, DEFLATION 0.10, aplicada sobre el
-   ADX-long del basket. Este condicionamiento es el que §9/RESUMEN §5 citan
-   como "macro contra-régimen" (+0.198 GOLDILOCKS / −0.173 DEFLATION) —
-   **pero esa medición estaba invalidada por el lookahead §3.1** (pre-fix de
-   régimen). Por lo tanto el condicionamiento de régimen que ya mide el
-   backtest real (motor, sin el bug del panel) es la evidencia viva; el
-   valor numérico del panel NO se cita como evidencia previa, solo el
-   diseño del motor.
+   (0.5a: t=+2.31 nominal a nivel símbolo, artefacto `rr2_intraday_150741.txt`;
+   a nivel UN activo no hay Bonferroni, el umbral vuelve a |t|>2). Regla:
+   long del basket cuando `adx_score ≥ 0.9`; flat en caso contrario. MISMOS
+   parámetros que el motor, sin inventar umbrales nuevos: ADX(14) con
+   `adx_score = 0.9 si ADX>25 / 0.3 si ADX∈[20,25]` (`signal_engine.py:102-103`)
+   y gate de entrada `ADX<20 → no compra` (réplica exacta del motor). El score
+   NO es el momentum del basket.
+   **Chequeo de distribución previo (pre-registrado)**: antes de correr el
+   trial se audita la distribución empírica del ADX del basket (qué % de días
+   cae en cada tramo >25 / 20-25 / <20). Si sale degenerada (el ADX de un
+   basket diversificado suele ser más suave que el de una acción individual
+   por cancelación de ruido idiosincrático), los umbrales absolutos del motor
+   podrían no discriminar nada → se recalibran por percentil expansivo causal
+   en vez de valor fijo. Esta recalibración se decide con datos ANTES de la
+   corrida y queda documentada en el pre-registro — no post-hoc.
+2. **Régimen SÓLO como identificador (sin magnitud de ajuste por ahora)** — el
+   HMM global existente (`regime_classifier.py`) se reusa tal cual únicamente
+   para IDENTIFICAR el régimen. El ajuste de exposición por régimen
+   (+0.198 GOLDILOCKS / −0.173 DEFLATION, "macro contra-régimen") NO entra
+   todavía en este pre-registro: esa medición quedó invalidada por el lookahead
+   §3.1 y sigue sin re-medirse sobre la especificación correcta (serie del
+   basket, no panel de 50). Se corre esa re-medición de la serie del basket en
+   paralelo; si sobrevive con la spec limpia, entra al pre-registro ANTES de la
+   corrida (no después). Si no se re-mide a tiempo, (a) corre solo con el ADX
+   del basket (sin condicionamiento de régimen) y el régimen se mantiene como
+   diagnóstico sin tocar exposición.
 3. **Revert si NO CUMPLE**: script borrado, producción nunca tocada (inyección
    por subclase dentro del script, mismo patrón que trial #13). Baseline de
    comparación: BASELINE ÚNICO post-fix `baseline_clean_20260811_150643.txt`
    (referencia oficial §8), no baselines históricos.
 
-**Activo**: basket del universo actual (SPY como proxy del mercado + ETF del
-basket: SPY). Definición concreta: el trial corre el motor sobre SPY como
-basket único (el "mercado"), con el score de timing definido arriba — un solo
-activo, no 50 símbolos.
+**Activo**: basket equal-weight de los MISMOS 50 símbolos del universo, NO un
+ETF externo (SPY/QQQ). Justificación: el gate dejó pendiente "selección murió,
+¿alcanza con timing solo?" — para contestarlo limpio hay que cambiar UNA sola
+variable (seleccionar vs no seleccionar) y mantener todo lo demás igual (mismo
+universo, misma ventana, mismos costos). Si el subyacente fuera SPY/QQQ se mete
+una segunda variable no controlada: una racha buena/mala del ETF en la ventana
+podría decidir a favor o en contra sin que el timing sea mejor que la selección.
+El basket equal-weight de los 50 aísla exactamente el efecto del timing. Contras
+anotados: agrega su propio costo de rebalanceo (a diferencia de un ETF ya
+armado) y es un instrumento sintético, no directamente tradeable hoy — para la
+fase de investigación es lo correcto; si (a) gana, la implementación de producto
+evalúa después si conviene un ETF real como proxy. **Chequeo de sanity
+secundario**: SPY como referencia OBSERVACIONAL para ver si el basket sintético
+se comporta razonablemente parecido al mercado amplio — NO es el trial que
+decide el gate y no consume un trial extra ni cambia el criterio.
 
 **Criterio (congelado, mismo de siempre)**: DSR OOS ≥ 0.90 en ≥ 2/3 ventanas
 (W1 2020-2021, W2 2022-2023, W3 2024-2026), piso ≥ 30 trades/ventana,
-N_TRIALS=17+1=18 por ser un trial nuevo. Si el basket con ADX+régimen supera
-el baseline oficial en DSR en 2/3 ventanas → (a) gana y el producto pasa a
-timing sobre basket; si no → (a) queda descartada como (b) y (c), y el motor
-queda como está (sin señal en vivo, §4.5).
+N_TRIALS=17+1=18 por ser un trial nuevo. Si el basket con ADX (más el
+condicionamiento de régimen, solo si la re-medición sobrevive con la spec
+limpia; regla 2) supera el baseline oficial en DSR en 2/3 ventanas → (a) gana
+y el producto pasa a timing sobre basket; si no → (a) queda descartada como
+(b) y (c), y el motor queda como está (sin señal en vivo, §4.5).
 
 **Pre-registrado ANTES de correr — este documento es el registro.** Huella
 timestamp en data/cache al correr. Sin cambios al criterio después de la
