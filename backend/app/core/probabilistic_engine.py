@@ -26,15 +26,13 @@ Referencias:
 """
 import json
 import os
+from typing import Dict, List, Tuple
+
 import numpy as np
 import pandas as pd
-from typing import Dict, List, Optional, Tuple
-from dataclasses import dataclass, field
-from datetime import datetime
 from scipy import stats
 from scipy.optimize import minimize
 from scipy.stats import t as t_dist
-
 
 # ============================================================
 # 1. ProbabilityCalibrator — Platt + Isotonic
@@ -649,7 +647,7 @@ class CopulaRiskAnalyzer:
             Dict con análisis de pares
         """
         results = {}
-        assets = list(macro_data.keys())
+        _assets = list(macro_data.keys())
 
         # Pares clave para riesgo
         key_pairs = [
@@ -724,8 +722,8 @@ class WalkForwardValidator:
             test_end = train_end + self.test_window
 
             # Train window
-            train_signal = signal.iloc[start:train_end]
-            train_returns = forward_returns.iloc[start:train_end]
+            _train_signal = signal.iloc[start:train_end]
+            _train_returns = forward_returns.iloc[start:train_end]
 
             # Test window
             test_signal = signal.iloc[train_end:test_end]

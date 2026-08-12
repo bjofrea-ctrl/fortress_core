@@ -55,18 +55,32 @@ actualizado antes de pasar a la siguiente.
    Extras detectados al pasar: `backend/data/` (estado de runtime) ignorado en .gitignore.
    Verificación: `pytest` → 84 passed, 11.07s.
 
-### Tanda C — Código, P2 (más esfuerzo, hacer después de A y B)
-6. **Primero verificar, no asumir**: los candidatos de código muerto de memoria previa
-   (`ProbabilisticEngine` wrapper, `KellyPositionSizer` duplicado, `RiskParityAllocator`) —
-   confirmar con grep que siguen sin uso antes de tocar nada.
-7. Decidir destino de `prompt_engine.py` (659 líneas muertas, bug latente adentro) —
-   recomendación: borrar, no integrar. Integrar agregaría superficie sin necesidad
-   demostrada; nada lo usa hoy y `HardinessChecker` (lo único real que se usa de ese
-   archivo) puede moverse a su propio módulo chico.
-8. Tests de integración para `governance.py` + los 7 routers sin cobertura (`backtest`,
-   `live`, `market`, `opportunities`, `predict`, `risk`, `system`) — empezar por los que
-   tienen lógica no trivial (`backtest`, `market`), no por los triviales.
-9. CI básico: lint + `pytest` en cada push (repo público, hoy no hay ningún check automático).
+### Tanda C — Código, P2 ✅ (cerrada 2026-08-12, commit TCBD)
+6. ✅ Verificado con grep, sin remover: `ProbabilisticEngine` (wrapper) y
+   `KellyPositionSizer` SOLO los usa `scripts/test_probabilistic.py` (smoke script de
+   desarrollo); `RiskParityAllocator` SOLO `scripts/test_system.py`. No son código
+   muerto en sentido estricto → no se tocaron. El módulo `probabilistic_engine.py`
+   se queda (backtest_engine, signal_engine y opportunities importan 6 clases útiles
+   de ahí: CopulaRiskAnalyzer, ProbabilityCalibrator, BayesianOnlineUpdater, etc.).
+7. ✅ `prompt_engine.py` ELIMINADO (659 líneas). `HardinessChecker` (lo único en uso,
+   en `triad_agents.py`) movido intacto a `app/core/hardiness.py`; también se eliminó
+   `scripts/test_prompt_engine.py` (probaba código muerto) y se portó su cobertura a
+   `tests/test_hardiness.py` (7 tests). **Bug latente encontrado y documentado**: el
+   assert de alucinación del script viejo NUNCA pudo pasar — `detect_hallucination`
+   solo matchea formato "clave: valor", no texto libre.
+8. ✅ Tests de integración para 6 de los 7 routers sin cobertura (governance y
+   opportunities ya la tenían): `test_backtest_api.py` (8), `test_market_api.py` (6),
+   `test_live_api.py` (4), `test_predict_api.py` (6), `test_risk_api.py` (2),
+   `test_system_api.py` (2) — patrón del repo: `asyncio.run` directo + monkeypatch,
+   sin httpx. **Bug real encontrado y arreglado**: el muestreo de
+   `/api/backtest/equity-curve` con `step = len//300` no muestreaba nada entre 300 y
+   599 puntos; ahora `ceil(len/300)`.
+9. ✅ CI en `.github/workflows/ci.yml`: jobs `lint` (ruff) y `test` (pytest) en cada
+   push/PR, Python 3.9. `ruff.toml` en raíz: target py39, `select = [E4,E7,E9,F,I,W]`
+   (E501 fuera a propósito: las líneas largas del repo son contenido académico/prompts,
+   no código). Autofix inicial: 117 violaciones corregidas + 14 manuales (semicolons,
+   `== True` → `.is_(True)`, vars ambiguas `l` → `lesson`, vars sin uso → `_`).
+   `ruff==0.16.2` agregado a requirements-dev. Lint: 0 errores. pytest: 119 passed.
 
 ### Tanda D — Investigación (en paralelo a A/B/C, no bloquea ni bloquea código)
 10. §13 gap-reversion: backtest con costos reales (dos operaciones/día, 0.15%/lado) —

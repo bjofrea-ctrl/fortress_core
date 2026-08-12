@@ -11,23 +11,22 @@ GET /api/opportunities/today — candidatos de HOY (datos reales, no backtest):
   entradas bloqueadas por diseño, la lista vacía se explica sola).
 - Track record real de sugerencias emitidas (suggestions_store).
 """
-import datetime
-import time
-from functools import lru_cache
 
 import numpy as np
 import pandas as pd
 from fastapi import APIRouter, HTTPException
 
+from app.core.adaptive_risk import REGIME_THRESHOLDS
 from app.core.backtest_engine import BacktestEngine
-from app.core.data_ingestion import download_data, load_universe
+from app.core.data_ingestion import load_universe
 from app.core.market_sentiment import fetch_aaii
 from app.core.probabilistic_engine import CopulaRiskAnalyzer, ProbabilityCalibrator
 from app.core.regime_classifier import GlobalRegimeClassifier
-from app.core.adaptive_risk import REGIME_THRESHOLDS
 from app.core.signal_engine import SignalEngine
 from app.core.suggestions_store import (
-    evaluate_pending, get_track_record, record_suggestions,
+    evaluate_pending,
+    get_track_record,
+    record_suggestions,
 )
 
 router = APIRouter(prefix="/api/opportunities", tags=["opportunities"])
@@ -131,7 +130,6 @@ def _build_opportunities(price_data, sentiment_map, regime_state, today) -> list
         if sig["score"] < MIN_SCORE:
             continue
 
-        latest = df.iloc[-1]
         win_prob = float(calibrator.predict(np.array([sig["score"]]))[0]) if calibrator else None
 
         g2 = None

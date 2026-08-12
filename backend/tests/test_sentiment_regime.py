@@ -5,17 +5,14 @@ congelan el comportamiento del blend, el cuestionamiento H6 en euforia y
 las reglas V4 de velocidad, para que una futura re-validación (que cambie
 el peso) rompa los tests en lugar de pasar silenciosa.
 """
-import numpy as np
-import pandas as pd
 import pytest
-
 from app.core.predictive_engine import PredictiveEngine
-from app.core.triad_agents import ContrarianAgent, TriadConsensus
 from app.core.sentiment_regime import (
-    SENTIMENT_REGIME_DOMINANCE,
-    SENTIMENT_PANIC_SPREAD,
     SENTIMENT_EUPHORIA_SPREAD,
+    SENTIMENT_PANIC_SPREAD,
+    SENTIMENT_REGIME_DOMINANCE,
 )
+from app.core.triad_agents import ContrarianAgent, TriadConsensus
 
 
 @pytest.fixture

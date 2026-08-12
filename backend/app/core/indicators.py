@@ -1,5 +1,6 @@
-import pandas as pd
 from typing import Tuple
+
+import pandas as pd
 
 
 def ema(prices: pd.Series, period: int) -> pd.Series:

@@ -20,26 +20,26 @@ Referencias académicas:
 - Wolfers & Zitzewitz (2004): Mercados de predicción
 - Goldstein & Guembel (2008): Manipulación
 """
-import pandas as pd
-import numpy as np
-from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass, field
+from typing import Dict, List, Optional, Tuple
 
+import numpy as np
+import pandas as pd
+
+from app.core.advanced_agents import NvidiaNIMClient
 from app.core.predictive_indicators import (
-    calculate_predictive_indicators,
     MACRO_CORRELATIONS,
+    calculate_predictive_indicators,
     compute_gold_silver_ratio,
 )
-from app.core.triad_agents import TriadEvaluator, TriadConsensus
-from app.core.advanced_agents import NvidiaNIMClient
 from app.core.sentiment_regime import (
-    SENTIMENT_REGIME_DOMINANCE,
-    SENTIMENT_EXTREME,
     AAII_SPREAD_BOUND,
-    ER_SLOW,
     ER_FAST,
+    ER_SLOW,
+    SENTIMENT_EXTREME,
+    SENTIMENT_REGIME_DOMINANCE,
 )
-
+from app.core.triad_agents import TriadConsensus, TriadEvaluator
 
 # ============================================================
 # Configuración de pesos según régimen de mercado

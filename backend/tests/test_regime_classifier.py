@@ -1,8 +1,8 @@
+from unittest.mock import MagicMock
+
 import numpy as np
 import pandas as pd
 import pytest
-from unittest.mock import MagicMock
-
 from app.core.regime_classifier import GlobalRegimeClassifier
 
 
@@ -56,4 +56,3 @@ def test_confidence_indexed_by_raw_hmm_state_not_semantic_label():
     assert result["confidence"] != pytest.approx(raw_probs_last[result["state"]])
 
 
-import pytest  # noqa: E402 (import al final para no interferir con el docstring del módulo)

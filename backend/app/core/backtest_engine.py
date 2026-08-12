@@ -1,16 +1,22 @@
-import pandas as pd
-import numpy as np
-from typing import Dict, List, Tuple
 from datetime import datetime
+from typing import Dict, List, Tuple
+
+import numpy as np
+import pandas as pd
 from scipy.stats import norm
-from app.core.signal_engine import SignalEngine
+
 from app.core.adaptive_risk import AdaptiveRiskManager
-from app.core.regime_classifier import GlobalRegimeClassifier
 from app.core.indicators import calculate_all_indicators
 from app.core.probabilistic_engine import (
-    ProbabilityCalibrator, BayesianOnlineUpdater, WalkForwardValidator, SignalQualityMetrics,
-    FatTailMonteCarlo, CopulaRiskAnalyzer,
+    BayesianOnlineUpdater,
+    CopulaRiskAnalyzer,
+    FatTailMonteCarlo,
+    ProbabilityCalibrator,
+    SignalQualityMetrics,
+    WalkForwardValidator,
 )
+from app.core.regime_classifier import GlobalRegimeClassifier
+from app.core.signal_engine import SignalEngine
 
 CALIBRATION_HORIZON_DAYS = 20  # ~1 mes hábil, alineado a "short_term_1_30d"
 CALIBRATION_STRIDE_DAYS = 5    # semanal, misma cadencia que el rebalanceo real

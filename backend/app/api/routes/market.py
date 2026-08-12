@@ -1,6 +1,8 @@
-from fastapi import APIRouter, HTTPException
-import pandas as pd
 import os
+
+import pandas as pd
+from fastapi import APIRouter, HTTPException
+
 from app.core.data_ingestion import download_data
 from app.core.indicators import calculate_all_indicators
 

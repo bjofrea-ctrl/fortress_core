@@ -1,8 +1,6 @@
 import numpy as np
 import pandas as pd
-
-from app.core.indicators import calculate_all_indicators, rsi, atr, ema
-
+from app.core.indicators import atr, calculate_all_indicators, ema, rsi
 
 EXPECTED_COLUMNS = {
     "ema20", "ema50", "ema200", "rsi14", "macd", "macd_signal", "macd_hist",

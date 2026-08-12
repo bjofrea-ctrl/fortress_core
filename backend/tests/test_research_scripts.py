@@ -2,8 +2,6 @@
 panel, ridge purgado, PBO/CSCV y cointegración."""
 import numpy as np
 import pandas as pd
-import pytest
-
 from scripts.diagnose_pairs_cointegration import spread_stationary
 from scripts.diagnose_ridge_combination import purged_folds
 from scripts.pbo_cscv import sharpe
@@ -52,7 +50,6 @@ def test_sharpe_known_values():
 
 def test_spread_stationary_detects_cointegrated():
     rng = np.random.default_rng(42)
-    t = np.arange(300)
     common = np.cumsum(rng.normal(0, 1, 300))  # paseo aleatorio común
     x = np.exp(1.5 * common + rng.normal(0, 0.05, 300))
     y = np.exp(1.5 * common + rng.normal(0, 0.05, 300))

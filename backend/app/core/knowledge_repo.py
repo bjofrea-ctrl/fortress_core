@@ -19,13 +19,12 @@ Referencias:
 import json
 import os
 import re
-from typing import Dict, List, Optional, Set, Tuple
 from dataclasses import dataclass, field
 from datetime import datetime
+from typing import Dict, List, Optional, Set
 
 from app.utils.logging import logger
 from app.utils.persistence import atomic_write_json
-
 
 # ============================================================
 # OKF — Estructura de Conocimiento Organizado
@@ -412,10 +411,10 @@ class RAGMemorySystem:
             scored.append((score, lesson))
 
         scored.sort(key=lambda x: x[0], reverse=True)
-        relevant = [l for s, l in scored[:top_k] if s > 0]
+        relevant = [lesson for s, lesson in scored[:top_k] if s > 0]
         if not relevant:
             return ""
-        return "[MEMORIA DE ENSEÑANZA PREVIA]\n" + "\n".join(f"- {l}" for l in relevant)
+        return "[MEMORIA DE ENSEÑANZA PREVIA]\n" + "\n".join(f"- {lesson}" for lesson in relevant)
 
     def get_memory_context(self, agent: str, query: str) -> str:
         """Contexto de memoria para prompts LLM."""

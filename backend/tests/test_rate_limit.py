@@ -3,9 +3,8 @@ from typing import Dict, Optional
 from unittest import mock
 
 import pytest
-from fastapi import HTTPException
-
 from app.api.rate_limit import RateLimitDependency
+from fastapi import HTTPException
 
 
 class _FakeClient:

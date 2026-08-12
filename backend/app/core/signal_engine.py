@@ -1,9 +1,11 @@
-import pandas as pd
-import numpy as np
 from typing import Dict, List, Optional
+
+import numpy as np
+import pandas as pd
+
 from app.core.indicators import calculate_all_indicators
-from app.core.regime_classifier import GlobalRegimeClassifier
 from app.core.probabilistic_engine import BayesianOnlineUpdater
+from app.core.regime_classifier import GlobalRegimeClassifier
 
 
 class SignalEngine:

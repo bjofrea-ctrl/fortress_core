@@ -1,6 +1,7 @@
-from sqlalchemy import create_engine, Column, Integer, String, Float, DateTime, Boolean, Index
+from sqlalchemy import Boolean, Column, DateTime, Float, Index, Integer, String, create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
+
 from app.config import settings
 
 engine = create_engine(

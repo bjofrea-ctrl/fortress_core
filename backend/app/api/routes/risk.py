@@ -1,8 +1,10 @@
+from datetime import datetime, timedelta
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
-from app.models.database import SessionLocal, RiskEvent, PortfolioSnapshot
+
 from app.config import settings
-from datetime import datetime, timedelta
+from app.models.database import PortfolioSnapshot, RiskEvent, SessionLocal
 
 router = APIRouter(prefix="/api/risk", tags=["risk"])
 
@@ -23,7 +25,7 @@ async def risk_monitor(db: Session = Depends(get_db)):
 
     cutoff = datetime.utcnow() - timedelta(days=settings.VIOLATION_WINDOW_DAYS)
     violations_60d = db.query(RiskEvent).filter(
-        RiskEvent.is_violation == True,
+        RiskEvent.is_violation.is_(True),
         RiskEvent.date >= cutoff
     ).count()
 

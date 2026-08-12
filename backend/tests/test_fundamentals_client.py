@@ -2,7 +2,6 @@ from unittest.mock import patch
 
 from app.core.fundamentals_client import FinnhubClient
 
-
 FAKE_FINNHUB_RESPONSE = {
     "metric": {
         "peExclExtraTTM": 28.5,

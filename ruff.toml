@@ -1,0 +1,7 @@
+target-version = "py39"
+line-length = 120
+
+[lint]
+# E501 (longitud de línea) fuera a propósito: gran parte de las líneas largas
+# son contenido (texto académico del RAG, f-strings de prompts a LLM), no código.
+select = ["E4", "E7", "E9", "F", "I", "W"]

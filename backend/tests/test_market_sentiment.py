@@ -11,7 +11,6 @@ import time
 
 import pandas as pd
 import pytest
-
 from app.core import market_sentiment
 from app.core.market_sentiment import AAII_CACHE_MAX_AGE_DAYS, fetch_aaii
 

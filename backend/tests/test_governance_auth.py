@@ -4,10 +4,9 @@ rechazo de key faltante/incorrecta. El bug que este test previene: comparación
 `!=` (no hmac.compare_digest) y default SECRET_KEY inseguro en config.
 """
 import pytest
-from fastapi import HTTPException
-
 from app.api.routes.governance import verify_api_key
 from app.config import settings
+from fastapi import HTTPException
 
 
 def test_verify_api_key_accepts_correct_key():
@@ -28,8 +27,8 @@ def test_verify_api_key_rejects_missing_key():
 
 def test_verify_api_key_timing_constant_comparison():
     """La comparación debe hacerse con hmac.compare_digest (tiempo-constante)."""
-    import inspect
     import hmac
+    import inspect
 
     src = inspect.getsource(verify_api_key)
     assert "hmac.compare_digest" in src, "verify_api_key debe usar hmac.compare_digest"

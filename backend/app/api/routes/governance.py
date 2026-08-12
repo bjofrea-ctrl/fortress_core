@@ -3,28 +3,28 @@
 Flujo: Tríada (BULL, BEAR, CONTRARIAN) → CONTROLADOR → discusión con PROFESOR
 → Si no hay consenso → JUEZ decide. PROFESOR educa usando RAG/OKF.
 """
-from fastapi import APIRouter, HTTPException, Query, Header, Depends
-from starlette.concurrency import run_in_threadpool
 import hmac
-import os
 
+from fastapi import APIRouter, Depends, Header, HTTPException, Query
+from starlette.concurrency import run_in_threadpool
+
+from app.api.rate_limit import RateLimitDependency
+from app.api.routes.predict import SAMPLE_PREDICTION_DATA, _load_macro_data, get_fundamentals_api
 from app.config import settings
-from app.core.data_ingestion import download_data
-from app.core.predictive_engine import PredictiveEngine
-from app.api.routes.predict import get_fundamentals_api, _load_macro_data, SAMPLE_PREDICTION_DATA
 from app.core.advanced_agents import (
+    AGENT_PROMPTS,
+    CONTROLLER_PROMPT,
+    GOVERNANCE_LLM_MODELS,
+    JUDGE_PROMPT,
+    NVIDIA_MODELS,
+    PROFESSOR_PROMPT,
+    TRIAD_LLM_MODELS,
     GovernanceSystem,
     NvidiaNIMClient,
-    AGENT_PROMPTS,
-    NVIDIA_MODELS,
-    GOVERNANCE_LLM_MODELS,
-    TRIAD_LLM_MODELS,
-    JUDGE_PROMPT,
-    PROFESSOR_PROMPT,
-    CONTROLLER_PROMPT,
 )
-from app.core.knowledge_repo import KnowledgeRepository, RAGMemorySystem, OKF_STRUCTURE
-from app.api.rate_limit import RateLimitDependency
+from app.core.data_ingestion import download_data
+from app.core.knowledge_repo import OKF_STRUCTURE, KnowledgeRepository, RAGMemorySystem
+from app.core.predictive_engine import PredictiveEngine
 
 router = APIRouter(prefix="/api/governance", tags=["governance"])
 

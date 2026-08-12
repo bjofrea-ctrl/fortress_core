@@ -1,18 +1,17 @@
 """API routes para el motor predictivo Fortress Core Fase 2."""
+import os
+from typing import Optional
+
+import pandas as pd
 from fastapi import APIRouter, Depends, HTTPException, Query
 from starlette.concurrency import run_in_threadpool
-from typing import Optional
-import pandas as pd
-import os
 
-from app.core.data_ingestion import download_data
-from app.core.predictive_engine import PredictiveEngine, format_recommendation
-from app.core.regime_classifier import GlobalRegimeClassifier
-from app.core.indicators import calculate_all_indicators
-from app.core.edgar_fundamentals import get_fundamentals, SAMPLE_FUNDAMENTALS
-from app.core.fundamentals_client import FinnhubClient
-from app.utils.logging import logger
 from app.api.rate_limit import RateLimitDependency
+from app.core.data_ingestion import download_data
+from app.core.edgar_fundamentals import get_fundamentals
+from app.core.fundamentals_client import FinnhubClient
+from app.core.predictive_engine import PredictiveEngine, format_recommendation
+from app.utils.logging import logger
 
 _finnhub_client = FinnhubClient()
 

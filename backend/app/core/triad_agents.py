@@ -19,18 +19,19 @@ Referencias:
 - Tetlock (2005): Expert political judgment — diversidad de perspectivas
 - Surowiecki (2004): Wisdom of crowds — agregación de juicios independientes
 """
-import pandas as pd
-import numpy as np
 import json
-from typing import Dict, List, Optional, Tuple
 from dataclasses import dataclass, field
+from typing import Dict, List, Optional
 
-from app.utils.logging import logger
-from app.core.prompt_engine import HardinessChecker
+import numpy as np
+import pandas as pd
+
+from app.core.hardiness import HardinessChecker
 from app.core.sentiment_regime import (
-    SENTIMENT_PANIC_SPREAD,
     SENTIMENT_EUPHORIA_SPREAD,
+    SENTIMENT_PANIC_SPREAD,
 )
+from app.utils.logging import logger
 
 
 @dataclass

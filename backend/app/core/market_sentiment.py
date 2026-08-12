@@ -20,14 +20,14 @@ Disciplina anti-lookahead (obligatoria):
 - Por eso el valor del día t se construye con shift(1) + forward-fill: solo
   usa información publicada ANTES de t. Sin esto, el IC miente.
 """
+import io
 import os
 import time
 import zipfile
-import io
 
-import requests
-import pandas as pd
 import numpy as np
+import pandas as pd
+import requests
 
 CACHE_DIR = "data/cache"
 
@@ -228,7 +228,7 @@ def fetch_aaii() -> pd.Series:
         resp = _get(AAII_URL, timeout=90)
         resp.raise_for_status()
         raw = pd.read_excel(io.BytesIO(resp.content), header=None)
-        hdr = raw.iloc[3].to_list()[:8]
+        _hdr = raw.iloc[3].to_list()[:8]
         data = raw.iloc[5:].copy()
         data.columns = ["Date", "Bullish", "Neutral", "Bearish", "Total", "Mov Avg", "Spread", "Average"] + [
             f"x{i}" for i in range(len(data.columns) - 8)

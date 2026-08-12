@@ -10,8 +10,7 @@ hay infraestructura de parquet/JSON en data/cache, no requiere DB).
 """
 import json
 import os
-from datetime import datetime, timedelta
-from typing import Dict, List, Optional
+from typing import Dict, List
 
 import pandas as pd
 

@@ -16,16 +16,16 @@ Sistema RAG/OKF: repositorio de conocimiento académico + memoria de enseñanza.
 import json
 import os
 import re
-import requests
-from typing import Dict, List, Optional, Set
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from datetime import datetime
+from typing import Dict, List, Optional
+
+import requests
 
 from app.config import settings
 from app.core.knowledge_repo import KnowledgeRepository, RAGMemorySystem
 from app.utils.logging import logger
 from app.utils.persistence import atomic_write_json
-
 
 # ============================================================
 # Configuración NVIDIA NIM
@@ -295,7 +295,8 @@ class NvidiaNIMClient:
         if not resp:
             return None
         try:
-            start = resp.find("{"); end = resp.rfind("}") + 1
+            start = resp.find("{")
+            end = resp.rfind("}") + 1
             if start >= 0 and end > start:
                 return json.loads(resp[start:end])
             logger.warning("nim_response_no_json", extra={"model": model or self.model, "response_preview": resp[:200]})
@@ -372,7 +373,8 @@ class ProfessorAgent:
         history = self.agent_history.get(agent, [])
         if not history:
             return AgentFeedback(agent, 0.5, 0, 0, 0.25, "ESTABLE")
-        total = len(history); correct = sum(1 for h in history if h["correct"])
+        total = len(history)
+        correct = sum(1 for h in history if h["correct"])
         accuracy = correct / total
         brier = sum((h["prob"] - (1.0 if h["actual_up"] else 0.0)) ** 2 for h in history) / total
         recent = history[-50:] if len(history) >= 50 else history
@@ -391,8 +393,8 @@ class ProfessorAgent:
             lines.append(f"  {fb.agent}: acc={fb.accuracy:.1%} trend={fb.recent_trend} n={fb.total_predictions}")
         if self.lessons:
             lines.append("\n  Lecciones recientes:")
-            for l in self.lessons[-5:]:
-                lines.append(f"    • [{l.get('agent','?')}] {l.get('lesson','')}")
+            for lesson in self.lessons[-5:]:
+                lines.append(f"    • [{lesson.get('agent','?')}] {lesson.get('lesson','')}")
         return "\n".join(lines)
 
 
@@ -492,9 +494,11 @@ class JudgeAgent:
         weighted = composite_score * 0.5 + macro_score * 0.3 - manipulation_risk * 0.2
 
         if regime_state == 3:
-            weighted *= 0.7; risk = "ALTO"
+            weighted *= 0.7
+            risk = "ALTO"
         elif regime_state == 1:
-            weighted *= 0.8; risk = "ALTO"
+            weighted *= 0.8
+            risk = "ALTO"
         else:
             risk = "MEDIO"
 

@@ -1,6 +1,7 @@
-from fastapi import APIRouter
 import json
 import os
+
+from fastapi import APIRouter
 
 router = APIRouter(prefix="/api/backtest", tags=["backtest"])
 
@@ -43,7 +44,7 @@ async def get_equity_curve():
     curve = data.get("equity_curve", [])
     # Sample to max 300 points for frontend performance
     if len(curve) > 300:
-        step = len(curve) // 300
+        step = (len(curve) + 299) // 300
         curve = curve[::step]
 
     # Format for charts

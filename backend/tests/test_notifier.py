@@ -5,10 +5,11 @@ import json
 import os
 
 import pytest
-
 from app.core import notifier
 from app.core.notifier import (
-    build_message, is_new_opportunity, send_daily_notification,
+    build_message,
+    is_new_opportunity,
+    send_daily_notification,
 )
 
 

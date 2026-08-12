@@ -1,7 +1,6 @@
-import pytest
-
 import datetime
 
+import pytest
 from app.core.adaptive_risk import AdaptiveRiskManager
 
 D = datetime.datetime(2026, 8, 10)

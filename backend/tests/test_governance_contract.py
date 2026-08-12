@@ -8,7 +8,6 @@ El bug que este test previene: el frontend esperaba `governance.triad_consensus.
 sin crashear (fetch tipado `any`). Cualquier cambio en el shape de
 process_governance que rompa el contrato debe fallar acá.
 """
-import pytest
 
 from app.core.advanced_agents import GovernanceSystem
 from app.core.knowledge_repo import RAGMemorySystem

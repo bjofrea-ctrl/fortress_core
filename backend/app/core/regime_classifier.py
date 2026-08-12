@@ -1,8 +1,9 @@
+from typing import Dict
+
 import numpy as np
 import pandas as pd
 from hmmlearn import hmm
 from sklearn.preprocessing import StandardScaler
-from typing import Dict
 
 
 class GlobalRegimeClassifier:

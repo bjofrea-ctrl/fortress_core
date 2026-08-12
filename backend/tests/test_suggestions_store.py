@@ -6,10 +6,11 @@ import os
 import numpy as np
 import pandas as pd
 import pytest
-
 from app.core import suggestions_store as store
 from app.core.suggestions_store import (
-    SUGGESTIONS_PATH, evaluate_pending, get_track_record, record_suggestions,
+    evaluate_pending,
+    get_track_record,
+    record_suggestions,
 )
 
 

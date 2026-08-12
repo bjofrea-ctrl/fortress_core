@@ -2,9 +2,10 @@
 Indicadores predictivos avanzados basados en investigación académica.
 Implementa los 15 indicadores técnicos más fiables documentados en la literatura.
 """
-import pandas as pd
+from typing import Dict, Tuple
+
 import numpy as np
-from typing import Tuple, Dict
+import pandas as pd
 
 
 def compute_efficiency_ratio(close: pd.Series, period: int = 20) -> pd.Series:

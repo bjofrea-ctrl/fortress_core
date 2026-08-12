@@ -1,9 +1,9 @@
-from fastapi import APIRouter, HTTPException
-import yfinance as yf
-import pandas as pd
 import os
 import time
-from functools import lru_cache
+
+import pandas as pd
+import yfinance as yf
+from fastapi import APIRouter, HTTPException
 
 router = APIRouter(prefix="/api/market/live", tags=["live"])
 
@@ -44,7 +44,7 @@ async def get_live_overview():
         try:
             ticker = yf.Ticker(symbol)
             info = ticker.fast_info
-            
+
             last_price = float(info.get("last_price", 0) or info.get("lastPrice", 0) or 0)
             if last_price == 0:
                 # Try fast_info attributes
@@ -92,7 +92,7 @@ async def get_live_symbol(symbol: str):
             # Flatten MultiIndex if present
             if isinstance(intraday.columns, pd.MultiIndex):
                 intraday.columns = intraday.columns.get_level_values(0)
-            
+
             for idx, row in intraday.tail(100).iterrows():
                 intraday_data.append({
                     "datetime": idx.strftime("%Y-%m-%d %H:%M") if hasattr(idx, 'strftime') else str(idx)[:16],

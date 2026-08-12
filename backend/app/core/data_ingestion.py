@@ -1,7 +1,8 @@
-import yfinance as yf
-import pandas as pd
 import os
-from datetime import datetime, timedelta
+from datetime import datetime
+
+import pandas as pd
+import yfinance as yf
 
 CACHE_DIR = "data/cache"
 

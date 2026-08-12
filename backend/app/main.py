@@ -1,12 +1,13 @@
+import time
+
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
-import time
 
-from app.api.routes import risk, system, backtest, market, live, predict, governance, opportunities
+from app.api.routes import backtest, governance, live, market, opportunities, predict, risk, system
 from app.config import settings
-from app.models.database import init_db, engine
-from app.utils.logging import setup_logging, logger, get_request_id
+from app.models.database import engine, init_db
+from app.utils.logging import get_request_id, logger, setup_logging
 
 # Configurar logging estructurado JSON
 setup_logging("INFO" if settings.ENVIRONMENT == "development" else "WARNING")
@@ -44,7 +45,7 @@ async def add_request_id(request: Request, call_next):
     process_time = time.time() - start_time
     response.headers["X-Request-ID"] = request_id
     response.headers["X-Process-Time"] = f"{process_time:.4f}"
-    
+
     logger.info(
         "request_completed",
         extra={
