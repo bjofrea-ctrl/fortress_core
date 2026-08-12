@@ -72,6 +72,22 @@ fi
 # ---- Paso 6: Backup al disco externo (copia espejo) ----
 EXCLUDES="--exclude=.git --exclude=.venv --exclude=venv --exclude=node_modules --exclude=.env --exclude=__pycache__ --exclude='*.pyc' --exclude=.DS_Store --exclude=fortress.db --exclude='*.sqlite' --exclude='*.sqlite3' --exclude=data/cache/ --exclude=frontend/dist/ --exclude=logs/"
 
+# ---- Paso 6.5: Backup específico de fortress.db (la excluimos del rsync a propósito;
+# vive acá con retención propia). sqlite3 .backup es seguro con escrituras concurrentes.
+DB_SRC="$PROJECT_DIR/backend/fortress.db"
+DB_BACKUP_DIR="$BACKUP_DIR/db"
+if [[ -f "$DB_SRC" ]]; then
+  mkdir -p "$DB_BACKUP_DIR"
+  DB_STAMP=$(date "+%Y%m%d_%H%M%S")
+  if sqlite3 "$DB_SRC" ".backup '$DB_BACKUP_DIR/fortress_$DB_STAMP.db'"; then
+    echo "✅ Backup de fortress.db: $DB_BACKUP_DIR/fortress_$DB_STAMP.db"
+    # Retención: mantener los 20 más recientes
+    ls -t "$DB_BACKUP_DIR"/fortress_*.db 2>/dev/null | tail -n +21 | xargs -I{} rm -f "{}" 2>/dev/null || true
+  else
+    echo "⚠️  Backup de fortress.db falló (¿sqlite3 CLI disponible?)"
+  fi
+fi
+
 echo "💾 Copiando al disco externo..."
 rsync -av --delete $EXCLUDES "$PROJECT_DIR/" "$BACKUP_DIR/current/"
 

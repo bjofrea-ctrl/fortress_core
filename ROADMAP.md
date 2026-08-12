@@ -30,7 +30,7 @@ actualizado antes de pasar a la siguiente.
   sigue vigente sin excepción. "Arreglar rápido" y "criterio pre-registrado" son cosas
   distintas — no mezclar.
 
-### Tanda A — Código, P1 restante ✅ (cerrada 2026-08-12, commit TBD)
+### Tanda A — Código, P1 restante ✅ (cerrada 2026-08-12, commit `a56e516`)
 1. ✅ Alinear versión de Python: `backend/Dockerfile` fijado a `python:3.9-slim` (igual que
    el `.venv` real, 3.9.6; todas las deps soportan 3.9).
 2. ✅ `README.md`: sacada la mención de Redis, corregida la versión (3.9), documentados los
@@ -42,12 +42,18 @@ actualizado antes de pasar a la siguiente.
    la raíz del repo se cuelga (config en `backend/pytest.ini`); invocación canónica:
    `cd backend && .venv/bin/python -m pytest`.
 
-### Tanda B — Seguridad recién detectada (independiente de la Tanda A)
-4. `fortress.db` nunca se respalda (`auto_backup.sh`/`backup.sh` la excluyen explícitamente)
-   — agregar un backup específico de la DB (dump o copia), separado del backup de código.
-5. Rate-limit básico (o al menos logging de uso) en los GET sin auth que disparan LLM real
-   (`predict/analyze/{symbol}`, `governance/analyze/{symbol}`) — no es exposición de datos,
-   es costo/cuota de NVIDIA gastable por cualquiera sin autenticarse.
+### Tanda B — Seguridad recién detectada ✅ (cerrada 2026-08-12, commit TBDB)
+4. ✅ Backup específico de `fortress.db` agregado a `scripts/auto_backup.sh` (función
+   `backup_db()`) y `scripts/backup.sh` (paso 6.5): `sqlite3 .backup` (seguro con
+   escrituras concurrentes) → `/Volumes/EMPRESA/fortress_core_backups/db/`, retención
+   de 20 snapshots.
+5. ✅ Rate limit en memoria (sin Redis, el stack no lo tiene) en
+   `backend/app/api/rate_limit.py`: ventana deslizante por IP (10 llamadas/60s, default),
+   `X-Forwarded-For` aware, log de uso + 429 al exceder. Aplicado a
+   `predict/analyze/{symbol}` y `governance/analyze/{symbol}` (los dos GET sin auth que
+   disparan LLM real). Tests: `tests/test_rate_limit.py` (4).
+   Extras detectados al pasar: `backend/data/` (estado de runtime) ignorado en .gitignore.
+   Verificación: `pytest` → 84 passed, 11.07s.
 
 ### Tanda C — Código, P2 (más esfuerzo, hacer después de A y B)
 6. **Primero verificar, no asumir**: los candidatos de código muerto de memoria previa

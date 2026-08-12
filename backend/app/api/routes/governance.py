@@ -24,10 +24,14 @@ from app.core.advanced_agents import (
     CONTROLLER_PROMPT,
 )
 from app.core.knowledge_repo import KnowledgeRepository, RAGMemorySystem, OKF_STRUCTURE
+from app.api.rate_limit import RateLimitDependency
 
 router = APIRouter(prefix="/api/governance", tags=["governance"])
 
 CACHE_DIR = "data/cache"
+
+# Endpoint LLM sin auth: protege la cuota de NVIDIA NIM (no hay datos sensibles).
+llm_rate_limit = RateLimitDependency()
 
 
 def verify_api_key(x_api_key: str = Header(default=None, alias="X-API-Key")) -> None:
@@ -88,7 +92,7 @@ async def get_governance_status():
     }
 
 
-@router.get("/analyze/{symbol}")
+@router.get("/analyze/{symbol}", dependencies=[Depends(llm_rate_limit)])
 async def analyze_with_governance(symbol: str, regime_state: int = Query(0, ge=0, le=3)):
     """Análisis completo con el flujo de gobernanza: Tríada → Controlador ↔ Profesor → Juez."""
     try:

@@ -11,6 +11,23 @@ PROJECT_DIR="/Users/boris/Desktop/fortress_core"
 LOG_FILE="$PROJECT_DIR/scripts/auto_backup.log"
 LOCK_FILE="/tmp/fortress_auto_backup.lock"
 
+# Backup específico de fortress.db (antes no se respaldaba: los rsync la excluyen).
+# sqlite3 .backup es seguro con escrituras concurrentes (copia online).
+backup_db() {
+    local src="$PROJECT_DIR/backend/fortress.db"
+    local db_dir="/Volumes/EMPRESA/fortress_core_backups/db"
+    [ -f "$src" ] || return 0
+    mkdir -p "$db_dir"
+    local stamp
+    stamp=$(date '+%Y%m%d_%H%M%S')
+    if sqlite3 "$src" ".backup '$db_dir/fortress_$stamp.db'" >> "$LOG_FILE" 2>&1; then
+        echo "[$(date '+%Y-%m-%d %H:%M:%S')] OK Backup de fortress.db ($stamp)" >> "$LOG_FILE"
+        ls -t "$db_dir"/fortress_*.db 2>/dev/null | tail -n +21 | xargs rm -f 2>/dev/null
+    else
+        echo "[$(date '+%Y-%m-%d %H:%M:%S')] WARN Backup de fortress.db falló" >> "$LOG_FILE"
+    fi
+}
+
 # Evitar ejecución concurrente
 if [ -f "$LOCK_FILE" ]; then
     exit 0
@@ -51,6 +68,7 @@ fi
 if [ -d "/Volumes/EMPRESA" ]; then
     BACKUP_DIR="/Volumes/EMPRESA/fortress_core_backups/current"
     mkdir -p "$BACKUP_DIR"
+    backup_db
     rsync -a --delete \
         --exclude='.git' \
         --exclude='.venv' \

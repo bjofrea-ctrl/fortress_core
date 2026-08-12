@@ -1,5 +1,5 @@
 """API routes para el motor predictivo Fortress Core Fase 2."""
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from starlette.concurrency import run_in_threadpool
 from typing import Optional
 import pandas as pd
@@ -12,10 +12,14 @@ from app.core.indicators import calculate_all_indicators
 from app.core.edgar_fundamentals import get_fundamentals, SAMPLE_FUNDAMENTALS
 from app.core.fundamentals_client import FinnhubClient
 from app.utils.logging import logger
+from app.api.rate_limit import RateLimitDependency
 
 _finnhub_client = FinnhubClient()
 
 router = APIRouter(prefix="/api/predict", tags=["predict"])
+
+# Endpoint LLM sin auth: protege la cuota de NVIDIA NIM (no hay datos sensibles).
+llm_rate_limit = RateLimitDependency()
 
 CACHE_DIR = "data/cache"
 MAX_SIGNALS = 15  # Mostrar los 15 indicadores más relevantes
@@ -140,7 +144,7 @@ def _serialize_result(result, fundamentals_source: str = "unavailable") -> dict:
     }
 
 
-@router.get("/analyze/{symbol}")
+@router.get("/analyze/{symbol}", dependencies=[Depends(llm_rate_limit)])
 async def analyze_symbol(symbol: str, regime_state: int = Query(0, ge=0, le=3)):
     """Analiza un símbolo con el motor predictivo completo."""
     try:

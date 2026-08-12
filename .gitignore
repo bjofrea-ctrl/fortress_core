@@ -17,9 +17,8 @@ pythonenv*
 *.sqlite
 *.sqlite3
 
-# Datos cacheados
-data/cache/
-data/cache_fundamentals/
+# Datos cacheados y estado de runtime (memoria, resultados, caches)
+data/
 *.parquet
 
 # Node
