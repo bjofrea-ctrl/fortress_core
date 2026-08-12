@@ -1,0 +1,20 @@
+========================================================================
+§11 regla 1 — CHEQUEO DE DISTRIBUCIÓN ADX DEL BASKET (pre-corrida trial a)
+Universo basket: 50 símbolos (equal-weight) | 2019-01-01 -> 2026-08-04
+Regla motor: ADX>25 long / 20-25 <20 flat | mínimos long 20% / flat 10%
+========================================================================
+
+Días evaluables (post-warmup): 1880
+  ADX > 25 (tramo long):  0.626 (1176 días)
+  ADX 20-25 (tramo 0.3):  0.162 (305 días)
+  ADX < 20 (tramo flat):  0.212 (399 días)
+  ADX min/median/max:     7.4 / 28.6 / 89.0
+  percentiles 25/50/75/90: 21.4 / 28.6 / 37.9 / 48.8
+
+--- DECISIÓN PRE-REGISTRADA (regla 1) ---
+Distribución con cobertura suficiente en long y flat. Se mantienen umbrales absolutos del motor.
+THRESHOLDS: absolutos (motor)
+LONG_ABOVE=25.0
+FLAT_BELOW=20.0
+
+Out: data/cache/basket_adx_dist_20260811_214847.txt
