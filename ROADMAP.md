@@ -103,6 +103,13 @@ actualizado antes de pasar a la siguiente.
     Barber-Odean 2000 + Taiwan 2008 + survival 44/24/15% confirman risk-mgmt-first y
     no-over-trading como únicas reglas con evidencia; trading cuántico: cerrado como
     no-relevante para 50 símbolos (híbrido NISQ solo aporta en miles de activos).
+14. ✅ §15 rank IC por sub-período (2026-08-12) — motivado por el hallazgo NY Fed
+    (overnight drift real, desvanecido post-2021). Momentum/RSI/ADX: sin quiebre de
+    régimen, sin señal Bonferroni-robusta ni antes ni después de 2022. No es que algo
+    se rompiera — nunca hubo señal robusta en ningún momento de la muestra.
+15. ✅ Fix `.gitignore` (2026-08-12) — la Tanda B excluyó sin querer TODOS los
+    artefactos `.txt` de diagnóstico (patrón `data/` sin anclar). Corregido a patrones
+    específicos; recuperados los 4 artefactos generados mientras estuvo roto.
 
 ---
 
