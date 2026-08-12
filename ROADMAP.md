@@ -55,7 +55,7 @@ actualizado antes de pasar a la siguiente.
    Extras detectados al pasar: `backend/data/` (estado de runtime) ignorado en .gitignore.
    Verificación: `pytest` → 84 passed, 11.07s.
 
-### Tanda C — Código, P2 ✅ (cerrada 2026-08-12, commit TCBD)
+### Tanda C — Código, P2 ✅ (cerrada 2026-08-12, commit `6ae0770`)
 6. ✅ Verificado con grep, sin remover: `ProbabilisticEngine` (wrapper) y
    `KellyPositionSizer` SOLO los usa `scripts/test_probabilistic.py` (smoke script de
    desarrollo); `RiskParityAllocator` SOLO `scripts/test_system.py`. No son código
