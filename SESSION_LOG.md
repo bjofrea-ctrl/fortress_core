@@ -937,3 +937,46 @@ Fase 2 (Kalman/GP-BO). Gantt actualizado en el documento.
   propio si llega a trial).
 - 70/70 tests OK (sin cambios en app/, solo scripts nuevos). Script:
   `backend/scripts/diagnose_sector_clusters.py`.
+
+## 2026-08-11 — Trial #14 (a) basket ADX: DESCARTADO (DSR) + re-evaluación con métrica correcta
+
+- Trial #14 corrió según pre-registro §11: basket equal-weight 50, ADX(14) del
+  basket, LONG>25/FLAT<20/histéresis 20-25, costos 0.15%/lado, W1/W2/W3.
+  Chequeo de distribución previo (`basket_adx_dist_20260811_214847.txt`): NO
+  degenerada (long>25 62.6%, flat<20 21.2%) → umbrales absolutos del motor.
+  Re-medición de régimen sobre serie del basket (`regime_basket_20260811_213437.txt`):
+  STAGFLATION invierte signo esperado, ningún |t|>2 → condicionamiento de régimen
+  FUERA del trial (corre solo con ADX).
+- Resultado DSR: 0/3 ventanas (W1 n=11 DSR=0.035, W2 n=10 DSR=0.067, W3 n=12
+  DSR=0.029) → (a) DESCARTADA. 51 trades en 2915 días; PF 2.07/1.18/4.69,
+  win_rate 73/60/67% (direccionalmente positivos pero sin evaluar).
+- Script del trial borrado (revert patrón #13, producción intacta). Commit 3c2b04a.
+- **CRÍTICA DEL USUARIO (correcta)**: el piso de 30 trades y el DSR están
+  calibrados para el motor de 50 símbolos; para timing de UN activo, n=10-12
+  trades/ventana es estructural (histéresis sobre un solo activo cruza pocas
+  veces al año) y DSR≈0 es el comportamiento correcto de la métrica con muestra
+  chica, no evidencia de falta de edge. Mismo patrón que
+  RESUMEN_VALIDACION_VARIABLES §6.1 (sentimiento/fundamentales). La conclusión
+  "el motor queda sin señal comercial en vivo" NO podía cerrarse con ese
+  estadístico.
+- RE-EVALUACIÓN §11.1 pre-registrada ANTES de correr: misma serie exacta
+  (fidelidad verificada: ADX mediana 28.1 y 51 trades = artefacto del trial),
+  métricas sobre la SERIE DIARIA: media diaria, Sharpe/Sortino anualizados,
+  t de Newey-West (L=floor(4(n/100)^(2/9)), Bartlett), criterio t-NW>2 en ≥2/3
+  ventanas; contexto: delta vs buy&hold del basket.
+- Resultado re-evaluación (`reeval_trial14_basket_adx_20260811_220640.txt`):
+  W1 t-NW +0.63 (Sharpe 0.35), W2 +0.47 (0.29), W3 +2.24 (1.31) → 1/3 ventanas
+  → (a) DESCARTADA por el estadístico correcto. Delta vs buy&hold NEGATIVO en
+  las 3 ventanas (t −3.06/−0.53/−1.33): el timing ADX del basket nunca supera
+  a MANTENER el basket; en W1 es significativamente peor.
+- Conclusión final del gate: (a) descartada con la métrica apropiada. La
+  implicación global (§4.5) se sostiene: el motor queda sin señal comercial
+  en vivo — ahora sí con el estadístico correcto.
+- Script `reeval_trial14_basket_adx.py` CONSERVADO (registro del veredicto;
+  el trial #14 se borró por patrón de revert, el re-eval no es una réplica de
+  producción sino el artefacto de la decisión).
+- LECCIÓN: distinguir la unidad de muestra del estadístico — piso de trades es
+  para estrategias con entradas por símbolo; para timing de un activo la muestra
+  es la serie diaria y el estadístico es Sharpe/t-NW, no DSR sobre conteo.
+  El propio usuario pasó por alto el §11 al verificar el pre-registro; el
+  principio (auditoría informa, backtest pre-registrado decide) sigue intacto.

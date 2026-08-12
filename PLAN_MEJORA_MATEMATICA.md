@@ -477,7 +477,67 @@ está, sin señal en vivo (§4.5). Con (a) descartada, el gate W2/W3 (veredicto 
 no deja candidata: el timing agregado no reemplaza la selección, y la selección
 murió (0.5a) — el sistema se mantiene como motor puro sin señal comercial live.
 
----
+### 11.1 RE-EVALUACIÓN del veredicto de (a) — métrica apropiada para timing de UN activo (PRE-REGISTRADO 2026-08-11, ANTES de correr)
+
+**Motivo**: el veredicto "0/3 → DESCARTADA" del trial #14 usó el criterio congelado
+(DSR OOS ≥ 0.90, piso 30 trades) que fue diseñado para el motor de 50 símbolos.
+Para un gate binario LONG/FLAT sobre UN solo activo, n=10-12 trades/ventana es
+**estructural** (un activo con histéresis cruza sus umbrales pocas veces al año:
+51 trades en 2915 días), y el DSR con n~10 colapsa a ~0 por la incertidumbre de
+la estimación, no por falta de edge. El propio artefacto reporta PF 2.07/1.18/4.69
+y win_rate 73%/60%/67% — direccionalmente positivos pero no evaluados con el
+estadístico correcto. Mismo patrón que `RESUMEN_VALIDACION_VARIABLES.md §6.1`
+(sentimiento/fundamentales): el criterio es estructuralmente inalcanzable con
+esa frecuencia de señal; ahí se marcó para re-test, no se cerró. Corrección: el
+piso de trades aplica a estrategias que generan entradas/salidas por símbolo;
+para timing de un activo la muestra es la SERIE DIARIA de retornos, no el conteo.
+
+**Metodología (fijada aquí, no implícita)** — replica EXACTA del trial #14:
+- Misma construcción de serie: basket equal-weight 50 (rebalanceo diario,
+  `MIN_BASKET_MEMBERS=40`), ADX(14) de Wilder sobre el cierre del basket
+  (high=low=close), regla LONG si ADX>25 / FLAT si ADX<20 / 20-25 mantiene
+  (histéresis), costos 0.15%/lado en transiciones, ventana 2019-01-01 →
+  2026-08-04, W1/W2/W3 iguales al trial.
+- **Verificación de fidelidad ANTES de evaluar**: la reconstrucción debe
+  reproducir el ADX mediana 28.1 y los 51 trades del artefacto del trial. Si no
+  coincide, la serie NO es la del trial y la re-evaluación no procede.
+- Métricas por ventana sobre la SERIE DIARIA de retornos de la estrategia:
+  media diaria, Sharpe anualizado (×√252), Sortino anualizado (desviación
+  downside ×√252), t de Newey-West sobre la media diaria (H0: μ=0, HAC con
+  lags L = floor(4·(n/100)^(2/9)), kernel Bartlett).
+- Contexto de producto (no es el criterio): delta diario estrategia − buy&hold
+  del basket en cada ventana, con su t-NW. Informa si el timing agrega valor
+  sobre simplemente MANTENER el basket — dato de producto, no de supervivencia.
+
+**Criterio pre-registrado (sin conocer el resultado)**: (a) sobrevive si
+t-NW(media diaria) > 2 en ≥ 2/3 ventanas. Si no, (a) queda DESCARTADA por el
+estadístico correcto — el veredicto pasa de "mal especificado" a "probado".
+El veredicto DSR 0/3 original NO se borra: queda documentado como
+mal especificado para 1 activo (auditoría informa; la re-evaluación decide).
+
+**RESULTADO RE-EVALUACIÓN — CORRIDO 2026-08-11, artefacto
+`reeval_trial14_basket_adx_20260811_220640.txt`**: verificación de fidelidad
+ANTES de evaluar: OK (ADX mediana 28.1 = trial, 51 trades = trial — la serie
+reconstruida es la del trial). Métricas por ventana sobre la serie diaria:
+
+    ventana    n_dias  media_d  sharpe  sortino  t_NW  sig>2  delta_vs_H  t_NW_delta
+    W1 2020-21   505   +0.00033   0.354   0.272  +0.63  False  -0.00094      -3.06
+    W2 2022-23   501   +0.00019   0.291   0.251  +0.47  False  -0.00017      -0.53
+    W3 2024-26   649   +0.00052   1.305   1.075  +2.24  True   -0.00028      -1.33
+
+**Veredicto pre-registrado: 1/3 ventanas con t-NW > 2 → (a) DESCARTADA por el
+estadístico correcto.** La media diaria del timing ADX del basket NO es
+significativamente > 0 en ≥2/3 ventanas (solo W3 la supera). El contexto es
+aún más claro: el delta vs buy&hold del basket es NEGATIVO en las 3 ventanas
+(t=−3.06/−0.53/−1.33) — el timing ADX del basket nunca supera a simplemente
+MANTENER el basket, y en W1 es significativamente PEOR. El veredicto del
+trial #14 (descartada) se CONFIRMA en dirección, ahora con la métrica
+correcta: no hay edge de timing ADX sobre el basket, y lo que hubiera de
+señal en W3 no alcanza ni para superar al hold. Script de la re-evaluación
+`reeval_trial14_basket_adx.py` CONSERVADO (a diferencia del trial #14, no hay
+código en producción que replicar — el re-eval es el registro del veredicto).
+El veredicto DSR 0/3 original queda como está: documentado como mal
+especificado para 1 activo, ahora sustituido por la métrica apropiada.
 
 ## 12. Disciplina sin excepción
 
