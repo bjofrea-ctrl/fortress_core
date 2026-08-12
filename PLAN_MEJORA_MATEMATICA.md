@@ -185,6 +185,41 @@ trabajo es de producto/arquitectura, no más matemática sobre el diseño actual
 **Fase 0.6 — Re-test de variables refutadas** (sin cambios): sentimiento y fundamentales
 contra el motor actual + universo 50, en paralelo a Fase 0.5.
 
+#### 0.6.1 PRE-REGISTRO — re-test V1 (AAII) y fundamentales (EDGAR) sobre universo 50 (Tanda D, 2026-08-12)
+
+**Contexto (RESUMEN §6.1)**: los trials #8 (sentimiento) y #9 (fundamentales) corrieron
+ANTES del fix de `PARTIAL_TP` (trial #10) y sobre universo de 7 símbolos; el panel tenía
+52% de filas `shares=0/pnl=0` que contaminaban win_rate y total_trades. No sabemos si
+las variables fallaron por mérito o por la vara rota. Este re-test los repite sin cambios
+de hipótesis: misma pregunta, misma variable, misma construcción (G2 = 0.5*rank(técnico)
++ 0.5*(-rank(AAII)); G3 = 0.5*rank(técnico) + 0.5*rank(fundamental EDGAR)), contra el
+motor ACTUAL post-fix + universo 50. Diferencias explícitas vs #8/#9: motor con
+`partial_done` (trial #10), piso de stop 0.05 (trial #11), universo 50 (trial #11),
+métricas con filas `shares<=0` excluidas.
+
+**Pregunta**: con la ejecución arreglada y el universo ampliado, ¿V1 y/o fundamentales
+mejoran el DSR OOS del motor por sobre el baseline post-fix documentado?
+
+**Metodología** (`backtest_fase06_retest.py`, corre DESPUÉS de este pre-registro):
+- Universo 50 (7 originales + 43 de `NEW_UNIVERSE`), 2019-01-01 → 2026-08-04,
+  costos 0.10% comisión + 0.05% slippage por lado (idéntico a trial #10/#11).
+- 3 corridas: baseline (sin variables) / V1-ranking (sentiment_data) /
+  fundamentales (fundamentals_by_symbol, sin AAII — categoría aislada, igual que #9).
+- Ventanas OOS: W1 2020-2021, W2 2022-2023, W3 2024-2026-08-04, piso ≥30 trades/ventana
+  (mismas del trial #11/#13).
+
+**Criterio (fijado ANTES de correr)**: una variante re-ingresa a consideración si DSR
+OOS ≥ 0.90 (n_trials=17, registro previo — re-test barato, no consume slot nuevo, §6.1
+RESUMEN) en ≥2/3 ventanas evaluables. Si no cumple: se mantiene el veredicto de refutación
+de #8/#9, ahora con la vara arreglada (refutación robusta, no contaminada).
+
+**Revert automático**: variante NO adoptada si no pasa (ningún cambio de código existe —
+las variantes viven solo en el script; el motor en producción sigue en baseline).
+
+**Riesgo declarado**: las 3 corridas comparten el mismo baseline post-fix; el valor
+informativo es la comparación π(V1) − π(baseline) y π(FUND) − π(baseline) dentro del
+mismo motor — no hay grados de libertad de búsqueda nuevos.
+
 **Fase 1 — EVT** (RMT ya no está acá, se movió a 0.5): sobre retornos de activos
 (idealmente residuales GARCH), nunca sobre la serie de P&L del motor.
 
@@ -641,6 +676,66 @@ Queda documentado como hallazgo académico válido, no como próximo paso de pro
 Si en el futuro se invierte en ejecución intradía real, es el primer candidato a
 re-testear con costos reales (dos operaciones por día por posición) antes de
 construir nada.
+
+### 13.1 PRE-REGISTRO — backtest gap-reversion con costos reales (Tanda D, 2026-08-12)
+
+**Pregunta**: después de pagar costos de ejecución reales (0.15%/lado, 2 lados por
+trade completo), ¿el fade intradía del gap de apertura deja retorno NETO positivo?
+El diagnóstico §13 probó el IC (t=−11.29 mismo día) pero el efecto se evaporó a +1d;
+ese backtest no pagó costos. Este paso decide si algún día tiene sentido evaluar
+ejecución intradía de verdad — es la cuenta económica que falta, no un trial de motor.
+
+**Metodología** (`backtest_gap_costs.py`, corre DESPUÉS de este pre-registro):
+- Universo 50+7 símbolos, 2019-01-01 → 2026-08-04, datos OHLC reales (`load_universe`).
+- Estrategia: cada día de trading con ≥3 símbolos con |gap| ≥ 1.0% → fade en cada
+  uno (short si gap>0, long si gap<0), equally weighted, entrada al open del día,
+  salida al close del mismo día (el horizonte ÚNICO donde §13 mostró señal).
+- Costos: 0.15% por lado × 2 lados = 0.30% del tamaño por posición completa
+  (retorno diario neto del portafolio = bruto − 0.003, aplicado solo en días operados).
+- Serie principal: retorno diario (bruto y neto) del portafolio EW de fades activos;
+  inferencia sobre la serie con Newey-West Bartlett L=3 (mismo aparato que §13/0.5a).
+
+**Criterio de éxito (fijado ANTES de correr, sin conocer el resultado)**:
+`n_días_operados ≥ 100` Y media del retorno diario NETO > 0 con `t-NW ≥ 2.0`.
+Secundario (informativo, no gate): Sharpe neto anualizado, % de días positivos,
+delta bruto→neto (cuánto se come el costo), tamaño medio del portafolio (nº fades/día).
+
+**Veredicto posible**: si cumple → el fade sobrevive costos y queda justificado
+revisar el diseño de motor intradía (con pre-registro propio, infraestructura
+apart); si no cumple → §13 se cierra: gap-reversion queda como hallazgo académico,
+no traducible a PnL neto con esta infraestructura.
+
+**Riesgo declarado**: este ejercicio es cross-sectional diario con el aparato ya
+validado — sin nuevos grados de libertad de búsqueda; el umbral 1.0% es literatura
+clásica de gap-fade y se fija acá sin mirar resultados.
+
+**Resultado** (`backtest_gap_costs_20260812_173951.txt`, 145729 filas, 2206 días
+operados = 75.7% de los 2915 días; media 11.3 fades/día):
+
+| métrica | valor |
+|---|---|
+| retorno bruto medio diario | −0.00005 (t-NW = −0.20) |
+| retorno neto medio diario (0.30%/trade) | −0.00305 (**t-NW = −11.53**) |
+| Sharpe neto anualizado | −3.90 |
+| % días positivos (neto) | 39.3% |
+
+**Verificado contra el artefacto**: n_días 2206 ≥ 100 pero media neta < 0 con
+t-NW = −11.53 → criterio pre-registrado NO se cumple.
+
+**Interrogatorio antes de aceptar** (el IC de §13 era t=−11.29 — ¿por qué el
+fade EW no gana?): el rank-IC mide consistencia de ordenamiento, no retorno
+promedio; el fade equally-weighted diluye los gaps grandes (donde vive la
+reversión) contra los abundantes gaps de 1-2% (donde el retorno esperado es
+despreciable). No hay bug: mismo panel (145729 filas), misma dirección de trade
+(short si gap>0), datos verificados. El retorno BRUTO ya es indistinguible de
+cero (t=−0.20) — la significancia del IC no se tradujo en PnL promedio ni antes
+de pagar costos. Explorar umbrales/top-N post-hoc violaría el pre-registro (§14);
+si algún día se quiere, es un pre-registro nuevo.
+
+**Veredicto honesto**: §13.1 NO CUMPLE → se cierra. Gap-reversion queda como
+hallazgo académico estadísticamente real pero no capturable: sin costos ya no
+produce retorno EW, con costos destruye cualquier residuo. Confirma el veredicto
+de §13: la ejecución intradía no se persigue con esta infraestructura.
 
 ---
 
