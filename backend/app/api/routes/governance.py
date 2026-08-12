@@ -5,6 +5,7 @@ Flujo: Tríada (BULL, BEAR, CONTRARIAN) → CONTROLADOR → discusión con PROFE
 """
 from fastapi import APIRouter, HTTPException, Query, Header, Depends
 from starlette.concurrency import run_in_threadpool
+import hmac
 import os
 
 from app.config import settings
@@ -36,7 +37,7 @@ def verify_api_key(x_api_key: str = Header(default=None, alias="X-API-Key")) -> 
     repositorio RAG (leído después por el prompt de PROFESOR) o envenene el
     historial de aciertos de los agentes vía /record-prediction.
     """
-    if not x_api_key or x_api_key != settings.SECRET_KEY:
+    if not x_api_key or not hmac.compare_digest(x_api_key, settings.SECRET_KEY):
         raise HTTPException(status_code=401, detail="X-API-Key inválida o faltante")
 
 

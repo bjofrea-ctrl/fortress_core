@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 import pandas as pd
 import os
 from app.core.data_ingestion import download_data
@@ -39,7 +39,7 @@ async def get_prices(symbol: str, limit: int = 500):
 
         return {"symbol": symbol, "data": data}
     except Exception as e:
-        return {"error": str(e), "symbol": symbol, "data": []}
+        raise HTTPException(status_code=500, detail=f"Error obteniendo datos de {symbol}: {str(e)}")
 
 
 @router.get("/indicators/{symbol}")
@@ -75,7 +75,7 @@ async def get_indicators(symbol: str, limit: int = 500):
 
         return {"symbol": symbol, "data": data}
     except Exception as e:
-        return {"error": str(e), "symbol": symbol, "data": []}
+        raise HTTPException(status_code=500, detail=f"Error obteniendo datos de {symbol}: {str(e)}")
 
 
 @router.get("/summary/{symbol}")
@@ -144,7 +144,7 @@ async def get_symbol_summary(symbol: str):
             "total_days": len(df),
         }
     except Exception as e:
-        return {"error": str(e), "symbol": symbol}
+        raise HTTPException(status_code=500, detail=f"Error obteniendo datos de {symbol}: {str(e)}")
 
 
 @router.get("/overview")

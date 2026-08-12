@@ -1,4 +1,5 @@
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import model_validator
 
 
 class Settings(BaseSettings):
@@ -45,6 +46,17 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
         extra = "ignore"
+
+    @model_validator(mode="after")
+    def _require_secure_secret_key(self):
+        if self.ENVIRONMENT != "development" and (
+            not self.SECRET_KEY or self.SECRET_KEY == "change-me-in-production"
+        ):
+            raise ValueError(
+                "SECRET_KEY debe configurarse vía .env — el default "
+                "'change-me-in-production' solo es válido en development."
+            )
+        return self
 
 
 settings = Settings()

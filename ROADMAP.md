@@ -29,9 +29,9 @@ gantt
     Investigación académica/foros externa (pendiente, nunca hecha) :crit, gr4, 0, 1d
 
     section Código — P0 (bajo esfuerzo, alto impacto)
-    Fix contrato GovernancePanel <-> backend      :crit, c1, 0, 1d
-    Fix except desnudo + errores como 200 OK      :crit, c2, 0, 1d
-    Auth mínima + SECRET_KEY que falla si no está :crit, c3, 0, 1d
+    Fix contrato GovernancePanel <-> backend      :done, c1, 0, 1d
+    Fix except desnudo + errores como 200 OK      :done, c2, 0, 1d
+    Auth mínima + SECRET_KEY que falla si no está :done, c3, 0, 1d
 
     section Código — P1
     Fechas hardcodeadas de market.py (2015-2024)  :c4, after c3, 1d
@@ -59,9 +59,9 @@ gantt
 | Investigación | §12 régimen-vs-volatilidad | 🟡 pista sin cerrar | Más historia o menos estados HMM | Decisión: ¿vale la pena esperar más datos? |
 | Investigación | Fase 0.6 — re-test sentimiento/fundamentales | ⚪ nunca se hizo | — | Correr contra panel limpio + universo 50 (barato, no consume hipótesis nueva) |
 | Investigación | Investigación académica/foros de trading cuántico | 🔴 pendiente, recién detectado | — | Buscar afuera: papers + foros sobre gobernanza multi-agente LLM, risk-mgmt-first para operadores chicos, crítica externa al enfoque |
-| Código P0 | Contrato GovernancePanel ↔ backend | 🔴 sin empezar | — | Alinear nombres de campo (`triad_consensus`↔`triad`, etc.) |
-| Código P0 | `except:` desnudo + 200 OK con error en body | 🔴 sin empezar | — | `market.py`, `live.py` |
-| Código P0 | Auth mínima global + `SECRET_KEY` que falla si no está seteado | 🔴 sin empezar | — | 25/27 endpoints hoy abiertos |
+| Código P0 | Contrato GovernancePanel ↔ backend | 🟢 cerrado (2026-08-12) | — | Frontend consume contrato real (`triad.{bull,bear,contrarian}.score`, `controller.approved`, `judge.verdict|status`); 5 tests de regresión en `test_governance_contract.py` |
+| Código P0 | `except:` desnudo + 200 OK con error en body | 🟢 cerrado (2026-08-12) | — | `market.py`/`live.py` ahora levantan HTTPException 500; `except:` acotado a (AttributeError, TypeError, ValueError); 0 patrones restantes en routers |
+| Código P0 | Auth mínima global + `SECRET_KEY` que falla si no está seteado | 🟢 cerrado (2026-08-12) | — | `hmac.compare_digest` en `verify_api_key`; Settings valida SECRET_KEY fuera de development (default bloqueado: `test_secret_key_default_blocked_outside_development`). Nota: 25/27 endpoints siguen abiertos POR DECISIÓN (UI pública con repo público) — solo rutas de escritura RAG tienen key; el resto es deliberado mientras la UI sea pública |
 | Código P1 | Fechas hardcodeadas de `market.py` (2015-2024) | 🔴 sin empezar | — | Dashboard sirviendo datos de hace año y medio |
 | Código P1 | Python 3.11 (Dockerfile) vs 3.9.6 (venv real) | 🔴 sin empezar | — | Alinear una de las dos |
 | Código P1 | README desactualizado (Redis, versión, endpoints) | 🔴 sin empezar | — | Reescribir o borrar lo aspiracional |

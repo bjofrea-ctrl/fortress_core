@@ -1,4 +1,4 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
 import yfinance as yf
 import pandas as pd
 import os
@@ -50,7 +50,7 @@ async def get_live_overview():
                 # Try fast_info attributes
                 try:
                     last_price = float(info.last_price)
-                except:
+                except (AttributeError, TypeError, ValueError):
                     continue
 
             previous = float(info.get("previous_close", 0) or 0)
@@ -129,4 +129,4 @@ async def get_live_symbol(symbol: str):
         _set_cached(cache_key, response)
         return response
     except Exception as e:
-        return {"error": str(e), "symbol": symbol, "timestamp": time.time()}
+        raise HTTPException(status_code=500, detail=f"Error obteniendo datos en vivo de {symbol}: {str(e)}")

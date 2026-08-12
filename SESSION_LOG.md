@@ -997,3 +997,14 @@ Fase 2 (Kalman/GP-BO). Gantt actualizado en el documento.
 - Conclusión de producto: el motor queda SIN señal comercial en vivo verificada
   (§4.5). Lo que sigue es decisión de PRODUCTO, no matemática sobre esta
   arquitectura (§5 no se agenda hasta que se defina).
+
+## 2026-08-12 — P0 implementados: contrato governance, errores HTTP, auth (ROADMAP)
+
+En modo build, verificado contra código real antes de tocar nada (disciplina §3.4 aplicada a los 3 hallazgos de AUDITORIA_TECNICA.md):
+
+- **P0-1 Contrato GovernancePanel ↔ backend cerrado**: el frontend esperaba `governance.triad_consensus.*`, `controller_approved`, `judge_verdict` planos; el backend envía `triad.{bull,bear,contrarian}.score`, `controller.approved`, `judge.verdict|status`, `judge.overruled_agents` (advanced_agents.py:570-675). Fix en `GovernancePanel.tsx`: interfaz y render alineados al contrato real; TS compila limpio (`tsc --noEmit` exit 0).
+- **P0-2 Errores HTTP**: `market.py` (3 rutas) y `live.py` (1 ruta) devolvían `{"error": str(e)}` con 200 OK → ahora `HTTPException(500)` con detalle. `except:` desnudo de `live.py:53` acotado a `(AttributeError, TypeError, ValueError)` (era un continue con try/except interno). Verificado con grep: 0 `except:` desnudos y 0 `return {"error"` restantes en todos los routers.
+- **P0-3 Auth**: `verify_api_key` pasa a `hmac.compare_digest` (governance.py); `config.py` agrega `model_validator` que FALLA si `ENVIRONMENT != development` y `SECRET_KEY` es vacía o el default `change-me-in-production`. `.env` real de backend la tiene seteada (verificado sin exponer valor) → no rompe el arranque.
+- **Tests nuevos (10)**: `test_governance_contract.py` (5: shape triad/controller/judge/final + ausencia de campos legacy) y `test_governance_auth.py` (5: acepta/rechaza/missing/time-constant/validator production). **Suite total: 80 passed, 0 failed** (70 previos + 10 nuevos). Frontend: `tsc --noEmit` limpio.
+- ROADMAP.md actualizado: 3 filas P0 → 🟢 cerrado, Gantt con :done. Nota documentada: 25/27 endpoints siguen abiertos POR DECISIÓN (UI pública + repo público) — solo escritura RAG protegida.
+- Note: los P1/P2 del ROADMAP (fechas 2015-2024 de market.py, Python 3.11 vs 3.9.6, README, docstring Controller/Judge, prompt_engine.py, CI) siguen pendientes — no incluidos en esta tanda.
