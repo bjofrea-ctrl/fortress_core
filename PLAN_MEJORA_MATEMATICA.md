@@ -463,6 +463,20 @@ como (b) y (c), y el motor queda como está (sin señal en vivo, §4.5).
 timestamp en data/cache al correr. Sin cambios al criterio después de la
 corrida (lección 0.5a en §10).
 
+**RESULTADO TRIAL #14 (a) — CORRIDO 2026-08-11, artefacto
+`trial14_basket_adx_20260811_215113.txt`: (a) DESCARTADA.** Verificado contra
+artefacto (§3.4). Chequeo de distribución ADX previo (`basket_adx_dist_20260811_214847.txt`):
+NO degenerada (long>25 62.6%, flat<20 21.2%) → se mantuvieron umbrales absolutos
+del motor, sin recalibración. Timing LONG/FLAT (ADX>25 long / <20 flat / 20-25
+mantiene) sobre basket equal-weight de 50, costos 0.15%/lado, 51 trades totales.
+DSR por ventana: W1 n=11 DSR=0.0346, W2 n=10 DSR=0.0665, W3 n=12 DSR=0.0290 —
+NINGUNA llega al piso de 30 trades (no evaluables) y las 3 quedan muy bajo 0.90.
+**0/3 ventanas → NO CUMPLE → (a) queda descartada**, igual que (b) y (c). Script
+del trial borrado (patrón #13): producción nunca tocada. El motor queda como
+está, sin señal en vivo (§4.5). Con (a) descartada, el gate W2/W3 (veredicto §8)
+no deja candidata: el timing agregado no reemplaza la selección, y la selección
+murió (0.5a) — el sistema se mantiene como motor puro sin señal comercial live.
+
 ---
 
 ## 12. Disciplina sin excepción

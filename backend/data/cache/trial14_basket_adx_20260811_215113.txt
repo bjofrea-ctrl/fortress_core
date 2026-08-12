@@ -1,0 +1,51 @@
+========================================================================
+TRIAL (a) #14 — timing sobre basket único con score ADX (PRE-REGISTRADO §11)
+Universo basket: 50 símbolos (equal-weight, rebalanceo diario)
+Regla: LONG si ADX>25 / FLAT si ADX<20 / 20-25 mantiene | costos 0.0015/lado
+Chequeo distribución ADX: NO degenerada -> umbrales absolutos (basket_adx_dist)
+Criterio: DSR OOS >= 0.90 en >=2/3 ventanas | piso 30 trades | N_TRIALS=18
+Baseline oficial: data/cache/baseline_clean_20260811_150643.txt
+========================================================================
+
+Basket: 2915 días | ADX mediana 28.1
+Equity curve: 2915 días | trades totales: 51
+
+--- W1 2020-2021 (n=11 trades) ---
+    cagr               -0.0437
+    sharpe_ratio       0.0263
+    sortino_ratio      0.0255
+    max_drawdown       -0.4509
+    calmar_ratio       -0.0969
+    win_rate           0.7273
+    profit_factor      2.0676
+    total_trades       11.0000
+    deflated_sharpe    0.0346
+    NO (piso)          DSR=0.0346 no pasa
+
+--- W2 2022-2023 (n=10 trades) ---
+    cagr               0.0305
+    sharpe_ratio       0.2483
+    sortino_ratio      0.2880
+    max_drawdown       -0.3262
+    calmar_ratio       0.0935
+    win_rate           0.6000
+    profit_factor      1.1846
+    total_trades       10.0000
+    deflated_sharpe    0.0665
+    NO (piso)          DSR=0.0665 no pasa
+
+--- W3 2024-2026 (n=12 trades) ---
+    cagr               -0.0217
+    sharpe_ratio       -0.0260
+    sortino_ratio      -0.0186
+    max_drawdown       -0.2705
+    calmar_ratio       -0.0803
+    win_rate           0.6667
+    profit_factor      4.6907
+    total_trades       12.0000
+    deflated_sharpe    0.0290
+    NO (piso)          DSR=0.0290 no pasa
+
+Ventanas que pasan: 0/3 -> criterio: NO CUMPLE (a) descartada
+
+Out: data/cache/trial14_basket_adx_20260811_215113.txt
