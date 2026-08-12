@@ -25,7 +25,6 @@ import os
 
 import numpy as np
 import pandas as pd
-
 from app.core.data_ingestion import load_universe
 from scripts.fetch_universe_data import NEW_UNIVERSE
 

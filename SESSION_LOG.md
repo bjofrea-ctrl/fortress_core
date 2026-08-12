@@ -1008,3 +1008,33 @@ En modo build, verificado contra código real antes de tocar nada (disciplina §
 - **Tests nuevos (10)**: `test_governance_contract.py` (5: shape triad/controller/judge/final + ausencia de campos legacy) y `test_governance_auth.py` (5: acepta/rechaza/missing/time-constant/validator production). **Suite total: 80 passed, 0 failed** (70 previos + 10 nuevos). Frontend: `tsc --noEmit` limpio.
 - ROADMAP.md actualizado: 3 filas P0 → 🟢 cerrado, Gantt con :done. Nota documentada: 25/27 endpoints siguen abiertos POR DECISIÓN (UI pública + repo público) — solo escritura RAG protegida.
 - Note: los P1/P2 del ROADMAP (fechas 2015-2024 de market.py, Python 3.11 vs 3.9.6, README, docstring Controller/Judge, prompt_engine.py, CI) siguen pendientes — no incluidos en esta tanda.
+
+## 2026-08-12 — Tanda D: §13.1 costos CERRADO (no pasa), Fase 0.6 corriendo, investigación externa hecha
+
+Sesión de investigación (Tanda D del plan consolidado). Disciplina §14 respetada: criterios pre-registrados ANTES de correr, verificación contra artefactos, cero post-hoc.
+
+### Item 10 — §13.1 backtest gap-reversion con costos reales: NO CUMPLE (cerrado)
+- **Pre-registro** en PLAN_MEJORA_MATEMATICA §13.1 (criterio: n_dias ≥ 100 Y media del retorno neto diario > 0 con t-NW ≥ 2.0, fade EW open→close, |gap|≥1%, ≥3 fades/día, costos 0.15%/lado × 2).
+- **Script**: `scripts/backtest_gap_costs.py` (reutiliza el aparato NW de diagnose_gap_reversion.py).
+- **Artefacto**: `backtest_gap_costs_20260812_173951.txt` — 145729 filas, 2206 días operados (75.7%), media 11.3 fades/día.
+- **Resultado**: bruto medio diario −0.00005 (t-NW −0.20, indistinguible de cero); neto −0.00305 (t-NW **−11.53**); Sharpe neto −3.90; 39.3% días positivos. → NO CUMPLE.
+- **Lectura (interrogatorio honesto)**: el rank-IC −0.0525 (t=−11.29) medía consistencia de ordenamiento; el fade EW diluye los gaps grandes. El retorno bruto ya es ≈0 → la significancia del IC no se tradujo en PnL promedio NI ANTES de costos. §13 queda CERRADO de verdad: gap-reversion = hallazgo académico, ejecución intradía descartada con esta infraestructura. Explorar umbrales/top-N post-hoc violaría el pre-registro (§14) — si se quisiera, es un pre-registro nuevo.
+
+### Item 12 — Fase 0.6 re-test V1/fundamentales: CORRIENDO (en background)
+- **Pre-registro** en PLAN_MEJORA_MATEMATICA §0.6.1 (criterio: DSR ≥ 0.90 con n_trials=17 en ≥2/3 ventanas W1/W2/W3, piso 30 trades; re-test barato sin slot nuevo).
+- **Script**: `scripts/backtest_fase06_retest.py` (baseline vs V1-ranking G2 vs fundamentales G3, universo 50, motor post-fix trial #10/#11, costos 0.15%/lado).
+- **Hallazgo de cobertura (declarado en el plan ANTES de leer el resultado)**: el panel EDGAR cubre solo 5/50 símbolos (AAPL/AMZN/GOOGL/MSFT/NVDA — los del trial #9 que operaba sobre 7): cobertura 71% → 10%. La pata FUND queda diluida; un "no pasa" de FUND refuta "fundamentales con 10% de cobertura del universo", no con la fuerza del de V1 (AAII 2913/2913 días).
+- **Nota de duración**: sobre universo 50 el motor tarda MINUTOS por corrida (el trial #11 histórico con el mismo universo demoró más de una hora por corrida completa). Corrida lanzada con nohup (PID log en /tmp/fase06_run.log, artefacto esperado `fase06_retest_20260812_175055.txt`); el baseline va primero.
+- **Contexto del trial #11 histórico (universe50_phaseA_20260810_152810.txt)**: con universo 50 el motor casi no opera post-2023 (W2 n=10, W3 n=0, no evaluables; única ventana evaluable W1 n=99 DSR=0.0435 → NO CUMPLE). El re-test 0.6 probablemente repita el patrón; de todos modos el criterio mecánico se aplica igual.
+
+### Item 11 — §12 régimen-vs-volatilidad: espera decisión del usuario
+- Pendiente de elegir: (a) esperar más historia hasta n≥200 por régimen, o (b) reducir estados del HMM para ganar muestra. Sin confirmación limpia (STAGFLATION t=−2.18 < Bonferroni-4 ≈2.50; DEFLATION n=68 con vol +36% es la pista más interesante pero sin poder estadístico).
+
+### Item 13 — Investigación externa (trading cuántico / gobernanza multi-agente LLM): HECHA
+- Informe completo en `RESEARCH_EXTERNA_CRITICA.md` (fuentes verificadas, 2026-08-12):
+  - **Gobernanza multi-agente LLM**: TradingAgents (UCLA, arXiv:2412.20138, ICML2025 wsp, 182 citas) y FinCon (NeurIPS 2024) validan el patrón "firma simulada" (bull/bear + risk team) — el diseño de fortress_core es esa clase, con la variante ventajosa de loop determinista. **TradeTrap (2025)**: pequeñas perturbaciones en agentes LLM autónomos → concentración extrema y drawdowns → valida nuestra decisión de NIM solo en capa de gobernanza/evaluación, nunca en el loop de decisión.
+  - **Risk-mgmt-first para operadores chicos**: Barber & Odean 2000 (JF 55(2), 1144 citas): 11.4% vs 17.9% anual los que más operan; Barber-Lee-Liu-Odean (Taiwan 2008): costos −3.8 pp/año; survival day-trading 44/24/15% a 1/2/3 años. = el sistema ya internaliza las dos únicas reglas con evidencia: no sobreoperar + costos reales (hoy §13.1 lo demostró en miniatura).
+  - **Trading cuántico**: papers reales (QAOA/annealing portfolio, TUM/TNO/arXiv 2504.08843) pero el valor está en miles de activos + constraints (NISQ híbrido); para 50 tickers con 1 Mac el QP clásico resuelve en milisegundos → CERRADO como no-relevante, confirmando el escepticismo de la primera auditoría.
+
+### Ritual / pendientes
+- Commit de esta entrada pendiente (hacer al terminar o al pausar la sesión). Fase 0.6: verificar artefacto cuando termine, aplicar criterio mecánico, documentar en plan + ROADMAP.

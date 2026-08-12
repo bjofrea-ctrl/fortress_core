@@ -20,7 +20,6 @@ import datetime
 import os
 
 import pandas as pd
-
 from app.core.backtest_engine import BacktestEngine
 from app.core.data_ingestion import load_universe
 from app.core.edgar_fundamentals import _load_panel, compute_fundamental_score_series

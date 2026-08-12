@@ -220,6 +220,16 @@ las variantes viven solo en el script; el motor en producción sigue en baseline
 informativo es la comparación π(V1) − π(baseline) y π(FUND) − π(baseline) dentro del
 mismo motor — no hay grados de libertad de búsqueda nuevos.
 
+**Limitación de cobertura (declarada ANTES de leer el resultado)**: el panel EDGAR
+cubre 5/50 símbolos del universo (AAPL, AMZN, GOOGL, MSFT, NVDA — los mismos 5 del
+trial #9, que operaba sobre 7: allí 71% de cobertura; acá 10%). La variante FUND es
+la MISMA construcción, pero con poder muy reducido: el ranking G3 solo difiere del
+técnico puro en esos 5 símbolos. El criterio mecánico se aplica igual (sin alterar
+umbrales), y la interpretación debe declarar este sesgo: un "NO CUMPLE" de FUND en
+este re-test refuta "fundamentales con cobertura del 10% del universo", no una
+refutación tan fuerte como la de V1 (que sí tiene cobertura del 100%: AAII en
+2913/2913 días).
+
 **Fase 1 — EVT** (RMT ya no está acá, se movió a 0.5): sobre retornos de activos
 (idealmente residuales GARCH), nunca sobre la serie de P&L del motor.
 

@@ -83,15 +83,25 @@ actualizado antes de pasar a la siguiente.
    `ruff==0.16.2` agregado a requirements-dev. Lint: 0 errores. pytest: 119 passed.
 
 ### Tanda D — Investigación (en paralelo a A/B/C, no bloquea ni bloquea código)
-10. §13 gap-reversion: backtest con costos reales (dos operaciones/día, 0.15%/lado) —
-    **pre-registrar el criterio antes de correr**, sigue siendo el paso que decide si tiene
-    sentido evaluar ejecución intradía algún día.
+10. ✅ §13.1 gap-reversion: backtest con costos reales (2026-08-12) — pre-registrado en
+    `PLAN_MEJORA_MATEMATICA.md §13.1`, corrido (`backtest_gap_costs.py`, artefacto
+    `backtest_gap_costs_20260812_173951.txt`): **NO CUMPLE**. Retorno bruto medio diario
+    del fade EW ≈0 (t-NW −0.20) — la significancia del IC (t=−11.29) no se traduce en
+    retorno promedio ni antes de costos; neto (0.30%/trade) t-NW **−11.53**. §13 queda
+    CERRADO: gap-reversion es hallazgo académico, no capturable. Ejecución intradía se
+    descarta definitivamente con esta infraestructura.
 11. §12 régimen-vs-volatilidad: decisión pendiente del usuario — ¿esperar más historia o
     reducir estados del HMM para poder testear con muestra suficiente?
-12. Fase 0.6 — re-test sentimiento/fundamentales contra panel limpio + universo 50 (barato,
-    no consume hipótesis nueva, quedó pendiente desde antes de esta sesión).
-13. Investigación académica/foros de trading cuántico externa — la que se pidió
-    explícitamente y se salteó en la primera auditoría.
+12. 🟡 Fase 0.6 — re-test sentimiento/fundamentales contra panel limpio + universo 50
+    (barato, no consume hipótesis nueva, quedó pendiente desde antes de esta sesión).
+    Pre-registro en `PLAN_MEJORA_MATEMATICA.md §0.6.1`; script `backtest_fase06_retest.py`;
+    artefacto: `data/cache/fase06_retest_2026*.txt`.
+13. ✅ Investigación académica/foros de trading cuántico externa (2026-08-12) — informe
+    completo en `RESEARCH_EXTERNA_CRITICA.md`: TradingAgents/FinCon validan el patrón
+    multi-agente LLM (nuestra variante determinista es la defensa al fallo TradeTrap);
+    Barber-Odean 2000 + Taiwan 2008 + survival 44/24/15% confirman risk-mgmt-first y
+    no-over-trading como únicas reglas con evidencia; trading cuántico: cerrado como
+    no-relevante para 50 símbolos (híbrido NISQ solo aporta en miles de activos).
 
 ---
 
