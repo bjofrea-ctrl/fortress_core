@@ -42,7 +42,7 @@ actualizado antes de pasar a la siguiente.
    la raíz del repo se cuelga (config en `backend/pytest.ini`); invocación canónica:
    `cd backend && .venv/bin/python -m pytest`.
 
-### Tanda B — Seguridad recién detectada ✅ (cerrada 2026-08-12, commit TBDB)
+### Tanda B — Seguridad recién detectada ✅ (cerrada 2026-08-12, commit `217eb51`)
 4. ✅ Backup específico de `fortress.db` agregado a `scripts/auto_backup.sh` (función
    `backup_db()`) y `scripts/backup.sh` (paso 6.5): `sqlite3 .backup` (seguro con
    escrituras concurrentes) → `/Volumes/EMPRESA/fortress_core_backups/db/`, retención
