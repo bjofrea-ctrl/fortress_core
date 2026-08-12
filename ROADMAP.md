@@ -14,6 +14,64 @@ marcarlo acá, aunque se haya resuelto "de pasada" en otra conversación.
 
 ---
 
+## Plan de implementación consolidado (2026-08-12) — para ejecutar en tandas
+
+El usuario pidió cerrar todo lo pendiente, no sólo lo más urgente. Se secuencia en tandas
+chicas en vez de un cambio gigante — mismo criterio de todo el proyecto: verificar entre
+pasos, no acumular riesgo. Cada tanda termina con `pytest` completo + commit + este documento
+actualizado antes de pasar a la siguiente.
+
+**Modo de trabajo — "fallo, arreglo y sigo" aplica con un límite claro**:
+- ✅ Aplica sin pedir permiso: bugs de código normales que aparezcan haciendo estas tandas
+  (un import roto, un test que falla por un detalle menor, un typo) — arreglarlos y continuar.
+- ❌ NO aplica a nada que toque el motor/investigación (Tanda D): ahí un fallo no se
+  "arregla y sigue", se documenta con su artefacto y se decide — la regla no-negociable
+  #1 y #3 de `ONBOARDING.md` (pre-registro antes de correr, revert si no cumple el criterio)
+  sigue vigente sin excepción. "Arreglar rápido" y "criterio pre-registrado" son cosas
+  distintas — no mezclar.
+
+### Tanda A — Código, P1 restante (bajo riesgo, sin dependencias entre sí)
+1. Alinear versión de Python: `backend/Dockerfile` dice 3.11, el `.venv` real es 3.9.6 —
+   elegir una y que coincidan (recomendado: fijar el Dockerfile a 3.9 salvo que haya razón
+   concreta para subir de verdad, lo cual es un cambio más grande y no es esto).
+2. Corregir `README.md`: sacar la mención de Redis (no existe en el stack), corregir la
+   versión de Python, documentar los 27 endpoints reales (hoy sólo 3).
+3. Corregir el docstring de Controller/Judge en `advanced_agents.py` — dice que usan
+   DeepSeek/GLM, en código son deterministas. Sólo el comentario, no tocar comportamiento.
+
+### Tanda B — Seguridad recién detectada (independiente de la Tanda A)
+4. `fortress.db` nunca se respalda (`auto_backup.sh`/`backup.sh` la excluyen explícitamente)
+   — agregar un backup específico de la DB (dump o copia), separado del backup de código.
+5. Rate-limit básico (o al menos logging de uso) en los GET sin auth que disparan LLM real
+   (`predict/analyze/{symbol}`, `governance/analyze/{symbol}`) — no es exposición de datos,
+   es costo/cuota de NVIDIA gastable por cualquiera sin autenticarse.
+
+### Tanda C — Código, P2 (más esfuerzo, hacer después de A y B)
+6. **Primero verificar, no asumir**: los candidatos de código muerto de memoria previa
+   (`ProbabilisticEngine` wrapper, `KellyPositionSizer` duplicado, `RiskParityAllocator`) —
+   confirmar con grep que siguen sin uso antes de tocar nada.
+7. Decidir destino de `prompt_engine.py` (659 líneas muertas, bug latente adentro) —
+   recomendación: borrar, no integrar. Integrar agregaría superficie sin necesidad
+   demostrada; nada lo usa hoy y `HardinessChecker` (lo único real que se usa de ese
+   archivo) puede moverse a su propio módulo chico.
+8. Tests de integración para `governance.py` + los 7 routers sin cobertura (`backtest`,
+   `live`, `market`, `opportunities`, `predict`, `risk`, `system`) — empezar por los que
+   tienen lógica no trivial (`backtest`, `market`), no por los triviales.
+9. CI básico: lint + `pytest` en cada push (repo público, hoy no hay ningún check automático).
+
+### Tanda D — Investigación (en paralelo a A/B/C, no bloquea ni bloquea código)
+10. §13 gap-reversion: backtest con costos reales (dos operaciones/día, 0.15%/lado) —
+    **pre-registrar el criterio antes de correr**, sigue siendo el paso que decide si tiene
+    sentido evaluar ejecución intradía algún día.
+11. §12 régimen-vs-volatilidad: decisión pendiente del usuario — ¿esperar más historia o
+    reducir estados del HMM para poder testear con muestra suficiente?
+12. Fase 0.6 — re-test sentimiento/fundamentales contra panel limpio + universo 50 (barato,
+    no consume hipótesis nueva, quedó pendiente desde antes de esta sesión).
+13. Investigación académica/foros de trading cuántico externa — la que se pidió
+    explícitamente y se salteó en la primera auditoría.
+
+---
+
 ## Gantt — todas las vías abiertas
 
 ```mermaid
