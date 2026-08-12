@@ -18,15 +18,23 @@ interface GovernanceData {
   governance?: {
     final_decision: string
     final_reason: string
-    controller_approved: boolean
-    controller_decision: string
-    judge_verdict: string
-    judge_overrides: string[]
-    triad_consensus?: {
-      bull_score: number
-      bear_score: number
-      contrarian_score: number
+    triad?: {
+      bull: { score: number; verdict: string }
+      bear: { score: number; verdict: string }
+      contrarian: { score: number; verdict: string }
+      consensus: number
+      decision: string
       agreement: string
+    }
+    controller?: {
+      approved: boolean
+      decision: string
+      confidence: number
+    }
+    judge?: {
+      verdict?: string
+      status?: string
+      overruled_agents?: string[]
     }
   }
 }
@@ -120,24 +128,24 @@ export default function GovernancePanel({ apiUrl, symbol }: GovernancePanelProps
       </div>
 
       {/* TRIAD Consensus */}
-      {governance?.triad_consensus && (
+      {governance?.triad && (
         <div className="grid grid-cols-3 gap-3 mb-4">
           <div className="bg-dark-bg rounded-lg p-3 text-center">
             <p className="text-xs text-gray-400 mb-1">🐂 BULL</p>
             <p className="text-lg font-mono font-bold text-accent-green">
-              {(governance.triad_consensus.bull_score * 100).toFixed(1)}%
+              {(governance.triad.bull.score * 100).toFixed(1)}%
             </p>
           </div>
           <div className="bg-dark-bg rounded-lg p-3 text-center">
             <p className="text-xs text-gray-400 mb-1">🐻 BEAR</p>
             <p className="text-lg font-mono font-bold text-accent-red">
-              {(governance.triad_consensus.bear_score * 100).toFixed(1)}%
+              {(governance.triad.bear.score * 100).toFixed(1)}%
             </p>
           </div>
           <div className="bg-dark-bg rounded-lg p-3 text-center">
             <p className="text-xs text-gray-400 mb-1">🔄 CONTRARIAN</p>
             <p className="text-lg font-mono font-bold text-accent-yellow">
-              {(governance.triad_consensus.contrarian_score * 100).toFixed(1)}%
+              {(governance.triad.contrarian.score * 100).toFixed(1)}%
             </p>
           </div>
         </div>
@@ -172,14 +180,14 @@ export default function GovernancePanel({ apiUrl, symbol }: GovernancePanelProps
         <div className="mb-4">
           <div className="flex items-center gap-2 flex-wrap">
             <span className={`px-3 py-1 rounded-md text-sm font-bold ${
-              governance.controller_approved
+              governance.controller?.approved
                 ? "bg-accent-green/20 text-accent-green"
                 : "bg-accent-red/20 text-accent-red"
             }`}>
-              Controller: {governance.controller_approved ? "APROBADO" : "RECHAZADO"}
+              Controller: {governance.controller?.approved ? "APROBADO" : "RECHAZADO"}
             </span>
             <span className="px-3 py-1 rounded-md text-sm font-bold bg-dark-bg text-gray-300">
-              Juez: {governance.judge_verdict}
+              Juez: {governance.judge?.verdict ?? governance.judge?.status ?? "—"}
             </span>
             <span className={`px-3 py-1 rounded-md text-sm font-bold ${
               governance.final_decision === "COMPRAR" || governance.final_decision === "COMPRAR_FUERTE"
@@ -192,9 +200,9 @@ export default function GovernancePanel({ apiUrl, symbol }: GovernancePanelProps
             </span>
           </div>
           <p className="text-xs text-gray-400 mt-2">{governance.final_reason}</p>
-          {governance.judge_overrides && governance.judge_overrides.length > 0 && (
+          {governance.judge?.overruled_agents && governance.judge.overruled_agents.length > 0 && (
             <p className="text-xs text-accent-yellow mt-1">
-              ⚠️ Juez sobrepasó: {governance.judge_overrides.join(", ")}
+              ⚠️ Juez sobrepasó: {governance.judge.overruled_agents.join(", ")}
             </p>
           )}
         </div>
