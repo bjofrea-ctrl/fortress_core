@@ -4,7 +4,8 @@ Consolida: inventario de OpenCode (§1), evaluación crítica de Claude Code (§
 auditoría académica independiente #1 con 3 bugs de flujo + 1 confirmado de ejecución
 (§3), correcciones de auditoría académica independiente #2 (§4), plan de fases
 consolidado con cronograma (§5), evidencia post-plan de trial #13 (§6), resultado de
-las Fases -1 y 0.5 con gate W2/W3 (§8), rama resultante (§9) y disciplina (§10).
+las Fases -1 y 0.5 con gate W2/W3 (§8), rama resultante (§9), pre-registro del
+trial de basket (a) (§11) y disciplina (§12).
 
 Ver también: `RESUMEN_VALIDACION_VARIABLES.md`, `SESSION_LOG.md`.
 
@@ -381,7 +382,56 @@ residual (8 factores, consistente con `rmt_mp_20260811_150849.txt`). La huella f
 
 ---
 
-## 10. Disciplina sin excepción
+---
+
+## 11. Trial #14 (PRE-REGISTRADO 2026-08-11, pendiente de corrida) — (a) basket único con score de timing ADX + régimen
+
+**Contexto**: rama W2 confirmada (§9); opción (b) descartada (3 fuentes independientes),
+opción (c) descartada por diagnóstico sectorial endógeno (§9.c: t=+1.03/+0.57 vs 2.73)
+→ queda (a) como candidata por defecto. Este trial la somete al criterio estándar.
+
+**Score de timing DEFINIDO (fijado aquí, no implícito)**: NO momentum/RSI — ambos
+refutados a nivel símbolo (0.5a) y cluster (§9.c). El score de timing del basket es:
+
+1. **ADX del basket** — la única señal con evidencia real en todo el gate
+   (0.5a: t=+2.31 nominal a nivel símbolo; a nivel UN activo no hay Bonferroni,
+   el umbral vuelve a |t|>2). Regla: long del basket cuando `adx_score ≥ 0.9`
+   (ADX > 25, umbral ya usado por el motor, `signal_engine.py:103`); flat en
+   caso contrario. El score NO es el momentum del basket.
+2. **Condicionamiento de régimen** — exposición según `REGIME_ALLOCATION`
+   del HMM existente (`regime_classifier.py:9`): GOLDILOCKS equity 0.60,
+   REFLATION 0.40, STAGFLATION 0.15, DEFLATION 0.10, aplicada sobre el
+   ADX-long del basket. Este condicionamiento es el que §9/RESUMEN §5 citan
+   como "macro contra-régimen" (+0.198 GOLDILOCKS / −0.173 DEFLATION) —
+   **pero esa medición estaba invalidada por el lookahead §3.1** (pre-fix de
+   régimen). Por lo tanto el condicionamiento de régimen que ya mide el
+   backtest real (motor, sin el bug del panel) es la evidencia viva; el
+   valor numérico del panel NO se cita como evidencia previa, solo el
+   diseño del motor.
+3. **Revert si NO CUMPLE**: script borrado, producción nunca tocada (inyección
+   por subclase dentro del script, mismo patrón que trial #13). Baseline de
+   comparación: BASELINE ÚNICO post-fix `baseline_clean_20260811_150643.txt`
+   (referencia oficial §8), no baselines históricos.
+
+**Activo**: basket del universo actual (SPY como proxy del mercado + ETF del
+basket: SPY). Definición concreta: el trial corre el motor sobre SPY como
+basket único (el "mercado"), con el score de timing definido arriba — un solo
+activo, no 50 símbolos.
+
+**Criterio (congelado, mismo de siempre)**: DSR OOS ≥ 0.90 en ≥ 2/3 ventanas
+(W1 2020-2021, W2 2022-2023, W3 2024-2026), piso ≥ 30 trades/ventana,
+N_TRIALS=17+1=18 por ser un trial nuevo. Si el basket con ADX+régimen supera
+el baseline oficial en DSR en 2/3 ventanas → (a) gana y el producto pasa a
+timing sobre basket; si no → (a) queda descartada como (b) y (c), y el motor
+queda como está (sin señal en vivo, §4.5).
+
+**Pre-registrado ANTES de correr — este documento es el registro.** Huella
+timestamp en data/cache al correr. Sin cambios al criterio después de la
+corrida (lección 0.5a en §10).
+
+---
+
+## 12. Disciplina sin excepción
 
 - Ningún resultado de un panel con bug de flujo conocido decide nada hasta reproducirse
   arreglado.
