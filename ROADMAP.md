@@ -72,6 +72,9 @@ gantt
 | Producto | `signal_engine.py` comentario/cita falsa sobre ADX | 🟡 spawneado | — | `task_22ea3f8d` — pendiente de que el usuario lo dispare |
 | Producto | LEAN/QuantConnect | ⚪ parqueado | Sin objetivo de producto definido | No tocar hasta decidir para qué sirve concretamente |
 | Producto | Conexión a broker real | 🔴 bloqueada, correctamente | Validar edge neto de costos primero (§13) | No avanzar hasta cerrar investigación |
+| Seguridad | **`fortress.db` (SQLite local) nunca se respalda** | 🔴 sin empezar | — | `auto_backup.sh`/`backup.sh` excluyen `*.db` explícitamente — si falla el disco, los datos runtime (posiciones, snapshots, eventos de riesgo) no son recuperables de ningún backup. Hallazgo de memoria previa (2026-08-12, auditoría infra), no estaba en AUDITORIA_TECNICA.md |
+| Seguridad | GET endpoints sin auth que disparan LLM real (costo/abuso) | 🔴 sin empezar | — | `predict/analyze/{symbol}`, `governance/analyze/{symbol}` — no sólo exponen datos, cualquiera puede gastar tu cuota/costo de NVIDIA NIM sin autenticarse |
+| Código P2 | Código muerto adicional sin verificar (`ProbabilisticEngine` wrapper, `KellyPositionSizer` duplicado, `RiskParityAllocator`) | ⚪ sin verificar | — | Viene de memoria del 2026-08-08, anterior a esta investigación — re-chequear si sigue siendo cierto antes de actuar |
 
 **Leyenda**: 🔴 crítico/sin empezar · 🟡 en curso/parcial · ⚪ parqueado, sin decisión de producto · 🟢 cerrado
 
