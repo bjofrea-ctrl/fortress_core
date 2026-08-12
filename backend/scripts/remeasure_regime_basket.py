@@ -118,3 +118,137 @@ def build_basket_series(price_data: dict) -> pd.DataFrame:
     basket_ret = rets.mean(axis=1).dropna()
     basket = (1 + basket_ret).cumprod()
     return pd.DataFrame({"basket": basket, "basket_ret": basket_ret})
+
+def main():
+    out_path = os.path.join("data", "cache",
+                            f"regime_basket_{datetime.datetime.now():%Y%m%d_%H%M%S}.txt")
+    os.makedirs(os.path.dirname(out_path), exist_ok=True)
+
+    def log(msg: str = ""):
+        print(msg)
+        with open(out_path, "a") as f:
+            f.write(msg + "\n")
+
+    log("=" * 72)
+    log("§11 regla 2 — RE-MEDICIÓN condicionamiento de régimen SOBRE LA SERIE DEL BASKET")
+    log(f"Universo basket: {len(SYMBOLS)} símbolos (equal-weight, rebalanceo diario)")
+    log(f"Horizonte {HORIZON}d | stride {STRIDE_DAYS}d | régimen HMM walk-forward (fit<={FIT_END})")
+    log(f"Ventana: {START} -> {END} | piso miembros basket: {MIN_BASKET_MEMBERS}")
+    log("Criterio: signos GOLDILOCKS>0 / DEFLATION<0 conservados con |t|>2 en n>=200")
+    log("=" * 72)
+
+    # --- Datos ---
+    log("\nCargando datos...")
+    market_data = load_universe(MACRO_TICKERS, "2015-01-01", END)
+    price_data = load_universe(SYMBOLS, START, END)
+
+    macro_keys = {
+        "DXY": "DX-Y.NYB", "gold": "GC=F", "silver": "SI=F", "TLT": "TLT",
+        "SPY": "SPY", "oil": "CL=F", "copper": "HG=F",
+    }
+    macro_data = {}
+    for k, v in macro_keys.items():
+        df = market_data.get(v)
+        if df is not None:
+            macro_data[k] = df
+    log(f"Macro disponible: {sorted(macro_data)}")
+
+    # --- 1. Serie del basket ---
+    basket_df = build_basket_series(price_data)
+    log(f"\nBasket construido: {len(basket_df)} días, {START} -> {basket_df.index[-1]:%Y-%m-%d}")
+
+    # --- 2. Fit HMM <= FIT_END, etiqueta walk-forward ---
+    fit_data = {t: df[df.index <= pd.Timestamp(FIT_END)] for t, df in market_data.items()}
+    clf = GlobalRegimeClassifier(n_states=4)
+    clf.fit(fit_data)
+    log(f"\nHMM fiteado con datos <= {FIT_END}")
+    reg_series = label_regimes_walk_forward(clf, market_data)
+    reg_series = reg_series.reindex(basket_df.index)
+
+
+    # --- 3. Score macro compuesto + forward return del basket, por fecha strided ---
+    engine = PredictiveEngine()
+    rec = []  # {date, regime, macro_score, fwd}
+    dates = basket_df.index
+    n = len(dates)
+    for i in range(0, n - HORIZON, STRIDE_DAYS):
+        date = dates[i]
+        regime = int(reg_series.loc[date]) if reg_series.loc[date] >= 0 else -1
+        if regime < 0:
+            continue
+        truncated = {k: df[df.index <= date] for k, df in macro_data.items()}
+        try:
+            _, macro_score = engine._macro_signals(truncated)
+        except Exception:
+            continue
+        if macro_score is None or math.isnan(macro_score):
+            continue
+        entry = basket_df["basket"].iloc[i]
+        future = basket_df["basket"].iloc[i + HORIZON]
+        fwd = future / entry - 1
+        rec.append({"date": date, "regime": regime, "macro_score": macro_score, "fwd": fwd})
+    rec = pd.DataFrame(rec)
+    log(f"\nRegistros basket-vs-macro: {len(rec)} (estrided {STRIDE_DAYS}d, h={HORIZON}d)")
+
+    # --- 4. IC por régimen ---
+    log(f"\n    {'régimen':12s} {'n':>5s} {'IC':>9s} {'n_eff':>7s} {'t':>6s} {'sig':>4s} {'sign_ok':>7s}")
+    verdicts = []
+    for r in range(4):
+        sub = rec[rec["regime"] == r]
+        n_r = len(sub)
+        if n_r == 0:
+            log(f"    {clf.state_labels[r]:12s} {'0':>5s} {'-':>9s} {'-':>7s} {'-':>6s} {'-':>4s} {'-':>7s}")
+            continue
+        ic = SignalQualityMetrics.compute_ic(sub["macro_score"], sub["fwd"])
+        rank_ic = SignalQualityMetrics.compute_rank_ic(sub["macro_score"], sub["fwd"])
+        n_eff = newey_west_neff_1d(sub["macro_score"].to_numpy(), sub["fwd"].to_numpy(),
+                                   HORIZON, STRIDE_DAYS)
+        t = ic * math.sqrt(n_eff) if n_eff >= 30 else float("nan")
+        sig = not math.isnan(t) and abs(t) > 2.0
+        enough = n_r >= MIN_SAMPLE_PER_REGIME
+        exp = REGIME_SIGN_EXPECTED[r]
+        sign_ok = enough and (ic * exp > 0)
+        verdicts.append({"r": r, "name": clf.state_labels[r], "n": n_r, "ic": ic,
+                         "rank_ic": rank_ic, "n_eff": n_eff, "t": t, "sig": sig,
+                         "enough": enough, "sign_ok": sign_ok})
+        log(f"    {clf.state_labels[r]:12s} {n_r:5d} {ic:+9.4f} {n_eff:7.0f} "
+            f"{t if not math.isnan(t) else float('nan'):+6.2f} "
+            f"{'***' if sig else '':>4s} {str(sign_ok):>7s}")
+
+
+    # --- 5. Veredicto pre-registrado ---
+    log("\n--- VEREDICTO (§11 regla 2, pre-registrado) ---")
+    enough = [v for v in verdicts if v["enough"]]
+    log(f"Regímenes con muestra suficiente (n>={MIN_SAMPLE_PER_REGIME}): "
+        f"{[v['name'] for v in enough] or 'NINGUNO'}")
+    if not enough:
+        log("=> Sin muestra suficiente para decidir. (a) corre SOLO con ADX "
+            "(condicionamiento de régimen NO entra hasta re-medir con más datos).")
+        log("CONDICIONAMIENTO_RÉGIMEN: NO ENTRA (sin muestra)")
+    else:
+        any_sign_flip = any(v["enough"] and not v["sign_ok"] for v in enough)
+        gold = next((v for v in enough if v["name"] == "GOLDILOCKS"), None)
+        defl = next((v for v in enough if v["name"] == "DEFLATION"), None)
+        gold_ok = gold is not None and gold["sign_ok"] and gold["sig"]
+        defl_ok = defl is not None and defl["sign_ok"] and defl["sig"]
+        if any_sign_flip:
+            log("=> Un régimen con muestra suficiente cambió de signo vs lo esperado.")
+            log("CONDICIONAMIENTO_RÉGIMEN: NO ENTRA (cambio de signo)")
+        elif gold_ok and defl_ok:
+            log("=> Patrón conservado: GOLDILOCKS>0 y DEFLATION<0, ambos |t|>2 en n>=200.")
+            log("CONDICIONAMIENTO_RÉGIMEN: ENTRA al pre-registro §11 (re-medido sobre basket)")
+        else:
+            reasons = []
+            if not gold_ok:
+                reasons.append(f"GOLDILOCKS{' ok' if gold and gold['sign_ok'] else ' no convence'}")
+            if not defl_ok:
+                reasons.append(f"DEFLATION{' ok' if defl and defl['sign_ok'] else ' no convence'}")
+            log(f"=> Patrón incompleto: {', '.join(reasons)}.")
+            log("CONDICIONAMIENTO_RÉGIMEN: NO ENTRA (patrón incompleto)")
+
+    log(f"\nOut: {out_path}")
+
+
+if __name__ == "__main__":
+    main()
+

@@ -420,6 +420,16 @@ refutados a nivel símbolo (0.5a) y cluster (§9.c). El score de timing del bask
    corrida (no después). Si no se re-mide a tiempo, (a) corre solo con el ADX
    del basket (sin condicionamiento de régimen) y el régimen se mantiene como
    diagnóstico sin tocar exposición.
+   **RESULTADO RE-MEDICIÓN (2026-08-11, artefacto `regime_basket_20260811_213437.txt`)**:
+   el condicionamiento de régimen NO sobrevive con la spec limpia sobre la serie
+   del basket y POR LO TANTO el ajuste de exposición por régimen QUEDA FUERA del
+   pre-registro. Sobre el basket (target = retorno fwd 20d del basket equal-weight,
+   régimen HMM walk-forward sin lookahead, `remeasure_regime_basket.py`): IC por
+   régimen GOLDILOCKS +0.112 (n=59), REFLATION +0.106 (n=160), STAGFLATION +0.121
+   (n=268, único con n>=200), DEFLATION +0.249 (n=68). Ningún |t|>2; STAGFLATION
+   invierte el signo esperado (−1) y DEFLATION es +0.249 frente al −0.173 de la
+   medición original. Patrón contrarégimen NO conservado → (a) corre SOLO con
+   ADX; el régimen se mantiene como diagnóstico, sin tocar exposición.
 3. **Revert si NO CUMPLE**: script borrado, producción nunca tocada (inyección
    por subclase dentro del script, mismo patrón que trial #13). Baseline de
    comparación: BASELINE ÚNICO post-fix `baseline_clean_20260811_150643.txt`
@@ -443,11 +453,11 @@ decide el gate y no consume un trial extra ni cambia el criterio.
 
 **Criterio (congelado, mismo de siempre)**: DSR OOS ≥ 0.90 en ≥ 2/3 ventanas
 (W1 2020-2021, W2 2022-2023, W3 2024-2026), piso ≥ 30 trades/ventana,
-N_TRIALS=17+1=18 por ser un trial nuevo. Si el basket con ADX (más el
-condicionamiento de régimen, solo si la re-medición sobrevive con la spec
-limpia; regla 2) supera el baseline oficial en DSR en 2/3 ventanas → (a) gana
-y el producto pasa a timing sobre basket; si no → (a) queda descartada como
-(b) y (c), y el motor queda como está (sin señal en vivo, §4.5).
+N_TRIALS=17+1=18 por ser un trial nuevo. Si el basket con ADX (el
+condicionamiento de régimen queda FUERA: no sobrevivió la re-medición sobre la
+serie del basket, regla 2) supera el baseline oficial en DSR en 2/3 ventanas →
+(a) gana y el producto pasa a timing sobre basket; si no → (a) queda descartada
+como (b) y (c), y el motor queda como está (sin señal en vivo, §4.5).
 
 **Pre-registrado ANTES de correr — este documento es el registro.** Huella
 timestamp en data/cache al correr. Sin cambios al criterio después de la

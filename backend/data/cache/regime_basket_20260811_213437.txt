@@ -1,0 +1,29 @@
+========================================================================
+§11 regla 2 — RE-MEDICIÓN condicionamiento de régimen SOBRE LA SERIE DEL BASKET
+Universo basket: 50 símbolos (equal-weight, rebalanceo diario)
+Horizonte 20d | stride 5d | régimen HMM walk-forward (fit<=2024-12-31)
+Ventana: 2019-01-01 -> 2026-08-04 | piso miembros basket: 40
+Criterio: signos GOLDILOCKS>0 / DEFLATION<0 conservados con |t|>2 en n>=200
+========================================================================
+
+Cargando datos...
+Macro disponible: ['DXY', 'SPY', 'TLT', 'copper', 'gold', 'oil', 'silver']
+
+Basket construido: 2915 días, 2019-01-01 -> 2026-08-07
+
+HMM fiteado con datos <= 2024-12-31
+
+Registros basket-vs-macro: 555 (estrided 5d, h=20d)
+
+    régimen          n        IC   n_eff      t  sig sign_ok
+    GOLDILOCKS      59   +0.1124      30  +0.62        False
+    REFLATION      160   +0.1055      32  +0.60        False
+    STAGFLATION    268   +0.1209      54  +0.88        False
+    DEFLATION       68   +0.2493      30  +1.37        False
+
+--- VEREDICTO (§11 regla 2, pre-registrado) ---
+Regímenes con muestra suficiente (n>=200): ['STAGFLATION']
+=> Un régimen con muestra suficiente cambió de signo vs lo esperado.
+CONDICIONAMIENTO_RÉGIMEN: NO ENTRA (cambio de signo)
+
+Out: data/cache/regime_basket_20260811_213437.txt
