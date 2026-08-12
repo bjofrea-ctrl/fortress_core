@@ -1,0 +1,14 @@
+========================================================================
+FASE 0.6 — RE-TEST V1 (AAII) y FUNDAMENTALES (EDGAR) — PRE-REGISTRADO
+Universo: 50 símbolos | 2019-01-01 -> 2026-08-04 | costos 0.15%/lado (0.10%+0.05%)
+Motor actual: partial_done (trial #10) + piso de stop 0.05 (trial #11)
+Ventanas: W1 2020-2021, W2 2022-2023, W3 2024-2026 | piso trades: 30
+Criterio: DSR OOS >= 0.90 en >= 2/3 ventanas evaluables | N_TRIALS=17 (re-test, sin slot nuevo)
+========================================================================
+precios cargados: 50 símbolos
+AAII disponible en 2913/2913 días de trading
+Score fundamental point-in-time en 5/50 símbolos (EDGAR panel)
+
+Corriendo baseline (50 símbolos, sin variables)...
+Corriendo V1-ranking (G2 con AAII)...
+Corriendo fundamentales (G3 EDGAR, sin AAII)...

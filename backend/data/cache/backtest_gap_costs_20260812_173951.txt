@@ -1,0 +1,19 @@
+========================================================================
+§13.1 — BACKTEST GAP REVERSION CON COSTOS — PRE-REGISTRADO
+Universo: 50 símbolos | 2019-01-01 -> 2026-08-04
+Estrategia: fade intradía open->close de símbolos con |gap|>=1.0% (>= 3/día), EW | costos 0.15%/lado x 2
+Criterio: n_dias>=100 Y media retorno NETO diario > 0 con t-NW>=2.0 (L=3)
+========================================================================
+precios cargados: 50 símbolos
+Panel: 145729 filas | días con >= 3 fades: 2206 (75.7% de 2915 días de trading)
+fades/día: media 11.3 (min 3, max 50)
+
+GROSS: media diaria -0.00005 | SE-NW 0.00026 | t-NW -0.20 | Sharpe anualizado -0.07 | % días positivos 49.2%
+
+NET  : media diaria -0.00305 | SE-NW 0.00026 | t-NW -11.53 | Sharpe anualizado -3.90 | % días positivos 39.3%
+
+--- VEREDICTO (§13.1, pre-registrado) ---
+n_dias=2206 (>=100: True) | media neta -0.00305 t-NW=-11.53 (>0 con t>=2: False)
+=> NO CUMPLE: el fade no sobrevive costos -> §13 se cierra: hallazgo académico, no traducible a PnL neto con esta infraestructura.
+
+Out: data/cache/backtest_gap_costs_20260812_173951.txt

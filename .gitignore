@@ -17,8 +17,14 @@ pythonenv*
 *.sqlite
 *.sqlite3
 
-# Datos cacheados y estado de runtime (memoria, resultados, caches)
-data/
+# Estado de runtime (memoria de agentes, resultados en vivo) y datos cacheados
+# pesados/regenerables — los .txt de diagnósticos en backend/data/cache/ SÍ se
+# trackean: son la evidencia verificable de cada trial (ver PLAN_MEJORA_MATEMATICA.md
+# §3.4 "todo número se verifica contra el artefacto").
+backend/data/*.json
+backend/data/cache/*.json
+backend/data/cache/edgar/
+/data/
 *.parquet
 
 # Node

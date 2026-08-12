@@ -1,0 +1,28 @@
+========================================================================
+§14 — rank IC intra-día por SUB-PERÍODO — PRE-REGISTRADO
+Panel: factor_panel_20260811_144857.parquet | corte: 2022-01-01 (fijado por literatura externa, no por los datos)
+Bonferroni-8 (4 factores x 2 sub-períodos) | umbral |t| > 2.73
+========================================================================
+
+PRE  (2019-01-09 -> 2022-01-01): 139 fechas, 1039 filas elegibles
+POST (2022-01-01 -> 2026-07-06): 207 fechas, 1030 filas elegibles
+
+factor           periodo  n_days   mean_IC    SE_NW       t  sig(Bonf)
+momentum_score   PRE         90   +0.0159   0.0446   +0.36      False
+momentum_score   POST        97   -0.0340   0.0561   -0.61      False
+rsi_score        PRE         80   +0.0622   0.0403   +1.54      False
+rsi_score        POST        84   +0.0197   0.0439   +0.45      False
+trend_score      PRE          0      +nan      nan    +nan      False
+trend_score      POST         0      +nan      nan    +nan      False
+adx_score        PRE         78   +0.0513   0.0419   +1.22      False
+adx_score        POST        73   +0.0856   0.0422   +2.03      False
+
+--- VEREDICTO (§14, pre-registrado) ---
+  momentum_score: sin quiebre (PRE t=+0.36, POST t=-0.61, ambos no sig)
+  rsi_score: sin quiebre (PRE t=+1.54, POST t=+0.45, ambos no sig)
+  trend_score: sin quiebre (PRE t=+nan, POST t=+nan, ambos no sig)
+  adx_score: sin quiebre (PRE t=+1.22, POST t=+2.03, ambos no sig)
+
+=> Ningún factor es significativo en NINGÚN sub-período (Bonferroni-8). No hay evidencia de quiebre temporal porque no hay señal en ningún momento.
+
+Out: data/cache/rr2_subperiodos_20260812_194031.txt
