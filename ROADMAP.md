@@ -90,8 +90,9 @@ actualizado antes de pasar a la siguiente.
     retorno promedio ni antes de costos; neto (0.30%/trade) t-NW **−11.53**. §13 queda
     CERRADO: gap-reversion es hallazgo académico, no capturable. Ejecución intradía se
     descarta definitivamente con esta infraestructura.
-11. §12 régimen-vs-volatilidad: decisión pendiente del usuario — ¿esperar más historia o
-    reducir estados del HMM para poder testear con muestra suficiente?
+11. ✅ §12 régimen-vs-volatilidad — CERRADO como pista sin acción (2026-08-12, decisión
+    del usuario): no se conecta TARGET_VOLATILITY, no se reducen estados HMM, no se
+    espera más historia. Si se retoma, es con pre-registro nuevo y razón nueva.
 12. 🟡 Fase 0.6 — re-test sentimiento/fundamentales contra panel limpio + universo 50
     (barato, no consume hipótesis nueva, quedó pendiente desde antes de esta sesión).
     Pre-registro en `PLAN_MEJORA_MATEMATICA.md §0.6.1`; script `backtest_fase06_retest.py`;
@@ -146,9 +147,9 @@ gantt
 
 | Área | Ítem | Estado | Bloqueado por | Próxima acción |
 |---|---|---|---|---|
-| Investigación | §13 gap-reversion: backtest con costos reales | 🟡 en curso | — | Correr backtest con costos 0.15%/lado, dos operaciones/día |
-| Investigación | §12 régimen-vs-volatilidad | 🟡 pista sin cerrar | Más historia o menos estados HMM | Decisión: ¿vale la pena esperar más datos? |
-| Investigación | Fase 0.6 — re-test sentimiento/fundamentales | ⚪ nunca se hizo | — | Correr contra panel limpio + universo 50 (barato, no consume hipótesis nueva) |
+| Investigación | §13 gap-reversion: backtest con costos reales | 🟢 cerrado (2026-08-12) | — | NO CUMPLE: bruto ~0 (t-NW −0.20), neto −11.53 → §13 CERRADO (PLAN §13.1, artefacto backtest_gap_costs_20260812_173951.txt) |
+| Investigación | §12 régimen-vs-volatilidad | 🟢 cerrado como pista sin acción (2026-08-12) | — | Decisión del usuario: sin TARGET_VOLATILITY, sin reducir HMM, sin esperar historia. Se retoma solo con pre-registro y razón nueva |
+| Investigación | Fase 0.6 — re-test sentimiento/fundamentales | 🟡 corriendo en background | Tiempo de cómputo (~2-4h, universo 50) | Proceso PID 23171 (baseline→V1→FUND); verificar artefacto `fase06_retest_<ts>.txt` cuando termine, aplicar criterio §0.6.1 mecánico, documentar en PLAN + ROADMAP |
 | Investigación | Investigación académica/foros de trading cuántico | 🔴 pendiente, recién detectado | — | Buscar afuera: papers + foros sobre gobernanza multi-agente LLM, risk-mgmt-first para operadores chicos, crítica externa al enfoque |
 | Código P0 | Contrato GovernancePanel ↔ backend | 🟢 cerrado (2026-08-12) | — | Frontend consume contrato real (`triad.{bull,bear,contrarian}.score`, `controller.approved`, `judge.verdict|status`); 5 tests de regresión en `test_governance_contract.py` |
 | Código P0 | `except:` desnudo + 200 OK con error en body | 🟢 cerrado (2026-08-12) | — | `market.py`/`live.py` ahora levantan HTTPException 500; `except:` acotado a (AttributeError, TypeError, ValueError); 0 patrones restantes en routers |

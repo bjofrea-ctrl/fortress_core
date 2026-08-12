@@ -642,6 +642,14 @@ sobre esta base. Para resolverlo de verdad hace falta más historia (más años 
 datos para que los 4 regímenes lleguen a n≥200) o reducir la granularidad del HMM
 (menos estados, más muestra por estado) — ninguna de las dos es gratis ni inmediata.
 
+**Cierre (2026-08-12, decisión del usuario)**: §12 se cierra COMO PISTA SIN ACCIÓN.
+No se conecta `TARGET_VOLATILITY` (el desvío de volatilidad por régimen no superó la
+corrección de múltiples comparaciones y la pista DEFLATION no tiene poder). No se
+reducen los estados del HMM (tocaría el modelo de régimen que usa el motor en
+producción sin una hipótesis nueva que lo justifique) ni se espera más historia
+(pasivo, sin consumir trabajo). Si el proyecto vuelve a esto, es con un pre-registro
+nuevo y una razón nueva.
+
 ## 13. Diagnóstico GAP REVERSION intra-día (2026-08-12, PRE-REGISTRADO)
 
 **Origen**: un informe de Cline citaba "overnight gap reversion" como el signal #1
