@@ -757,6 +757,38 @@ de §13: la ejecución intradía no se persigue con esta infraestructura.
 
 ---
 
+## 15. rank IC intra-día por SUB-PERÍODO — ¿quiebre de régimen? (2026-08-12, PRE-REGISTRADO)
+
+**Origen**: motivado por evidencia externa verificada (§13, NY Fed "The Overnight
+Drift" / "The Disappearing Overnight Drift") — una anomalía real y académicamente
+documentada se desvaneció desde 2021 por compresión de la dispersión de
+desequilibrios de cierre. Pregunta: ¿algo similar les pasó a momentum/RSI/ADX en
+nuestros propios datos? Nunca se testeó — todo §0.5a corrió sobre 2019-2026 pooled.
+
+**Metodología** (`diagnose_rr2_subperiodos.py`, mismo protocolo que 0.5a — rank IC
+intra-día, Newey-West, NO pooled): panel limpio partido en PRE (<2022-01-01,
+fijado por la literatura externa, no elegido mirando nuestros datos) y POST
+(≥2022-01-01). Bonferroni-8 (4 factores × 2 sub-períodos), umbral |t|>2.73.
+
+**Resultado** (`rr2_subperiodos_20260812_194031.txt`): PRE 139 fechas / POST 207
+fechas.
+
+| factor | PRE t | POST t | sig (Bonf-8) |
+|---|---|---|---|
+| momentum_score | +0.36 | −0.61 | ninguno |
+| rsi_score | +1.54 | +0.45 | ninguno |
+| trend_score | nan (constante) | nan (constante) | — |
+| adx_score | +1.22 | +2.03 | ninguno (POST cerca pero no cruza) |
+
+**Veredicto**: ningún factor es significativo en NINGÚN sub-período. No hay
+evidencia de quiebre de régimen — no porque el efecto haya desaparecido, sino
+porque nunca hubo un efecto Bonferroni-robusto que quebrar, ni antes ni después de
+2021. Responde con precisión la hipótesis del usuario: no es que "los indicadores
+que funcionaban antes de 2021 dejaron de funcionar" — es que, con este universo y
+este protocolo, no funcionaron de forma robusta en ningún momento de la muestra.
+
+---
+
 ## 14. Disciplina sin excepción
 
 - Ningún resultado de un panel con bug de flujo conocido decide nada hasta reproducirse
