@@ -5,7 +5,8 @@ auditoría académica independiente #1 con 3 bugs de flujo + 1 confirmado de eje
 (§3), correcciones de auditoría académica independiente #2 (§4), plan de fases
 consolidado con cronograma (§5), evidencia post-plan de trial #13 (§6), resultado de
 las Fases -1 y 0.5 con gate W2/W3 (§8), rama resultante (§9), pre-registro del
-trial de basket (a) (§11) y disciplina (§12).
+trial de basket (a) (§11), pivot a gestión de riesgo — régimen vs volatilidad (§12)
+y gap reversion intra-día (§13), y disciplina (§14).
 
 Ver también: `RESUMEN_VALIDACION_VARIABLES.md`, `SESSION_LOG.md`.
 
@@ -596,7 +597,54 @@ sobre esta base. Para resolverlo de verdad hace falta más historia (más años 
 datos para que los 4 regímenes lleguen a n≥200) o reducir la granularidad del HMM
 (menos estados, más muestra por estado) — ninguna de las dos es gratis ni inmediata.
 
-## 12. Disciplina sin excepción
+## 13. Diagnóstico GAP REVERSION intra-día (2026-08-12, PRE-REGISTRADO)
+
+**Origen**: un informe de Cline citaba "overnight gap reversion" como el signal #1
+del Medallion Fund (19.4% feature importance), atribuido a `gurmansaran/medallion-pub`.
+**Verificado y descartado como fuente**: ese repo es la réplica de un desconocido
+(0 estrellas, 1 push, backtest propio con 12x de apalancamiento etiquetado literal
+"12x Medallion", datos yfinance hasta los años 70) — no son datos reales de
+Renaissance Technologies, que jamás publicó sus señales internas. Se prueba la idea
+por mérito propio (hay literatura académica independiente sobre retornos
+overnight/intraday), sin ninguna autoridad prestada.
+
+**Metodología** (`diagnose_gap_reversion.py`, mismo aparato que 0.5a — rank IC
+intra-día, Newey-West, NO pooled): señal = gap_pct = (open[t]−close[t-1])/close[t-1],
+universo 50+7 símbolos, 2019-2026. 3 targets a horizontes CORTOS (el fade se espera
+y decae rápido, no se testea a 20d): mismo día (close−open)/open, +1d close, +5d
+close. Signo esperado: negativo (reversión).
+
+**Resultado** (`diagnose_gap_reversion_20260812_082809.txt`, 145729 filas, 2915
+fechas):
+
+| horizonte | n_días | mean IC | t-NW | veredicto |
+|---|---|---|---|---|
+| mismo día (open→close) | 2915 | −0.0525 | **−11.29** | reversión real (nominal) |
+| +1 día close | 2914 | −0.0021 | −0.46 | no sig |
+| +5 días close | 2910 | −0.0029 | −0.65 | no sig |
+
+**Interrogatorio antes de aceptar** (t=−11.29 es, por lejos, el número más fuerte
+de toda la investigación — eso exige más escrutinio, no menos): el efecto se
+evapora por completo de un día para el otro (t pasa de −11.29 a −0.46). Esa firma
+es característica de ruido de microestructura del precio de apertura (auction de
+apertura menos estable que el cierre), no de reversión económica genuina — si fuera
+información real corrigiéndose, algo debería persistir al día siguiente, no
+desaparecer a cero de golpe.
+
+**Veredicto honesto**: estadísticamente el hallazgo es real y el más robusto de
+todo el proyecto, pero **no es capturable con la arquitectura actual**: es
+intradía puro (entrar cerca de la apertura, salir al cierre, mismo día) — este
+sistema no tiene motor de ejecución, no tiene datos en tiempo real, y `yfinance`
+no da un precio de apertura operable en vivo. Es exactamente la infraestructura
+("escalar en serio") que se descartó como no realista dado Mac + VPS chica + 3TB.
+Queda documentado como hallazgo académico válido, no como próximo paso de producto.
+Si en el futuro se invierte en ejecución intradía real, es el primer candidato a
+re-testear con costos reales (dos operaciones por día por posición) antes de
+construir nada.
+
+---
+
+## 14. Disciplina sin excepción
 
 - Ningún resultado de un panel con bug de flujo conocido decide nada hasta reproducirse
   arreglado.

@@ -1,0 +1,20 @@
+========================================================================
+§13 — DIAGNÓSTICO GAP REVERSION intra-día — PRE-REGISTRADO
+Señal: gap_pct = (open[t]-close[t-1])/close[t-1] | rank IC intra-día, Newey-West
+Horizontes: mismo día (open->close), +1d close, +5d close | signo esperado: NEGATIVO
+Criterio: algún horizonte con |t-NW|>2 Y signo negativo -> evidencia real
+========================================================================
+
+Cargando datos...
+Panel gap: 145729 filas, 50 símbolos, 2915 fechas
+
+target              n_days   mean_IC    SE_NW       t          veredicto
+fwd_intraday_0d       2915   -0.0525   0.0047  -11.29     REVERSIÓN REAL
+fwd_close_1d          2914   -0.0021   0.0046   -0.46             no sig
+fwd_close_5d          2910   -0.0029   0.0045   -0.65             no sig
+
+--- VEREDICTO (§13, pre-registrado) ---
+=> Al menos un horizonte muestra reversión intra-día real (|t-NW|>2, signo negativo).
+GAP_REVERSION: EVIDENCIA REAL
+
+Out: data/cache/diagnose_gap_reversion_20260812_082809.txt
