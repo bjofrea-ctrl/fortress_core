@@ -555,6 +555,47 @@ código en producción que replicar — el re-eval es el registro del veredicto)
 El veredicto DSR 0/3 original queda como está: documentado como mal
 especificado para 1 activo, ahora sustituido por la métrica apropiada.
 
+---
+
+## 12. Diagnóstico régimen vs VOLATILIDAD realizada (2026-08-12, PRE-REGISTRADO)
+
+**Contexto**: régimen+macro se refutó DOS veces como predictor de RETORNO (Fase 2
+original con lookahead §3.1; §11.1 sobre basket limpio). Pregunta distinta, nunca
+testeada: ¿régimen predice MAGNITUD (volatilidad realizada), no dirección? Motivación
+de producto: `TARGET_VOLATILITY` existe en `config.py` sin conectar
+(`RESUMEN_VALIDACION_VARIABLES.md §5`).
+
+**Metodología** (`diagnose_regime_volatility.py`, fijada antes de correr): misma
+serie de basket y mismo régimen HMM walk-forward que §11.1; target = volatilidad
+realizada forward 20d del basket (std retornos diarios en (t,t+20] × √252),
+estrided 5d; por régimen, t-NW de (vol_régimen − vol_media_global) contra 0.
+Criterio pre-registrado: algún régimen con n≥200 con \|t-NW\|>2.
+
+**Resultado** (`diagnose_regime_vol_20260812_064914.txt`): 555 registros, vol media
+global 0.1499.
+
+| régimen | n | vol media | delta vs global | t-NW | n≥200 |
+|---|---|---|---|---|---|
+| GOLDILOCKS | 59 | 0.1744 | +0.0245 | +1.43 | no |
+| REFLATION | 160 | 0.1473 | −0.0025 | −0.19 | no |
+| STAGFLATION | 268 | 0.1322 | −0.0177 | **−2.18** | sí |
+| DEFLATION | 68 | 0.2042 | +0.0544 | +1.47 | no |
+
+**Corrección aplicada (misma vara que ADX en §8, no menos exigente porque el
+resultado conviene)**: el criterio pre-registrado no incluyó Bonferroni pese a
+testear 4 régimenes simultáneos — mismo error que se cometió y corrigió con ADX.
+Bonferroni-4 sube el umbral a ≈2.50. STAGFLATION (t=−2.18) **NO lo cruza**. El
+régimen con el efecto más grande e intuitivo (DEFLATION, vol +36% sobre la media)
+es el que NO llega al piso de muestra (n=68) — es la lectura más prometedora y la
+menos confirmable con los datos actuales.
+
+**Veredicto honesto**: NO es una confirmación limpia. Es una pista (STAGFLATION
+nominal sin sobrevivir corrección; DEFLATION direccionalmente grande pero
+subpotenciado), no una señal de riesgo establecida. No se conecta `TARGET_VOLATILITY`
+sobre esta base. Para resolverlo de verdad hace falta más historia (más años de
+datos para que los 4 regímenes lleguen a n≥200) o reducir la granularidad del HMM
+(menos estados, más muestra por estado) — ninguna de las dos es gratis ni inmediata.
+
 ## 12. Disciplina sin excepción
 
 - Ningún resultado de un panel con bug de flujo conocido decide nada hasta reproducirse
