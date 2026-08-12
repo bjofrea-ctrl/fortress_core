@@ -129,6 +129,15 @@ en `PLAN_MEJORA_MATEMATICA.md`. No son sugerencias de estilo.
 - Git: auto-backup corre solo cada ~10-20 min (commits `auto-backup: <timestamp>`, ruidosos
   pero funcionan). Encima de eso, cerrar cada unidad de trabajo real con un commit descriptivo
   a mano y push a `origin/main` (repo público, no hay rama de staging).
+- **Puntos de entrada de agentes — ambos apuntan a este archivo**: `AGENTS.md` (OpenCode/
+  agentes que lo leen automáticamente) y `CLAUDE.md` (Claude Code). Si agregás un agente nuevo,
+  registralo acá con su archivo de auto-carga.
+- **Mecanismos automáticos de esta Mac (launchd)**: `com.fortresscore.autobackup.plist`
+  está INSTALADO (`~/Library/LaunchAgents/`) y dispara el backup git + espejo en el disco
+  externo. `com.fortresscore.daily_notify.plist` vive en `scripts/` pero NO está instalado
+  (requiere TELEGRAM/SMTP configurados — hoy vacíos, notificación desactivada). `backup.sh`
+  es el backup manual/forzado. Los snapshots de `fortress_core_backups/snapshots/` son
+  manuales y viejos — el espejo vigente es `current/`.
 - El universo base de símbolos es consistente entre scripts: `SPY, QQQ, AAPL, MSFT, GOOGL,
   AMZN, NVDA` + `NEW_UNIVERSE` (definido en `backend/scripts/fetch_universe_data.py`).
 
