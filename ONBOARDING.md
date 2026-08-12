@@ -156,6 +156,26 @@ en `PLAN_MEJORA_MATEMATICA.md`. No son sugerencias de estilo.
 
 ---
 
+## Trabajar desde la CLI (OpenCode en terminal)
+
+OpenCode **no tiene migración pendiente entre interfaces**: la app de escritorio y la CLI en
+terminal son el mismo motor con la misma config. Verificado 2026-08-12:
+
+- Config única: `~/.config/opencode/` — `AGENTS.md` (reglas/persona), `opencode.json`, skills,
+  plugins y MCP servers (`context7`, `engram`, `gbrain`). Desktop y CLI leen exactamente lo mismo.
+- Sesiones y credenciales compartidas: `~/.local/share/opencode/` (historial `opencode.db`,
+  `auth.json`). Nada es exclusivo de la app de escritorio.
+- Memoria persistente (Engram): se indexa **por proyecto (el cwd de donde arrancás)**, no por
+  interfaz. Arrancar desde el directorio equivocado fragmenta el contexto.
+
+Arranque recomendado para este proyecto: `cd ~/Desktop/fortress_core && opencode`.
+Con eso el namespace de memoria, las rutas relativas y git apuntan a un solo lugar.
+
+Otros agentes: Claude Code lee `CLAUDE.md` del repo (apunta a este archivo); agentes que leen
+`AGENTS.md` también llegan acá. Dos archivos, un solo punto de entrada.
+
+---
+
 ## Ritual de cierre de sesión — no cerrar sin esto
 
 Cada sesión que toque código, documentos o estado deja el MISMO rastro, para que la próxima
