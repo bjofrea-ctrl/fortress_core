@@ -49,12 +49,38 @@ fortress_core/
 
 ## API Endpoints
 
-- `GET /health` — Estado del servicio
-- `GET /api/system/status` — Configuración del sistema
-- `GET /api/risk/monitor` — Monitor de riesgo en tiempo real
+| Método | Ruta | Descripción |
+|---|---|---|
+| GET | `/health` | Estado del servicio |
+| GET | `/api/system/status` | Configuración del sistema |
+| GET | `/api/risk/monitor` | Monitor de riesgo en tiempo real |
+| GET | `/api/backtest/results` | Resultados del último backtest |
+| GET | `/api/backtest/metrics` | Métricas agregadas del backtest |
+| GET | `/api/backtest/equity-curve` | Curva de equity |
+| GET | `/api/backtest/trades` | Trades del backtest |
+| GET | `/api/backtest/monte-carlo` | Simulaciones Monte Carlo |
+| GET | `/api/market/symbols` | Símbolos disponibles |
+| GET | `/api/market/prices/{symbol}` | Precios históricos |
+| GET | `/api/market/indicators/{symbol}` | Indicadores técnicos |
+| GET | `/api/market/summary/{symbol}` | Resumen de mercado |
+| GET | `/api/market/overview` | Panorama del mercado |
+| GET | `/api/market/live/overview` | Resumen en vivo |
+| GET | `/api/market/live/{symbol}` | Estado en vivo de un símbolo |
+| GET | `/api/predict/analyze/{symbol}` | Predicción (usa NVIDIA NIM) |
+| GET | `/api/predict/universe` | Universo de predicción |
+| GET | `/api/predict/macro-correlations` | Correlaciones macro |
+| GET | `/api/governance/status` | Estado del sistema de gobernanza |
+| GET | `/api/governance/analyze/{symbol}` | Análisis de gobernanza (usa NVIDIA NIM) |
+| POST | `/api/governance/record-prediction` | Registrar predicción (API key) |
+| GET | `/api/governance/professor/lessons` | Lecciones del PROFESSOR |
+| GET | `/api/governance/professor/feedback` | Feedback del PROFESSOR |
+| GET | `/api/governance/knowledge/search` | Búsqueda en repositorio de conocimiento |
+| POST | `/api/governance/knowledge/add` | Agregar conocimiento (API key) |
+| GET | `/api/governance/prompts` | Prompts del sistema |
+| GET | `/api/opportunities/today` | Oportunidades del día |
 
 ## Stack
 
-- **Backend**: Python 3.11, FastAPI, SQLAlchemy, pandas, numpy, scipy, scikit-learn, hmmlearn, yfinance
+- **Backend**: Python 3.9, FastAPI, SQLAlchemy, pandas, numpy, scipy, scikit-learn, hmmlearn, yfinance
 - **Frontend**: React 18, TypeScript, Vite, TailwindCSS, Recharts
-- **Infra**: Docker, PostgreSQL 15, Redis 7
+- **Infra**: Docker, PostgreSQL 15

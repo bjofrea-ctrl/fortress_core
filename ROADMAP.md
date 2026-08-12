@@ -30,14 +30,17 @@ actualizado antes de pasar a la siguiente.
   sigue vigente sin excepción. "Arreglar rápido" y "criterio pre-registrado" son cosas
   distintas — no mezclar.
 
-### Tanda A — Código, P1 restante (bajo riesgo, sin dependencias entre sí)
-1. Alinear versión de Python: `backend/Dockerfile` dice 3.11, el `.venv` real es 3.9.6 —
-   elegir una y que coincidan (recomendado: fijar el Dockerfile a 3.9 salvo que haya razón
-   concreta para subir de verdad, lo cual es un cambio más grande y no es esto).
-2. Corregir `README.md`: sacar la mención de Redis (no existe en el stack), corregir la
-   versión de Python, documentar los 27 endpoints reales (hoy sólo 3).
-3. Corregir el docstring de Controller/Judge en `advanced_agents.py` — dice que usan
-   DeepSeek/GLM, en código son deterministas. Sólo el comentario, no tocar comportamiento.
+### Tanda A — Código, P1 restante ✅ (cerrada 2026-08-12, commit TBD)
+1. ✅ Alinear versión de Python: `backend/Dockerfile` fijado a `python:3.9-slim` (igual que
+   el `.venv` real, 3.9.6; todas las deps soportan 3.9).
+2. ✅ `README.md`: sacada la mención de Redis, corregida la versión (3.9), documentados los
+   27 endpoints reales (tabla completa, 8 routers + `/health`).
+3. ✅ Docstrings de Controller/Judge en `advanced_agents.py` corregidos — ahora dicen
+   "lógica determinista — no usa LLM" (el flujo de gobernanza sí usa NIM en la tríada,
+   pero estos dos agentes son pura lógica).
+   Verificación: `pytest` desde `backend/` → 80 passed, 11.58s. Nota: correr pytest desde
+   la raíz del repo se cuelga (config en `backend/pytest.ini`); invocación canónica:
+   `cd backend && .venv/bin/python -m pytest`.
 
 ### Tanda B — Seguridad recién detectada (independiente de la Tanda A)
 4. `fortress.db` nunca se respalda (`auto_backup.sh`/`backup.sh` la excluyen explícitamente)

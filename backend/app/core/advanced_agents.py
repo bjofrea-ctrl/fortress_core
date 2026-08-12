@@ -402,8 +402,8 @@ class ProfessorAgent:
 
 class ControllerAgent:
     """
-    Controla decisiones y valida riesgo. Discute con PROFESOR vía RAG.
-    LLM → DeepSeek V4 Flash
+    Controla decisiones y valida riesgo. Lógica determinista — no usa LLM.
+    Discute con PROFESOR vía RAG.
     """
 
     def __init__(self, absolute_ceiling: float = 0.12, risk_per_trade: float = 0.015,
@@ -455,7 +455,7 @@ class ControllerAgent:
 class JudgeAgent:
     """
     Dirime conflictos entre CONTROLADOR y PROFESOR. Emite veredictos vinculantes.
-    LLM → GLM 5.2
+    Lógica determinista — no usa LLM.
     """
 
     def __init__(self):
@@ -467,7 +467,7 @@ class JudgeAgent:
                          composite_score: float, regime_state: int,
                          manipulation_risk: float, macro_score: float) -> JudgeVerdict:
         """
-        Resuelve conflicto entre CONTROLADOR y PROFESOR usando GLM 5.2.
+        Resuelve conflicto entre CONTROLADOR y PROFESOR (determinista).
         Si hay consenso, no hay conflicto.
         """
         # Detectar conflicto: CONTROLADOR vs PROFESOR
