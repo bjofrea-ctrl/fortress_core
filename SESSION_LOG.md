@@ -980,3 +980,20 @@ Fase 2 (Kalman/GP-BO). Gantt actualizado en el documento.
   es la serie diaria y el estadístico es Sharpe/t-NW, no DSR sobre conteo.
   El propio usuario pasó por alto el §11 al verificar el pre-registro; el
   principio (auditoría informa, backtest pre-registrado decide) sigue intacto.
+
+## 2026-08-11 — CIERRE de la rama W2: las 3 opciones descartadas; motor sin señal en vivo
+
+- Revisión del usuario del re-eval §11.1: fórmula Newey-West correcta (2/9,
+  estándar NW 1994 — el 2/3 del resumen de chat era typo de transcripción, sin
+  bug en código ni plan); fidelidad verificada línea por línea (ADX 28.1, 51
+  trades); números idénticos entre artefacto/plan/reporte; criterio pre-registrado
+  con la muestra correcta (serie diaria 505/501/649 días); buy&hold encuadrado
+  como contexto, no criterio.
+- Commit del re-eval intentado: ya estaba en auto-backup a8ab0a5 (22:10) —
+  árbol limpio sin cambios manuales.
+- CIERRE formal de la rama W2 (documentado en §9 del plan): (b) 50 símbolos
+  descartada (3 fuentes), (c) sectorial descartada (t=1.03/0.57 vs 2.73),
+  (a) basket ADX descartada (t-NW 1/3; delta vs hold negativo 3/3).
+- Conclusión de producto: el motor queda SIN señal comercial en vivo verificada
+  (§4.5). Lo que sigue es decisión de PRODUCTO, no matemática sobre esta
+  arquitectura (§5 no se agenda hasta que se defina).

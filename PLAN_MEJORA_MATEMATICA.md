@@ -380,6 +380,22 @@ la matriz COMPLETA (con mercado → 5 factores, no 8); detectado y corregido a l
 residual (8 factores, consistente con `rmt_mp_20260811_150849.txt`). La huella final es
 `170235`; la intermedia `170216` queda como artefacto del error, no como resultado.
 
+### CIERRE DE LA RAMA W2 (2026-08-11) — las tres opciones quedan descartadas
+
+| Opción | Evidencia | Estado final |
+|---|---|---|
+| (b) Selección de 50 símbolos | rr2 intra-día, trial #13, ridge macro crudo (3 fuentes) | **descartada** |
+| (c) Rotación sectorial/cluster | diagnóstico sectorial endógeno: t=+1.03/+0.57 vs 2.73 | **descartada** |
+| (a) Timing sobre basket único (ADX) | trial #14 (DSR 0/3, mal especificado para 1 activo) + re-evaluación §11.1 (t-NW 1/3, delta vs buy&hold negativo en 3/3) | **descartada** |
+
+El veredicto de (a) se sostiene por el estadístico CORRECTO para timing de un activo
+(serie diaria con Newey-West), no por el DSR sobre conteo de trades: ni la media diaria
+es significativa en ≥2/3 ventanas (solo W3, t=+2.24), ni el timing supera a mantener el
+basket (delta negativo en las 3, t=−3.06/−0.53/−1.33). Con la rama W2 cerrada con tres
+descartes verificados de punta a punta, el motor queda sin señal comercial en vivo
+verificada (§4.5): lo que sigue es una decisión de PRODUCTO sobre esta arquitectura,
+no más matemática (§5 no se agenda hasta que se defina).
+
 ---
 
 ---
