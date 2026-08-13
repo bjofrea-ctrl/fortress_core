@@ -8,8 +8,6 @@ Ventanas: W1 2020-2021, W2 2022-2023, W3 2024-2026 | piso trades/ventana: 30
 Criterio: DSR OOS >= 0.90 en >= 2/3 ventanas | N_TRIALS=19 (17 historico +1 #14 +1 este)
 ========================================================================
 precios cargados: 50/50 simbolos (2015-01-01 -> 2026-08-04)
-EVT calibrado walk-forward: 50/50 simbolos | 35 fechas de recalibracion
-ADVERTENCIA: pocas recalibraciones -> fallback frecuente a cuantil empirico
+EVT calibrado walk-forward: 50/50 simbolos | 35 fechas de recalibracion (esperadas ~34) | fallback a cuantil empirico solo si una ventana tiene <30 excesos (esperados ~38/ventana)
 
 Corriendo baseline (BacktestEngine estandar, misma data)...
-Corriendo EVT (EVTEngine con EVTRiskManager walk-forward)...
