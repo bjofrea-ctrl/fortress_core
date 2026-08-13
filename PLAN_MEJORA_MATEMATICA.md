@@ -865,6 +865,43 @@ hipótesis de cascadas de stops como señal explotable vía este proxy.
 
 ---
 
+## 18. Control de beta de mercado sobre MA200 C3/C6 (2026-08-12, PRE-REGISTRADO)
+
+**Origen**: §16 dejó una reserva explícita — el hallazgo de C3/C6 (MA200 como
+reversión) es pooled dentro de cluster y podía ser sólo beta de mercado (rallies
+generales preceden correcciones) en vez de comportamiento idiosincrático.
+
+**Metodología** (`diagnose_ma200_beta_control.py`): mismo panel/señal que §16,
+pero el target pasa a ser retorno EN EXCESO de SPY (mismo horizonte). Sólo C3 y
+C6 deciden (los únicos significativos en §16, fijado antes de correr — los otros
+6 clusters se reportan como contexto, sin peso en el veredicto, para no inflar
+potencia filtrando "ganadores" después de mirar). Bonferroni-2, umbral \|t\|>2.24.
+
+**Resultado** (`diagnose_ma200_beta_control_20260812_202125.txt`):
+
+| cluster | t crudo (§16) | t exceso-mercado | veredicto |
+|---|---|---|---|
+| C3 | −3.26 | −1.02 | NO SOBREVIVE — era beta de mercado |
+| C6 | −4.31 | **−2.87** | **SOBREVIVE** — idiosincrático |
+
+**Veredicto**: C3 queda refutado como beta disfrazada. **C6 (AAPL, V, MA, ORCL,
+IBM, QCOM, TXN) sobrevive el control** — sobre-extensión por encima de MA200
+predice retorno peor que el del mercado, no sólo peor en general. Primer
+hallazgo de toda la investigación que sostiene este nivel de escrutinio.
+
+**Nota de disciplina, no perseguida ahora**: C0 (SPY/QQQ/NVDA/TSLA/...) mostró
+t=+3.28 en exceso-de-mercado pese a no ser significativo en crudo (§16) — no
+estaba pre-registrado como cluster que decide, así que NO se actúa sobre esto
+acá (sería exactamente el post-hoc cherry-picking que este protocolo existe para
+evitar). Queda anotado como posible pregunta futura, con su propio pre-registro
+si se retoma.
+
+**Próximo paso, no hecho todavía**: backtest con costos reales del hallazgo de
+C6 (mismo patrón que mató a gap-reversion en §13.1 — una cosa es el IC, otra es
+que sobreviva costos y mecánica real).
+
+---
+
 ## 14. Disciplina sin excepción
 
 - Ningún resultado de un panel con bug de flujo conocido decide nada hasta reproducirse
