@@ -114,6 +114,19 @@ actualizado antes de pasar a la siguiente.
 15. ✅ Fix `.gitignore` (2026-08-12) — la Tanda B excluyó sin querer TODOS los
     artefactos `.txt` de diagnóstico (patrón `data/` sin anclar). Corregido a patrones
     específicos; recuperados los 4 artefactos generados mientras estuvo roto.
+16. ✅ §18.1 C6 (MA200 fade) — backtest con costos reales (2026-08-13) — pre-registrado
+    en `PLAN_MEJORA_MATEMATICA.md §18.1`, corrido (`backtest_c6_costs.py`, artefacto
+    `backtest_c6_costs_20260813_135830.txt`): **NO CUMPLE**. Panel verificado fiel a §16
+    (3703 filas, Pearson IC −0.1582, Spearman −0.1129 — idénticos al artefacto de §16).
+    LS (gate): bruto −0.000019/día (t-NW −0.07), NETO −0.000228/día (t-NW **−0.88**),
+    Sharpe −0.27, 45.5% días positivos, 2661 días con posición. SO (info): neto −0.000758
+    (t-NW −2.92). Diagnóstico: `E[sign×fwd] = +0.00017` — en 7 años alcistas dist>0 la
+    mayor parte del tiempo, el fade está short casi siempre y paga el drift del mercado;
+    el hallazgo vive en exceso de mercado (§18, t=−2.87), no en nivel → la mecánica LS
+    cruda no lo capitaliza. §18 queda CERRADO: C6 es hallazgo académico, mismo destino
+    que gap-reversion. Baseline universo 50 sigue siendo el único modo de operación
+    documentado. **Tanda D completa.** Siguiente frente: Fase 1 EVT o Fase 2
+    Kalman+GP-BO (decisión del usuario).
 
 ---
 

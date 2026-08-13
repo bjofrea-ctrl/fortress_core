@@ -934,6 +934,81 @@ si se retoma.
 C6 (mismo patrón que mató a gap-reversion en §13.1 — una cosa es el IC, otra es
 que sobreviva costos y mecánica real).
 
+### 18.1 PRE-REGISTRO — backtest C6 con costos reales (Tanda D, 2026-08-12)
+
+**Pregunta**: el fade del IC pooled de C6 (dist_ma200 vs fwd_20d, t=−2.87 en exceso
+de mercado) ¿deja retorno NETO positivo después de costos reales (0.15%/lado) y
+mecánica de hold 20d? Es el mismo gate que mató a gap-reversion en §13.1.
+
+**Metodología** (`backtest_c6_costs.py`, corre DESPUÉS de este pre-registro):
+- Universo C6 (AAPL, V, MA, ORCL, IBM, QCOM, TXN — exactamente el cluster de
+  §16/§18), 2019-01-01 → 2026-08-04, OHLC real vía `load_universe`.
+- Señal idéntica a §16: `dist_ma200 = (close − ema200)/ema200` con
+  `calculate_all_indicators` (no se reinventa el cálculo); fechas de señal con
+  stride 5d POR SÍMBOLO (mismo `iloc[::5]` que §16).
+- Estrategia principal (variante **LS**): fade completo del IC pooled del cluster
+  — LONG en los símbolos con dist_ma200 < 0, SHORT en los con dist_ma200 > 0,
+  trade units equally-weighted, entrada al close de la fecha de señal, salida al
+  close de t+20 (el target exacto de §16, sin stops ni salidas anticipadas — no
+  se inventan parámetros).
+- Variante informativa (NO gate, reportada aparte): **SO** = short-only de los
+  símbolos con dist_ma200 > 0 (la sobre-extensión destacada en §16), mismos hold/
+  costos.
+- Costos: 0.15%/lado × 2 = 0.30% del tamaño por trade unit completo, deducidos el
+  día de entrada del trade unit (costeo conservador, adelanta el costo — mismo
+  criterio que §13.1).
+- Serie principal: retorno diario del portafolio (promedio EW de los trade units
+  activos ese día), bruto y neto; inferencia Newey-West Bartlett L=20 (el
+  horizonte, misma convención que los ICs de 20d).
+
+**Criterio de éxito (fijado ANTES de correr, sin conocer el resultado)**: para la
+variante LS: `n_días_con_posiciones ≥ 100` Y media del retorno diario NETO > 0 con
+`t-NW ≥ 2.0`. Secundario (informativo): Sharpe neto anualizado, % días positivos,
+delta bruto→neto, nº medio de trade units activos/día, y el mismo juego de métricas
+para SO.
+
+**Veredicto posible**: si LS cumple → C6 queda como candidato REAL de motor: se
+diseña un trial de motor pre-registrado (integración del fade en el motor, no una
+estrategia paralela) con su propio slot de n_trials. Si no cumple → §18 se cierra:
+C6 queda como hallazgo académico que no sobrevive costos (mismo destino que
+gap-reversion), y el proyecto queda con el baseline universo 50 como único modo de
+operación documentado.
+
+**Riesgo declarado**: cero grados de libertad de búsqueda nuevos — la señal, el
+horizonte y el stride son literalmente los de §16; el umbral de signo es el signo
+del IC validado; los costos son los estándar del proyecto. La variante SO no
+participa del gate (el IC pooled del cluster es el hallazgo validado, no solo su
+mitad short).
+
+**RESULTADO (2026-08-13, artefacto `data/cache/backtest_c6_costs_20260813_135830.txt`)**
+— NO CUMPLE, §18 se cierra.
+
+- Verificación de integridad del panel (obligatoria §14): el script reproduce
+  EXACTAMENTE §16 — 3703 filas pooled, Pearson IC −0.1582, Spearman −0.1129
+  (mismos valores del artefacto de §16). La señal y el target son fieles.
+- LS (gate): 3703 trade units, 2661 días con posición (≥100 ✓). Bruto −0.000019/día
+  (t-NW −0.07), NETO −0.000228/día (t-NW −0.88, no >0 ✓/✗), Sharpe neto −0.27,
+  45.5% días positivos, 20 trade units activos/día promedio. Costos 0.30%/unit =
+  0.000209/día → consumen todo el bruto y más.
+- SO (informativa): bruto −0.000603/día (t-NW −2.33), neto −0.000758 (t-NW −2.92),
+  44.0% días positivos.
+- Diagnóstico (por qué el IC −0.1582 no se traduce): `E[sign(dist)×fwd] = +0.00017`
+  en el panel — el fade LS crudo pierde el drift. En 7 años alcistas el precio pasa
+  la mayor parte del tiempo POR ENCIMA del MA200 (P(dist>0) ≫ 0.5), el portafolio
+  está short la mayoría del tiempo y el short paga el drift completo del mercado.
+  El hallazgo de §16/§18 es real pero VIVE EN EXCESO DE MERCADO (t=−2.87 en §18),
+  no en nivel: la mecánica LS cruda no lo capitaliza porque mezcla señal con
+  desbalance de signo.
+- Lección §13.1 repetida con más claridad: un IC pooled significativo sobre retornos
+  crudos NO implica PnL del fade EW con hold 20d, ni siquiera en bruto. El gate de
+  costos (0.15%/lado) elimina cualquier resto. Veredicto: C6 queda como hallazgo
+  académico — la señal existe en exceso de mercado, pero ninguna mecánica con costos
+  reales la convierte en PnL neto sin una estrategia neutral al mercado explícita
+  (que sería UN NUEVO pre-registro, no un ajuste de este).
+- Estado del proyecto: baseline universo 50 = único modo de operación documentado.
+  Tanda D completa; siguiente frente: Fase 1 EVT o Fase 2 Kalman+GP-BO (decisión del
+  usuario).
+
 ---
 
 ## 14. Disciplina sin excepción

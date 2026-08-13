@@ -1047,3 +1047,23 @@ Sesión de investigación (Tanda D del plan consolidado). Disciplina §14 respet
 ### Ritual / pendientes
 - Tanda D COMPLETA: items 10 ✅ (NO CUMPLE), 11 ✅ (pista sin acción), 12 ✅ (NO CUMPLE 0/3), 13 ✅ (research hecha).
 - Commit + push + espejo + memoria Engram al cerrar (commits d611f67, 7e0c7b0, y el de este cierre).
+
+## 2026-08-13 — §18.1 C6 backtest con costos: NO CUMPLE (cierre §18, Tanda D completa)
+
+- Pre-registro §18.1 (PLAN_MEJORA_MATEMATICA.md) antes de correr: fade LS del IC pooled
+  de C6 (dist_ma200 vs fwd_20d, t=−2.87 exceso mercado §18), hold 20d, stride 5d,
+  costos 0.15%/lado, criterio n_días≥100 Y media neta >0 con t-NW≥2.0.
+- Script `backend/scripts/backtest_c6_costs.py`: 3 defectos metodológicos detectados y
+  corregidos ANTES de correr (no suavizar fwd/20 por día; sin lookahead en el día de
+  entrada; 20 filas del símbolo, no Timedelta calendario) + 2 errores ruff.
+- Resultado: NO CUMPLE. LS bruto −0.000019/día (t-NW −0.07), NETO −0.000228 (t-NW −0.88),
+  Sharpe −0.27, 45.5% días positivos. SO neto −0.000758 (t-NW −2.92). 3703 units, 2661 días.
+- Verificación de integridad §14: panel reproduce §16 EXACTO (Pearson IC −0.1582,
+  Spearman −0.1129, n=3703) — señal fiel.
+- Diagnóstico: E[sign×fwd]=+0.00017 → el fade crudo pierde el drift (short la mayoría
+  del tiempo en mercado alcista). El hallazgo de §16/§18 vive en exceso de mercado,
+  no en nivel; la mecánica LS cruda no lo capitaliza. Una variante market-neutral sería
+  UN NUEVO pre-registro, no un ajuste (disciplina §14).
+- §18 CERRADO: C6 = hallazgo académico. Tanda D completa. Baseline universo 50 =
+  único modo de operación documentado. Próximo: Fase 1 EVT o Fase 2 Kalman+GP-BO.
+- Artefacto trackeado: `backend/data/cache/backtest_c6_costs_20260813_135830.txt`.
