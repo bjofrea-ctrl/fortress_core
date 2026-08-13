@@ -1,0 +1,29 @@
+========================================================================
+§16 — MA200 soporte/resistencia por CLUSTER RMT — PRE-REGISTRADO
+Señal: (close-ema200)/ema200 | target: fwd_return_20d | pooled DENTRO de cada cluster
+Bonferroni-8 | umbral |t| > 2.73 | piso n>=200/cluster
+Clusters: mismos de §9.c (sector_clusters_20260811_170235.txt), no inventados
+========================================================================
+
+Cargando datos... (50 símbolos)
+Panel: 26450 filas, 50 símbolos
+
+cluster      n   mean_IC   rank_IC    t_NW  sig(Bonf)  n>=200
+C0        6348   +0.0398   -0.0143   +1.42      False    True
+C1        3174   +0.0134   +0.0329   +0.34      False    True
+C2        1587   -0.0999   -0.0955   -1.78      False    True
+C3        3174   -0.1294   -0.1008   -3.26       True    True
+C4        2645   -0.0371   -0.0410   -0.85      False    True
+C5        3703   -0.0606   -0.0501   -1.65      False    True
+C6        3703   -0.1582   -0.1129   -4.31       True    True
+C7        2116   -0.0663   -0.0220   -1.36      False    True
+
+--- VEREDICTO (§16, pre-registrado) ---
+=> Clusters significativos: ['C3', 'C6']
+   Signo positivo (momentum, superar MA200 = continuación): []
+   Signo negativo (reversión, MA200 = resistencia real): ['C3', 'C6']
+=> Los clusters significativos van todos en la misma dirección —
+   diferencia de FUERZA, no de comportamiento opuesto.
+MA200_HETEROGENEIDAD: NO CONFIRMADA (mismo signo en todos)
+
+Out: data/cache/diagnose_ma200_clusters_20260812_200228.txt

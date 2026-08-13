@@ -789,6 +789,55 @@ este protocolo, no funcionaron de forma robusta en ningún momento de la muestra
 
 ---
 
+## 16. MA200 soporte/resistencia por CLUSTER RMT — ¿heterogéneo? (2026-08-12, PRE-REGISTRADO)
+
+**Origen**: hipótesis del usuario — algunos activos respetan MA200 como resistencia
+(reversión), otros la usan como confirmación de tendencia (momentum/continuación).
+Un test pooled con un signo esperado único cancelaría ambos efectos. Nunca se
+testeó heterogeneidad por activo en este proyecto.
+
+**Metodología** (`diagnose_ma200_clusters.py`): señal = (close−ema200)/ema200,
+target = fwd_return_20d, estride 5d. Pooled DENTRO de cada uno de los 8 clusters
+RMT ya calculados (§9.b/§9.c, no inventados de nuevo). Newey-West con n_eff por
+símbolo. Bonferroni-8, umbral \|t\|>2.73. Criterio: heterogeneidad real si ≥2
+clusters significativos con signos OPUESTOS.
+
+**Resultado** (`diagnose_ma200_clusters_20260812_200228.txt`, 26450 filas):
+
+| cluster | n | IC | rank_IC | t-NW | sig (Bonf-8) |
+|---|---|---|---|---|---|
+| C0 (SPY/QQQ/NVDA/TSLA/...) | 6348 | +0.0398 | −0.0143 | +1.42 | no |
+| C1 (JPM/BAC/ADBE/GE/...) | 3174 | +0.0134 | +0.0329 | +0.34 | no |
+| C2 (CRM/ACN/AMGN) | 1587 | −0.0999 | −0.0955 | −1.78 | no |
+| **C3 (WMT/UNH/ABBV/TMO/MCD/PFE)** | 3174 | **−0.1294** | −0.1008 | **−3.26** | **sí** |
+| C4 (META/LLY/COST/MRK/CSCO) | 2645 | −0.0371 | −0.0410 | −0.85 | no |
+| C5 (GOOGL/AMZN/XOM/NFLX/...) | 3703 | −0.0606 | −0.0501 | −1.65 | no |
+| **C6 (AAPL/V/MA/ORCL/IBM/QCOM/TXN)** | 3703 | **−0.1582** | −0.1129 | **−4.31** | **sí** |
+| C7 (MSFT/HD/CMCSA/DIS) | 2116 | −0.0663 | −0.0220 | −1.36 | no |
+
+**Veredicto sobre la hipótesis original**: NO CONFIRMADA — no hay clusters con
+signos opuestos entre los significativos. La hipótesis de "resistencia para unos,
+continuación para otros" no se sostiene: ningún cluster mostró el signo momentum
+(positivo).
+
+**Pero apareció algo distinto y más fuerte que cualquier otra cosa en esta
+investigación**: C3 y C6 dan Bonferroni-significativos con margen real (no al
+límite como ADX o STAGFLATION antes) — mientras más lejos por ARRIBA de su MA200
+está el precio, PEOR el retorno de los próximos 20 días. Reversión por
+sobre-extensión, no ruptura alcista.
+
+**Reserva explícita antes de tratarlo como hallazgo**: el test es pooled dentro de
+cluster (correcto para esta pregunta específica, ver metodología), pero eso lo
+hace vulnerable a un confusor distinto — que sea simplemente beta de mercado
+(rallies extendidos del mercado general preceden correcciones, y estos dos
+clusters se movieron con el mercado) en vez de comportamiento idiosincrático del
+activo. **Falta controlar contra el retorno del mercado en la misma ventana**
+antes de aceptarlo como señal real, específica de C3/C6. Candidato más
+prometedor de selección de toda la investigación — pendiente de ese control, no
+cerrado como validado todavía.
+
+---
+
 ## 14. Disciplina sin excepción
 
 - Ningún resultado de un panel con bug de flujo conocido decide nada hasta reproducirse
