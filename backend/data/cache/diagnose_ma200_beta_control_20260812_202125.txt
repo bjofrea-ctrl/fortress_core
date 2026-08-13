@@ -1,0 +1,27 @@
+========================================================================
+§18 — Control de BETA DE MERCADO sobre hallazgo MA200 C3/C6 — PRE-REGISTRADO
+Target: retorno EN EXCESO de SPY (fwd_return_20d(activo) - fwd_return_20d(SPY))
+Bonferroni-2 (sólo C3/C6 deciden) | umbral |t| > 2.24
+========================================================================
+
+Cargando datos... (50 símbolos)
+Panel: 26450 filas
+
+cluster      n  IC crudo  t crudo  IC exceso  t exceso  decide  sobrevive
+C0        6348   +0.0398    +1.42    +0.0920     +3.28   False          —
+C1        3174   +0.0134    +0.34    +0.0590     +1.49   False          —
+C2        1587   -0.0999    -1.78    -0.0465     -0.83   False          —
+C3        3174   -0.1294    -3.26    -0.0403     -1.02    True      False
+C4        2645   -0.0371    -0.85    +0.0046     +0.10   False          —
+C5        3703   -0.0606    -1.65    -0.0242     -0.66   False          —
+C6        3703   -0.1582    -4.31    -0.1056     -2.87    True       True
+C7        2116   -0.0663    -1.36    -0.0202     -0.42   False          —
+
+--- VEREDICTO (§18, pre-registrado, sólo C3/C6 deciden) ---
+  C3: t crudo=-3.26 -> t exceso-mercado=-1.02 => NO SOBREVIVE (era beta de mercado)
+  C6: t crudo=-4.31 -> t exceso-mercado=-2.87 => SOBREVIVE (idiosincrático, no sólo beta)
+
+=> Al menos un cluster sostiene el efecto controlando por mercado: hay algo
+   idiosincrático real, no sólo beta. MA200_C3C6: VALIDADO (parcial o total)
+
+Out: data/cache/diagnose_ma200_beta_control_20260812_202125.txt
