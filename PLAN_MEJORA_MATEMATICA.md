@@ -838,6 +838,33 @@ cerrado como validado todavía.
 
 ---
 
+## 17. Canal de Donchian — rank IC intra-día (2026-08-12, PRE-REGISTRADO)
+
+**Origen**: hipótesis del usuario — cerca de máximos/mínimos recientes se acumulan
+stop-loss y márgenes de otros traders; romperlos puede disparar cascadas. No se
+puede ver el libro de órdenes real (privado de cada broker); el proxy público más
+cercano ya implementado en el proyecto es el Canal de Donchian (20d high/low,
+"sistema Turtle", citado con Donchian 1970 y Shumway & Wu 2006 en
+`RESEARCH_PREDICTIVE_INDICATORS.md`, IC esperado documentado 0.05-0.08) — nunca
+se le corrió el mismo test riguroso que al resto de los factores.
+
+**Metodología** (`diagnose_donchian_intraday.py`, mismo protocolo exacto que
+0.5a — rank IC intra-día, Newey-West, NO pooled): señal = posición continua
+dentro del canal, (close−mid)/(upper−lower), sobre el panel limpio ya construido.
+Signo esperado +1 (breakout alcista = continuación). Umbral |t|>2.0 (un solo
+factor, sin corrección de múltiples comparaciones).
+
+**Resultado** (`diagnose_donchian_intraday_20260812_201008.txt`, 2069/2069 filas
+con Donchian calculado): 187 fechas, mean_IC=−0.0249, t-NW=**−0.81**.
+
+**Veredicto**: NO SIGNIFICATIVO, y con signo contrario al esperado (negativo, no
+positivo). Mismo destino que momentum/RSI/trend/ADX en §0.5a: el "sistema Turtle"
+está implementado y documentado con una cita académica, pero no muestra poder de
+selección real en este universo con este protocolo. Descartado — no confirma la
+hipótesis de cascadas de stops como señal explotable vía este proxy.
+
+---
+
 ## 14. Disciplina sin excepción
 
 - Ningún resultado de un panel con bug de flujo conocido decide nada hasta reproducirse

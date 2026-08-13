@@ -1,0 +1,19 @@
+========================================================================
+§17 — Canal de Donchian, rank IC intra-día — PRE-REGISTRADO
+Señal: (close - donchian_mid) / (donchian_upper - donchian_lower), 20d
+Mismo protocolo que diagnose_rr2_intraday.py | signo esperado: +1 | umbral |t|>2.0
+========================================================================
+
+Cargando precios para calcular Donchian (50 símbolos)...
+Panel: factor_panel_20260811_144857.parquet | filas eligible con Donchian: 2069 de 2069
+
+factor            n_days   mean_IC    SE_NW       t          veredicto
+donchian_score       187   -0.0249   0.0306   -0.81             no sig
+
+--- VEREDICTO (§17, pre-registrado) ---
+=> Donchian NO muestra rank IC intra-día significativo. Mismo destino que
+   momentum/RSI/trend/ADX en §0.5a: implementado y documentado, sin poder de
+   selección real medido con el mismo rigor.
+DONCHIAN: DESCARTADO
+
+Out: data/cache/diagnose_donchian_intraday_20260812_201008.txt
