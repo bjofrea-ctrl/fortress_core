@@ -1,0 +1,35 @@
+==============================================================================
+§21 (M1) — AUDITORIA DE HORIZONTE: rank IC intra-dia a 5d/10d vs 20d — PRE-REGISTRADO
+Motivo: tenencia real mediana 11d, 49% de trades cierra <=10d, solo 25.5% llega a 20d
+        pero TODA la investigacion previa midio a 20d (AUDITORIA_MECANICA.md hallazgo 2)
+Tests NUEVOS: 3 factores x 2 horizontes = 6
+Bonferroni-6 | umbral |t| > 2.64 | signo esperado +
+20d se reporta como REFERENCIA (ya testeado en §0.5a), no cuenta como test nuevo
+==============================================================================
+
+Panel: factor_panel_20260811_144857.parquet | filas eligible: 2069 | fechas: 346
+Cargando precios (50 simbolos) para calcular forwards...
+
+--- CHECK DE FIDELIDAD (§14) ---
+fwd_20 recalculado vs fwd_return_20d del panel: n=2069 | max |dif| = 0.000e+00 (tolerancia 1e-06)
+FIDELIDAD: OK -> se evalua
+
+factor            horiz       tipo  n_days   mean_IC    SE_NW       t  sig(Bonf)
+momentum_score       5d      NUEVO     187   +0.0072   0.0341   +0.21      False
+momentum_score      10d      NUEVO     187   -0.0078   0.0322   -0.24      False
+momentum_score      20d referencia     187   -0.0100   0.0359   -0.28          —
+rsi_score            5d      NUEVO     164   +0.0627   0.0288   +2.18      False
+rsi_score           10d      NUEVO     164   +0.0307   0.0293   +1.05      False
+rsi_score           20d referencia     164   +0.0404   0.0294   +1.38          —
+adx_score            5d      NUEVO     151   -0.0021   0.0331   -0.06      False
+adx_score           10d      NUEVO     151   +0.0015   0.0324   +0.05      False
+adx_score           20d referencia     151   +0.0679   0.0294   +2.31          —
+
+--- VEREDICTO (§21, pre-registrado) ---
+=> Ningun factor es significativo a 5d ni a 10d (Bonferroni-6, signo esperado).
+HORIZONTE: NO IMPORTA — los factores no tienen poder de seleccion intra-dia en
+           ningun horizonte relevante (5d, 10d ni 20d). El desajuste de horizonte
+           era real como problema metodologico, pero no ocultaba ninguna senal:
+           todos los rechazos previos se REFUERZAN.
+
+Out: data/cache/horizon_audit_20260813_173648.txt

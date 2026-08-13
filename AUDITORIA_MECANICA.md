@@ -125,7 +125,18 @@ Terminar lo que quedó a medias antes de abrir nada nuevo. Sin cambios de
 metodología: el pre-registro de §20 ya está bien (walk-forward, anti-lookahead).
 Sólo hace falta ejecución robusta y confirmación de que llegó al final.
 
-### Fase M1 — Auditoría de horizonte (la más barata, la que puede reencuadrar todo)
+### Fase M1 — Auditoría de horizonte ✅ CERRADA (2026-08-13, `PLAN_MEJORA_MATEMATICA.md §21`)
+
+**Resultado: el horizonte NO ocultaba señal.** Ningún factor cruza Bonferroni-6 a 5d
+ni a 10d (`horizon_audit_20260813_173648.txt`). El check de fidelidad dio exacto
+(max\|dif\|=0 sobre 2069 filas) y la columna 20d reprodujo exactamente §0.5a
+(momentum −0.28, rsi +1.38, adx +2.31), confirmando la reimplementación. El
+desajuste de horizonte era real como problema metodológico, pero todos los rechazos
+previos se refuerzan: los factores no seleccionan en ningún horizonte relevante.
+Único dato nominal reportado por honestidad: `rsi_score` a 5d, t=+2.18 — cruza
+\|t\|>2 sin corregir, no sobrevive Bonferroni-6.
+
+<details><summary>Especificación original (cumplida)</summary>
 Re-correr el diagnóstico de rank IC intra-día a **5d y 10d** además de 20d, sobre
 el mismo panel limpio y con el mismo protocolo (Newey-West, Bonferroni por el
 número de horizontes × factores). Pre-registrar el criterio antes.
@@ -138,6 +149,7 @@ número de horizontes × factores). Pre-registrar el criterio antes.
 
 Costo: bajo (reusa panel e infraestructura). Riesgo de sobreajuste: bajo (es un
 diagnóstico, no un ajuste de parámetros).
+</details>
 
 ### Fase M2 — Diagnóstico contrafáctico de salidas (no optimización todavía)
 Antes de tocar ningún umbral: medir qué habría pasado con las 41 posiciones

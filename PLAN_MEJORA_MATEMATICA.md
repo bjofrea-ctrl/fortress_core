@@ -1075,6 +1075,48 @@ pre-registrado con slot de n_trials propio.
 
 ---
 
+## 21 (M1). AUDITORÍA DE HORIZONTE — rank IC a 5d/10d vs 20d (2026-08-13, PRE-REGISTRADO)
+
+**Origen**: `AUDITORIA_MECANICA.md` hallazgo 2. TODA la investigación de señal midió
+a 20 días (`HORIZON=20` en los 6 scripts de diagnóstico), pero el motor real tiene
+tenencia **mediana de 11 días**: 49.0% de las operaciones cierran en ≤10d y sólo
+25.5% llegan a 20d. Medimos el poder predictivo en un horizonte que no es el que el
+sistema opera — nunca se cuestionó en 17 secciones de investigación.
+
+**Metodología** (`diagnose_horizon_audit.py`): idéntica a 0.5a (rank IC intra-día,
+Spearman por fecha, Newey-West sobre la serie de ICs diarios). Único cambio: el
+target. Lags NW escalados por horizonte (L=ceil(H/5): 1, 2, 4). **Check de fidelidad
+pre-registrado**: el `fwd_20` recalculado debe reproducir la columna del panel —
+resultado `max|dif| = 0.000e+00` sobre 2069 filas, exacto.
+
+**Criterio pre-registrado**: 3 factores × 2 horizontes nuevos = 6 tests
+(`trend_score` excluido, es constante dentro del gate y no produce test). Bonferroni-6,
+umbral \|t\|>2.64, signo esperado positivo. 20d se reporta como REFERENCIA, no cuenta
+como test nuevo.
+
+**Resultado** (`horizon_audit_20260813_173648.txt`):
+
+| factor | 5d (nuevo) | 10d (nuevo) | 20d (referencia) |
+|---|---|---|---|
+| momentum_score | +0.21 | −0.24 | −0.28 |
+| rsi_score | **+2.18** | +1.05 | +1.38 |
+| adx_score | −0.06 | +0.05 | +2.31 |
+
+**Validación cruzada**: los t de la columna 20d reproducen EXACTAMENTE los de §0.5a
+(momentum −0.28, rsi +1.38, adx +2.31) — la reimplementación es correcta, no es un
+cálculo distinto que casualmente da parecido.
+
+**Veredicto**: ningún factor cruza Bonferroni-6 a 5d ni a 10d. **El desajuste de
+horizonte era un problema metodológico real, pero no ocultaba ninguna señal.** Todos
+los rechazos previos se REFUERZAN — ahora se sabe que los factores no seleccionan en
+ninguno de los tres horizontes relevantes, no sólo en el que se había mirado.
+
+**Nota honesta (mismo trato que ADX en §8)**: `rsi_score` a 5d da t=+2.18, el más
+fuerte de los tests nuevos y suficiente para un umbral sin corregir (\|t\|>2), pero
+**no sobrevive Bonferroni-6**. Se reporta para no esconderlo; no es un hallazgo.
+
+---
+
 ## 14. Disciplina sin excepción
 
 - Ningún resultado de un panel con bug de flujo conocido decide nada hasta reproducirse
