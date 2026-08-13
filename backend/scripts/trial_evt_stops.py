@@ -69,10 +69,11 @@ def calibrate_var_gpd(z: np.ndarray) -> float:
         return float(np.quantile(L, VAR_LEVEL))
     shape, _, scale = genpareto.fit(exc, floc=0)
     n_excs, n_obs = len(exc), len(z)
-    if abs(shape) < 1e-12:
-        var = u + scale * np.log(n_obs / n_excs * (1 - VAR_LEVEL))
+    b = n_excs / n_obs / (1 - VAR_LEVEL)
+    if abs(shape) < 1e-12 or scale <= 0:
+        var = u + scale * np.log(b)
     else:
-        var = u + scale / shape * ((n_obs / n_excs * (1 - VAR_LEVEL)) ** (-shape) - 1)
+        var = u + scale / shape * (b ** shape - 1)
     return float(var)
 
 
@@ -99,8 +100,9 @@ class EVTRiskManager(AdaptiveRiskManager):
                 rec_dates.append(dates[i - 1])
                 vars_.append(calibrate_var_gpd(z[i - CAL_WINDOW_DAYS:i]))
                 sigs_.append(sig.iloc[i])
+            rec_arr = np.asarray(rec_dates, dtype="datetime64[ns]")
             sig_by_date = pd.Series(sig.to_numpy(), index=r.index)
-            self._var_table[sym] = rec_dates
+            self._var_table[sym] = rec_arr
             self._var_table[sym + "__var"] = vars_
             self._var_table[sym + "__sig"] = sig_by_date
         self._batches = sorted({d for sym in price_data for d in self._var_table.get(sym, [])})
@@ -109,12 +111,14 @@ class EVTRiskManager(AdaptiveRiskManager):
         """Multiplicador VaR_GPD vigente; None si el activo no esta calibrado.
         side='left' -> recalibracion ESTRICTAMENTE anterior a la fecha de compra
         (anti-lookahead; si la compra cae el dia de una recalibracion, se usa la
-        anterior)."""
+        anterior). Todas las fechas se normalizan a np.datetime64: searchsorted
+        de numpy 2.x falla con listas python de datetime64 contra Timestamp."""
         rec_dates = self._var_table.get(symbol)
-        if not rec_dates:
+        if rec_dates is None:
             return None
         vars_ = self._var_table[symbol + "__var"]
-        idx = np.searchsorted(rec_dates, price_date, side="left") - 1
+        as_dt = np.datetime64(pd.Timestamp(price_date))
+        idx = np.searchsorted(rec_dates, as_dt, side="left") - 1
         if idx < 0:
             return None
         return vars_[idx]
@@ -123,12 +127,13 @@ class EVTRiskManager(AdaptiveRiskManager):
         sig = self._var_table.get(symbol + "__sig")
         if sig is None:
             return None
-        pos = sig.index.searchsorted(price_date, side="right") - 1
+        as_dt = np.datetime64(pd.Timestamp(price_date))
+        pos = sig.index.searchsorted(as_dt, side="right") - 1
         return float(sig.iloc[pos]) if pos >= 0 else None
 
     def _sync_clock(self, date):
         if self._current_date != date:
-            self._current_date = date
+            self._current_date = pd.Timestamp(date)
 
     def check_all_stops(self, equity, current_prices, atrs, date):
         self._sync_clock(date)
@@ -152,9 +157,10 @@ class EVTRiskManager(AdaptiveRiskManager):
                                                  payoff_ratio, fractional_kelly, symbol)
         self._n_evt_buys += 1
         rec_dates = self._var_table[symbol]
-        idx = np.searchsorted(rec_dates, self._current_date, side="left") - 1
+        as_dt = np.datetime64(self._current_date)
+        idx = np.searchsorted(rec_dates, as_dt, side="left") - 1
         assert idx >= 0, f"EVT sin recalibracion previa para {symbol} el {self._current_date}"
-        assert rec_dates[idx] < self._current_date, (
+        assert rec_dates[idx] < as_dt, (
             f"LOOKAHEAD EVT: recalibracion {rec_dates[idx]} no es anterior a compra {self._current_date}"
         )
         thresholds = self.get_thresholds()
@@ -217,9 +223,9 @@ def main():
     evt_rm = EVTRiskManager(25000.0, price_data)
     n_sym_cal = sum(1 for s in SYMBOLS if s in evt_rm._var_table)
     n_batches = len(evt_rm._batches)
-    log(f"EVT calibrado walk-forward: {n_sym_cal}/{len(SYMBOLS)} simbolos | {n_batches} fechas de recalibracion")
-    if n_batches < 40:
-        log("ADVERTENCIA: pocas recalibraciones -> fallback frecuente a cuantil empirico")
+    log(f"EVT calibrado walk-forward: {n_sym_cal}/{len(SYMBOLS)} simbolos | {n_batches} fechas de recalibracion "
+        f"(esperadas ~{(2900-756)//63}) | fallback a cuantil empirico solo si una ventana tiene <{MIN_EXCESS} excesos "
+        f"(esperados ~38/ventana)")
 
     log("\nCorriendo baseline (BacktestEngine estandar, misma data)...")
     res_base = BacktestEngine(initial_capital=25000).run(
