@@ -147,7 +147,24 @@ actualizado antes de pasar a la siguiente.
     1.26 — la regla gaussiana subestima el VaR 99% en ~26%); GPD calibra (excesos
     reales 0.98% ≈ 1%). Implicación: la regla de stop 2×ATR está sistemáticamente
     subdimensionada contra el riesgo de cola → **siguiente paso: pre-registro del
-    trial de stops EVT del motor** (mismas ventanas W1-W3, DSR≥0.90, n_trials+1).
+    trial de stops EVT del motor** (mismas ventanas W1-W3, DSR≥0.90, n_trials+1;
+    **debe ser walk-forward** — ξ/VaR-GPD re-estimado periódicamente, no el ajuste
+    fijo de muestra completa de §19 aplicado retroactivo a W1, eso sería lookahead
+    del mismo tipo que §3.1. Confirmar el n_trials exacto contra el historial de
+    artefactos antes de fijarlo — no asumir el número).
+19. ⚪ Diferido — kernel methods/SVM, ML no lineal, datos alternativos/NLP de
+    sentimiento (2026-08-14, decisión del usuario). Investigación externa (Perplexity,
+    verificada parcialmente — mezcla contenido sólido con al menos una cifra de
+    rendimiento sin fuente confiable, mismo patrón que medallion-pub) mapeó el stack
+    probabilístico de fondos comparables (Renaissance/D.E. Shaw/Two Sigma/AQR/
+    Citadel/Bridgewater). Cruzado contra lo ya hecho acá: HMM/régimen, PCA/RMT, EVT,
+    factores momentum/fundamentales — todo YA probado con nuestro rigor, mayoría
+    refutada. Lo que queda sin tocar (kernel/SVM/ML no lineal, alt-data/NLP) no se
+    persigue ahora — alto riesgo de sobreajuste con n=50 símbolos/kernel-ML, y
+    alt-data es la inversión de infraestructura ya deprioritizada ("no escalar en
+    serio"). Se retoma **sólo cuando el plan actual esté agotado**, asumiendo que en
+    ese momento el costo (datos/infra) sea aceptable — decisión explícitamente
+    pospuesta, no descartada.
 
 ---
 
