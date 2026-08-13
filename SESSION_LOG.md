@@ -1027,8 +1027,11 @@ Sesión de investigación (Tanda D del plan consolidado). Disciplina §14 respet
 - **Nota de duración**: sobre universo 50 el motor tarda MINUTOS por corrida (el trial #11 histórico con el mismo universo demoró más de una hora por corrida completa). Corrida lanzada con nohup (PID log en /tmp/fase06_run.log, artefacto esperado `fase06_retest_20260812_175055.txt`); el baseline va primero.
 - **Contexto del trial #11 histórico (universe50_phaseA_20260810_152810.txt)**: con universo 50 el motor casi no opera post-2023 (W2 n=10, W3 n=0, no evaluables; única ventana evaluable W1 n=99 DSR=0.0435 → NO CUMPLE). El re-test 0.6 probablemente repita el patrón; de todos modos el criterio mecánico se aplica igual.
 
-### Item 11 — §12 régimen-vs-volatilidad: espera decisión del usuario
-- Pendiente de elegir: (a) esperar más historia hasta n≥200 por régimen, o (b) reducir estados del HMM para ganar muestra. Sin confirmación limpia (STAGFLATION t=−2.18 < Bonferroni-4 ≈2.50; DEFLATION n=68 con vol +36% es la pista más interesante pero sin poder estadístico).
+### Item 11 — §12 régimen-vs-volatilidad: CERRADO como pista sin acción (decisión del usuario)
+- **Decisión (2026-08-12)**: cerrar §12 como pista sin acción. No se conecta
+  TARGET_VOLATILITY, no se reducen estados del HMM (tocaría el modelo de régimen en
+  producción sin hipótesis nueva), no se espera más historia pasivamente. Documentado
+  en PLAN_MEJORA_MATEMATICA §12 + ROADMAP. Se retoma solo con pre-registro nuevo.
 
 ### Item 13 — Investigación externa (trading cuántico / gobernanza multi-agente LLM): HECHA
 - Informe completo en `RESEARCH_EXTERNA_CRITICA.md` (fuentes verificadas, 2026-08-12):
