@@ -1117,6 +1117,40 @@ fuerte de los tests nuevos y suficiente para un umbral sin corregir (\|t\|>2), p
 
 ---
 
+## 21.1 (M1b). HORIZONTES LARGOS — 60d y 125d (2026-08-13, PRE-REGISTRADO)
+
+**Origen**: §21 varió el horizonte sólo hacia el lado corto (motivado por la
+tenencia real, mediana 11d). Quedó sin testear el lado largo, y hay una razón
+académica concreta para hacerlo: `momentum_12_1` es la construcción clásica de
+Jegadeesh-Titman (1993), cuya evidencia original vive en tenencias de **3 a 12
+meses** — más largo que los 20d hábiles (~1 mes) con los que se midió siempre.
+
+**Metodología** (`diagnose_horizon_largo.py`): idéntica a §21. Horizontes nuevos:
+60d (~3 meses, L=12) y 125d (~6 meses, L=25). **Limitación declarada antes de
+correr**: 250d no se testea (L=50 sería ~27% de la muestra, Newey-West deja de ser
+confiable); 125d es el límite razonable, su t se lee con esa reserva. **Corrección
+conservadora**: Bonferroni-12 sobre la familia COMPLETA de horizontes no-históricos
+de toda la auditoría (5d/10d/60d/125d × 3 factores), no sólo sobre estos 2 nuevos —
+umbral \|t\|>2.87, el más estricto usado en todo el proyecto. Check de fidelidad:
+`max|dif|=0.000e+00` sobre 2069 filas, igual que §21.
+
+**Resultado** (`horizon_largo_20260813_181002.txt`):
+
+| factor | 60d (nuevo) | 125d (nuevo) |
+|---|---|---|
+| momentum_score | +0.07 | +0.73 |
+| rsi_score | +0.21 | −1.02 |
+| adx_score | +1.71 | +0.77 |
+
+**Veredicto**: ningún factor cruza Bonferroni-12 a 60d ni a 125d. **La auditoría de
+horizonte queda completa y cerrada**: sin señal de selección en NINGÚN horizonte
+entre 1 semana y 6 meses (5d, 10d, 20d, 60d, 125d). El desajuste de horizonte era
+real como problema metodológico — nunca ocultó ninguna señal. Los rechazos previos
+quedan reforzados con el margen más amplio posible: se probó corto y largo, y nada
+apareció en ningún punto del espectro.
+
+---
+
 ## 14. Disciplina sin excepción
 
 - Ningún resultado de un panel con bug de flujo conocido decide nada hasta reproducirse

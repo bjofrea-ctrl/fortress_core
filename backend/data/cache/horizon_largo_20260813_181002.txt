@@ -1,0 +1,34 @@
+================================================================================
+§21.1 (M1b) — HORIZONTES LARGOS: rank IC intra-dia a 60d/125d — PRE-REGISTRADO
+Motivo: momentum_12_1 es Jegadeesh-Titman clasico, cuya evidencia vive en tenencias
+        de 3-12 MESES; se estuvo midiendo a 20d habiles (~1 mes), mas corto que eso.
+Bonferroni-12 sobre la familia COMPLETA de horizonte (5/10/60/125d) | umbral |t| > 2.87
+LIMITACION declarada: 250d NO se testea (L=50 = ~27% de la muestra, NW no confiable).
+                      125d (L=25, ~13%) es el limite razonable; leer su t con reserva.
+================================================================================
+
+Panel: factor_panel_20260811_144857.parquet | filas eligible: 2069
+Cargando precios (50 simbolos)...
+
+--- CHECK DE FIDELIDAD (§14) ---
+fwd_20 recalculado vs panel: n=2069 | max |dif| = 0.000e+00
+FIDELIDAD: OK -> se evalua
+
+factor             horiz       tipo  n_days   mean_IC    SE_NW       t  L_NW  sig(Bonf12)
+momentum_score       60d      NUEVO     182   +0.0025   0.0338   +0.07    12        False
+momentum_score      125d      NUEVO     178   +0.0371   0.0508   +0.73    25        False
+momentum_score       20d referencia     187   -0.0100   0.0359   -0.28     4            —
+rsi_score            60d      NUEVO     160   +0.0066   0.0315   +0.21    12        False
+rsi_score           125d      NUEVO     156   -0.0330   0.0324   -1.02    25        False
+rsi_score            20d referencia     164   +0.0404   0.0294   +1.38     4            —
+adx_score            60d      NUEVO     146   +0.0674   0.0394   +1.71    12        False
+adx_score           125d      NUEVO     144   +0.0254   0.0327   +0.77    25        False
+adx_score            20d referencia     151   +0.0679   0.0294   +2.31     4            —
+
+--- VEREDICTO (§21.1, pre-registrado) ---
+=> Ningun factor es significativo a 60d ni a 125d (Bonferroni-12, signo esperado).
+HORIZONTE: AUDITORIA COMPLETA Y CERRADA — sin senal de seleccion en NINGUN
+           horizonte entre 1 semana y 6 meses (5d, 10d, 20d, 60d, 125d).
+           El horizonte no era el problema; no hay senal que el horizonte ocultara.
+
+Out: data/cache/horizon_largo_20260813_181002.txt

@@ -151,6 +151,14 @@ Costo: bajo (reusa panel e infraestructura). Riesgo de sobreajuste: bajo (es un
 diagnóstico, no un ajuste de parámetros).
 </details>
 
+**Ampliación M1b (2026-08-13, `PLAN_MEJORA_MATEMATICA.md §21.1`)**: el usuario
+notó que sólo se había variado el horizonte hacia el lado corto — faltaba el lado
+largo, con una razón académica real (`momentum_12_1` es Jegadeesh-Titman clásico,
+evidencia en tenencias de 3-12 meses). Se testeó 60d y 125d con Bonferroni-12
+(la corrección más estricta de todo el proyecto, sobre la familia completa de
+horizontes). **Ningún factor pasa.** Auditoría de horizonte COMPLETA: sin señal
+entre 1 semana y 6 meses, en ningún punto.
+
 ### Fase M2 — Diagnóstico contrafáctico de salidas (no optimización todavía)
 Antes de tocar ningún umbral: medir qué habría pasado con las 41 posiciones
 cerradas por `REGIME_STOP_HIT` si se hubieran sostenido hasta su salida natural
