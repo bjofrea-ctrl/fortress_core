@@ -126,12 +126,10 @@ def main():
         xi, beta, se_xi = fit_gpd_left(exc)
         var_gpd, es_gpd = var_es_gpd(xi, beta, u, len(exc), len(z))
         var_emp = float(np.quantile(L, VAR_LEVEL))
-        var_norm = float(-stats.norm.ppf(1 - (1 - VAR_LEVEL)))  # 2.326 cola izquierda positiva
-        excess_norm = float((z < -var_norm).mean())
-        excess_gpd = float((z < -var_gpd).mean())
+        var_norm = float(-stats.norm.ppf(1 - VAR_LEVEL))  # +2.326 en unidades de perdida L=-z
+        excess_norm = float((L > var_norm).mean())
+        excess_gpd = float((L > var_gpd).mean())
         lb = ljung_box(z ** 2, LB_LAGS)
-        L = -z
-        var_emp = float(np.quantile(L, VAR_LEVEL))
         # cola derecha informativa
         exc_r = z[z > u] - u
         xi_r = genpareto.fit(exc_r, floc=0)[0] if len(exc_r) >= 30 else float("nan")

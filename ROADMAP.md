@@ -138,6 +138,16 @@ actualizado antes de pasar a la siguiente.
     que sus propios costos (+0.30% bruto/trade vs 0.63% hedged): real, no tradeable.
     C6 = hallazgo académico, línea MA200 CERRADA. Baseline universo 50 = único modo
     de operación documentado. Tanda D + línea C6 completas.
+18. ✅ Fase 1 EVT — diagnóstico de colas universo 50 (2026-08-13) — pre-registrado en
+    `PLAN_MEJORA_MATEMATICA.md §19`, corrido (`diagnose_evt_tails.py`, artefacto
+    `evt_tails_20260813_155237.txt`): **PASA el gate**. GPD/POT sobre retornos
+    estandarizados EWMA (λ=0.94; arch/GARCH no instalado — limitación declarada):
+    ξ>0 significativo en 28/50 (56%), excesos bajo VaR-normal ≥1.5% en 47/50 (94%,
+    promedio 1.95% vs 1% esperado); VaR99-GPD ≈ 3.0 z vs 2.326 normal (ratio medio
+    1.26 — la regla gaussiana subestima el VaR 99% en ~26%); GPD calibra (excesos
+    reales 0.98% ≈ 1%). Implicación: la regla de stop 2×ATR está sistemáticamente
+    subdimensionada contra el riesgo de cola → **siguiente paso: pre-registro del
+    trial de stops EVT del motor** (mismas ventanas W1-W3, DSR≥0.90, n_trials+1).
 
 ---
 

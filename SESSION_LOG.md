@@ -1089,3 +1089,22 @@ Sesión de investigación (Tanda D del plan consolidado). Disciplina §14 respet
   CERRADA. Baseline universo 50 = unico modo de operacion documentado.
 - Artefacto trackeado: backend/data/cache/backtest_c6_hedge_20260813_154313.txt.
 - Bugf ies del script: unpacking lstsq (2 coefs, no 1) + F821.
+
+## 2026-08-13 — Fase 1 EVT: diagnóstico de colas universo 50 — PASA el gate
+
+- Pre-registro §19 en PLAN_MEJORA_MATEMATICA.md antes de correr: GPD/POT sobre
+  retornos estandarizados EWMA (lambda=0.94, RiskMetrics — arch/GARCH NO instalado,
+  limitacion declarada), umbral p95% (~146 excesos/activo), VaR/ES-GPD 99% vs
+  empirico vs normal, backtest de la cola, Ljung-Box(10) sobre z^2.
+- Gate fijado ANTES: (1) >=15/50 con xi>0 sig (t>1.64) Y (2) >=30% con excesos bajo
+  VaR-normal >= 1.5%.
+- Resultado: PASA. xi>0 sig en 28/50 (56%); excesos VaR-normal >=1.5% en 47/50 (94%,
+  promedio 1.95% vs 1% esperado); ratio VaR99-GPD/VaR-normal medio 1.26 (VaR-GPD ~3.0 z
+  vs 2.326); excesos reales bajo VaR-GPD 0.98% (calibra bien); LB(10) sig solo 8/50.
+- Implicacion: la regla de stop 2xATR del motor esta sistematicamente subdimensionada
+  contra el riesgo de cola (~26% de distancia al VaR 99%) -> siguiente paso: trial de
+  stops EVT del motor (pre-registro aparte, ventanas W1-W3, DSR>=0.90, n_trials=18).
+- Bug de script detectado por interrogatorio de verosimilitud: VaR normal con signo
+  invertido (excesos del 98% — imposible para VaR 99%); corregido y re-corrido;
+  artefacto 155217 descartado como artefacto del error (misma convencion que §9).
+- Artefacto trackeado: backend/data/cache/evt_tails_20260813_155237.txt.

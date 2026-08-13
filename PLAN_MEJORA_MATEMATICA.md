@@ -1146,3 +1146,34 @@ se cierra con este diagnóstico como evidencia (gate honesto, mismo espíritu qu
 §13/§18). La decisión de integración al motor NO se toma sin este diagnóstico a favor
 y sin un trial pre-registrado posterior (el plan exige el gate "integrar si mejora
 VaR/ES real").
+
+**RESULTADO (2026-08-13, artefacto `data/cache/evt_tails_20260813_155237.txt`) — PASA
+el gate diagnóstico. Se pre-registra el trial de stops EVT del motor en el siguiente
+paso.**
+
+- 50/50 activos evaluados, 146 excesos por activo (~5% de ~2915 días, umbral p95%
+  sobre z estandarizado EWMA λ=0.94).
+- **gate1 ✓**: ξ>0 significativo (t>1.64) en **28/50 (56%)**; ξ medio +0.187, mediana
+  +0.171, p25/p75 +0.108/+0.260. Colas más pesadas que la normal, de forma
+  generalizada; ninguna cola degenerada (ξ<0.5 en todo el universo; único negativo:
+  XOM −0.009, no significativo).
+- **gate2 ✓**: excesos empíricos bajo el VaR normal (2.326σ) **≥1.5% en 47/50 (94%)**;
+  promedio 1.95% vs 1% esperado — el supuesto gaussiano falla a ~2× la tasa nominal.
+- El GPD calibra bien: excesos reales bajo el VaR-GPD(99%) medio **0.98%** ≈ 1%,
+  consistente en todo el universo — el modelo EVT describe la cola que la normal pierde.
+- VaR99-GPD medio ≈ 3.0 z vs 2.326 normal → **ratio medio 1.26** (la regla gaussiana
+  subestima el VaR 99% en ~26% en unidades de vol). Extremos: IBM +0.501 (t 4.03),
+  CSCO +0.459 (t 3.80), WMT +0.422 (t 3.58) — los defensivos de baja vol con shocks
+  discretos tienen las colas relativas más pesadas.
+- Limitación verificada: Ljung-Box(10) sobre z² significativo en solo 8/50 (16%) — el
+  filtro EWMA captura la mayor parte de la estructura de vol; la limitación GARCH
+  declarada en el pre-registro queda acotada a ese 16%.
+- **Interpretación para el motor**: la regla de stop 2×ATR (que equivale a un
+  múltiplo fijo de la desviación empírica) está sistemáticamente subdimensionada
+  contra el riesgo de cola en ~una cuarta parte de la distancia al VaR 99%; el trial
+  de stops EVT (VaR/ES-GPD por activo, mismas ventanas, DSR) es el gate de
+  integración que el plan exige — se pre-registra por separado. Nota de script: la
+  primera corrida tuvo un bug de signo en el VaR normal (−ppf(0.99) anidado) que
+  produjo excesos del 98% — imposible por construcción para un VaR 99%; detectado por
+  el interrogatorio de verosimilitud antes de interpretar, corregido y re-corrido
+  (artefacto 155217 descartado como artefacto del error, igual que en §9).
