@@ -230,6 +230,40 @@ este re-test refuta "fundamentales con cobertura del 10% del universo", no una
 refutación tan fuerte como la de V1 (que sí tiene cobertura del 100%: AAII en
 2913/2913 días).
 
+**Resultado** (`fase06_retest_20260812_175055.txt`, universo 50, motor post-fix
+partial_done + piso de stop 0.05, costos 0.15%/lado; TODAS las ventanas evaluables,
+n≥30 en las 9 celdas):
+
+| ventana | DSR baseline | DSR V1 (AAII) | DSR FUND (EDGAR) |
+|---|---|---|---|
+| W1 2020-2021 (n 103/99/97) | 0.0714 | 0.0410 | 0.1205 |
+| W2 2022-2023 (n 47/49/49) | 0.0284 | 0.0020 | 0.0043 |
+| W3 2024-2026 (n 113/119/134) | 0.1727 | 0.2253 | 0.3302 |
+
+V1: 0/3 ventanas → **NO CUMPLE**. FUND: 0/3 ventanas → **NO CUMPLE** (con la
+limitación de cobertura 5/50 declarada arriba).
+
+**Verificado contra el artefacto**: DSRs idénticos a "deflated_sharpe" del log;
+win_rate V1 0.616/0.469/0.580 (vs 0.660/0.553/0.549 baseline); FUND 0.711/0.633/0.567;
+Monte Carlo prob_loss: base 0.011, V1 0.040, FUND 0.004.
+
+**Interrogatorio antes de aceptar**:
+- La única variable con cobertura COMPLETA (V1/AAII 2913/2913 días) es más débil que
+  el baseline en W1 y W2 — el "rescatador" de la sesión 8d no sobrevive el universo 50
+  con la ejecución arreglada; con la vara arreglada, la refutación de #8 es robusta.
+- FUND gana a baseline en W1/W3 (win_rate, PF, DSR, prob_loss 0.004) pero con 5/50
+  símbolos el efecto no es atribuible a la categoría; y pierde en W2 (sharpe −0.54 vs
+  −0.05). Sin consistencia entre ventanas → no hay señal estable, y el criterio
+  pre-registrado es DSR≥0.90 en ≥2/3 (0/3 acá).
+- El patrón del trial #11 histórico (universo 50 con ~0 trades post-2023) NO se repitió:
+  este run sí operó W3 (n=113-134) — el re-test actual es autocontenido, pre-registrado
+  y con las 9 celdas evaluables, así que el veredicto no depende de ventanas descartadas.
+
+**Veredicto honesto**: Fase 0.6 **NO CUMPLE para ambas variantes** → la refutación de
+sentimiento y fundamentales (#8/#9) queda CONFIRMADA con ejecución arreglada y universo
+ampliado. Ninguna variable externa re-ingresa al motor. El baseline post-fix de
+universo 50 queda como único modo de operación documentado.
+
 **Fase 1 — EVT** (RMT ya no está acá, se movió a 0.5): sobre retornos de activos
 (idealmente residuales GARCH), nunca sobre la serie de P&L del motor.
 

@@ -1020,12 +1020,17 @@ Sesión de investigación (Tanda D del plan consolidado). Disciplina §14 respet
 - **Resultado**: bruto medio diario −0.00005 (t-NW −0.20, indistinguible de cero); neto −0.00305 (t-NW **−11.53**); Sharpe neto −3.90; 39.3% días positivos. → NO CUMPLE.
 - **Lectura (interrogatorio honesto)**: el rank-IC −0.0525 (t=−11.29) medía consistencia de ordenamiento; el fade EW diluye los gaps grandes. El retorno bruto ya es ≈0 → la significancia del IC no se tradujo en PnL promedio NI ANTES de costos. §13 queda CERRADO de verdad: gap-reversion = hallazgo académico, ejecución intradía descartada con esta infraestructura. Explorar umbrales/top-N post-hoc violaría el pre-registro (§14) — si se quisiera, es un pre-registro nuevo.
 
-### Item 12 — Fase 0.6 re-test V1/fundamentales: CORRIENDO (en background)
-- **Pre-registro** en PLAN_MEJORA_MATEMATICA §0.6.1 (criterio: DSR ≥ 0.90 con n_trials=17 en ≥2/3 ventanas W1/W2/W3, piso 30 trades; re-test barato sin slot nuevo).
-- **Script**: `scripts/backtest_fase06_retest.py` (baseline vs V1-ranking G2 vs fundamentales G3, universo 50, motor post-fix trial #10/#11, costos 0.15%/lado).
-- **Hallazgo de cobertura (declarado en el plan ANTES de leer el resultado)**: el panel EDGAR cubre solo 5/50 símbolos (AAPL/AMZN/GOOGL/MSFT/NVDA — los del trial #9 que operaba sobre 7): cobertura 71% → 10%. La pata FUND queda diluida; un "no pasa" de FUND refuta "fundamentales con 10% de cobertura del universo", no con la fuerza del de V1 (AAII 2913/2913 días).
-- **Nota de duración**: sobre universo 50 el motor tarda MINUTOS por corrida (el trial #11 histórico con el mismo universo demoró más de una hora por corrida completa). Corrida lanzada con nohup (PID log en /tmp/fase06_run.log, artefacto esperado `fase06_retest_20260812_175055.txt`); el baseline va primero.
-- **Contexto del trial #11 histórico (universe50_phaseA_20260810_152810.txt)**: con universo 50 el motor casi no opera post-2023 (W2 n=10, W3 n=0, no evaluables; única ventana evaluable W1 n=99 DSR=0.0435 → NO CUMPLE). El re-test 0.6 probablemente repita el patrón; de todos modos el criterio mecánico se aplica igual.
+### Item 12 — Fase 0.6 re-test V1/fundamentales: COMPLETADA — NO CUMPLE 0/3 ambas variantes
+- **Terminó** (2026-08-12): artefacto `fase06_retest_20260812_175055.txt`, TODAS las
+  ventanas evaluables (n≥30 en las 9 celdas). Veredicto mecánico aplicado: V1 0/3
+  (DSR 0.041/0.002/0.225) y FUND 0/3 (DSR 0.121/0.004/0.330) vs baseline 0.071/0.028/0.173.
+- **Lectura honesta**: (1) V1/AAII — la única variable con cobertura completa (2913/2913)
+  — es más débil que baseline en W1/W2: el "rescatador" de la sesión 8d no sobrevive el
+  universo 50 con la vara arreglada → refutación #8 robusta. (2) FUND gana W1/W3 pero
+  con cobertura 5/50 (10%) el efecto no es atribuible a la categoría, y pierde W2 — sin
+  consistencia. (3) El patrón del trial #11 histórico (≈0 trades post-2023) NO se repitió:
+  W3 operó n=113-134. Baseline post-fix universo 50 queda como único modo documentado.
+- ROADMAP item 12 → ✅; resultados en PLAN §0.6.1.
 
 ### Item 11 — §12 régimen-vs-volatilidad: CERRADO como pista sin acción (decisión del usuario)
 - **Decisión (2026-08-12)**: cerrar §12 como pista sin acción. No se conecta
@@ -1040,4 +1045,5 @@ Sesión de investigación (Tanda D del plan consolidado). Disciplina §14 respet
   - **Trading cuántico**: papers reales (QAOA/annealing portfolio, TUM/TNO/arXiv 2504.08843) pero el valor está en miles de activos + constraints (NISQ híbrido); para 50 tickers con 1 Mac el QP clásico resuelve en milisegundos → CERRADO como no-relevante, confirmando el escepticismo de la primera auditoría.
 
 ### Ritual / pendientes
-- Commit de esta entrada pendiente (hacer al terminar o al pausar la sesión). Fase 0.6: verificar artefacto cuando termine, aplicar criterio mecánico, documentar en plan + ROADMAP.
+- Tanda D COMPLETA: items 10 ✅ (NO CUMPLE), 11 ✅ (pista sin acción), 12 ✅ (NO CUMPLE 0/3), 13 ✅ (research hecha).
+- Commit + push + espejo + memoria Engram al cerrar (commits d611f67, 7e0c7b0, y el de este cierre).
