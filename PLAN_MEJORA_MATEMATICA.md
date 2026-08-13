@@ -1093,3 +1093,56 @@ pre-registrado con slot de n_trials propio.
   (t=+2.31) pero no Bonferroni-4; la conclusión W2 se sostiene por las otras 2 fuentes
   (trial #13, 0.5c), pero el criterio final no estaba en el script. Próximo script:
   umbrales corregidos por múltiples comparaciones van en el código desde el inicio.
+
+---
+
+## 19. Fase 1 — EVT: PRE-REGISTRO del diagnóstico de colas (universo 50)
+
+**Contexto (2026-08-13, decisión del usuario)**: con la línea de señal cerrada (rama W2
+con tres descartes verificados, §9), se arranca la Fase 1 EVT como la pieza de gestión
+de riesgo del motor baseline (trial #10/V1) — no depende de ningún hallazgo de señal
+nuevo. El plan (4.4.3 + Fase 1) fija: EVT/GPD sobre retornos de ACTIVOS (nunca sobre
+P&L de estrategia — POT sobre 100-500 trades deja 10-20 excesos, insuficiente).
+
+**Pregunta**: ¿los retornos diarios de los activos del universo 50 (2019-2026) tienen
+colas de PÉRDIDA más pesadas que la normal estándar que la regla ATR del motor asume
+de facto (stop 2×ATR, `adaptive_risk.py`)? ¿Cuánto subestima el supuesto gaussiano el
+VaR/ES de cola, y en qué proporción del universo?
+
+**Limitación declarada ANTES de correr**: `arch` (GARCH) NO está instalado en el venv.
+El filtro de estandarización es EWMA de volatilidad (λ=0.94, RiskMetrics — el arquetipo
+de McNeil-Frey sin GARCH): colas sobre residuos estandarizados z_t = r_t/σ_t, NUNCA
+sobre retornos crudos. Si Ljung-Box(10) sobre z² muestra autocorrelación de vol
+residual en ≥30% de los activos, se anota como limitación y se decide con el usuario
+si `pip install arch` (GARCH) antes del trial de stops.
+
+**Metodología** (`diagnose_evt_tails.py`, corre DESPUÉS de este pre-registro):
+- Universo 50 = 7 originales (SPY/QQQ/AAPL/MSFT/GOOGL/AMZN/NVDA) + NEW_UNIVERSE (43),
+  ventana 2019-01-01 → 2026-08-04, close diario vía `load_universe` (misma data del
+  resto del proyecto).
+- Por símbolo: σ_t² = 0.94·σ_{t-1}² + 0.06·r_{t-1}², arranque = varianza muestral de
+  los primeros 60 retornos; z_t = r_t/σ_t.
+- GPD por MLE (scipy `genpareto`, loc=0) sobre los excesos de pérdida: L = −z,
+  umbral u = percentil 95% empírico de L (~5% excesos, n≈95 con ~1900 días — muy por
+  encima del mínimo de la regla 4.4.3).
+- Por activo: ξ̂ (shape) con SE ≈ (1+ξ̂)/√N_u; VaR_GPD(99%) y ES_GPD(99%) en unidades
+  de z (fórmulas estándar McNeil); cuantil empírico 99%; VaR normal = 2.326; ratio
+  VaR_GPD/VaR_normal. Cola derecha (ganancias): ξ̂ informativa, NO gate.
+- Backtest de la cola (muestra completa): proporción de días con r_t < −2.326·σ_t
+  (esperado 1% si normal; >1% si cola pesada) y con r_t < −VaR_GPD·σ_t (esperado ~1%
+  si el GPD calibra bien). Ljung-Box(10) sobre z².
+- Agregado: distribución de ξ̂ sobre el universo, nº de activos con ξ̂>0 significativo
+  (t>1.64 unilateral), promedio de ratios VaR_GPD/VaR_normal.
+
+**Criterio del gate diagnóstico (fijado ANTES de correr)**: el diagnóstico PASA (→ se
+pre-registra el trial de stops EVT del motor) si se cumplen AMBAS:
+1. ≥30% de los activos (≥15/50) con ξ̂ significativamente > 0 (t > 1.64); Y
+2. ≥30% de los activos con excesos empíricos bajo el VaR normal ≥ 1.5% (la regla
+   gaussiana subestima el riesgo de cola de forma material y generalizada).
+
+Si NO pasa: las colas son compatibles con normalidad → la regla ATR no está
+sistemáticamente subdimensionada → NO se justifica el trial de stops EVT, y la Fase 1
+se cierra con este diagnóstico como evidencia (gate honesto, mismo espíritu que
+§13/§18). La decisión de integración al motor NO se toma sin este diagnóstico a favor
+y sin un trial pre-registrado posterior (el plan exige el gate "integrar si mejora
+VaR/ES real").

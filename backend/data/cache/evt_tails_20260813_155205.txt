@@ -1,0 +1,10 @@
+========================================================================
+§19 — DIAGNOSTICO EVT DE COLAS (universo 50) — PRE-REGISTRADO
+Universo: 50 simbolos | 2019-01-01 -> 2026-08-04
+Estandarizacion: EWMA vol lambda=0.94, arranque 60d | umbral POT p95%
+Limitacion declarada: arch/GARCH NO instalado -> EWMA (McNeil-Frey simplificado)
+Gate (fijado ANTES): (1) >=15/50 activos con xi>0 sig (t>1.64) Y (2) >=30% activos con excesos bajo VaR-normal >= 1.5%
+========================================================================
+precios cargados: 50/50
+
+sym    n     exc  xi     t      VaR99GPD  VaR99emp  VaR99N ratio  excN%  excG%    LB
