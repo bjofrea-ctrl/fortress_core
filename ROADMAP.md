@@ -127,6 +127,17 @@ actualizado antes de pasar a la siguiente.
     que gap-reversion. Baseline universo 50 sigue siendo el único modo de operación
     documentado. **Tanda D completa.** Siguiente frente: Fase 1 EVT o Fase 2
     Kalman+GP-BO (decisión del usuario).
+17. ✅ §18.2 C6 HEDGEADO (market-neutral por beta) — INTENTO FINAL (2026-08-13) —
+    pre-registrado en `PLAN_MEJORA_MATEMATICA.md §18.2` (regla de parada del usuario:
+    sin tercera variante), corrido (`backtest_c6_hedge.py`, artefacto
+    `backtest_c6_hedge_20260813_154313.txt`): **NO CUMPLE → §18 CERRADO DEFINITIVO.**
+    Betas pre-muestra 2015-2018 (|β| medio 1.11), check de integridad ok (n=3703,
+    Pearson −0.1582, Spearman −0.1129, P(dist>0)=0.744). LS-HEDGE bruto **+0.000149/día**
+    (t-NW +1.01 — el hedge neutralizó el drift, pasó de −0.000019 crudo), NETO
+    −0.000292 (t-NW −1.97). La señal existe en exceso de mercado pero es más chica
+    que sus propios costos (+0.30% bruto/trade vs 0.63% hedged): real, no tradeable.
+    C6 = hallazgo académico, línea MA200 CERRADA. Baseline universo 50 = único modo
+    de operación documentado. Tanda D + línea C6 completas.
 
 ---
 

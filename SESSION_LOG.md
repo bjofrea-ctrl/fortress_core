@@ -1067,3 +1067,25 @@ Sesión de investigación (Tanda D del plan consolidado). Disciplina §14 respet
 - §18 CERRADO: C6 = hallazgo académico. Tanda D completa. Baseline universo 50 =
   único modo de operación documentado. Próximo: Fase 1 EVT o Fase 2 Kalman+GP-BO.
 - Artefacto trackeado: `backend/data/cache/backtest_c6_costs_20260813_135830.txt`.
+
+## 2026-08-13 — §18.2 backtest C6 hedgeado: NO CUMPLE (INTENTO FINAL) — §18 CERRADO DEFINITIVO
+
+- Pre-registro §18.2 en PLAN_MEJORA_MATEMATICA.md antes de correr: fade LS hedged por
+  beta de mercado (pata opuesta en SPY de tamano |beta_sym|, AMBAS patas — decision de
+  diseno declarada a priori), beta OLS pre-muestra 2015-2018 (cero datos de test),
+  costos 0.15%/lado x 2 patas = 0.003*(1+|beta|) al entrar, criterio identico a §18.1.
+- Regla de parada del usuario incorporada al pre-registro: INTENTO FINAL de C6; si NO
+  CUMPLE -> §18 cierra DEFINITIVO, sin tercera variante.
+- Resultado: NO CUMPLE. LS-HEDGE bruto +0.000149/dia (t-NW +1.01), NETO -0.000292
+  (t-NW -1.97), Sharpe -0.61. SO-HEDGE neto -0.000349 (t-NW -2.72). 3703 units, 2661 dias.
+- Check de integridad ok en el artefacto: n=3703, Pearson IC -0.1582, Spearman -0.1129,
+  P(dist>0)=0.744. Betas: AAPL 1.195, V 1.005, MA 1.105, ORCL 1.062, IBM 0.833,
+  QCOM 1.352, TXN 1.217 (|beta| medio 1.110).
+- Interpretacion final: el hedge funciono (bruto paso de -0.000019 crudo a +0.000149,
+  la magnitud exacta de E[sign*fwd]=+0.000172) -> la senal EN EXCESO DE MERCADO existe,
+  confirmada al neutralizar el drift. Pero su tamano es del orden de los costos:
+  +0.30% bruto/trade vs 0.63% hedged. Senal real, no tradeable.
+- §18 CERRADO DEFINITIVO (regla de parada): C6 = hallazgo academico, linea MA200
+  CERRADA. Baseline universo 50 = unico modo de operacion documentado.
+- Artefacto trackeado: backend/data/cache/backtest_c6_hedge_20260813_154313.txt.
+- Bugf ies del script: unpacking lstsq (2 coefs, no 1) + F821.

@@ -1009,6 +1009,70 @@ mitad short).
   Tanda D completa; siguiente frente: Fase 1 EVT o Fase 2 Kalman+GP-BO (decisión del
   usuario).
 
+### 18.2 PRE-REGISTRO — backtest C6 HEDGEADO (market-neutral por beta) con costos
+### — INTENTO FINAL (§18), 2026-08-13
+
+**Pregunta**: el fade LS crudo de §18.1 falló porque la pata short paga el drift
+completo del mercado (E[sign×fwd] = +0.00017, P(dist>0) ≫ 0.5 en 7 años alcistas).
+El hallazgo de §18 predice retorno RELATIVO al mercado (t=−2.87 en exceso), no
+dirección absoluta. Una versión del fade neutralizada por beta de mercado, con los
+mismos costos, ¿deja retorno NETO diario positivo con t-NW ≥ 2.0?
+
+**Metodología** (`backtest_c6_hedge.py`, corre DESPUÉS de este pre-registro):
+- Mismas unidades, señal, ventana y mecánica que §18.1 (dist_ma200, stride 5d,
+  hold 20d, entry al close, salida t+20, costos 0.15%/lado por pata). Panel debe
+  reproducir n=3703, Pearson IC −0.1582, Spearman −0.1129 (check de integridad §14
+  en el header del artefacto).
+- **Pata hedge (la que pidió el usuario, "corto C6 extendido + largo del mercado
+  en proporción")**: cada trade unit SHORT (dist>0) se cubre comprando |β_sym|
+  unidades de SPY; decisión de diseño declarada ANTES de correr: la pata LONG del
+  fade (dist<0) se cubre simétricamente shorteando β_sym de SPY — cubrir solo el
+  short deja exposición de drift residual y repetiría el defecto de §18.1 a media
+  escala. El portafolio resultante es market-neutral por construcción.
+- **Beta**: regresión OLS diaria (ret_sym ~ ret_SPY, con constante) sobre la
+  ventana PRE-MUESTRA 2015-01-01 → 2018-12-31 — ningún dato de la ventana de test
+  (2019+) participa de la estimación del beta. Sin rolling, sin parámetros nuevos.
+- Costos: cada unit hedged paga 0.15%/lado en C6 + 0.15%/lado × |β| en SPY
+  (round-trip completo = 0.003 × (1+|β|)), deducidos el día de entrada, misma
+  convención que §18.1/§13.1.
+- Serie principal: retorno diario del portafolio hedged (promedio EW de units
+  activos, cada unit = pata C6 + pata SPY), bruto y neto; Newey-West Bartlett
+  L=20. Variante SO-hedged (short-only cubierto): informativa, NO gate.
+
+**Criterio de éxito (fijado ANTES de correr, idéntico a §18.1 para comparabilidad)**:
+`n_días_con_posiciones ≥ 100` Y media del retorno diario NETO > 0 con `t-NW ≥ 2.0`.
+Secundario informativo: Sharpe neto, % días positivos, delta bruto→neto, betas
+estimados, P(dist>0).
+
+**Regla de parada (compromiso del usuario, 2026-08-13)**: este es el INTENTO FINAL
+de la línea C6. Si NO CUMPLE → §18 se cierra DEFINITIVO: C6 queda como hallazgo
+académico en exceso de mercado, sin tercera variante, sin re-parametrización, sin
+"market-neutral v2". Se sigue con el frente Fase 1 EVT o Fase 2 Kalman+GP-BO
+(decisión del usuario). Si CUMPLE → C6 es candidato REAL de motor: trial de motor
+pre-registrado con slot de n_trials propio.
+
+**RESULTADO (2026-08-13, artefacto `data/cache/backtest_c6_hedge_20260813_154313.txt`)**
+— NO CUMPLE (INTENTO FINAL). **§18 se cierra DEFINITIVO.**
+
+- Check de integridad §14 en el artefacto: n=3703, Pearson IC −0.1582, Spearman
+  −0.1129 — idénticos a §16/§18.1; P(dist>0)=0.744 (confirma el diagnóstico de
+  §18.1: el fade está short el 74% del tiempo).
+- Betas pre-muestra (2015-2018, sin datos de test): AAPL 1.195, V 1.005, MA 1.105,
+  ORCL 1.062, IBM 0.833, QCOM 1.352, TXN 1.217 — |β| medio 1.110.
+- LS-HEDGE (gate): BRUTO **+0.000149/día** (t-NW +1.01, Sharpe +0.31, 50.2% días
+  positivos) — el hedge neutralizó el drift: el bruto pasó de −0.000019 (crudo
+  §18.1) a +0.000149, la magnitud exacta de E[sign×fwd]=+0.000172. NETO −0.000292/día
+  (t-NW **−1.97**, Sharpe −0.61). Costos 0.0063/unit (0.30%×(1+|β|)) consumen el
+  doble del bruto.
+- SO-HEDGE (info): bruto −0.000022 (t-NW −0.17), neto −0.000349 (t-NW −2.72).
+- Veredicto final: la señal existe en exceso de mercado (confirmada al neutralizar
+  el drift) pero su tamaño es del orden de los costos reales: +0.30% bruto por
+  trade hedged ≈ costo de UNA pata, y MENOR al round-trip hedged (0.63%). La señal
+  es real, no tradeable. Sin tercera variante (regla de parada del usuario).
+- Estado definitivo: C6 = hallazgo académico en exceso de mercado. Baseline
+  universo 50 = único modo de operación documentado. La línea de investigación
+  C6/MA200 queda CERRADA en el proyecto.
+
 ---
 
 ## 14. Disciplina sin excepción
