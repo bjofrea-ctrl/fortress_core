@@ -32,6 +32,12 @@ class BacktestEngine:
         self.bayesian_updater = BayesianOnlineUpdater()
         self.signal_engine = SignalEngine(self.regime_classifier, bayesian_updater=self.bayesian_updater)
 
+    def _make_risk_manager(self) -> "AdaptiveRiskManager":
+        """Factory hook (refactor aditivo, 2026-08-13, §20): permite a un trial
+        inyectar un risk manager por subclase sin duplicar run(). Default:
+        AdaptiveRiskManager(idéntico al comportamiento previo)."""
+        return AdaptiveRiskManager(self.initial_capital)
+
     def _build_calibration_dataset(
         self, indicators_cache: Dict[str, pd.DataFrame], train_end_date: datetime,
         update_bayesian: bool = True, train_start_date: datetime = None,
@@ -266,7 +272,7 @@ class BacktestEngine:
         cal_scores, cal_outcomes = self._build_calibration_dataset(indicators_cache, start_date)
         calibrator.fit(cal_scores, cal_outcomes)
 
-        risk_manager = AdaptiveRiskManager(self.initial_capital)
+        risk_manager = self._make_risk_manager()
         equity, cash = self.initial_capital, self.initial_capital
         positions: Dict[str, Dict] = {}
         equity_curve, trades = [], []
@@ -433,6 +439,7 @@ class BacktestEngine:
                     shares = risk_manager.compute_position_size(
                         equity, sig["entry_price"], sig["atr"],
                         win_prob=win_prob, payoff_ratio=sig["payoff_ratio"],
+                        symbol=sig["symbol"],
                     )
                     cost = sig["entry_price"] * shares * (1 + slippage) * (1 + commission)
 

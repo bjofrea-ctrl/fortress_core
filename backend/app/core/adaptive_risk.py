@@ -56,6 +56,7 @@ class AdaptiveRiskManager:
         win_prob: Optional[float] = None,
         payoff_ratio: Optional[float] = None,
         fractional_kelly: float = 0.25,
+        symbol: Optional[str] = None,
     ) -> int:
         if atr <= 0 or price <= 0:
             return 0

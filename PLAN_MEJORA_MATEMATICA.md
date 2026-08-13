@@ -1177,3 +1177,69 @@ paso.**
   produjo excesos del 98% — imposible por construcción para un VaR 99%; detectado por
   el interrogatorio de verosimilitud antes de interpretar, corregido y re-corrido
   (artefacto 155217 descartado como artefacto del error, igual que en §9).
+
+---
+
+## 20. TRIAL #15 — PRE-REGISTRO: stops EVT walk-forward en el sizing del motor
+
+**Pregunta**: sustituir la distancia de riesgo del sizing (`stop_distance =
+max(2×ATR, price×position_stop)`, `adaptive_risk.py:63`) por la distancia EVT
+walk-forward (`stop_distance = max(VaR_GPD(99%)×σ_EWMA, price×position_stop)`),
+¿mejora el sistema? Criterio estándar del proyecto: DSR OOS ≥ 0.90 en ≥2/3
+ventanas (W1 2020-2021, W2 2022-2023, W3 2024-2026-08-04), piso ≥30 trades.
+
+**Corrección metodológica del usuario (2026-08-13, aceptada — anti-lookahead)**:
+el ajuste EVT de §19 se calibró sobre la muestra completa (2019-2026); aplicarlo
+fijo retroactivamente a W1/W2 sería información del futuro informando decisiones
+del pasado (el mismo leak que §3.1 con régimen). El trial usa parámetros EVT
+**walk-forward**: recalibración cada 63 días hábiles, ventana móvil de 756 días
+hábiles (~3 años) de retornos estandarizados EWMA (λ=0.94), con **data desde
+2015-01-01** para que toda decisión de las ventanas tenga parámetros calibrados
+exclusivamente con historia previa a esa fecha.
+
+**Nota de precisión sobre "la regla 2×ATR"**: `2×ATR` NO es el stop de pérdida
+ejecutivo (ese es `position_stop`, −5% por régimen, en `check_all_stops`) — es la
+distancia de riesgo del SIZING (`shares = equity×RISK_PER_TRADE/stop_distance`).
+El EVT sustituye SOLO esa distancia de riesgo; `position_stop`, PARTIAL_TP 2×ATR,
+trailing 2×ATR y ABSOLUTE_CEILING quedan intactos (variante mínima, aísla la
+variable).
+
+**Refactor aditivo de producción (backward compatible, 119 tests verdes)**:
+(1) hook `BacktestEngine._make_risk_manager()` — `run()` lo usa en vez de
+instanciar `AdaptiveRiskManager` directo; default idéntico. (2) `symbol` opcional
+(último parámetro, default None) en `AdaptiveRiskManager.compute_position_size` —
+`run()` lo pasa; con None el comportamiento es idéntico al previo (único llamador
+en producción es `run()`; `scripts/test_system.py:56` sigue posicional). Permite
+inyección por subclase sin duplicar `run()` (alternativa al patrón de trial #13).
+
+**Mecánica del trial (`trial_evt_stops.py`)**:
+- `EVTRiskManager(AdaptiveRiskManager)`: override de `compute_position_size` con
+  `stop_distance = max(var_mult_vigente(symbol) × σ_EWMA_día, price×position_stop)`.
+  Reloj interno sincronizado en `check_all_stops(date)` (corre ANTES de toda
+  entrada del día) — cada decisión usa parámetros calibrados con data ≤ esa fecha.
+- Walk-forward por activo: σ_t causal EWMA (λ=0.94, v_t = λ·v_{t-1} + (1−λ)·r²_{t-1})
+  precomputada desde 2015; recalibración cada 63 días hábiles; en cada fecha de
+  recalibración: ventana móvil 756 días hábiles ≤ fecha, z = r/σ, umbral u = p95%
+  empírico, GPD MLE (`genpareto` loc=0), VaR_GPD(99%) (McNeil). Si excesos < 30 →
+  fallback declarado: cuantil empírico 99% de la ventana (sin parámetros nuevos).
+- **Assert anti-lookahead en el script**: cada compra estampa la fecha de
+  recalibración vigente y verifica < fecha de compra; fallo = abortar.
+- Dos corridas en el mismo script con la MISMA data (2015+): baseline
+  (`BacktestEngine` estándar) y EVT (`EVTEngine` con el hook). La comparación es
+  intra-corrida y consistente; el baseline intra-corrida puede diferir del
+  artefacto histórico 2019-only al inicio (indicadores con más historia), se
+  reporta el baseline intra-corrida como referencia contra el que se mide el EVT.
+- N_TRIALS = **19**: 17 histórico (hasta #13, §6) + 1 por trial #14 (§11:
+  "17+1=18 por ser un trial nuevo") + 1 por este trial. Fase 0.6 = re-test sin
+  slot (§6.1), §18.1/§18.2 = backtests de señal sin slot (C6 nunca llegó a trial),
+  §19 = diagnóstico sin inyección al motor, sin slot.
+
+**Riesgo declarado**: cambios de producción aditivos y cubiertos por los 119
+tests; variante mínima (solo la distancia de riesgo del sizing); parámetros EVT
+(λ=0.94, u=p95%, ventana 756d, stride 63d, VaR 99%) heredados 1:1 del diagnóstico
+§19 — cero grados de libertad nuevos sobre el resultado; fallback (cuantil
+empírico si excesos<30) declarado por adelantado. Si NO CUMPLE: el sizing EVT no
+mejora el sistema → no se integra (gate honesto) y la Fase 1 queda cerrada con la
+evidencia de §19 (diagnóstico) + §20 (trial). Si CUMPLE: se evalúa la integración
+con el gate "mejora VaR/ES real" del plan (comparar drawdown/cola realizada del
+P&L EVT vs baseline en el mismo artefacto).
