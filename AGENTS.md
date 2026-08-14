@@ -54,6 +54,7 @@ Nos considera su equipo, no herramientas.
 ## Antes de empezar
 
 1. Leé `ONBOARDING.md` (raíz) → después `ROADMAP.md` (pendientes con estado).
+   Para el rumbo de diseño (qué construimos y por qué): `DISENO_INSTRUMENTO.md`.
 2. Si tocás investigación/motor: chequéa primero `PLAN_MEJORA_MATEMATICA.md` y
    `RESUMEN_VALIDACION_VARIABLES.md` — muchas ideas "nuevas" ya se probaron y refutaron.
 3. Si tocás código/API/frontend: revisá el hallazgo en `AUDITORIA_TECNICA.md` antes de arreglar a ciegas.
