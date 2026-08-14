@@ -246,7 +246,7 @@ gantt
 | Código P2 | `prompt_engine.py` — 659 líneas muertas con bug adentro | 🔴 sin empezar | — | Decidir: borrar o integrar de verdad |
 | Código P2 | CI básico (lint + test en push) | 🔴 sin empezar | — | Repo público sin ningún check automático |
 | Producto | `signal_engine.py` comentario/cita falsa sobre ADX | 🟡 spawneado | — | `task_22ea3f8d` — pendiente de que el usuario lo dispare |
-| Producto | LEAN/QuantConnect | ⚪ parqueado | Sin objetivo de producto definido | No tocar hasta decidir para qué sirve concretamente |
+| Producto | LEAN/QuantConnect | ⚪ parqueado, uso futuro pretendido (2026-08-14) | Datos ampliados si crece el universo, o ejecución real si hay señal validada | Imagen Docker (42.5GB) borrada del disco local por espacio — recuperable gratis con `docker pull` cuando se retome. No tocar hasta que aparezca uno de los dos disparadores |
 | Producto | Conexión a broker real | 🔴 bloqueada, correctamente | Validar edge neto de costos primero (§13) | No avanzar hasta cerrar investigación |
 | Seguridad | **`fortress.db` (SQLite local) nunca se respalda** | 🔴 sin empezar | — | `auto_backup.sh`/`backup.sh` excluyen `*.db` explícitamente — si falla el disco, los datos runtime (posiciones, snapshots, eventos de riesgo) no son recuperables de ningún backup. Hallazgo de memoria previa (2026-08-12, auditoría infra), no estaba en AUDITORIA_TECNICA.md |
 | Seguridad | GET endpoints sin auth que disparan LLM real (costo/abuso) | 🔴 sin empezar | — | `predict/analyze/{symbol}`, `governance/analyze/{symbol}` — no sólo exponen datos, cualquiera puede gastar tu cuota/costo de NVIDIA NIM sin autenticarse |

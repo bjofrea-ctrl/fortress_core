@@ -109,10 +109,18 @@ en `PLAN_MEJORA_MATEMATICA.md`. No son sugerencias de estilo.
   disco externo de 3TB. Alcanza para investigación seria a frecuencia diaria, no para
   competir en microestructura. Esta decisión se tomó explícitamente comparando contra lo que
   de verdad hace falta para un enfoque estilo Renaissance Technologies.
-- **LEAN/QuantConnect está parqueado** — se instaló y funciona (backtest local verificado),
-  pero no tiene un objetivo de producto definido todavía. No invertir más tiempo ahí sin que
-  el usuario decida primero para qué serviría en concreto. Nota: la API de QuantConnect
-  requiere organización de pago para tokens propios (tier gratuito lo bloquea).
+- **LEAN/QuantConnect está parqueado, con intención de uso futuro (2026-08-14, aclarado por
+  el usuario)** — se instaló y funciona (backtest local verificado), pero no se retoma ahora.
+  Dos casos de uso concretos ya identificados para cuando corresponda: (1) datos más amplios
+  que yfinance si el universo se expande algún día, a bajo costo relativo; (2) conexión a
+  broker real si alguna vez hay una señal validada que ejecutar (hoy no existe motor de
+  ejecución en el proyecto). Filosofía explícita del usuario: bajo costo, eficiente, no
+  invertir sumas grandes en algo sin retorno probado — el software "se paga solo" con
+  rentabilidad futura, no se paga por adelantado. Por eso la imagen Docker
+  (`quantconnect/lean`, ~42.5GB) se borró del disco local el 2026-08-14 por espacio — es
+  100% recuperable gratis con `docker pull` cuando se retome esta línea; no se pierde nada
+  al borrarla hoy. Nota: la API de QuantConnect requiere organización de pago para tokens
+  propios (tier gratuito lo bloquea) — revisar si sigue así cuando se retome.
 - **El sistema multi-agente (Bull/Bear/Contrarian → Controller → Professor → Judge) es real
   pero parcialmente determinista** — sólo el agente Professor llama efectivamente a un LLM
   (NVIDIA NIM); Controller y Judge son deterministas por diseño, aunque la documentación vieja
