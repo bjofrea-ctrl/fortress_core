@@ -8,11 +8,9 @@ disparar y en qué barra.
 import numpy as np
 import pandas as pd
 import pytest
-
 from app.core.barrier_labeling import (
     ABSOLUTE_CEILING,
     REGIME_POSITION_STOP,
-    BarrierOutcome,
     label_entry,
     label_symbol,
     summarize,
@@ -34,9 +32,11 @@ def test_stop_de_regimen_dispara_en_la_barra_correcta():
 
 
 def test_techo_absoluto_tiene_prioridad_sobre_stop_de_regimen():
-    # Caída directa a -15%: supera ambos umbrales en la misma barra.
+    # Caída que supera el techo absoluto y el stop de régimen en la MISMA barra.
     # El motor evalúa el techo PRIMERO, así que esa debe ser la razón.
-    closes = np.array([100.0, 85.0, 80.0])
+    # El precio se deriva de la constante: si alguien cambia el techo, el test sigue.
+    bajo_el_techo = 100.0 * (1.0 - ABSOLUTE_CEILING - 0.03)
+    closes = np.array([100.0, bajo_el_techo, bajo_el_techo - 5])
     out = label_entry(closes, _flat_atr(3, 50.0), 0, position_stop=0.05)
     assert out.exit_reason == "ABSOLUTE_CEILING_BREACH"
     assert out.exit_index == 1
