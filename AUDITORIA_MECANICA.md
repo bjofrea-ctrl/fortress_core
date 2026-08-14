@@ -11,14 +11,30 @@
 
 ---
 
-## Hallazgo 0 (operativo, urgente) — el trial #15 EVT murió sin terminar
+## Hallazgo 0 (operativo, bloqueante) — el trial #15 EVT murió DOS VECES sin terminar
 
-El proceso `trial_evt_stops.py` (PID 75882) **ya no existe** y su artefacto
-`trial15_evt_stops_20260813_161033.txt` quedó cortado en "Corriendo baseline..."
-(14 líneas, sin veredicto). El log no tiene traceback ni error — terminación
-silenciosa tras ~18 min de CPU. **No hay resultado de §20; hay que re-correrlo.**
-Sugerencia: lanzarlo con `nohup` + redirección persistente y un `echo` de heartbeat
-cada ventana, para distinguir "murió" de "sigue corriendo" sin ambigüedad.
+**Intento 1** (PID 75882): `trial15_evt_stops_20260813_161033.txt` cortado en
+"Corriendo baseline..." (14 líneas, sin veredicto), ~18 min de CPU, sin traceback.
+
+**Intento 2** (2026-08-13, re-corrido más tarde): `trial15_evt_stops_20260813_172449.txt`
+— **también murió**, un paso más adelante ("Corriendo EVT (EVTEngine...)..." — o sea
+el baseline sí terminó esta vez, pero la variante EVT no). Sin proceso corriendo, sin
+traceback, sin veredicto. Verificado directamente (`ps aux`, sin match).
+
+**No es "hay que re-correrlo" — es "algo lo está matando de forma sistemática", y
+eso hay que diagnosticarlo antes de un tercer intento a ciegas.** El patrón (muere
+más adelante cada vez, sin error) sugiere terminación EXTERNA (proceso padre/shell
+que cierra, límite de tiempo de un wrapper, sesión que termina) más que un bug en
+el script mismo — pero es una hipótesis, no está confirmado.
+
+**Para mañana, antes de un tercer intento**:
+1. Lanzar con `nohup ... > /tmp/trial_evt.log 2>&1 & disown` explícito, verificando
+   que el proceso quede desacoplado de la terminal/sesión que lo lanza.
+2. Agregar heartbeat propio al script (un `log()` por ventana/símbolo procesado,
+   no sólo al principio y al final) — hoy sólo hay 2-3 líneas de progreso en todo
+   el run, imposible distinguir "lento" de "colgado" sin eso.
+3. Si vuelve a morir, revisar límites del entorno que lo lanza (timeout de
+   comando, memoria) antes de asumir que es un bug de lógica.
 
 ---
 

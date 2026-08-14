@@ -165,6 +165,28 @@ actualizado antes de pasar a la siguiente.
     serio"). Se retoma **sólo cuando el plan actual esté agotado**, asumiendo que en
     ese momento el costo (datos/infra) sea aceptable — decisión explícitamente
     pospuesta, no descartada.
+20. ⚪ Diferido — indicadores sobre velas SEMANALES re-muestreadas (2026-08-13,
+    pedido del usuario, para más adelante). **Distinto de §21/§21.1**: esos
+    variaron el horizonte del retorno futuro (5d/10d/60d/125d) sobre indicadores
+    calculados con barras DIARIAS. Esto es otra pregunta: re-muestrear OHLC a
+    semanal (`resample('W-FRI')`) y recalcular momentum/RSI/ADX/Bollinger/Donchian
+    sobre ESA serie semanal — cambia el ruido del indicador mismo, no sólo la
+    ventana de evaluación. Mismo protocolo si se retoma: rank IC intra-semana con
+    Newey-West, pre-registrado, Bonferroni por cantidad de factores testeados.
+    Minutos/horas: no viable — el cache es sólo barras diarias (verificado,
+    `AAPL.parquet` espaciado modal 1 día calendario/hábil), y datos intradía ya se
+    descartaron con gap-reversion (§13).
+21. 🔴 **Bloqueante para mañana** — el trial #15 EVT (§20, sizing walk-forward) murió
+    DOS VECES sin terminar ni dar traceback (detalle completo en
+    `AUDITORIA_MECANICA.md`, Hallazgo 0). Diagnosticar la causa (probablemente
+    terminación externa del proceso, no bug de lógica) antes de un tercer intento a
+    ciegas. Bloquea M0 del plan de mecánica y, en consecuencia, cualquier decisión
+    sobre EVT-stops.
+22. ✅ M1/M1b — auditoría de horizonte COMPLETA (2026-08-13, `PLAN_MEJORA_MATEMATICA.md
+    §21/§21.1`): 5d/10d/60d/125d, ninguno significativo bajo Bonferroni-12. Los
+    rechazos de señal se refuerzan en los 5 horizontes probados (5d-125d). Sigue
+    M2 (diagnóstico contrafáctico de las 41 salidas por REGIME_STOP_HIT, -$5,867)
+    como próximo paso del plan de mecánica — no depende de que M0 se resuelva.
 
 ---
 
