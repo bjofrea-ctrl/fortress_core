@@ -56,7 +56,7 @@ def ewma_vol_daily(r: pd.Series, warmup: int = 60) -> pd.Series:
     v = 0.0 if not np.isfinite(v) else v
     for t in range(len(r2)):
         if t > 0:
-            v = LAMBDA * v + (1 - LAMBDA) * r2[t - 1]
+            v = LAMBDA * v + (1 - LAMBDA) * r2[t - 1] ** 2
         out[t] = np.sqrt(max(v, 1e-12))
     return pd.Series(out, index=r.index)
 
