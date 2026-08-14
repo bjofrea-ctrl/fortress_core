@@ -1108,3 +1108,41 @@ Sesión de investigación (Tanda D del plan consolidado). Disciplina §14 respet
   invertido (excesos del 98% — imposible para VaR 99%); corregido y re-corrido;
   artefacto 155217 descartado como artefacto del error (misma convencion que §9).
 - Artefacto trackeado: backend/data/cache/evt_tails_20260813_155237.txt.
+
+## 2026-08-14 — M2 contrafáctico REGIME_STOP_HIT CERRADO + M0 trial EVT relanzado (heartbeat + desacople)
+
+- Contexto: retomar pendientes de ROADMAP (items 21 y 22 + plan de mecánica). Al leer
+  AUDITORIA_MECANICA.md: Hallazgo 0 (trial EVT murió 2 veces sin traceback), plan M0-M4.
+  M1/M1b ya cerrados → siguiente paso del plan = M2 (contrafáctico de las 41 salidas por
+  REGIME_STOP_HIT), que no depende de M0.
+- M0 (en curso): antes del 3er intento del trial EVT se aplicó el checklist del Hallazgo 0:
+  (1) heartbeat propio en `trial_evt_stops.py` (`[heartbeat] t=Ns | fase=...` cada 60s,
+  daemon thread, log() con flush — sin cambio de metodología, verificado py_compile);
+  (2) lanzamiento desacoplado: `nohup` + wrapper con `os.setsid()` (grupo de procesos
+  propio, PID 8856, PGID=8856) + `PYTHONPATH=.` (sin esto el import de `app` falla —
+  invocación canónica del repo, SESSION_LOG:131). Causa raíz probable de las muertes
+  silenciosas: el harness del lanzador anterior mata el grupo de procesos al terminar
+  (por eso cada reintento moría sin traceback, un paso más adelante). Heartbeat
+  verificado funcionando (t=120s, t=180s, fase=baseline run).
+- M2 CERRADO: `diagnose_regime_stop_contrafactual.py` (pre-registrado en docstring),
+  artefacto `regime_stop_contrafactual_20260814_173001.txt`.
+  - Puerta de fidelidad (pre-registrada): 152 posiciones con salidas 100% naturales
+    reproducen el parquet EXACTO (exit_date + razón + pnl). La réplica de la mecánica
+    de salida per-symbol es fiel al motor (ceiling 0.12 → parcial 2xATR → trailing
+    1.5x/2xATR → técnica adx<20 o close<ema20<ema50; slip 0.0005; PnL sin comisión).
+  - Resultado: 16/41 (39%) se habrían recuperado; 25/41 igual o peor; delta total ≈ $0
+    (real −$5,867.12 vs cf −$5,867.15); solo 6/41 habrían ganado; salidas cf: 23
+    TÉCNICA, 13 CEILING, 5 TRAILING; mediana +9 días.
+  - Lectura: el stop convierte pérdidas profundas (13 habrían llegado a CEILING: NVDA
+    −$554 vs −$286, PFE −$313 vs −$145) en pérdidas tempranas chicas, sacrificando una
+    minoría de recuperaciones (NVDA +$151, GE +$115, JPM +$158). El −$5,867 es el
+    precio del seguro, no una fuga.
+  - Verdicto per criterio pre-registrado (<50% recuperadas): M3 NO se dispara; M4
+    tampoco. Del plan de mecánica queda solo M0 (trial EVT en curso).
+- Bug propio detectado y corregido durante la verificación de fidelidad: la primera
+  versión incluía las 41 posiciones REGIME_STOP_HIT en la puerta de fidelidad (imposible:
+  el replay sin stop de régimen no puede reproducir su salida por diseño) — corregido a
+  posiciones con salidas 100% naturales. Artefacto fallado 172929 conservado como
+  evidencia del ciclo.
+- Docs actualizados: AUDITORIA_MECANICA.md (Fase M2 cerrada), ROADMAP.md (item 23
+  agregado, item 21 actualizado a "en curso", fecha de actualización).

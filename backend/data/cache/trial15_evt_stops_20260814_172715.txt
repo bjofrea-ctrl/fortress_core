@@ -1,0 +1,16 @@
+========================================================================
+TRIAL #15 (PLAN §20) — STOPS EVT WALK-FORWARD EN EL SIZING (PRE-REGISTRADO)
+Universo: 50 simbolos | data 2015-01-01 -> 2026-08-04 | operacion 2019-01-01 -> 2026-08-04
+Cambio: stop_distance = max(VaR_GPD(99%)_vigente x sigma_EWMA_dia, price*position_stop)
+vs baseline max(2xATR, price*position_stop). Resto del risk manager INTACTO.
+Walk-forward: recalibracion cada 63d habiles, ventana movil 756d, EWMA lambda=0.94, u=p95%, VaR p99% | excesos<30 -> cuantil empirico
+Ventanas: W1 2020-2021, W2 2022-2023, W3 2024-2026 | piso trades/ventana: 30
+Criterio: DSR OOS >= 0.90 en >= 2/3 ventanas | N_TRIALS=19 (17 historico +1 #14 +1 este)
+========================================================================
+precios cargados: 50/50 simbolos (2015-01-01 -> 2026-08-04)
+[heartbeat] t=60s | fase=arranque
+EVT calibrado walk-forward: 50/50 simbolos | 35 fechas de recalibracion (esperadas ~34) | fallback a cuantil empirico solo si una ventana tiene <30 excesos (esperados ~38/ventana)
+
+Corriendo baseline (BacktestEngine estandar, misma data)...
+[heartbeat] t=120s | fase=baseline run
+[heartbeat] t=180s | fase=baseline run

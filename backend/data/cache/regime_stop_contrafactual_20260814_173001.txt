@@ -1,0 +1,69 @@
+========================================================================
+M2 — CONTRAFACTICO DE LAS SALIDAS POR REGIME_STOP_HIT (PRE-REGISTRADO)
+Parquet: data/cache/baseline_clean_20260811_150643_trades.parquet | 286 trades | END=2026-08-04
+Reglas naturales conservadas: ['ABSOLUTE_CEILING_BREACH', 'PARTIAL_TP', 'TECHNICAL', 'TRAILING_STOP'] | fuera de alcance: ['PORTFOLIO_CEILING_BREACH', 'PORTFOLIO_REGIME_STOP'] + REGIME_STOP_HIT (la variable)
+========================================================================
+indicadores calculados: 50/50 simbolos
+
+--- VERIFICACION DE FIDELIDAD (parquet vs replay, reglas naturales) ---
+FIDELIDAD OK: 152 posiciones evaluables reproducen el parquet exacto (exit_date + razon + pnl). Puerto abierto.
+
+--- CONTRAFACTICO: 41 posiciones cerradas por REGIME_STOP_HIT ---
+Mejores que el parquet (cf_pnl > real): 16/41 (39.0%)
+Peores o iguales: 25/41
+  pnl real total: $-5,867.12 | cf total: $-5,867.15 | delta: $-0.02
+  mediana pnl real: $-149.95 | mediana cf: $-153.98
+  cf > 0 (posiciones que habrian ganado): 6/41
+  df['cf_reason'] conteo: {'TECHNICAL': 23, 'ABSOLUTE_CEILING_BREACH': 13, 'TRAILING_STOP': 5}
+  dias adicionales sostenidos (mediana): 9
+
+--- VEREDICTO vs criterio pre-registrado ---
+  16/41 se habrian recuperado -> el stop esta HACIENDO SU TRABAJO: el -$5,867 es el precio del seguro, no una fuga -> tema cerrado.
+
+Detalle por posicion (primeras 15):
+  PM     2020-01-13 -> 2020-01-28 | real $   -66.83 | cf $  -168.43 | salida TECHNICAL | +43d
+  NVDA   2020-01-13 -> 2020-01-31 | real $  -149.95 | cf $   150.99 | salida TECHNICAL | +11d
+  NVDA   2020-03-02 -> 2020-03-09 | real $  -286.33 | cf $  -554.29 | salida ABSOLUTE_CEILING_BREACH | +3d
+  NFLX   2020-10-12 -> 2020-10-21 | real $  -204.02 | cf $  -223.73 | salida TECHNICAL | +12d
+  AAPL   2020-10-12 -> 2020-10-23 | real $  -155.29 | cf $  -257.15 | salida ABSOLUTE_CEILING_BREACH | +7d
+  AAPL   2020-12-28 -> 2021-01-06 | real $  -157.85 | cf $     1.73 | salida TECHNICAL | +15d
+  QCOM   2021-02-01 -> 2021-02-04 | real $  -158.13 | cf $  -256.41 | salida ABSOLUTE_CEILING_BREACH | +18d
+  NVDA   2021-02-22 -> 2021-02-25 | real $  -163.90 | cf $  -309.45 | salida ABSOLUTE_CEILING_BREACH | +7d
+  INTU   2021-03-01 -> 2021-03-04 | real $  -145.54 | cf $   -46.97 | salida TECHNICAL | +11d
+  LLY    2021-08-23 -> 2021-09-09 | real $   -80.22 | cf $  -100.04 | salida ABSOLUTE_CEILING_BREACH | +5d
+  PFE    2021-08-23 -> 2021-09-10 | real $  -224.35 | cf $  -311.73 | salida ABSOLUTE_CEILING_BREACH | +7d
+  CSCO   2021-08-23 -> 2021-09-30 | real $  -183.47 | cf $  -176.10 | salida TECHNICAL | +4d
+  PFE    2021-12-20 -> 2021-12-29 | real $  -145.03 | cf $  -313.86 | salida ABSOLUTE_CEILING_BREACH | +21d
+  AMD    2022-01-03 -> 2022-01-05 | real $  -240.69 | cf $  -311.20 | salida ABSOLUTE_CEILING_BREACH | +2d
+  PFE    2022-01-03 -> 2022-01-24 | real $  -230.63 | cf $  -247.41 | salida TECHNICAL | +18d
+
+Resumen por simbolo (real vs cf):
+  AAPL   n= 2 real $  -313.14 cf $  -255.41
+  ADBE   n= 1 real $   -80.17 cf $  -167.69
+  AMD    n= 2 real $  -375.59 cf $  -446.10
+  AMGN   n= 1 real $   -16.43 cf $    -6.28
+  AVGO   n= 1 real $   -73.93 cf $     7.86
+  BAC    n= 1 real $   -61.44 cf $   -65.73
+  BRK-B  n= 2 real $  -182.75 cf $  -150.97
+  CAT    n= 2 real $  -258.99 cf $  -344.51
+  COST   n= 1 real $  -143.47 cf $  -183.33
+  CSCO   n= 1 real $  -183.47 cf $  -176.10
+  GE     n= 1 real $  -155.72 cf $   114.81
+  GOOGL  n= 1 real $  -151.99 cf $  -167.94
+  IBM    n= 2 real $  -364.43 cf $  -415.88
+  INTU   n= 1 real $  -145.54 cf $   -46.97
+  JPM    n= 3 real $  -256.68 cf $   157.83
+  LLY    n= 2 real $  -215.22 cf $  -119.80
+  MCD    n= 1 real $  -162.47 cf $  -134.27
+  META   n= 1 real $  -161.52 cf $  -153.98
+  NFLX   n= 2 real $  -369.14 cf $  -468.17
+  NVDA   n= 4 real $  -780.18 cf $  -736.51
+  ORCL   n= 1 real $  -121.67 cf $  -198.24
+  PFE    n= 3 real $  -600.01 cf $  -873.00
+  PM     n= 1 real $   -66.83 cf $  -168.43
+  QCOM   n= 1 real $  -158.13 cf $  -256.41
+  SPGI   n= 1 real $   -64.96 cf $  -136.68
+  TSLA   n= 1 real $  -155.44 cf $  -155.44
+  XOM    n= 1 real $  -247.81 cf $  -319.79
+
+Out: data/cache/regime_stop_contrafactual_20260814_173001.txt

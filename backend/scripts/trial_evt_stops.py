@@ -18,6 +18,8 @@ trial #14 + 1 este; Fase 0.6 re-test sin slot; §18/§19 sin slot).
 """
 import datetime
 import os
+import threading
+import time
 
 import numpy as np
 import pandas as pd
@@ -200,8 +202,24 @@ def main():
                             f"trial15_evt_stops_{datetime.datetime.now():%Y%m%d_%H%M%S}.txt")
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
 
+    # Heartbeat (M0, 2026-08-14): distingue "lento" de "colgado" y deja rastro
+    # si el proceso es terminado externamente. Sin cambio de metodología.
+    phase = ["arranque"]
+    heartbeat_stop = threading.Event()
+
+    def _heartbeat_loop():
+        t0 = time.time()
+        while not heartbeat_stop.wait(60):
+            line = f"[heartbeat] t={int(time.time() - t0)}s | fase={phase[0]}"
+            print(line, flush=True)
+            with open(out_path, "a") as f:
+                f.write(line + "\n")
+
+    hb = threading.Thread(target=_heartbeat_loop, daemon=True)
+    hb.start()
+
     def log(msg: str = ""):
-        print(msg)
+        print(msg, flush=True)
         with open(out_path, "a") as f:
             f.write(msg + "\n")
 
@@ -228,14 +246,18 @@ def main():
         f"(esperados ~38/ventana)")
 
     log("\nCorriendo baseline (BacktestEngine estandar, misma data)...")
+    phase[0] = "baseline run"
     res_base = BacktestEngine(initial_capital=25000).run(
         price_data, market_data, pd.Timestamp(OP_START), pd.Timestamp(END)
     )
     log("Corriendo EVT (EVTEngine con EVTRiskManager walk-forward)...")
+    phase[0] = "EVT run"
     evt_engine = EVTEngine(initial_capital=25000, price_data=price_data)
     res_evt = evt_engine.run(
         price_data, market_data, pd.Timestamp(OP_START), pd.Timestamp(END)
     )
+    phase[0] = "metricas"
+    heartbeat_stop.set()
     n_buys = evt_engine._used_rm._n_evt_buys if evt_engine._used_rm is not None else 0
     log(f"Compras EVT dimensionadas con VaR-GPD walk-forward: {n_buys} (assert anti-lookahead "
         f"activo en todas: recalibracion estrictamente anterior a la compra)")

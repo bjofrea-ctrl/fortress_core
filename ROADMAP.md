@@ -10,7 +10,7 @@ Code, Cline, OpenCode), leer este documento primero. Al cerrar, actualizarlo ant
 — marcar lo que se cerró, agregar lo que apareció nuevo. Ningún ítem se da por cerrado sin
 marcarlo acá, aunque se haya resuelto "de pasada" en otra conversación.
 
-Última actualización: 2026-08-12.
+Última actualización: 2026-08-14.
 
 ---
 
@@ -176,17 +176,30 @@ actualizado antes de pasar a la siguiente.
     Minutos/horas: no viable — el cache es sólo barras diarias (verificado,
     `AAPL.parquet` espaciado modal 1 día calendario/hábil), y datos intradía ya se
     descartaron con gap-reversion (§13).
-21. 🔴 **Bloqueante para mañana** — el trial #15 EVT (§20, sizing walk-forward) murió
+21. 🔄 **En curso (2026-08-14)** — el trial #15 EVT (§20, sizing walk-forward) murió
     DOS VECES sin terminar ni dar traceback (detalle completo en
-    `AUDITORIA_MECANICA.md`, Hallazgo 0). Diagnosticar la causa (probablemente
-    terminación externa del proceso, no bug de lógica) antes de un tercer intento a
-    ciegas. Bloquea M0 del plan de mecánica y, en consecuencia, cualquier decisión
-    sobre EVT-stops.
+    `AUDITORIA_MECANICA.md`, Hallazgo 0). Diagnóstico aplicado hoy antes del 3er
+    intento: (a) heartbeat propio en el script (`[heartbeat] t=...s | fase=...` cada
+    60s, sin cambio de metodología), (b) lanzamiento desacoplado del lanzador
+    (`nohup` + `setsid` → grupo de procesos propio, inmune al kill del grupo del
+    harness), (c) causa raíz probable identificada: el ambiente del lanzador
+    anterior mata el grupo de procesos al terminar la tarea (muertes sin traceback,
+    cada vez un paso más adelante = se lanzaba de nuevo y moría al terminar el
+    wrapper). 3er intento CORRIENDO (PID 8856, heartbeat activo). Bloquea M0 del
+    plan de mecánica y la decisión sobre EVT-stops.
 22. ✅ M1/M1b — auditoría de horizonte COMPLETA (2026-08-13, `PLAN_MEJORA_MATEMATICA.md
     §21/§21.1`): 5d/10d/60d/125d, ninguno significativo bajo Bonferroni-12. Los
-    rechazos de señal se refuerzan en los 5 horizontes probados (5d-125d). Sigue
-    M2 (diagnóstico contrafáctico de las 41 salidas por REGIME_STOP_HIT, -$5,867)
-    como próximo paso del plan de mecánica — no depende de que M0 se resuelva.
+    rechazos de señal se refuerzan en los 5 horizontes probados (5d-125d).
+23. ✅ **M2 — contrafáctico de las 41 salidas por REGIME_STOP_HIT CERRADO (2026-08-14)**
+    — pre-registrado en `AUDITORIA_MECANICA.md` (Fase M2), corrido
+    (`diagnose_regime_stop_contrafactual.py`, artefacto
+    `regime_stop_contrafactual_20260814_173001.txt`): **el stop está haciendo su
+    trabajo**. Puerta de fidelidad: 152 posiciones naturales reproducen el parquet
+    exacto. Solo 16/41 (39%) se habrían recuperado; delta total ≈ $0 (real
+    −$5,867.12 vs cf −$5,867.15); 13/41 habrían llegado a ABSOLUTE_CEILING con
+    pérdidas mucho peores. Per criterio pre-registrado (<50% recuperadas) → M3 NO
+    se dispara (sin hipótesis que gaste un slot de n_trials); M4 tampoco. Con esto,
+    del plan de mecánica queda solo M0 (el trial EVT en curso).
 
 ---
 

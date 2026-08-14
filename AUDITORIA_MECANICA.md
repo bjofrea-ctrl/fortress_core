@@ -175,7 +175,33 @@ evidencia en tenencias de 3-12 meses). Se testeó 60d y 125d con Bonferroni-12
 horizontes). **Ningún factor pasa.** Auditoría de horizonte COMPLETA: sin señal
 entre 1 semana y 6 meses, en ningún punto.
 
-### Fase M2 — Diagnóstico contrafáctico de salidas (no optimización todavía)
+### Fase M2 — Diagnóstico contrafáctico de salidas ✅ CERRADA (2026-08-14)
+
+**Resultado: el stop de régimen está haciendo su trabajo → M3 NO se dispara.**
+
+Corrido `diagnose_regime_stop_contrafactual.py` (pre-registrado en el docstring),
+artefacto `regime_stop_contrafactual_20260814_173001.txt`. Replay fiel de la
+mecánica de salida per-symbol del motor (ceiling → parcial → trailing → técnica,
+mismas constantes, PnL sin comisión igual que el parquet) eliminando SOLO el
+REGIME_STOP_HIT; stops de cartera fuera de alcance (acciones conjuntas).
+
+- **Puerta de fidelidad**: 152 posiciones con salidas 100% naturales reproducen
+  el parquet EXACTO (exit_date + razón + pnl). La infraestructura de replay
+  reproduce el motor sin error.
+- **41 posiciones**: solo **16/41 (39%)** se habrían recuperado; 25/41 igual o
+  peor. **Delta total ≈ $0** (real −$5,867.12 vs cf −$5,867.15). Solo 6/41
+  habrían ganado. Salidas contrafactuales: 23 TÉCNICA, 13 CEILING, 5 TRAILING.
+  Mediana +9 días sostenidos.
+- **Lectura**: el stop no destruye valor en agregado — convierte pérdidas
+  profundas (13 habrían llegado a ABSOLUTE_CEILING, mucho peores: p.ej. NVDA
+  −$554 vs −$286, PFE −$313 vs −$145) en pérdidas tempranas y chicas, a cambio
+  de sacrificar una minoría de recuperaciones (NVDA 2020 +$151, GE +$115,
+  JPM +$158). El −$5,867 es el precio del seguro, no una fuga.
+- **Per criterio pre-registrado** (<50% se habría recuperado): tema CERRADO.
+  M3 (trial de umbrales de salida) **no se dispara** — no hay hipótesis que
+  justifique gastar un slot de `n_trials`. M4 tampoco (dependía de M1-M3).
+
+<details><summary>Especificación original (cumplida)</summary>
 Antes de tocar ningún umbral: medir qué habría pasado con las 41 posiciones
 cerradas por `REGIME_STOP_HIT` si se hubieran sostenido hasta su salida natural
 (técnica o trailing). Es un diagnóstico descriptivo sobre datos ya existentes, sin
@@ -185,6 +211,7 @@ parámetros libres que ajustar — no consume slot de `n_trials`.
   demasiado ajustado y hay una hipótesis real que pre-registrar.
 - Si habrían empeorado → el stop está haciendo su trabajo y el −$5,867 es el
   precio del seguro, no una fuga. Se cierra el tema.
+</details>
 
 ### Fase M3 — Trial de mecánica de salida (sólo si M2 lo justifica)
 Pre-registro formal con slot propio de `n_trials`: variante del risk manager por
