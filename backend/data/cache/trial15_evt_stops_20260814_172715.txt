@@ -14,3 +14,6 @@ EVT calibrado walk-forward: 50/50 simbolos | 35 fechas de recalibracion (esperad
 Corriendo baseline (BacktestEngine estandar, misma data)...
 [heartbeat] t=120s | fase=baseline run
 [heartbeat] t=180s | fase=baseline run
+[heartbeat] t=240s | fase=baseline run
+[heartbeat] t=300s | fase=baseline run
+[heartbeat] t=360s | fase=baseline run
