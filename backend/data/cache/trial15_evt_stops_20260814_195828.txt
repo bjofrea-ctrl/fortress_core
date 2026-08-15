@@ -119,3 +119,47 @@ Corriendo EVT (EVTEngine con EVTRiskManager walk-forward)...
 [heartbeat] t=6301s | fase=EVT run
 [heartbeat] t=6361s | fase=EVT run
 [heartbeat] t=6619s | fase=EVT run
+Compras EVT dimensionadas con VaR-GPD walk-forward: 214 (assert anti-lookahead activo en todas: recalibracion estrictamente anterior a la compra)
+
+--- W1 2020-2021 (baseline n=103, EVT n=103) ---
+    cagr                     0.0113       0.0113
+    sharpe_ratio             0.2562       0.2562
+    sortino_ratio            0.3097       0.3097
+    max_drawdown            -0.0513      -0.0513
+    calmar_ratio             0.2198       0.2198
+    win_rate                 0.6602       0.6602
+    profit_factor            1.3785       1.3785
+    total_trades           103.0000     103.0000
+    deflated_sharpe          0.0649       0.0649
+
+--- W2 2022-2023 (baseline n=47, EVT n=47) ---
+    cagr                    -0.0011      -0.0011
+    sharpe_ratio            -0.0542      -0.0542
+    sortino_ratio           -0.0436      -0.0436
+    max_drawdown            -0.0650      -0.0650
+    calmar_ratio            -0.0173      -0.0173
+    win_rate                 0.5532       0.5532
+    profit_factor            1.0882       1.0882
+    total_trades            47.0000      47.0000
+    deflated_sharpe          0.0253       0.0253
+
+--- W3 2024-2026 (baseline n=113, EVT n=113) ---
+    cagr                     0.0231       0.0231
+    sharpe_ratio             0.5299       0.5299
+    sortino_ratio            0.7342       0.7342
+    max_drawdown            -0.0378      -0.0378
+    calmar_ratio             0.6111       0.6111
+    win_rate                 0.5487       0.5487
+    profit_factor            1.4878       1.4878
+    total_trades           113.0000     113.0000
+    deflated_sharpe          0.1602       0.1602
+
+--- VEREDICTO vs CRITERIO (§20) ---
+  W1 2020-2021   n=103 DSR=0.0649 no pasa
+  W2 2022-2023   n= 47 DSR=0.0253 no pasa
+  W3 2024-2026   n=113 DSR=0.1602 no pasa
+
+  Ventanas que pasan: 0/3 -> criterio: NO CUMPLE
+  => NO CUMPLE: el sizing EVT no supera al baseline -> no se integra; Fase 1 queda cerrada con §19 (diagnostico) + §20 (trial) como evidencia.
+
+Out: data/cache/trial15_evt_stops_20260814_195828.txt

@@ -176,15 +176,14 @@ actualizado antes de pasar a la siguiente.
     Minutos/horas: no viable — el cache es sólo barras diarias (verificado,
     `AAPL.parquet` espaciado modal 1 día calendario/hábil), y datos intradía ya se
     descartaron con gap-reversion (§13).
-21. 🔄 **En curso (2026-08-14)** — el trial #15 EVT (§20, sizing walk-forward): la
-    terminación externa del Hallazgo 0 se resolvió (heartbeat + `nohup`/`setsid`) y
-    el trial COMPLETÓ (artefactos 17:27 → 19:12: log + parquet). Pero la verificación
-    contra el artefacto destapó un **bug mecánico** (`AUDITORIA_MECANICA.md`,
-    Hallazgo 5): EWMA sin cuadrado (`r2[t-1]` en vez de `r2[t-1]**2`) → σ en el floor
-    34% de los días → z±187,559 → var_mult 20k-85k (debería ~2.8) → sizing aniquilado
-    → 36 trades inválidos. **Fix aplicado (1 carácter) + re-run válido CORRIENDO
-    desde 19:58 (PID 19831, heartbeat activo)** — el veredicto se toma de este run.
-    Bloquea la decisión sobre EVT-stops (M0).
+21. ✅ **Trial #15 EVT — CERRADO (2026-08-15)** — el re-run válido (post-fix EWMA,
+    `trial15_evt_stops_20260814_195828.txt`, log `trial15_evt_stops_run2_console.log`)
+    **TERMINÓ y NO CUMPLE**: W1 n=103 DSR=0.0649, W2 n=47 DSR=0.0253, W3 n=113
+    DSR=0.1602 — **0/3 ventanas, criterio DSR≥0.90 en ≥2/3 → NO CUMPLE**. El sizing
+    EVT no supera al baseline; no se integra. Fase 1 EVT queda CERRADA con §19
+    (diagnóstico PASA) + §20 (trial NO CUMPLE) como evidencia. Verificado contra el
+    artefacto (parquet trades 281 filas, win_rate 60.5%, n por ventana 103/47/113
+    = log). Con esto, del plan de mecánica queda CERRADO M0.
 22. ✅ M1/M1b — auditoría de horizonte COMPLETA (2026-08-13, `PLAN_MEJORA_MATEMATICA.md
     §21/§21.1`): 5d/10d/60d/125d, ninguno significativo bajo Bonferroni-12. Los
     rechazos de señal se refuerzan en los 5 horizontes probados (5d-125d).
@@ -282,6 +281,7 @@ gantt
 | Instrumento | M4 — Costos medidos (Alpaca paper) | ⚪ libre para arrancar | — | Orden completa en `ORDENES_MODULOS.md` — dueño asignado Cline, no arrancó |
 | Instrumento | M5 — Detector de deriva | ⚪ libre para arrancar | — | Orden completa en `ORDENES_MODULOS.md` — dueño asignado OpenCode, no arrancó (2026-08-14 se ocupó del diagnóstico EVT en su lugar, ver ítem 21) |
 | Instrumento | M6 — Ledger de trials | 🟢 hecho (2026-08-14) | — | `app/core/trial_registry.py` + backfill 29 entradas. Hallazgo: 27 n_trials consumidos vs 17 citados — ver `SESSION_LOG.md` |
+| Investigación | Trial #15 EVT — stops EVT walk-forward (M0) | 🟢 cerrado (2026-08-15) | — | NO CUMPLE 0/3 (DSR 0.0649/0.0253/0.1602, artefacto trial15_evt_stops_20260814_195828.txt). Fase 1 EVT cerrada: §19 diagnóstico PASA + §20 trial NO CUMPLE |
 
 **Leyenda**: 🔴 crítico/sin empezar · 🟡 en curso/parcial · ⚪ parqueado, sin decisión de producto · 🟢 cerrado
 
