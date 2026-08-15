@@ -1,12 +1,13 @@
 """Prueba integral del sistema Fortress Core con datos sintéticos."""
+from datetime import datetime
+
 import numpy as np
 import pandas as pd
-from datetime import datetime, timedelta
-from app.core.indicators import calculate_all_indicators
 from app.core.adaptive_risk import AdaptiveRiskManager
+from app.core.backtest_engine import BacktestEngine
+from app.core.indicators import calculate_all_indicators
 from app.core.regime_classifier import GlobalRegimeClassifier
 from app.core.signal_engine import SignalEngine
-from app.core.backtest_engine import BacktestEngine
 
 
 def generate_synthetic_data(symbols, start="2015-01-01", end="2024-12-31", seed=42):
@@ -84,7 +85,7 @@ def test_signal_engine():
     engine = SignalEngine(classifier)
 
     stock_data = generate_synthetic_data(["AAPL"])["AAPL"]
-    signal = engine.generate_signal(stock_data, "AAPL", 0)
+    engine.generate_signal(stock_data, "AAPL", 0)
     # Puede ser None si no cumple filtros, pero no debe fallar
     print("✅ Motor de señales OK")
 
