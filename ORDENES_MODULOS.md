@@ -18,7 +18,7 @@ Estado al 2026-08-14:
 | M4 Costos medidos | **Cline** | ✅ **HECHO (2026-08-15)** — `app/core/execution_costs.py`, `scripts/measure_execution_costs.py`, 13 tests, verificado por Claude Code (no solo el reporte): base_url a paper confirmado por test, cero credenciales reales, ruff limpio. **NO retomar, ya está.** Falta la medición viva (necesita cuenta Alpaca paper real). |
 | M5 Detector de deriva | **OpenCode** | ✅ **HECHO (2026-08-15)** — `app/core/drift_detector.py`, KS + Bonferroni + concepto (accuracy/correlación) + `recommend_action`, 18 tests, suite completa 193 passed, ruff limpio. **NO retomar, ya está.** |
 | M6 Ledger de trials | **Command Code** | ✅ hecho (`app/core/trial_registry.py`, `data/trial_registry.json`, backfill 29 entradas, 15 tests) — hallazgo: backfill 27 consumidos vs 17 citados |
-| M7 Pipeline integrado M1+M2+M3 | Claude Code | 🔒 **RETIRADO de Command Code (2026-08-15)** — el cableado calibración/predicción y la compuerta AND/OR pueden fallar en silencio (números plausibles, tests que pasan sin detectarlo). Boris preguntó si delegar esto era sensible; sí lo es, se queda conmigo. |
+| M7 Pipeline integrado M1+M2+M3 | Claude Code | ✅ **HECHO (2026-08-15)** — `app/core/diagnostic_pipeline.py`, `run_diagnostic_pipeline()`. 10 tests, dos verifican los invariantes reales (separación temporal calibración/predicción; compuerta AND no OR, chequeado sobre la ecuación booleana exacta). **NO retomar, ya está.** |
 | M8 Re-verificar código muerto | **Command Code** | 🟡 libre para arrancar (2026-08-15) |
 
 ---

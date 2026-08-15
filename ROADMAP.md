@@ -310,7 +310,7 @@ gantt
 | Instrumento | M4 — Costos medidos (Alpaca paper) | 🟢 hecho (2026-08-15) | — | `app/core/execution_costs.py`, Cline, verificado independientemente (13 tests, base_url paper confirmado por test). Falta la medición viva — necesita cuenta Alpaca paper real |
 | Instrumento | M5 — Detector de deriva | 🟢 hecho (2026-08-15) | — | `app/core/drift_detector.py`, OpenCode, KS+Bonferroni+concepto, 18 tests, abstención con n<30 |
 | Instrumento | M6 — Ledger de trials | 🟢 hecho (2026-08-14) | — | `app/core/trial_registry.py` + backfill 29 entradas. Hallazgo: 27 n_trials consumidos vs 17 citados — ver `SESSION_LOG.md` |
-| Instrumento | M7 — Pipeline integrado M1+M2+M3 | 🔴 sin empezar | M1+M2+M3 (listos) | Retirado de Command Code (cableado calibración/predicción y compuerta AND/OR pueden fallar en silencio) — dueño Claude Code |
+| Instrumento | M7 — Pipeline integrado M1+M2+M3 | 🟢 hecho (2026-08-15) | — | `app/core/diagnostic_pipeline.py`, `run_diagnostic_pipeline()`, 10 tests. Instrumento diagnóstico completo (M1-M8) cerrado. Falta el TRIAL pre-registrado que lo use para afirmar algo — decisión del usuario |
 | Investigación | Trial #15 EVT — stops EVT walk-forward (M0) | 🟢 cerrado (2026-08-15) | — | NO CUMPLE 0/3 (DSR 0.0649/0.0253/0.1602, artefacto trial15_evt_stops_20260814_195828.txt). Fase 1 EVT cerrada: §19 diagnóstico PASA + §20 trial NO CUMPLE |
 
 **Leyenda**: 🔴 crítico/sin empezar · 🟡 en curso/parcial · ⚪ parqueado, sin decisión de producto · 🟢 cerrado

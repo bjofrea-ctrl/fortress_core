@@ -1338,3 +1338,31 @@ Bonferroni.
 completo (solo `ORDENES_MODULOS.md`, el resto ya estaba en `origin/main` vía
 auto-backup — confirmado con `gh api` en un chequeo anterior de la sesión), suite
 completa 206 passed corrida fresca inmediatamente antes del push, sin secrets.
+
+## M7 (pipeline integrado M1+M2+M3) HECHO — cierra el instrumento completo
+
+`app/core/diagnostic_pipeline.py`, `run_diagnostic_pipeline()`. Construido por
+Claude Code (no delegado — ver "criterio de delegación" arriba), con el cuidado
+extra que el cableado entre módulos de distintos dueños exige.
+
+- Split temporal ESTRICTO por fecha real entre calibración y predicción de M2
+  (`calibration_cutoff`), nunca por posición en array ni mezclando símbolos antes
+  de cortar. Verificado con `test_calibracion_y_prediccion_nunca_comparten_fechas`
+  desde afuera del código, no solo confiado en la implementación.
+- Compuerta M3 como AND explícito, nunca OR:
+  `operar = (not abstenerse_m2) AND gate_operar`. Verificado con
+  `test_compuerta_es_and_no_or_verificado_en_la_salida_real` — chequea la ecuación
+  booleana exacta sobre la salida real del pipeline, no una expectativa
+  estadística. Si el cableado se rompe a OR algún día, este test revienta antes
+  de que nadie lo note en un trial real.
+- Sin `favorable_states`, el resultado es idéntico a correr M1+M2 solos (M3 no
+  toca nada) — verificado explícito, no asumido.
+- 10 tests, suite completa 216 passed, ruff limpio.
+
+**Con esto, el instrumento diagnóstico completo (M1-M8, `DISENO_INSTRUMENTO.md`)
+queda cerrado.** Lo único que falta para usarlo con propósito real es el TRIAL
+pre-registrado de macro-como-compuerta (M3) — decisión del usuario, cuándo
+escribirlo y correrlo.
+
+`ROADMAP.md` (fila Instrumento M7 → 🟢, M2-M5 corregidas de su estado stale
+anterior) y `ORDENES_MODULOS.md` (M7 → hecho) actualizados.
