@@ -6,7 +6,6 @@ from app.core.indicators import calculate_all_indicators
 from app.core.adaptive_risk import AdaptiveRiskManager
 from app.core.regime_classifier import GlobalRegimeClassifier
 from app.core.signal_engine import SignalEngine
-from app.core.risk_parity import RiskParityAllocator
 from app.core.backtest_engine import BacktestEngine
 
 
@@ -90,17 +89,6 @@ def test_signal_engine():
     print("✅ Motor de señales OK")
 
 
-def test_risk_parity():
-    """Test del allocator risk parity."""
-    symbols = ["SPY", "TLT", "GLD", "DBC"]
-    data = generate_synthetic_data(symbols)
-    returns = pd.DataFrame({s: data[s]["close"].pct_change() for s in symbols}).dropna()
-    allocator = RiskParityAllocator(target_volatility=0.10)
-    weights = allocator.allocate(returns)
-    assert abs(sum(weights.values()) - 1.0) < 0.01
-    print("✅ Risk Parity OK")
-
-
 def test_backtest():
     """Test del motor de backtesting."""
     tickers = ["SPY", "QQQ", "AAPL", "MSFT", "GOOGL", "AMZN", "NVDA"]
@@ -129,6 +117,5 @@ if __name__ == "__main__":
     test_risk_manager()
     test_regime_classifier()
     test_signal_engine()
-    test_risk_parity()
     test_backtest()
     print("\n✅✅✅ TODAS LAS PRUEBAS PASARON CORRECTAMENTE ✅✅✅")

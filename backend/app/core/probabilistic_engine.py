@@ -4,12 +4,15 @@ Motor Probabilístico Avanzado Fortress Core — Fase 3.5
 Implementa mejoras matemáticas y probabilísticas estilo Jim Simons:
 
 1. ProbabilityCalibrator — Platt scaling + Isotonic regression
-2. KellyPositionSizer — Kelly fraccional con edge del PROFESSOR
-3. SignalQualityMetrics — IC, RankIC, ICIR
-4. BayesianOnlineUpdater — Actualización Bayesiana de pesos
-5. FatTailMonteCarlo — t-Student + Cornish-Fisher VaR/ES
-6. CopulaRiskAnalyzer — Cópulas Clayton/Gumbel para dependencia de colas
-7. WalkForwardValidator — Validación out-of-sample
+2. SignalQualityMetrics — IC, RankIC, ICIR
+3. BayesianOnlineUpdater — Actualización Bayesiana de pesos
+4. FatTailMonteCarlo — t-Student + Cornish-Fisher VaR/ES
+5. CopulaRiskAnalyzer — Cópulas Clayton/Gumbel para dependencia de colas
+6. WalkForwardValidator — Validación out-of-sample
+
+KellyPositionSizer y el wrapper ProbabilisticEngine (integraba las 6 clases de arriba)
+se eliminaron (M8, 2026-08-15): código muerto verificado — solo los usaba
+scripts/test_probabilistic.py, sin imports en producción. Ver ROADMAP.md.
 
 Referencias:
 - Platt (1999): Probabilistic Outputs for SVMs
@@ -157,87 +160,7 @@ class ProbabilityCalibrator:
 
 
 # ============================================================
-# 2. KellyPositionSizer — Kelly fraccional
-# ============================================================
-
-class KellyPositionSizer:
-    """
-    Calcula el tamaño de posición óptimo usando Kelly fraccional.
-    Combina el Kelly clásico con el edge estimado del PROFESSOR.
-    """
-
-    def __init__(self, fractional_kelly: float = 0.25, max_position_pct: float = 0.10,
-                 risk_per_trade: float = 0.015):
-        self.fractional_kelly = fractional_kelly
-        self.max_position_pct = max_position_pct
-        self.risk_per_trade = risk_per_trade
-
-    def compute_kelly_fraction(self, win_prob: float, payoff_ratio: float) -> float:
-        """
-        Kelly criterion: f* = (p·b - q) / b
-
-        Args:
-            win_prob: Probabilidad de ganar (p)
-            payoff_ratio: Ratio ganancia/pérdida (b)
-        """
-        p = np.clip(win_prob, 0.01, 0.99)
-        q = 1 - p
-        b = max(payoff_ratio, 0.01)
-
-        f_star = (p * b - q) / b
-        return max(0.0, f_star)
-
-    def compute_position_size(self, equity: float, price: float, atr: float,
-                              win_prob: float, payoff_ratio: float,
-                              edge_estimate: float = 0.0) -> Tuple[int, float]:
-        """
-        Calcula el tamaño de posición óptimo.
-
-        Args:
-            equity: Capital actual
-            price: Precio del activo
-            atr: ATR (para stop loss)
-            win_prob: Probabilidad calibrada de ganar
-            payoff_ratio: Ratio ganancia/pérdida esperado
-            edge_estimate: Edge estimado por el PROFESSOR (accuracy - 0.5)
-
-        Returns:
-            (shares, kelly_fraction)
-        """
-        if price <= 0 or atr <= 0:
-            return 0, 0.0
-
-        # Kelly clásico
-        kelly = self.compute_kelly_fraction(win_prob, payoff_ratio)
-
-        # Ajustar con edge del PROFESSOR
-        if edge_estimate != 0:
-            # Si el PROFESSOR tiene edge positivo, aumentar ligeramente
-            # Si tiene edge negativo, reducir
-            kelly = kelly * (1 + edge_estimate)
-
-        # Kelly fraccional
-        kelly_frac = kelly * self.fractional_kelly
-
-        # Limitar por riesgo por trade
-        stop_distance = max(2.0 * atr, price * 0.05)
-        shares_by_risk = (equity * self.risk_per_trade) / stop_distance
-
-        # Limitar por posición máxima
-        max_shares = (equity * self.max_position_pct) / price
-
-        # Kelly sizing (si kelly_frac > 0)
-        if kelly_frac > 0:
-            kelly_shares = (equity * kelly_frac) / price
-            shares = int(min(kelly_shares, shares_by_risk, max_shares))
-        else:
-            shares = int(min(shares_by_risk, max_shares))
-
-        return shares, kelly_frac
-
-
-# ============================================================
-# 3. SignalQualityMetrics — IC, RankIC, ICIR
+# 2. SignalQualityMetrics — IC, RankIC, ICIR
 # ============================================================
 
 class SignalQualityMetrics:
@@ -319,7 +242,7 @@ class SignalQualityMetrics:
 
 
 # ============================================================
-# 4. BayesianOnlineUpdater — Actualización Bayesiana
+# 3. BayesianOnlineUpdater — Actualización Bayesiana
 # ============================================================
 
 class BayesianOnlineUpdater:
@@ -395,7 +318,7 @@ class BayesianOnlineUpdater:
 
 
 # ============================================================
-# 5. FatTailMonteCarlo — t-Student + Cornish-Fisher
+# 4. FatTailMonteCarlo — t-Student + Cornish-Fisher
 # ============================================================
 
 class FatTailMonteCarlo:
@@ -519,7 +442,7 @@ class FatTailMonteCarlo:
 
 
 # ============================================================
-# 6. CopulaRiskAnalyzer — Dependencia de colas
+# 5. CopulaRiskAnalyzer — Dependencia de colas
 # ============================================================
 
 class CopulaRiskAnalyzer:
@@ -678,7 +601,7 @@ class CopulaRiskAnalyzer:
 
 
 # ============================================================
-# 7. WalkForwardValidator — Validación out-of-sample
+# 6. WalkForwardValidator — Validación out-of-sample
 # ============================================================
 
 class WalkForwardValidator:
@@ -754,157 +677,3 @@ class WalkForwardValidator:
             "test_window": self.test_window,
         }
 
-
-# ============================================================
-# 8. ProbabilisticEngine — Integración completa
-# ============================================================
-
-class ProbabilisticEngine:
-    """
-    Motor probabilístico integrado que combina todas las mejoras.
-    """
-
-    def __init__(self, data_dir: str = "data"):
-        self.data_dir = data_dir
-        self.calibrator_short = ProbabilityCalibrator(method="platt")
-        self.calibrator_medium = ProbabilityCalibrator(method="platt")
-        self.calibrator_long = ProbabilityCalibrator(method="platt")
-        self.kelly_sizer = KellyPositionSizer()
-        self.bayesian_updater = BayesianOnlineUpdater()
-        self.monte_carlo = FatTailMonteCarlo()
-        self.copula_analyzer = CopulaRiskAnalyzer()
-        self.walk_forward = WalkForwardValidator()
-        self._load_state()
-
-    def _load_state(self):
-        """Carga estado persistente."""
-        calib_path = os.path.join(self.data_dir, "calibrators.json")
-        if os.path.exists(calib_path):
-            try:
-                with open(calib_path, "r") as f:
-                    data = json.load(f)
-                self.calibrator_short.A = data.get("short_A", 1.0)
-                self.calibrator_short.B = data.get("short_B", 0.0)
-                self.calibrator_short.is_fitted = data.get("short_fitted", False)
-                self.calibrator_medium.A = data.get("medium_A", 1.0)
-                self.calibrator_medium.B = data.get("medium_B", 0.0)
-                self.calibrator_medium.is_fitted = data.get("medium_fitted", False)
-                self.calibrator_long.A = data.get("long_A", 1.0)
-                self.calibrator_long.B = data.get("long_B", 0.0)
-                self.calibrator_long.is_fitted = data.get("long_fitted", False)
-            except Exception:
-                pass
-
-        bayes_path = os.path.join(self.data_dir, "bayesian_weights.json")
-        if os.path.exists(bayes_path):
-            self.bayesian_updater.load(bayes_path)
-
-    def _save_state(self):
-        """Guarda estado persistente."""
-        os.makedirs(self.data_dir, exist_ok=True)
-        calib_path = os.path.join(self.data_dir, "calibrators.json")
-        data = {
-            "short_A": self.calibrator_short.A,
-            "short_B": self.calibrator_short.B,
-            "short_fitted": self.calibrator_short.is_fitted,
-            "medium_A": self.calibrator_medium.A,
-            "medium_B": self.calibrator_medium.B,
-            "medium_fitted": self.calibrator_medium.is_fitted,
-            "long_A": self.calibrator_long.A,
-            "long_B": self.calibrator_long.B,
-            "long_fitted": self.calibrator_long.is_fitted,
-        }
-        with open(calib_path, "w") as f:
-            json.dump(data, f, indent=2)
-
-        self.bayesian_updater.save(os.path.join(self.data_dir, "bayesian_weights.json"))
-
-    def calibrate_probabilities(self, score: float, horizon: str) -> float:
-        """
-        Convierte score a probabilidad calibrada.
-
-        Args:
-            score: Score compuesto
-            horizon: "short_term_1_30d", "medium_term_1_6m", "long_term_1_5y"
-        """
-        if horizon == "short_term_1_30d":
-            return float(self.calibrator_short.predict(np.array([score]))[0])
-        elif horizon == "medium_term_1_6m":
-            return float(self.calibrator_medium.predict(np.array([score]))[0])
-        else:
-            return float(self.calibrator_long.predict(np.array([score]))[0])
-
-    def fit_calibrators(self, historical_scores: Dict[str, np.ndarray],
-                        historical_outcomes: Dict[str, np.ndarray]):
-        """
-        Ajusta los calibradores con datos históricos.
-
-        Args:
-            historical_scores: Dict con scores por horizonte
-            historical_outcomes: Dict con outcomes por horizonte
-        """
-        if "short" in historical_scores:
-            self.calibrator_short.fit(historical_scores["short"], historical_outcomes["short"])
-        if "medium" in historical_scores:
-            self.calibrator_medium.fit(historical_scores["medium"], historical_outcomes["medium"])
-        if "long" in historical_scores:
-            self.calibrator_long.fit(historical_scores["long"], historical_outcomes["long"])
-        self._save_state()
-
-    def compute_position_size(self, equity: float, price: float, atr: float,
-                              win_prob: float, payoff_ratio: float,
-                              edge_estimate: float = 0.0) -> Tuple[int, float]:
-        """Calcula tamaño de posición con Kelly fraccional."""
-        return self.kelly_sizer.compute_position_size(
-            equity, price, atr, win_prob, payoff_ratio, edge_estimate
-        )
-
-    def update_signal_weight(self, signal_name: str, correct: bool, base_weight: float = 0.1):
-        """Actualiza peso Bayesiano de una señal."""
-        self.bayesian_updater.update(signal_name, correct, base_weight)
-        self._save_state()
-
-    def get_signal_weight(self, signal_name: str, default: float = 0.1) -> float:
-        """Obtiene peso Bayesiano de una señal."""
-        return self.bayesian_updater.get_weight(signal_name, default)
-
-    def analyze_tail_risk(self, macro_data: Dict[str, pd.DataFrame]) -> Dict:
-        """Analiza riesgo de cola entre activos macro."""
-        return self.copula_analyzer.analyze_macro_risks(macro_data)
-
-    def simulate_risk(self, returns: np.ndarray, initial_equity: float = 25000.0) -> Dict:
-        """Simula riesgo con colas gruesas."""
-        return self.monte_carlo.monte_carlo_metrics(returns, initial_equity)
-
-    def validate_signal(self, df: pd.DataFrame, signal_col: str, horizon: int = 5) -> Dict:
-        """Valida calidad de señal con walk-forward."""
-        return self.walk_forward.validate(df, signal_col, horizon=horizon)
-
-    def get_status(self) -> Dict:
-        """Estado del motor probabilístico."""
-        return {
-            "calibrators": {
-                "short": {"fitted": self.calibrator_short.is_fitted,
-                          "A": round(self.calibrator_short.A, 4),
-                          "B": round(self.calibrator_short.B, 4)},
-                "medium": {"fitted": self.calibrator_medium.is_fitted,
-                           "A": round(self.calibrator_medium.A, 4),
-                           "B": round(self.calibrator_medium.B, 4)},
-                "long": {"fitted": self.calibrator_long.is_fitted,
-                         "A": round(self.calibrator_long.A, 4),
-                         "B": round(self.calibrator_long.B, 4)},
-            },
-            "kelly": {
-                "fractional": self.kelly_sizer.fractional_kelly,
-                "max_position_pct": self.kelly_sizer.max_position_pct,
-            },
-            "bayesian_weights": self.bayesian_updater.get_all_weights(),
-            "monte_carlo": {
-                "n_sims": self.monte_carlo.n_sims,
-                "dof": self.monte_carlo.dof,
-            },
-            "walk_forward": {
-                "train_window": self.walk_forward.train_window,
-                "test_window": self.walk_forward.test_window,
-            },
-        }

@@ -21,10 +21,10 @@ DISEÑO PARA TESTEABILIDAD (obligación del contrato M4): la medición se inyect
 cliente con dos métodos (`last_trade_price` / `submit_market_order`) para poder testear
 con un fake, sin pegar a la red. `AlpacaPaperClient` es la implementación HTTP real.
 """
-from dataclasses import dataclass
-from datetime import datetime, timezone
 import os
 import sqlite3
+from dataclasses import dataclass
+from datetime import datetime, timezone
 from typing import Any, Dict, List
 
 import numpy as np
@@ -113,3 +113,179 @@ class AlpacaPaperClient:
     def close(self) -> None:
         if self._session is not None:
             self._session.close()
+
+
+# --------------------------------------------------------------------------- #
+# Persistencia SQLite.
+# --------------------------------------------------------------------------- #
+_SCHEMA_TABLE = """
+CREATE TABLE IF NOT EXISTS measurements (
+    id            INTEGER PRIMARY KEY AUTOINCREMENT,
+    date          TEXT    NOT NULL,
+    symbol        TEXT    NOT NULL,
+    side          TEXT    NOT NULL,
+    price_decision REAL   NOT NULL,
+    price_fill    REAL    NOT NULL,
+    slippage      REAL    NOT NULL,
+    commission    REAL    NOT NULL,
+    size          REAL    NOT NULL
+);
+"""
+_SCHEMA_INDEX = (
+    "CREATE INDEX IF NOT EXISTS idx_measurements_date ON measurements(date);"
+)
+
+
+class ExecutionCostRecorder:
+    """Persistencia en SQLite de las mediciones de slippage.
+
+    Contrato: cada registro es una orden paper con su precio de decisión vs su fill.
+    `slippage = (fill - decision) / decision` (firmado, tal como lo define el contrato
+    M4; al resumir se usa |slippage| porque el que paga es el motor en ambos lados).
+    """
+
+    def __init__(self, db_path: str = "") -> None:
+        if not db_path:
+            db_path = os.environ.get(
+                "FORTRESS_COSTS_DB", "./data/cache/execution_costs.db"
+            )
+        self.db_path = db_path
+        self._conn = sqlite3.connect(db_path)
+        self._conn.execute(_SCHEMA_TABLE)
+        self._conn.execute(_SCHEMA_INDEX)
+        self._conn.commit()
+
+    def record(
+        self,
+        symbol: str,
+        side: str,
+        date: str,
+        price_decision: float,
+        price_fill: float,
+        commission_frac: float,
+        size: float,
+    ) -> int:
+        slippage = (price_fill - price_decision) / price_decision if price_decision else 0.0
+        cur = self._conn.execute(
+            "INSERT INTO measurements "
+            "(date, symbol, side, price_decision, price_fill, slippage, commission, size) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
+            (
+                date,
+                symbol,
+                side,
+                float(price_decision),
+                float(price_fill),
+                float(slippage),
+                float(commission_frac),
+                float(size),
+            ),
+        )
+        self._conn.commit()
+        return int(cur.lastrowid)
+
+    def records(self) -> List[Dict[str, Any]]:
+        rows = self._conn.execute(
+            "SELECT date, symbol, side, price_decision, price_fill, slippage, "
+            "commission, size FROM measurements ORDER BY id"
+        ).fetchall()
+        return [
+            {
+                "date": r[0],
+                "symbol": r[1],
+                "side": r[2],
+                "price_decision": r[3],
+                "price_fill": r[4],
+                "slippage": r[5],
+                "commission_frac": r[6],
+                "size": r[7],
+            }
+            for r in rows
+        ]
+
+    def close(self) -> None:
+        if self._conn is not None:
+            self._conn.close()
+# --------------------------------------------------------------------------- #
+# Conductor de medición + resumen al contrato de salida.
+# --------------------------------------------------------------------------- #
+@dataclass(frozen=True)
+class MeasuredOrder:
+    """Una orden paper medida: precio de decisión, fill, slippage firmado y comisión."""
+
+    symbol: str
+    side: str
+    date: str
+    price_decision: float
+    price_fill: float
+    slippage: float
+    commission_frac: float
+    size: float
+
+
+def measure_slippage(
+    client: Any,
+    recorder: ExecutionCostRecorder,
+    symbols: List[str],
+    qty: float = 1.0,
+    side: str = "buy",
+) -> List[MeasuredOrder]:
+    """Manda una orden market paper por símbolo y registra el slippage real.
+
+    `client` solo necesita `last_trade_price(symbol) -> float` y
+    `submit_market_order(symbol, qty, side) -> dict` — así los tests pasan un fake y
+    la medición viva usa `AlpacaPaperClient`, sin cambiar el conductor.
+    """
+    date = datetime.now(timezone.utc).date().isoformat()
+    measured: List[MeasuredOrder] = []
+    for symbol in symbols:
+        decision = client.last_trade_price(symbol)
+        order = client.submit_market_order(symbol, qty, side)
+        fill = float(order["filled_avg_price"])
+        commission_dollars = float(order.get("commission", 0.0) or 0.0)
+        notional = fill * qty
+        commission_frac = commission_dollars / notional if notional else 0.0
+        slippage = (fill - decision) / decision if decision else 0.0
+        m = MeasuredOrder(
+            symbol=symbol,
+            side=side,
+            date=date,
+            price_decision=decision,
+            price_fill=fill,
+            slippage=slippage,
+            commission_frac=commission_frac,
+            size=float(qty),
+        )
+        recorder.record(
+            symbol=m.symbol,
+            side=m.side,
+            date=m.date,
+            price_decision=m.price_decision,
+            price_fill=m.price_fill,
+            commission_frac=m.commission_frac,
+            size=m.size,
+        )
+        measured.append(m)
+    return measured
+
+
+def summarize(records: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """Resume las mediciones al CONTRATO DE SALIDA de M4 (lo que consume el proyecto):
+        {"cost_per_side_medido", "n_ordenes", "slippage_p50", "slippage_p95",
+         "comision_media", "ventana"}
+    `cost_per_side_medido = mean(|slippage|) + mean(comisión por lado)` — el costo total
+    que el motor paga en cada lado (paga por salir tanto como por entrar).
+    """
+    if not records:
+        raise ValueError("No hay mediciones para resumir.")
+    abs_slip = np.abs(np.array([r["slippage"] for r in records], dtype=float))
+    com = np.array([r["commission_frac"] for r in records], dtype=float)
+    dates = [r["date"] for r in records]
+    return {
+        "cost_per_side_medido": float(np.mean(abs_slip) + np.mean(com)),
+        "n_ordenes": len(records),
+        "slippage_p50": float(np.median(abs_slip)),
+        "slippage_p95": float(np.percentile(abs_slip, 95)),
+        "comision_media": float(np.mean(com)),
+        "ventana": f"{min(dates)} a {max(dates)}",
+    }

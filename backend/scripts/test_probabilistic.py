@@ -6,9 +6,9 @@ import pandas as pd
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app.core.probabilistic_engine import (
-    ProbabilityCalibrator, KellyPositionSizer, SignalQualityMetrics,
+    ProbabilityCalibrator, SignalQualityMetrics,
     BayesianOnlineUpdater, FatTailMonteCarlo, CopulaRiskAnalyzer,
-    WalkForwardValidator, ProbabilisticEngine,
+    WalkForwardValidator,
 )
 
 
@@ -28,20 +28,8 @@ def test_calibrator():
     print("  OK")
 
 
-def test_kelly():
-    print("\n=== TEST 2: KellyPositionSizer ===")
-    sizer = KellyPositionSizer()
-    k = sizer.compute_kelly_fraction(0.60, 2.0)
-    k0 = sizer.compute_kelly_fraction(0.40, 1.0)
-    shares, frac = sizer.compute_position_size(25000, 100, 2.0, 0.60, 2.0)
-    print(f"  Kelly(0.6,2.0)={k:.4f}, Kelly(0.4,1.0)={k0:.4f}")
-    print(f"  Shares={shares}, frac={frac:.4f}")
-    assert k > 0 and k0 <= 0 and shares > 0
-    print("  OK")
-
-
 def test_signal_quality():
-    print("\n=== TEST 3: SignalQualityMetrics ===")
+    print("\n=== TEST 2: SignalQualityMetrics ===")
     np.random.seed(42)
     n = 500
     # Generar retornos y una señal que predice el retorno FUTURO
@@ -57,7 +45,7 @@ def test_signal_quality():
 
 
 def test_bayesian():
-    print("\n=== TEST 4: BayesianOnlineUpdater ===")
+    print("\n=== TEST 3: BayesianOnlineUpdater ===")
     up = BayesianOnlineUpdater()
     for _ in range(20):
         up.update("momentum", True, 0.2)
@@ -70,7 +58,7 @@ def test_bayesian():
 
 
 def test_monte_carlo():
-    print("\n=== TEST 5: FatTailMonteCarlo ===")
+    print("\n=== TEST 4: FatTailMonteCarlo ===")
     np.random.seed(42)
     returns = np.random.standard_t(df=3, size=500) * 0.02
     mc = FatTailMonteCarlo(n_sims=500, dof=5)
@@ -81,7 +69,7 @@ def test_monte_carlo():
 
 
 def test_copula():
-    print("\n=== TEST 6: CopulaRiskAnalyzer ===")
+    print("\n=== TEST 5: CopulaRiskAnalyzer ===")
     np.random.seed(42)
     n = 500
     z1 = np.random.normal(0, 1, n)
@@ -96,7 +84,7 @@ def test_copula():
 
 
 def test_walk_forward():
-    print("\n=== TEST 7: WalkForwardValidator ===")
+    print("\n=== TEST 6: WalkForwardValidator ===")
     np.random.seed(42)
     n = 1000
     returns = np.random.normal(0.001, 0.02, n)
@@ -111,43 +99,16 @@ def test_walk_forward():
     print("  OK")
 
 
-def test_integrated():
-    print("\n=== TEST 8: ProbabilisticEngine ===")
-    engine = ProbabilisticEngine(data_dir="data")
-    np.random.seed(42)
-    n = 300
-    scores = np.random.normal(0, 1, n)
-    outcomes = (scores + np.random.normal(0, 0.5, n) > 0).astype(float)
-    engine.fit_calibrators(
-        {"short": scores, "medium": scores, "long": scores},
-        {"short": outcomes, "medium": outcomes, "long": outcomes},
-    )
-    prob = engine.calibrate_probabilities(0.5, "short_term_1_30d")
-    shares, kelly = engine.compute_position_size(25000, 100, 2.0, 0.60, 2.0)
-    engine.update_signal_weight("momentum_12_1", True, 0.2)
-    w = engine.get_signal_weight("momentum_12_1")
-    returns = np.random.standard_t(df=4, size=500) * 0.02
-    risk = engine.simulate_risk(returns)
-    status = engine.get_status()
-    print(f"  Prob={prob:.3f}, Shares={shares}, Kelly={kelly:.2%}, Weight={w:.4f}")
-    print(f"  VaR={risk['var_95']}%, ES={risk['expected_shortfall_95']}%")
-    print(f"  Fitted: {status['calibrators']['short']['fitted']}")
-    assert 0.05 <= prob <= 0.95 and shares > 0
-    print("  OK")
-
-
 if __name__ == "__main__":
     print("=" * 60)
     print("FORTRESS CORE - TEST MOTOR PROBABILISTICO AVANZADO")
     print("=" * 60)
     test_calibrator()
-    test_kelly()
     test_signal_quality()
     test_bayesian()
     test_monte_carlo()
     test_copula()
     test_walk_forward()
-    test_integrated()
     print("\n" + "=" * 60)
     print("TODAS LAS PRUEBAS PROBABILISTICAS PASARON")
     print("=" * 60)

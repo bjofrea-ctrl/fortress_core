@@ -1262,3 +1262,15 @@ veredicto completo en vez de cortarlo a mitad de camino.
   concluyente); M2 (instrumento conforme) sigue en curso (dueño Claude Code); M4/M5
   libres; M6 hecho.
 - Docs: ROADMAP.md (ítem 21 → ✅, tabla maestra + fila trial EVT).
+
+- **M8 — Código muerto ⚪ verificado (Command Code, 2026-08-15)**: se confirmó con
+  grep contra el código real (no memoria) que `ProbabilisticEngine` + `KellyPositionSizer`
+  solo los usa `scripts/test_probabilistic.py` y `RiskParityAllocator` solo
+  `scripts/test_system.py` — sin tests automatizados, sin imports en producción, sin
+  correr en CI. PERO `probabilistic_engine.py` NO es descartable: `backtest_engine.py:10-17`
+  importa 6 clases en producción (BayesianOnlineUpdater, CopulaRiskAnalyzer,
+  FatTailMonteCarlo, ProbabilityCalibrator, SignalQualityMetrics, WalkForwardValidator),
+  `signal_engine.py:7` importa BayesianOnlineUpdater y `opportunities.py:23` importa
+  CopulaRiskAnalyzer + ProbabilityCalibrator. Eliminar las 3 clases muertas requiere
+  decidir el destino de los 2 smoke scripts — decisión que queda para Claude Code.
+  ROADMAP.md fila ⚪ actualizada a 🟢 verificado.
