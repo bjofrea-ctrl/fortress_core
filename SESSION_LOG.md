@@ -1235,3 +1235,16 @@ termine solo, sin que nadie lo mire. **No matar este proceso.** Al retomar maña
 esta unidad de trabajo (auto-backup ya guardó y pusheó el contenido, pero sin mensaje
 descriptivo real). Se deja para cuando el EVT termine, así el commit cubre el
 veredicto completo en vez de cortarlo a mitad de camino.
+
+- **Trial #15 EVT — CERRADO (Command Code, 2026-08-15)**: el re-run válido terminó
+  solo (último heartbeat ~77 min, corrida total ~3h50). Verificado contra el artefacto
+  `trial15_evt_stops_20260814_195828.txt` (log `trial15_evt_stops_run2_console.log`):
+  **NO CUMPLE 0/3** — W1 n=103 DSR=0.0649, W2 n=47 DSR=0.0253, W3 n=113 DSR=0.1602
+  (criterio DSR≥0.90 en ≥2/3). Parquet `_evt_trades.parquet`: 281 filas, win_rate
+  60.5%, n por ventana coincide con el log. El sizing EVT (VaR_GPD 99% walk-forward)
+  no supera al baseline 2×ATR → no se integra. Fase 1 EVT queda cerrada: §19
+  (diagnóstico PASA) + §20 (trial NO CUMPLE) como evidencia, el camino que el propio
+  pre-registro definió.
+- Con esto, del plan de mecánica (M0-M6) queda CERRADO M0; M2 (instrumento conforme)
+  sigue en curso (dueño Claude Code); M4/M5 libres; M6 hecho.
+- Docs: ROADMAP.md (ítem 21 → ✅, tabla maestra + fila trial EVT).

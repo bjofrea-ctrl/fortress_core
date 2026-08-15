@@ -176,14 +176,32 @@ actualizado antes de pasar a la siguiente.
     Minutos/horas: no viable — el cache es sólo barras diarias (verificado,
     `AAPL.parquet` espaciado modal 1 día calendario/hábil), y datos intradía ya se
     descartaron con gap-reversion (§13).
-21. ✅ **Trial #15 EVT — CERRADO (2026-08-15)** — el re-run válido (post-fix EWMA,
-    `trial15_evt_stops_20260814_195828.txt`, log `trial15_evt_stops_run2_console.log`)
-    **TERMINÓ y NO CUMPLE**: W1 n=103 DSR=0.0649, W2 n=47 DSR=0.0253, W3 n=113
-    DSR=0.1602 — **0/3 ventanas, criterio DSR≥0.90 en ≥2/3 → NO CUMPLE**. El sizing
-    EVT no supera al baseline; no se integra. Fase 1 EVT queda CERRADA con §19
-    (diagnóstico PASA) + §20 (trial NO CUMPLE) como evidencia. Verificado contra el
-    artefacto (parquet trades 281 filas, win_rate 60.5%, n por ventana 103/47/113
-    = log). Con esto, del plan de mecánica queda CERRADO M0.
+21. 🟡 **Trial #15 EVT — verdicto PRELIMINAR, NO cerrar todavía (2026-08-15)** — el
+    re-run válido (post-fix EWMA, `trial15_evt_stops_20260814_195828.txt`, log
+    `trial15_evt_stops_run2_console.log`) **TERMINÓ y reportó NO CUMPLE**: W1 n=103
+    DSR=0.0649, W2 n=47 DSR=0.0253, W3 n=113 DSR=0.1602 — 0/3 ventanas. OpenCode
+    verificó n por ventana y win_rate (60.5%) contra el parquet de 281 filas — eso es
+    correcto pero no alcanza.
+    **RESERVA (Claude Code, 2026-08-15, verificando más profundo antes de aceptar)**:
+    las 9 métricas de baseline y EVT (cagr, sharpe, sortino, max_dd, calmar, win_rate,
+    profit_factor, total_trades, DSR) son **IDÉNTICAS a 4 decimales en las 3
+    ventanas**. Contraste directo: en el run anterior (con el bug de EWMA, pre-fix),
+    baseline y EVT SÍ diferían con claridad (n=103 vs n=19 en W1, Sharpe 0.26 vs
+    −0.34). El log del run válido confirma 214 compras dimensionadas por
+    `EVTRiskManager.compute_position_size` (`self._n_evt_buys`), y el parquet de
+    trades tiene varianza real de tamaño (1-386 shares, std 39.3) — no es el caso
+    trivial de que el tope de posición domine siempre. Pero identidad exacta en las 9
+    métricas × 3 ventanas es estadísticamente muy improbable si el `stop_distance`
+    (`max(var_mult*sig_today, price*position_stop)` en EVT vs `max(2xATR,
+    price*position_stop)` en baseline) realmente influyó en qué trades se ejecutaron
+    y cuándo salieron — no solo en el tamaño. Hipótesis líder sin confirmar: el tope
+    `MAX_POSITION_PCT=0.10` (`min(shares_by_risk, max_shares)`) puede estar ganando en
+    la práctica, haciendo que el stop_distance distinto nunca llegue a cambiar una
+    decisión de entrada/salida real — si es así, la conclusión correcta no sería "el
+    sizing EVT no ayuda" sino "el sizing EVT nunca se puso a prueba bajo condiciones
+    donde pudiera diferir". Diagnóstico pendiente (barato, no consume trial): loggear
+    baseline vs EVT `stop_distance` y `shares` trade a trade en el mismo run. **NO
+    marcar M0 cerrado hasta resolver esto.**
 22. ✅ M1/M1b — auditoría de horizonte COMPLETA (2026-08-13, `PLAN_MEJORA_MATEMATICA.md
     §21/§21.1`): 5d/10d/60d/125d, ninguno significativo bajo Bonferroni-12. Los
     rechazos de señal se refuerzan en los 5 horizontes probados (5d-125d).
@@ -263,17 +281,17 @@ gantt
 | Código P0 | `except:` desnudo + 200 OK con error en body | 🟢 cerrado (2026-08-12) | — | `market.py`/`live.py` ahora levantan HTTPException 500; `except:` acotado a (AttributeError, TypeError, ValueError); 0 patrones restantes en routers |
 | Código P0 | Auth mínima global + `SECRET_KEY` que falla si no está seteado | 🟢 cerrado (2026-08-12) | — | `hmac.compare_digest` en `verify_api_key`; Settings valida SECRET_KEY fuera de development (default bloqueado: `test_secret_key_default_blocked_outside_development`). Nota: 25/27 endpoints siguen abiertos POR DECISIÓN (UI pública con repo público) — solo rutas de escritura RAG tienen key; el resto es deliberado mientras la UI sea pública |
 | Código P1 | Fechas hardcodeadas de `market.py` (2015-2024) | 🟢 cerrado (2026-08-12) | — | Las 4 rutas ahora usan `download_data(symbol, "2015-01-01")` sin fin fijo (mismo patrón que predict.py/governance.py) — default a hoy. 80/80 tests sin regresión |
-| Código P1 | Python 3.11 (Dockerfile) vs 3.9.6 (venv real) | 🔴 sin empezar | — | Alinear una de las dos |
-| Código P1 | README desactualizado (Redis, versión, endpoints) | 🔴 sin empezar | — | Reescribir o borrar lo aspiracional |
-| Código P1 | Docstring Controller/Judge dice que usan LLM (no es cierto) | 🔴 sin empezar | — | Corregir comentario en `advanced_agents.py` |
-| Código P2 | Tests de integración governance + 7 routers sin cobertura | 🔴 sin empezar | — | Empezar por el contrato que ya se sabe roto |
-| Código P2 | `prompt_engine.py` — 659 líneas muertas con bug adentro | 🔴 sin empezar | — | Decidir: borrar o integrar de verdad |
-| Código P2 | CI básico (lint + test en push) | 🔴 sin empezar | — | Repo público sin ningún check automático |
+| Código P1 | Python 3.11 (Dockerfile) vs 3.9.6 (venv real) | 🟢 cerrado (2026-08-12, commit `a56e516`) | — | Dockerfile fijado a `python:3.9-slim` — alineado con el venv real |
+| Código P1 | README desactualizado (Redis, versión, endpoints) | 🟢 cerrado (2026-08-12, commit `a56e516`) | — | README sin Redis, versión 3.9, tabla con los 27 endpoints reales |
+| Código P1 | Docstring Controller/Judge dice que usan LLM (no es cierto) | 🟢 cerrado (2026-08-12, commit `a56e516`) | — | Docstrings corregidos a "lógica determinista — no usa LLM" en `advanced_agents.py` |
+| Código P2 | Tests de integración governance + 7 routers sin cobertura | 🟢 cerrado (2026-08-12, commit `6ae0770`) | — | Tests de integración para 6 de los 7 routers (test_backtest_api, test_market_api, test_live_api, test_predict_api, test_risk_api, test_system_api); governance y opportunities ya tenían |
+| Código P2 | `prompt_engine.py` — 659 líneas muertas con bug adentro | 🟢 cerrado (2026-08-12, commit `6ae0770`) | — | Eliminado; `HardinessChecker` movido a `app/core/hardiness.py` (7 tests); `test_prompt_engine.py` eliminado |
+| Código P2 | CI básico (lint + test en push) | 🟢 cerrado (2026-08-12, commit `6ae0770`) | — | `.github/workflows/ci.yml`: jobs lint (ruff) y test (pytest) en cada push/PR, Python 3.9 |
 | Producto | `signal_engine.py` comentario/cita falsa sobre ADX | 🟡 spawneado | — | `task_22ea3f8d` — pendiente de que el usuario lo dispare |
 | Producto | LEAN/QuantConnect | ⚪ parqueado, uso futuro pretendido (2026-08-14) | Datos ampliados si crece el universo, o ejecución real si hay señal validada | Imagen Docker (42.5GB) borrada del disco local por espacio — recuperable gratis con `docker pull` cuando se retome. No tocar hasta que aparezca uno de los dos disparadores |
 | Producto | Conexión a broker real | 🔴 bloqueada, correctamente | Validar edge neto de costos primero (§13) | No avanzar hasta cerrar investigación |
-| Seguridad | **`fortress.db` (SQLite local) nunca se respalda** | 🔴 sin empezar | — | `auto_backup.sh`/`backup.sh` excluyen `*.db` explícitamente — si falla el disco, los datos runtime (posiciones, snapshots, eventos de riesgo) no son recuperables de ningún backup. Hallazgo de memoria previa (2026-08-12, auditoría infra), no estaba en AUDITORIA_TECNICA.md |
-| Seguridad | GET endpoints sin auth que disparan LLM real (costo/abuso) | 🔴 sin empezar | — | `predict/analyze/{symbol}`, `governance/analyze/{symbol}` — no sólo exponen datos, cualquiera puede gastar tu cuota/costo de NVIDIA NIM sin autenticarse |
+| Seguridad | **`fortress.db` (SQLite local) nunca se respalda** | 🟢 cerrado (2026-08-12, commit `217eb51`) | — | `backup_db()` en `auto_backup.sh` + paso 6.5 en `backup.sh` (`sqlite3 .backup` → `/Volumes/EMPRESA/fortress_core_backups/db/`, retención 20). Verificado: snapshots cada ~10 min en disco externo, launchd instalado |
+| Seguridad | GET endpoints sin auth que disparan LLM real (costo/abuso) | 🟢 mitigado (2026-08-12, commit `217eb51`) | — | Rate limit en memoria (10 llamadas/60s por IP) aplicado vía `RateLimitDependency` en `routes/predict.py` y `routes/governance.py`. Sin auth completa por decisión (UI pública); el rate limit acota el abuso de costo. Test: `test_rate_limit.py` |
 | Código P2 | Código muerto adicional sin verificar (`ProbabilisticEngine` wrapper, `KellyPositionSizer` duplicado, `RiskParityAllocator`) | ⚪ sin verificar | — | Viene de memoria del 2026-08-08, anterior a esta investigación — re-chequear si sigue siendo cierto antes de actuar |
 | Instrumento | M1 — Etiquetado por barreras | 🟢 hecho (2026-08-14) | — | `app/core/barrier_labeling.py`, replica las 4 barreras reales de `adaptive_risk.py` en orden de prioridad; 17 tests de fidelidad (no cobertura). Ver `DISENO_INSTRUMENTO.md` |
 | Instrumento | M2 — Instrumento conforme (abstención calibrada) | 🟡 en curso | M1 (listo) | Envuelve el score del motor, devuelve intervalo + `abstenerse: bool`. Retomar mañana — dueño Claude Code |
