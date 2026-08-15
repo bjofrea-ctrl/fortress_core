@@ -28,7 +28,7 @@ y sin ceremonia; el TRIAL que la usa para afirmar "esto mejora el motor" sí nec
 pre-registro antes de correr (regla no-negociable #1/#2 de ONBOARDING.md).
 """
 from dataclasses import dataclass, field
-from typing import Dict, FrozenSet, List, Optional
+from typing import Dict, FrozenSet, List
 
 import pandas as pd
 

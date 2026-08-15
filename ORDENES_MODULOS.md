@@ -14,10 +14,12 @@ Estado al 2026-08-14:
 |---|---|---|
 | M1 Etiquetado por barreras | Claude Code | ✅ hecho (`app/core/barrier_labeling.py`, 17 tests) |
 | M2 Instrumento conforme | Claude Code | ✅ **HECHO (2026-08-15)** — `app/core/conformal.py`, 16 tests, cobertura empírica verificada ≈nominal. **NO retomar, ya está.** |
-| M3 Compuerta de régimen | — | 🟢 desbloqueado — M1+M2 listos, puede arrancar |
+| M3 Compuerta de régimen | Claude Code | ✅ **HECHO (2026-08-15)** — `app/core/regime_gate.py`, walk-forward anti-lookahead, 8 tests. Infraestructura lista; el TRIAL que la use para afirmar algo necesita pre-registro nuevo (no incluido acá). **NO retomar, ya está.** |
 | M4 Costos medidos | **Cline** | 🟡 libre para arrancar |
-| M5 Detector de deriva | **OpenCode** | 🟡 libre para arrancar |
+| M5 Detector de deriva | **OpenCode** | ✅ **HECHO (2026-08-15)** — `app/core/drift_detector.py`, KS + Bonferroni + concepto (accuracy/correlación) + `recommend_action`, 18 tests, suite completa 193 passed, ruff limpio. **NO retomar, ya está.** |
 | M6 Ledger de trials | **Command Code** | ✅ hecho (`app/core/trial_registry.py`, `data/trial_registry.json`, backfill 29 entradas, 15 tests) — hallazgo: backfill 27 consumidos vs 17 citados |
+| M7 Pipeline integrado M1+M2+M3 | Claude Code | 🔒 **RETIRADO de Command Code (2026-08-15)** — el cableado calibración/predicción y la compuerta AND/OR pueden fallar en silencio (números plausibles, tests que pasan sin detectarlo). Boris preguntó si delegar esto era sensible; sí lo es, se queda conmigo. |
+| M8 Re-verificar código muerto | **Command Code** | 🟡 libre para arrancar (2026-08-15) |
 
 ---
 
@@ -170,6 +172,75 @@ REGLAS:
 
 NO HAGAS: no corras ningún trial nuevo, no toques el motor, no modifiques los .md de
 investigación — solo LEELOS para el backfill.
+```
+
+---
+
+## M7 — Pipeline integrado M1+M2+M3 (Command Code)
+
+```
+Trabajás en /Users/boris/Desktop/fortress_core. Leé SOLO las firmas públicas de estos
+tres archivos (ya construidos y con tests propios — no los toques, no los reescribas):
+- backend/app/core/barrier_labeling.py: label_symbol(df, regimes=None, max_horizon=60,
+  cost_per_side=0.0015) -> DataFrame con columnas date/exit_reason/ret_net/label/...
+- backend/app/core/conformal.py: ConformalAbstentionEngine(alpha=0.10).calibrate(scores,
+  outcomes) -> ConformalCalibration; .predict(score) -> ConformalPrediction(point_estimate,
+  lower, upper, interval_width, abstenerse, razon)
+- backend/app/core/regime_gate.py: WalkForwardRegimeGate(favorable_states, recalib_every=63,
+  min_history=756).label_series(price_data) -> (Series bool indexada por fecha, diagnóstico)
+
+PROBLEMA: los tres módulos existen y cada uno tiene sus propios tests, pero hoy quien
+quiera usarlos tiene que cablearlos a mano — llamar M1, después separar calibración de
+predicción para M2, después cruzar con M3. Eso es exactamente lo que
+DISENO_INSTRUMENTO.md prometió evitar: "Fortress como instrumento diagnóstico
+calibrado", UN instrumento, no tres piezas sueltas.
+
+TAREA: construir backend/app/core/diagnostic_pipeline.py con una función/clase que
+componga los tres, en este orden:
+
+1. Recibe: price_data (dict símbolo->DataFrame con close/atr14), un score por
+   (símbolo, fecha) ya calculado por quien llama (este pipeline NO genera scores,
+   los consume — mismo principio que M2), y opcionalmente regimes/favorable_states
+   para activar la compuerta M3.
+2. Corre M1 (label_symbol) por símbolo para obtener las etiquetas reales (ret_net,
+   barrera, label).
+3. Split calibración/predicción ESTRICTO por fecha (nunca por símbolo mezclado, nunca
+   con fuga temporal — la calibración de M2 debe usar SOLO fechas anteriores a las
+   que predice). Calibra el ConformalAbstentionEngine con scores+outcomes de
+   calibración, predice sobre el resto.
+4. Si se pasó favorable_states: corre M3 y cruza — una fecha solo "opera" si el
+   instrumento conforme NO se abstiene Y la compuerta de régimen dice operar=True.
+   Sin favorable_states: el gate no aplica (todo pasa el filtro de M3 = operar=True).
+5. Devuelve un resultado único: por cada (símbolo, fecha) evaluada, si se operó o no
+   y por qué (razón de M2 y/o de M3), más el resumen agregado usando
+   `vpp_bajo_abstencion` de conformal.py como métrica primaria (no Sharpe — ver
+   DISENO_INSTRUMENTO.md §8).
+
+ESTO NO ES UN TRIAL: no corras esto contra el universo real de 50 símbolos ni saques
+conclusiones sobre si el motor mejora — eso necesita pre-registro nuevo (regla #1/#2
+de ONBOARDING.md) y es decisión de Boris, no de este módulo. Este pipeline es
+infraestructura de conexión, se construye libre y sin ceremonia; probalo con datos
+sintéticos (como hacen los tests de M1/M2/M3), no con el panel real.
+
+TESTS en backend/tests/test_diagnostic_pipeline.py:
+- el pipeline sin favorable_states da el mismo resultado que M1+M2 solos (M3 no filtra
+  nada si no se activa)
+- con favorable_states, una fecha con régimen desfavorable NUNCA opera aunque M2 no
+  se abstenga (la compuerta gana, es un AND, no un OR)
+- calibración y predicción nunca comparten fechas (test explícito de la separación
+  temporal — es la propiedad más fácil de romper por accidente)
+- el resumen agregado (vpp_bajo_abstencion) coincide con recalcularlo a mano sobre
+  el mismo resultado
+
+REGLAS:
+- Python 3.9 real. Nada de sintaxis 3.10+.
+- NO modifiques barrier_labeling.py, conformal.py, ni regime_gate.py — son de Claude
+  Code, tienen sus propios tests, se consumen tal cual están.
+- Correr: cd backend && .venv/bin/python -m pytest tests/test_diagnostic_pipeline.py
+- No commitear ni pushear sin autorización explícita de Boris.
+
+NO HAGAS: no toques M4 (Cline) ni M5 (OpenCode) — ni sus archivos ni su alcance. No
+corras nada contra datos reales del universo de 50 símbolos.
 ```
 
 ---

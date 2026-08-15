@@ -45,8 +45,12 @@ TRAILING_ARM_ATR_MULT = 1.5
 TRAILING_GAP_ATR_MULT = 2.0
 
 # Costo por lado idéntico al pre-registrado en los trials (#10/#11/Fase 0.6):
-# 0.10% comisión + 0.05% slippage. M4 lo va a reemplazar por el costo MEDIDO.
-DEFAULT_COST_PER_SIDE = 0.0015
+# 0.10% comisión + 0.05% slippage. Centralizado en app/config.py
+# (settings.COST_PER_SIDE); M4 lo va a reemplazar por el costo MEDIDO — se actualiza
+# en un solo lugar. Este alias se mantiene para no cambiar firmas ni callers.
+from app.config import settings as _settings  # noqa: E402  (import tras constantes espejo)
+
+DEFAULT_COST_PER_SIDE = _settings.COST_PER_SIDE
 
 DEFAULT_MAX_HORIZON = 60
 

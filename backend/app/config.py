@@ -43,6 +43,22 @@ class Settings(BaseSettings):
     TARGET_VOLATILITY: float = 0.10
     VIOLATION_WINDOW_DAYS: int = 60
 
+    # Costo de transacción por lado usado en los backtests de costos. Valor ASUMIDO
+    # (0.10% comisión + 0.05% slippage), pendiente de medición real por M4
+    # (app/core/execution_costs.py). Cuando exista medición, este es el único lugar
+    # a actualizar — lo consumen barrier_labeling (ret_net) y los trials de costos.
+    # NO cambiarlo a mano a un valor "realista": la medición manda.
+    COST_PER_SIDE: float = 0.0015
+
+    # Alpaca PAPER TRADING — medición de costos reales (M4, app/core/execution_costs.py).
+    # ÚNICO propósito: medir slippage/fill reales contra el precio de decisión. Jamás
+    # una orden en cuenta live. Credenciales solo acá vía .env / variables de entorno,
+    # NUNCA en código ni en el chat. Vacías = el cliente de medición no se instancia
+    # (construye, no bloquea: la medición es la única pieza que las necesita).
+    ALPACA_PAPER_API_KEY: str = ""
+    ALPACA_PAPER_SECRET_KEY: str = ""
+    ALPACA_PAPER_BASE_URL: str = "https://paper-api.alpaca.markets"
+
     class Config:
         env_file = ".env"
         extra = "ignore"
