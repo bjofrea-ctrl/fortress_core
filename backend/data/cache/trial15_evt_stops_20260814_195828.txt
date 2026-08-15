@@ -109,3 +109,13 @@ Corriendo EVT (EVTEngine con EVTRiskManager walk-forward)...
 [heartbeat] t=5701s | fase=EVT run
 [heartbeat] t=5761s | fase=EVT run
 [heartbeat] t=5821s | fase=EVT run
+[heartbeat] t=5881s | fase=EVT run
+[heartbeat] t=5941s | fase=EVT run
+[heartbeat] t=6001s | fase=EVT run
+[heartbeat] t=6061s | fase=EVT run
+[heartbeat] t=6121s | fase=EVT run
+[heartbeat] t=6181s | fase=EVT run
+[heartbeat] t=6241s | fase=EVT run
+[heartbeat] t=6301s | fase=EVT run
+[heartbeat] t=6361s | fase=EVT run
+[heartbeat] t=6619s | fase=EVT run
