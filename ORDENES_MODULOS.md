@@ -15,7 +15,7 @@ Estado al 2026-08-14:
 | M1 Etiquetado por barreras | Claude Code | ✅ hecho (`app/core/barrier_labeling.py`, 17 tests) |
 | M2 Instrumento conforme | Claude Code | ✅ **HECHO (2026-08-15)** — `app/core/conformal.py`, 16 tests, cobertura empírica verificada ≈nominal. **NO retomar, ya está.** |
 | M3 Compuerta de régimen | Claude Code | ✅ **HECHO (2026-08-15)** — `app/core/regime_gate.py`, walk-forward anti-lookahead, 8 tests. Infraestructura lista; el TRIAL que la use para afirmar algo necesita pre-registro nuevo (no incluido acá). **NO retomar, ya está.** |
-| M4 Costos medidos | **Cline** | 🟡 libre para arrancar |
+| M4 Costos medidos | **Cline** | ✅ **HECHO (2026-08-15)** — `app/core/execution_costs.py`, `scripts/measure_execution_costs.py`, 13 tests, verificado por Claude Code (no solo el reporte): base_url a paper confirmado por test, cero credenciales reales, ruff limpio. **NO retomar, ya está.** Falta la medición viva (necesita cuenta Alpaca paper real). |
 | M5 Detector de deriva | **OpenCode** | ✅ **HECHO (2026-08-15)** — `app/core/drift_detector.py`, KS + Bonferroni + concepto (accuracy/correlación) + `recommend_action`, 18 tests, suite completa 193 passed, ruff limpio. **NO retomar, ya está.** |
 | M6 Ledger de trials | **Command Code** | ✅ hecho (`app/core/trial_registry.py`, `data/trial_registry.json`, backfill 29 entradas, 15 tests) — hallazgo: backfill 27 consumidos vs 17 citados |
 | M7 Pipeline integrado M1+M2+M3 | Claude Code | 🔒 **RETIRADO de Command Code (2026-08-15)** — el cableado calibración/predicción y la compuerta AND/OR pueden fallar en silencio (números plausibles, tests que pasan sin detectarlo). Boris preguntó si delegar esto era sensible; sí lo es, se queda conmigo. |
