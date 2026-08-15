@@ -130,16 +130,65 @@ tiempo puede ser peor que uno más laxo con IC menor. Nunca se comparó.
 
 ---
 
+## Hallazgo 5 — El trial #15 EVT (M0) corrió con mecánica ROTA: bug EWMA sin cuadrado (2026-08-14)
+
+**La corrida que "completó" (`trial15_evt_stops_20260814_172715.txt`, 36 trades,
+veredicto preliminar "no cumple") era INVALIDA — nunca ejecutó la mecánica EVT.**
+
+**Bug encontrado por verificación contra datos, no por inspección** (diagnóstico
+`var_mult` post-run): `trial_evt_stops.py:59` actualizaba la varianza EWMA **sin
+elevar al cuadrado el retorno**:
+
+```python
+# ROTO:  v = LAMBDA * v + (1 - LAMBDA) * r2[t - 1]          # trial_evt_stops.py:59
+# SANO:  v = LAMBDA * v + (1 - LAMBDA) * r2[t - 1] ** 2    # diagnose_evt_tails.py:53 (§19, este sí daba bien)
+```
+
+**Cadena de destrucción (medida, no inferida)**:
+1. Un día de retorno negativo hunde `v` bajo cero → el floor `max(v, 1e-12)` lo
+   deja en σ = 1e-6 → **981 de 2912 días (34%) con σ en el floor** (AAPL).
+2. `z = r/σ` explota: z.std = 13,329, extremos ±187,559 (NVDA 2018-11-16, SPY
+   2020-03-16, AAPL 2025-04-09 — días de mercado reales).
+3. El VaR-GPD sobre esos z da **var_mult 20,343–85,492** (debería ser ~2.6–3.1;
+   §19 validó ese rango sano: z.std≈1.07, p99≈2.8, var_mult p50≈2.8).
+4. `stop_distance = var_mult × σ_día × price` ≈ 1,300× el precio → sizing
+   `shares = equity×1.5% / stop_distance` → int() = 0 → **casi ninguna posición
+   abre** → 36 trades en 7.5 años → veredicto "no evaluable", pero por la razón
+   equivocada.
+
+**Por qué no se vio antes**: el pre-registro exigía funcionar de punta a punta
+(M0: "que llegue al final") y el run completó; el "no cumple" parecía un veredicto
+de mercado más. La verificación contra el artefacto (distribución de var_mult de
+los stops estampados) destapó que el trial midió "sizing que no abre posiciones",
+no "sizing EVT vs 2×ATR".
+
+**Fix aplicado (1 carácter)**: `r2[t-1]` → `r2[t-1] ** 2` en `trial_evt_stops.py:59`
+— idéntico a la implementación sana de §19 (`diagnose_evt_tails.py:53`).
+
+**Verificación post-fix**: z.std = 1.07–1.12 (sano), p99 = 2.2–3.2, var_mult p50 =
+2.58–3.10 (rango esperado §19), 0 días en el floor, en los 4 símbolos chequeados
+(AAPL, NVDA, SPY, LLY). Mecánica ahora sí ejecuta lo que el pre-registro describe.
+
+**Re-run en curso**: `trial15_evt_stops_20260814_195828.txt`, misma
+pre-registración §20, mismo criterio DSR≥0.90 en ≥2/3 ventanas, mismo N_TRIALS=19.
+
+---
+
 ## Plan de implementación
 
 Ordenado por **(costo bajo → alto)** y **(reencuadra lo anterior → construye
 encima)**. Todo bajo la disciplina de siempre: pre-registro antes de correr,
 walk-forward donde haya calibración, artefacto verificable, revert si no cumple.
 
-### Fase M0 — Re-correr el trial #15 EVT (desbloqueo)
-Terminar lo que quedó a medias antes de abrir nada nuevo. Sin cambios de
-metodología: el pre-registro de §20 ya está bien (walk-forward, anti-lookahead).
-Sólo hace falta ejecución robusta y confirmación de que llegó al final.
+### Fase M0 — Re-correr el trial #15 EVT (desbloqueo) ✅ CERRADA (2026-08-14)
+
+**Desbloqueada la ejecución, pero con dos capas**: (1) la terminación externa que
+mataba el trial (Hallazgo 0) quedó resuelta con `nohup` + heartbeat (verificado:
+el run del 2026-08-14 17:27 completó de punta a punta); (2) al completar, la
+verificación contra el artefacto destapó el **Hallazgo 5**: ese run estaba roto
+mecánicamente (EWMA sin cuadrado → sizing aniquilado → 36 trades inválidos). Fix
+aplicado y **re-run válido en curso** (`trial15_evt_stops_20260814_195828.txt`).
+El veredicto del trial #15 se toma del re-run, no del run roto de las 17:27.
 
 ### Fase M1 — Auditoría de horizonte ✅ CERRADA (2026-08-13, `PLAN_MEJORA_MATEMATICA.md §21`)
 

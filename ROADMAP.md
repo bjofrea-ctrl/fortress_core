@@ -176,17 +176,15 @@ actualizado antes de pasar a la siguiente.
     Minutos/horas: no viable — el cache es sólo barras diarias (verificado,
     `AAPL.parquet` espaciado modal 1 día calendario/hábil), y datos intradía ya se
     descartaron con gap-reversion (§13).
-21. 🔄 **En curso (2026-08-14)** — el trial #15 EVT (§20, sizing walk-forward) murió
-    DOS VECES sin terminar ni dar traceback (detalle completo en
-    `AUDITORIA_MECANICA.md`, Hallazgo 0). Diagnóstico aplicado hoy antes del 3er
-    intento: (a) heartbeat propio en el script (`[heartbeat] t=...s | fase=...` cada
-    60s, sin cambio de metodología), (b) lanzamiento desacoplado del lanzador
-    (`nohup` + `setsid` → grupo de procesos propio, inmune al kill del grupo del
-    harness), (c) causa raíz probable identificada: el ambiente del lanzador
-    anterior mata el grupo de procesos al terminar la tarea (muertes sin traceback,
-    cada vez un paso más adelante = se lanzaba de nuevo y moría al terminar el
-    wrapper). 3er intento CORRIENDO (PID 8856, heartbeat activo). Bloquea M0 del
-    plan de mecánica y la decisión sobre EVT-stops.
+21. 🔄 **En curso (2026-08-14)** — el trial #15 EVT (§20, sizing walk-forward): la
+    terminación externa del Hallazgo 0 se resolvió (heartbeat + `nohup`/`setsid`) y
+    el trial COMPLETÓ (artefactos 17:27 → 19:12: log + parquet). Pero la verificación
+    contra el artefacto destapó un **bug mecánico** (`AUDITORIA_MECANICA.md`,
+    Hallazgo 5): EWMA sin cuadrado (`r2[t-1]` en vez de `r2[t-1]**2`) → σ en el floor
+    34% de los días → z±187,559 → var_mult 20k-85k (debería ~2.8) → sizing aniquilado
+    → 36 trades inválidos. **Fix aplicado (1 carácter) + re-run válido CORRIENDO
+    desde 19:58 (PID 19831, heartbeat activo)** — el veredicto se toma de este run.
+    Bloquea la decisión sobre EVT-stops (M0).
 22. ✅ M1/M1b — auditoría de horizonte COMPLETA (2026-08-13, `PLAN_MEJORA_MATEMATICA.md
     §21/§21.1`): 5d/10d/60d/125d, ninguno significativo bajo Bonferroni-12. Los
     rechazos de señal se refuerzan en los 5 horizontes probados (5d-125d).
