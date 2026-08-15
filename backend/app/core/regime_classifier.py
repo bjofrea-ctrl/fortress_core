@@ -113,6 +113,21 @@ class GlobalRegimeClassifier:
             "confidence": float(probs[raw_current]),
         }
 
+    def predict_regime_series(self, price_data: Dict[str, pd.DataFrame]) -> pd.Series:
+        """Como predict_current_regime pero devuelve el estado alineado para CADA
+        fecha, no solo la última. Reutiliza el mismo pipeline de features/alineación
+        para que un walk-forward externo (M3, regime_gate.py) pueda re-ajustar el
+        modelo periódicamente y etiquetar cada ventana con el modelo vigente en ese
+        momento, sin tener que re-implementar extracción de features."""
+        if not self.is_fitted:
+            return pd.Series(dtype=int)
+        feats = self._extract_features(price_data)
+        if feats.empty:
+            return pd.Series(dtype=int)
+        scaled = self.scaler.transform(feats.values)
+        aligned = self._align_states(self.model.predict(scaled), feats)
+        return pd.Series(aligned, index=feats.index)
+
     def _default(self) -> Dict:
         return {
             "state": 0,

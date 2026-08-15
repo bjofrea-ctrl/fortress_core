@@ -13,8 +13,8 @@ Estado al 2026-08-14:
 | Módulo | Dueño | Estado |
 |---|---|---|
 | M1 Etiquetado por barreras | Claude Code | ✅ hecho (`app/core/barrier_labeling.py`, 17 tests) |
-| M2 Instrumento conforme | Claude Code | en curso |
-| M3 Compuerta de régimen | — | bloqueado por M1+M2 (necesita el etiquetado correcto) |
+| M2 Instrumento conforme | Claude Code | ✅ **HECHO (2026-08-15)** — `app/core/conformal.py`, 16 tests, cobertura empírica verificada ≈nominal. **NO retomar, ya está.** |
+| M3 Compuerta de régimen | — | 🟢 desbloqueado — M1+M2 listos, puede arrancar |
 | M4 Costos medidos | **Cline** | 🟡 libre para arrancar |
 | M5 Detector de deriva | **OpenCode** | 🟡 libre para arrancar |
 | M6 Ledger de trials | **Command Code** | ✅ hecho (`app/core/trial_registry.py`, `data/trial_registry.json`, backfill 29 entradas, 15 tests) — hallazgo: backfill 27 consumidos vs 17 citados |
