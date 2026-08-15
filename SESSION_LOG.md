@@ -1172,3 +1172,66 @@ Sesión de investigación (Tanda D del plan consolidado). Disciplina §14 respet
   passed** (136 previos + 15 nuevos); ruff limpio en los 4 archivos.
 - Docs: `ROADMAP.md` (item 24), `ORDENES_MODULOS.md` (M6 → ✅ hecho). Sin commit/push
   (regla de ORDENES_MODULOS.md: no commitear sin autorización explícita de Boris).
+
+## Cierre de sesión — 2026-08-14 21:16 (Claude Code)
+
+**Doctrina de equipo**: acordada con Boris tras corrección directa (frenaba con
+restricciones falsas en vez de acompañar). Grabada en memoria persistente
+(`feedback_como_trabajar_con_boris.md`, `user_boris_constructor.md`, ambas "LEER
+PRIMERO" en `MEMORY.md`) y propagada a los 5 puntos de entrada de agentes
+(fortress_core, medai, empresa-hibrida, discover-rapanui, `~/.config/opencode/`),
+0 líneas borradas en los 5 diffs, verificado. 8 puntos, incluido el último agregado
+hoy por Boris: "siempre lo sólido, lo mejor, nunca lo más fácil" — con la aclaración
+explícita de que no contradice "construir sin ceremonia" (trámite vs. factura).
+
+**Diseño**: `DISENO_INSTRUMENTO.md` — tesis "Fortress como instrumento diagnóstico
+calibrado, no predictor". Releído el documento completo de Qwen ("Quantamental God")
+párrafo por párrafo y clasificado contra el código real (verificado con grep, no de
+memoria). Dos aportes genuinos sobrevivieron: (1) Predicción Conforme — abstención
+como salida de primera clase, 0 apariciones en el repo antes de hoy; (2) desajuste de
+etiquetado — toda la investigación midió `fwd_return` a horizonte fijo pero el motor
+sale por barreras (confirmado leyendo `backtest_engine.py`/`adaptive_risk.py`). 6
+módulos definidos por contexto que exigen, no por qué hacen — la palanca real contra
+el gasto de tokens es localidad de contexto, no paralelismo (Qwen identificó mal esto).
+
+**M1 — Etiquetado por barreras HECHO**: `app/core/barrier_labeling.py`, replica las 4
+barreras de `adaptive_risk.check_all_stops` verbatim y en orden de prioridad (techo
+absoluto 12% → stop de régimen → toma parcial 2×ATR → trailing). 17 tests de
+fidelidad, no de cobertura (prioridad entre barreras, anti-lookahead, bruto vs. neto
+con costos). Suite completa: 136 passed. Ruff limpio.
+
+**Órdenes de trabajo por módulo**: `ORDENES_MODULOS.md` — bloques autocontenidos para
+M4 (Cline), M5 (OpenCode), M6 (Command Code), cada uno con su propio contrato de
+salida y sin necesidad de leer el proyecto entero.
+
+**M6 verificado por Claude Code** (no solo el autoreporte de Command Code): archivos
+en disco, 15 tests corridos de nuevo, `audit_trial_budget.py` ejecutado — el 27 vs 17
+se sostiene, se ve en el desglose por familia (`re_test`: 2 entradas, 0 consumidos).
+
+**Auto-backup**: se confirmó que `scripts/auto_backup.sh` hace `git push origin main`
+automáticamente cada 10-20 min (`grep` en el script + verificado contra GitHub vía
+`gh api`, HEAD remoto = HEAD local). Todo el trabajo de hoy ya está público. Barrido
+de secretos sobre el diff completo del día (2915 líneas, 5 patrones de credenciales
+reales) → limpio. Primer intento de barrido falló por un flag mal usado (`rg -E`) y
+casi se reportó como "limpio" sin haber corrido — corregido antes de afirmar nada.
+
+**EVT (ítem 21) — ESTADO PARA MAÑANA**: el bug mecánico (Hallazgo 5, EWMA sin
+cuadrado) ya está diagnosticado y arreglado (1 carácter) por OpenCode, documentado en
+`AUDITORIA_MECANICA.md` y `ROADMAP.md`. El re-run válido (PID 19831, lanzado 19:58)
+**sigue corriendo al cierre de esta sesión**: último heartbeat `t=4621s` (~77 min),
+fase `EVT run` (ya pasó el baseline). Estimado total ~90-105 min — probablemente
+termine solo, sin que nadie lo mire. **No matar este proceso.** Al retomar mañana:
+1. Revisar `backend/data/cache/trial15_evt_stops_20260814_195828.txt` — si terminó,
+   el veredicto sale de ESTA corrida (no de los intentos #1/#2, que murieron por
+   terminación externa del proceso, ni del intento #3, que tenía el bug de sizing).
+2. Si terminó: verificar contra el artefacto (parquet + log), no contra ningún
+   resumen — sigue siendo la regla más importante del proyecto.
+3. M2 (instrumento conforme) es la continuación natural — M1 ya está listo para
+   consumirse.
+4. M4 y M5 siguen libres — las órdenes ya están escritas en `ORDENES_MODULOS.md`,
+   listas para pegar en una sesión nueva.
+
+**Pendiente de decisión de Boris, no ejecutado**: commit final descriptivo que cierre
+esta unidad de trabajo (auto-backup ya guardó y pusheó el contenido, pero sin mensaje
+descriptivo real). Se deja para cuando el EVT termine, así el commit cubre el
+veredicto completo en vez de cortarlo a mitad de camino.
