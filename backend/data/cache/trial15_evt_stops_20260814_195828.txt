@@ -67,3 +67,14 @@ Corriendo baseline (BacktestEngine estandar, misma data)...
 [heartbeat] t=3240s | fase=baseline run
 [heartbeat] t=3300s | fase=baseline run
 [heartbeat] t=3360s | fase=baseline run
+[heartbeat] t=3420s | fase=baseline run
+[heartbeat] t=3480s | fase=baseline run
+[heartbeat] t=3540s | fase=baseline run
+[heartbeat] t=3600s | fase=baseline run
+[heartbeat] t=3660s | fase=baseline run
+Corriendo EVT (EVTEngine con EVTRiskManager walk-forward)...
+[heartbeat] t=3720s | fase=EVT run
+[heartbeat] t=3780s | fase=EVT run
+[heartbeat] t=3840s | fase=EVT run
+[heartbeat] t=3900s | fase=EVT run
+[heartbeat] t=3960s | fase=EVT run
