@@ -276,6 +276,12 @@ gantt
 | Seguridad | **`fortress.db` (SQLite local) nunca se respalda** | 🔴 sin empezar | — | `auto_backup.sh`/`backup.sh` excluyen `*.db` explícitamente — si falla el disco, los datos runtime (posiciones, snapshots, eventos de riesgo) no son recuperables de ningún backup. Hallazgo de memoria previa (2026-08-12, auditoría infra), no estaba en AUDITORIA_TECNICA.md |
 | Seguridad | GET endpoints sin auth que disparan LLM real (costo/abuso) | 🔴 sin empezar | — | `predict/analyze/{symbol}`, `governance/analyze/{symbol}` — no sólo exponen datos, cualquiera puede gastar tu cuota/costo de NVIDIA NIM sin autenticarse |
 | Código P2 | Código muerto adicional sin verificar (`ProbabilisticEngine` wrapper, `KellyPositionSizer` duplicado, `RiskParityAllocator`) | ⚪ sin verificar | — | Viene de memoria del 2026-08-08, anterior a esta investigación — re-chequear si sigue siendo cierto antes de actuar |
+| Instrumento | M1 — Etiquetado por barreras | 🟢 hecho (2026-08-14) | — | `app/core/barrier_labeling.py`, replica las 4 barreras reales de `adaptive_risk.py` en orden de prioridad; 17 tests de fidelidad (no cobertura). Ver `DISENO_INSTRUMENTO.md` |
+| Instrumento | M2 — Instrumento conforme (abstención calibrada) | 🟡 en curso | M1 (listo) | Envuelve el score del motor, devuelve intervalo + `abstenerse: bool`. Retomar mañana — dueño Claude Code |
+| Instrumento | M3 — Compuerta de régimen | 🔴 sin empezar | M1+M2 | La apuesta de mayor valor: macro IC +0.13 se cancela entre regímenes (+0.198 GOLDILOCKS/−0.173 DEFLATION, Fase 2), nunca se probó como compuerta — solo como término en `ridge_3f`, ya refutado por otra razón |
+| Instrumento | M4 — Costos medidos (Alpaca paper) | ⚪ libre para arrancar | — | Orden completa en `ORDENES_MODULOS.md` — dueño asignado Cline, no arrancó |
+| Instrumento | M5 — Detector de deriva | ⚪ libre para arrancar | — | Orden completa en `ORDENES_MODULOS.md` — dueño asignado OpenCode, no arrancó (2026-08-14 se ocupó del diagnóstico EVT en su lugar, ver ítem 21) |
+| Instrumento | M6 — Ledger de trials | 🟢 hecho (2026-08-14) | — | `app/core/trial_registry.py` + backfill 29 entradas. Hallazgo: 27 n_trials consumidos vs 17 citados — ver `SESSION_LOG.md` |
 
 **Leyenda**: 🔴 crítico/sin empezar · 🟡 en curso/parcial · ⚪ parqueado, sin decisión de producto · 🟢 cerrado
 
