@@ -198,6 +198,20 @@ actualizado antes de pasar a la siguiente.
     pérdidas mucho peores. Per criterio pre-registrado (<50% recuperadas) → M3 NO
     se dispara (sin hipótesis que gaste un slot de n_trials); M4 tampoco. Con esto,
     del plan de mecánica queda solo M0 (el trial EVT en curso).
+24. ✅ **M6 — Ledger de trials HECHO (2026-08-14, Command Code)** — `app/core/trial_registry.py`
+    (lectura/escritura de `data/trial_registry.json`, `register_trial`/`trials_by_family`/
+    `consumed_budget`/`current_threshold` con corrección Bonferroni), backfill de 29
+    entradas desde `PLAN_MEJORA_MATEMATICA.md` + `RESUMEN_VALIDACION_VARIABLES.md`
+    (`scripts/backfill_trial_registry.py`), auditoría `scripts/audit_trial_budget.py`
+    (avisa si un trial nuevo excedería el umbral declarado), 15 tests. **HALLAZGO
+    (contrato M6 — el desacuerdo ES el resultado)**: el backfill cuenta **27
+    n_trials_consumidos** vs el **n_trials=17** citado en §6/§0.6.1/§20 (diferencia
+    +10). El backfill NO se ajustó para cuadrar: 17 = los 13 trials #1-#13 contados
+    en §6 + 4 sin slot (fix #10, re-tests Fase 0.6 #8/#9); 27 = los 13 + 8
+    hipótesis de motor adicionales registradas (trial #14 basket, trial #15 EVT en
+    curso, diagnóstico sectorial, re-evaluación #11.1, gap, sub-períodos, MA200,
+    Donchian). El número 17 subestima el presupuesto real. Artefacto:
+    `data/cache/trial_registry_backfill_audit_20260814_202751.txt`.
 
 ---
 

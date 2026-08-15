@@ -1,0 +1,33 @@
+========================================================================
+M6 — AUDITORIA DE BACKFILL DEL REGISTRO DE TRIALS
+========================================================================
+entradas registradas: 29
+
+por familia:
+  backtest_costos        entradas= 3  consumidos= 3  CUMPLE=0/3
+  motor_signal           entradas= 8  consumidos= 8  CUMPLE=0/8
+  producto               entradas= 1  consumidos= 1  CUMPLE=0/1
+  re_test                entradas= 2  consumidos= 0  CUMPLE=0/2
+  risk                   entradas= 3  consumidos= 3  CUMPLE=1/3
+  signal_diagnosis       entradas=12  consumidos=12  CUMPLE=1/12
+
+TOTAL n_trials_consumidos (backfill): 27
+
+------------------------------------------------------------------------
+VERIFICACION CONTRA EL n_trials CITADO EN LOS DOCUMENTOS
+------------------------------------------------------------------------
+n_trials citado en el historial (trial #13/#14/#15, §20): 17
+n_trials_consumidos en el backfill (motor_signal): 27
+=> NO COINCIDE: diferencia de +10.
+   El backfill NO se ajusta para que cuadre (regla del contrato M6).
+   Este desacuerdo es el hallazgo: revisar el conteo a mano contra
+   PLAN_MEJORA_MATEMATICA.md antes de fijar n_trials para un trial nuevo.
+
+NOTA de interpretacion (para no leer el numero mal):
+  - La familia 'motor_signal' es la que el DSR cuenta (slots de motor).
+  - El numero 17 citado en §6/§0.6.1/§20 incluye #1-#13 (13 trials) y se
+    descuenta el fix de PARTIAL_TP (#10) que no fue una hipotesis nueva.
+  - §20 usa '17 historico (hasta #13, §6)' y luego suma +1 (#14) y +1 (#15).
+  - 're_test' (Fase 0.6) NO consume slot: entra con n_trials_consumidos=0.
+  - Los diagnosticos de señal (signal_diagnosis/risk/backtest_costos)
+    nunca consumieron slot de motor: se registran como evidencia.

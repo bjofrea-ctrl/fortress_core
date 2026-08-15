@@ -17,7 +17,7 @@ Estado al 2026-08-14:
 | M3 Compuerta de régimen | — | bloqueado por M1+M2 (necesita el etiquetado correcto) |
 | M4 Costos medidos | **Cline** | 🟡 libre para arrancar |
 | M5 Detector de deriva | **OpenCode** | 🟡 libre para arrancar |
-| M6 Ledger de trials | **Command Code** | 🟡 libre para arrancar |
+| M6 Ledger de trials | **Command Code** | ✅ hecho (`app/core/trial_registry.py`, `data/trial_registry.json`, backfill 29 entradas, 15 tests) — hallazgo: backfill 27 consumidos vs 17 citados |
 
 ---
 
