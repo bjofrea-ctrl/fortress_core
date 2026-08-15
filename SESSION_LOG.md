@@ -1274,3 +1274,67 @@ veredicto completo en vez de cortarlo a mitad de camino.
   CopulaRiskAnalyzer + ProbabilityCalibrator. Eliminar las 3 clases muertas requiere
   decidir el destino de los 2 smoke scripts — decisión que queda para Claude Code.
   ROADMAP.md fila ⚪ actualizada a 🟢 verificado.
+
+## Cierre de sesión — 2026-08-15 (Claude Code)
+
+**M2 (instrumento conforme) HECHO**: `app/core/conformal.py` — Split Conformal
+Prediction envolviendo cualquier score existente, calibrado contra `ret_net` de M1
+(no horizonte fijo). 16 tests, el central verifica cobertura empírica ≈ nominal
+(90%/80%) con calibración y validación en sets DISTINTOS. Métrica primaria
+`vpp_bajo_abstencion`, no Sharpe. Declarado en el docstring: la garantía de
+cobertura se debilita con el tiempo (no intercambiabilidad estricta en series
+financieras) — M5 (deriva) es quien avisa cuándo recalibrar, este módulo no lo
+hace solo.
+
+**M3 (compuerta de régimen) HECHO**: `app/core/regime_gate.py`. Walk-forward real
+sobre `GlobalRegimeClassifier` (se le agregó `predict_regime_series` para exponer
+la serie completa, reuso sin duplicar). Re-ajusta cada 63 días hábiles con datos
+ESTRICTAMENTE anteriores a la recalibración — evita el lookahead que el ítem 21 ya
+había señalado para EVT. Assert anti-lookahead interno, no solo declarado. 8 tests.
+Infraestructura lista para probar si macro-como-compuerta (IC +0.198 GOLDILOCKS /
+−0.173 DEFLATION, Fase 2) supera el promedio ponderado que falló en `ridge_3f` —
+el TRIAL en sí sigue pendiente de pre-registro, decisión del usuario.
+
+**M7 retirado de Command Code, criterio de delegación establecido**: Boris preguntó
+si el cableado M1+M2+M3 era trabajo sensible para delegar. Respuesta: sí — se
+delega lo que falla RUIDOSO (contrato verificable desde afuera), se queda el
+orquestador lo que puede fallar EN SILENCIO (números plausibles, tests que pasan
+sin detectarlo) y cuyo daño se propaga a todo lo que lo consuma después. Confirmado
+el mismo día: Cline centralizó `COST_PER_SIDE` en `config.py` y tocó
+`barrier_labeling.py` con un import roto (`app.core.config` en vez de
+`app.config`) — los 17 tests de M1 dejaron de colectar. Se detectó corriendo la
+suite completa, no el subset de la orden de M4. Corregido. Grabado en memoria
+persistente (`feedback_delegar_trabajo_sensible.md`).
+
+**M8 ejecutado (decisión + código, Claude Code)**: sobre el veredicto documental de
+Command Code — `KellyPositionSizer` y el wrapper `ProbabilisticEngine` eliminados
+de `probabilistic_engine.py` (quedan las 6 clases vivas, secciones renumeradas
+1-6). `risk_parity.py` eliminado completo. Los 2 smoke scripts NO se borraron
+enteros (mezclaban código vivo y muerto, a diferencia de `prompt_engine.py` en
+Tanda C): se recortó solo `test_kelly`/`test_integrated` de
+`scripts/test_probabilistic.py` y `test_risk_parity` de `scripts/test_system.py`,
+conservando la cobertura smoke de lo que sigue vivo. Verificado grep repo-wide (0
+referencias restantes salvo el docstring explicativo), ambos scripts corridos
+end-to-end tras el recorte (exit code 0 los dos), suite completa 206 passed.
+
+**M4 (costos medidos) HECHO por Cline, verificado independientemente**:
+`app/core/execution_costs.py` — cliente Alpaca paper con inyección de dependencias
+(testeable sin red), `base_url` fijo a `paper-api.alpaca.markets` (test dedicado
+`test_cliente_base_url_es_paper_siempre`), `ConfigurationError` ruidoso si faltan
+credenciales, `cost_per_side_medido = mean(|slippage|) + mean(comisión)` por lado.
+13 tests propios, verificados por Claude Code (no solo el reporte de Cline dado el
+incidente de M1 arriba): suite completa, ruff, barrido de secretos sobre el diff.
+Falta la medición viva — necesita cuenta Alpaca paper real, script listo
+(`scripts/measure_execution_costs.py`), sale con código 1 y explica qué falta si
+no hay credenciales.
+
+**Estado del instrumento diagnóstico (DISENO_INSTRUMENTO.md) al cierre**: M1, M2,
+M3, M4, M6, M8 hechos y verificados. M5 hecho (OpenCode, verificado por suite
+193→206 passed acumulada). M7 (integración) queda pendiente, mío. Ningún trial
+nuevo corrido — todo lo de hoy es infraestructura, sin consumir presupuesto
+Bonferroni.
+
+**Verificación final antes de push**: `git diff origin/main..HEAD` revisado
+completo (solo `ORDENES_MODULOS.md`, el resto ya estaba en `origin/main` vía
+auto-backup — confirmado con `gh api` en un chequeo anterior de la sesión), suite
+completa 206 passed corrida fresca inmediatamente antes del push, sin secrets.
