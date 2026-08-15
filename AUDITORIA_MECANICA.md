@@ -174,6 +174,48 @@ pre-registración §20, mismo criterio DSR≥0.90 en ≥2/3 ventanas, mismo N_TR
 
 ---
 
+## Hallazgo 6 — El trial #15 EVT (re-run válido) es un PLACEBO ESTRUCTURAL: la variable EVT nunca fue la restricción activa del sizing (2026-08-15)
+
+**El veredicto "NO CUMPLE" del re-run corregido es vacío: el `stop_distance` EVT
+jamás influyó en UNA decisión de tamaño. La hipótesis nunca se puso a prueba.**
+
+**Evidencia (reconstrucción completa sobre el parquet
+`trial15_evt_stops_20260814_195828_evt_trades.parquet`, 281 trades)**:
+
+1. **El término EVT nunca ganó al piso**: en los 281 trades, `var_mult × σ_EWMA_día`
+   (mediana 0.052, p90 0.091, max 0.266) **NUNCA** superó `price × position_stop`
+   (floor de régimen, mediana 0.05–0.08×precio). Conteo exacto: `evt_term > floor` = **0**,
+   `evt_term > 2×ATR` = **0**. En los 67 trades donde el stop difiere del baseline,
+   es el baseline quien usa 2×ATR MÁS amplio — el EVT queda en el floor.
+2. **`shares_by_risk` nunca es la restricción activa**: `max_shares = equity×10%/price`
+   ≤ `shares_by_risk = equity×1.5%/stop_distance` en **281/281** trades. Por álgebra:
+   con el piso mínimo de régimen (0.03×price), `shares_by_risk = 0.5×E/P > 0.1×E/P =
+   max_shares` — siempre. El `min()` final lo decide `kelly_shares` (dominante en la
+   mayoría, verificado: solo 15.3% de los trades coinciden exacto con el tope) o
+   `max_shares` — **nunca** `shares_by_risk`, que es el único de los tres donde vive
+   la variable EVT.
+3. **Consecuencia**: las 281 posiciones del run EVT son idénticas a las del baseline
+   en tamaño y timing → todas las métricas (CAGR, Sharpe, DSR, win_rate) salen
+   idénticas a 4 decimales en las 3 ventanas (verificado en el log:
+   W1 0.2562/0.2562, W2 −0.0542/−0.0542, W3 0.5299/0.5299). El "0/3 ventanas" no
+   mide EVT vs 2×ATR: mide el sistema contra sí mismo.
+
+**Lectura correcta del trial**: el trial #15 NO refuta el sizing EVT — demuestra que
+con el tope `MAX_POSITION_PCT = 10%` (y el brazo Kelly) **el `stop_distance` del
+sizing nunca es la restricción activa, sea EVT o 2×ATR**. El `stop_distance` es
+decisivo SOLO cuando `shares_by_risk < max_shares`, i.e. cuando
+`stop_distance > 15% × price` — algo que ni 2×ATR típico (4–6% del precio) ni el
+VaR-GPD de §19 alcanzan con el capital actual (equity pequeña → fracciones de
+acciones). Es un hallazgo de DISEÑO del motor, no de la señal EVT.
+
+**Implicación**: probar EVT (o cualquier distancia de riesgo) requiere primero
+rediseñar el sizing para que la distancia sea binding (p. ej. apalancar el capital,
+bajar el tope, o comparar carteras con sizing puro sin tope). Mientras exista el
+tope del 10%, cambiar `2×ATR` por `VaR_GPD×σ` es un placebo. Fase 1 (EVT) se cierra
+con: §19 (colas pesadas reales, ratio 1.26) + §20 (trial placebo) + este hallazgo.
+
+---
+
 ## Plan de implementación
 
 Ordenado por **(costo bajo → alto)** y **(reencuadra lo anterior → construye

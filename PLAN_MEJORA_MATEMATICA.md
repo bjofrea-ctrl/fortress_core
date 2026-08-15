@@ -1319,3 +1319,25 @@ mejora el sistema → no se integra (gate honesto) y la Fase 1 queda cerrada con
 evidencia de §19 (diagnóstico) + §20 (trial). Si CUMPLE: se evalúa la integración
 con el gate "mejora VaR/ES real" del plan (comparar drawdown/cola realizada del
 P&L EVT vs baseline en el mismo artefacto).
+
+**RESULTADO (2026-08-15) — trial ejecutado, veredicto INVÁLIDO por diseño, no por
+mercado. Revisión completa en `AUDITORIA_MECANICA.md` Hallazgo 6**:
+
+1. Primer run (`trial15_evt_stops_20260814_172715.txt`, 36 trades): MECÁNICA ROTA
+   (Hallazgo 5) — `ewma_vol_daily` calculaba la varianza sin elevar el retorno al
+   cuadrado (`r2[t-1]` en vez de `r2[t-1]**2`) → σ en el floor 34% de los días →
+   z ±187,559 → var_mult 20k-85k → sizing aniquilado. Fix de 1 carácter (idéntico a
+   la implementación sana de §19) y re-run.
+2. Re-run válido (`trial15_evt_stops_20260814_195828.txt`, 281 trades, 214 compras
+   EVT con assert anti-lookahead OK): baseline y EVT dan métricas IDÉNTICAS a 4
+   decimales en las 3 ventanas (W1 Sharpe 0.2562/0.2562, W2 −0.0542/−0.0542, W3
+   0.5299/0.5299; DSR 0.0649/0.0253/0.1602). Reconstrucción del sizing sobre los
+   281 trades: `var_mult×σ` (mediana 0.052) NUNCA supera el floor de régimen ni
+   2×ATR (0/281), y `shares_by_risk` nunca es la restricción activa del `min()`
+   (Kelly o el tope del 10% ganan siempre). **El trial midió el sistema contra sí
+   mismo.** El "NO CUMPLE" no refuta el sizing EVT: demuestra que con el tope
+   `MAX_POSITION_PCT=10%` y el brazo Kelly activo, `stop_distance` (EVT o 2×ATR) no
+   influye en ninguna decisión. Probar la hipótesis requiere un pre-registro NUEVO
+   que aísle `shares_by_risk` (p. ej. `fractional_kelly=0` en esa comparación) —
+   decisión del usuario. Fase 1 se cierra con §19 (colas reales, ratio 1.26) + §20
+   (trial no evaluable) + Hallazgo 6.

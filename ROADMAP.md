@@ -176,32 +176,43 @@ actualizado antes de pasar a la siguiente.
     Minutos/horas: no viable — el cache es sólo barras diarias (verificado,
     `AAPL.parquet` espaciado modal 1 día calendario/hábil), y datos intradía ya se
     descartaron con gap-reversion (§13).
-21. 🟡 **Trial #15 EVT — verdicto PRELIMINAR, NO cerrar todavía (2026-08-15)** — el
-    re-run válido (post-fix EWMA, `trial15_evt_stops_20260814_195828.txt`, log
-    `trial15_evt_stops_run2_console.log`) **TERMINÓ y reportó NO CUMPLE**: W1 n=103
-    DSR=0.0649, W2 n=47 DSR=0.0253, W3 n=113 DSR=0.1602 — 0/3 ventanas. OpenCode
-    verificó n por ventana y win_rate (60.5%) contra el parquet de 281 filas — eso es
-    correcto pero no alcanza.
-    **RESERVA (Claude Code, 2026-08-15, verificando más profundo antes de aceptar)**:
-    las 9 métricas de baseline y EVT (cagr, sharpe, sortino, max_dd, calmar, win_rate,
-    profit_factor, total_trades, DSR) son **IDÉNTICAS a 4 decimales en las 3
-    ventanas**. Contraste directo: en el run anterior (con el bug de EWMA, pre-fix),
-    baseline y EVT SÍ diferían con claridad (n=103 vs n=19 en W1, Sharpe 0.26 vs
-    −0.34). El log del run válido confirma 214 compras dimensionadas por
-    `EVTRiskManager.compute_position_size` (`self._n_evt_buys`), y el parquet de
-    trades tiene varianza real de tamaño (1-386 shares, std 39.3) — no es el caso
-    trivial de que el tope de posición domine siempre. Pero identidad exacta en las 9
-    métricas × 3 ventanas es estadísticamente muy improbable si el `stop_distance`
-    (`max(var_mult*sig_today, price*position_stop)` en EVT vs `max(2xATR,
-    price*position_stop)` en baseline) realmente influyó en qué trades se ejecutaron
-    y cuándo salieron — no solo en el tamaño. Hipótesis líder sin confirmar: el tope
-    `MAX_POSITION_PCT=0.10` (`min(shares_by_risk, max_shares)`) puede estar ganando en
-    la práctica, haciendo que el stop_distance distinto nunca llegue a cambiar una
-    decisión de entrada/salida real — si es así, la conclusión correcta no sería "el
-    sizing EVT no ayuda" sino "el sizing EVT nunca se puso a prueba bajo condiciones
-    donde pudiera diferir". Diagnóstico pendiente (barato, no consume trial): loggear
-    baseline vs EVT `stop_distance` y `shares` trade a trade en el mismo run. **NO
-    marcar M0 cerrado hasta resolver esto.**
+21. 🟢 **Trial #15 EVT — CERRADO como inválido por diseño, causa raíz confirmada
+    en código (2026-08-15)** — el re-run válido (post-fix EWMA, `trial15_evt_stops_20260814_195828.txt`)
+    reportó NO CUMPLE (0/3 ventanas), y tanto OpenCode como Command Code lo verificaron
+    contra n por ventana/win_rate del parquet y lo cerraron. **Ese veredicto no es
+    utilizable**: no es que el sizing EVT pierda contra el baseline, es que el trial
+    **nunca pudo medir la diferencia**.
+    **CAUSA RAÍZ (Claude Code, 2026-08-15, confirmada leyendo `backtest_engine.py:439-443`
+    y `trial_evt_stops.py`, no solo hipótesis)**: `compute_position_size` recibe SIEMPRE
+    `win_prob` y `payoff_ratio` no-`None` desde el motor real → toma la rama Kelly →
+    `return int(min(kelly_shares, shares_by_risk, max_shares))`. `kelly_shares` **no
+    depende de `stop_distance`** (solo de win_prob/payoff_ratio/price/equity), y es el
+    mínimo de los tres en la enorme mayoría de los trades — confirmado numéricamente:
+    ejemplo AMD 2019-01-07, shares=60 real vs 2×ATR baseline=$2.84 (13.8% precio) vs
+    stop_distance EVT implícito ≈$6.20 (30% precio) — ninguno de los dos coincide con
+    lo que shares=60 produciría vía `shares_by_risk`; sí coincide con un `kelly_shares`
+    de fracción ~4.9%. Confirmado también que NO es el tope de posición (`max_shares`):
+    solo 15.3% de los 281 trades coinciden exacto con el tope, 24.2% con margen ±1 —
+    la mayoría de los shares están MUY por debajo del tope, consistente con Kelly
+    dominando, no el cap. Y `EVTRiskManager.check_all_stops` nunca se sobreescribe
+    (llama a `super()` sin cambios, `trial_evt_stops.py:140-142`) — el cambio EVT SOLO
+    podía tocar tamaño de posición, nunca cuándo entra o sale un trade, y ni siquiera
+    eso llegó a expresarse por el `min()` con Kelly.
+    **Confirmación independiente (Claude Code, 2026-08-15, reconstrucción completa
+    de los 281 trades del parquet)**: (a) el término EVT `var_mult×σ_EWMA_día`
+    (mediana 0.052, p90 0.091, max 0.266) **NUNCA superó** el floor
+    `price×position_stop` ni el `2×ATR` (`evt_term > floor` = 0, `evt_term > 2×ATR` = 0
+    sobre 281/281); (b) `max_shares ≤ shares_by_risk` en 281/281 (por álgebra:
+    `0.5×E/P > 0.1×E/P` siempre dado el piso 0.03) → `shares_by_risk`, donde vive la
+    variable EVT, nunca es binding. El 0/3 ventanas con métricas idénticas a 4
+    decimales era la firma de esto: el sistema midiéndose a sí mismo.
+    **Ningún n_trials se gasta por esto** — no es un trial nuevo, es la constatación de
+    que el trial #15 tal como está pre-registrado en §20 no puede responder la pregunta
+    que se hizo. Si se quiere retomar la línea EVT-stops, hace falta un pre-registro
+    NUEVO que aísle `shares_by_risk` del `min()` con Kelly (por ejemplo corriendo con
+    `fractional_kelly=0` para esta comparación específica) — decisión del usuario, no
+    de un agente. **M0 queda CERRADO como "trial inválido, no concluyente"** — distinto
+    de "EVT-stops no sirve". Sin bloquear nada más del plan de mecánica.
 22. ✅ M1/M1b — auditoría de horizonte COMPLETA (2026-08-13, `PLAN_MEJORA_MATEMATICA.md
     §21/§21.1`): 5d/10d/60d/125d, ninguno significativo bajo Bonferroni-12. Los
     rechazos de señal se refuerzan en los 5 horizontes probados (5d-125d).

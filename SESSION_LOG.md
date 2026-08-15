@@ -1245,6 +1245,20 @@ veredicto completo en vez de cortarlo a mitad de camino.
   no supera al baseline 2×ATR → no se integra. Fase 1 EVT queda cerrada: §19
   (diagnóstico PASA) + §20 (trial NO CUMPLE) como evidencia, el camino que el propio
   pre-registro definió.
-- Con esto, del plan de mecánica (M0-M6) queda CERRADO M0; M2 (instrumento conforme)
-  sigue en curso (dueño Claude Code); M4/M5 libres; M6 hecho.
+- **Verificación independiente del veredicto (Claude Code, 2026-08-15)** —
+  reconstrucción COMPLETA del sizing sobre los 281 trades del parquet EVT (mismas
+  tablas walk-forward, ATR 14 y régimen por trade):
+  (a) `var_mult×σ_EWMA_día` (mediana 0.052, p90 0.091, max 0.266) **nunca superó**
+  `price×position_stop` ni `2×ATR` (`evt_term > floor` = 0/281, `evt_term > 2×ATR` = 0/281);
+  (b) `max_shares ≤ shares_by_risk` en 281/281 (álgebra: `0.5×E/P > 0.1×E/P` dado el
+  piso de régimen 0.03 → `shares_by_risk`, donde vive la variable EVT, nunca es
+  binding; el `min()` lo decide Kelly o el tope);
+  (c) corolario: métricas baseline==EVT idénticas a 4 decimales = el sistema midiéndose
+  a sí mismo. **El veredicto es vacío por diseño, no una refutación del EVT** —
+  probar cualquier distancia de riesgo requiere rediseñar el sizing para que
+  `shares_by_risk` sea binding (p. ej. `fractional_kelly=0` en la comparación),
+  decisión del usuario. Documentado en `AUDITORIA_MECANICA.md` Hallazgo 6.
+- Con esto, del plan de mecánica (M0-M6) queda CERRADO M0 (como trial inválido, no
+  concluyente); M2 (instrumento conforme) sigue en curso (dueño Claude Code); M4/M5
+  libres; M6 hecho.
 - Docs: ROADMAP.md (ítem 21 → ✅, tabla maestra + fila trial EVT).
