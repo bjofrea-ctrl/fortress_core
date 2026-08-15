@@ -47,3 +47,13 @@ Corriendo baseline (BacktestEngine estandar, misma data)...
 [heartbeat] t=2040s | fase=baseline run
 [heartbeat] t=2100s | fase=baseline run
 [heartbeat] t=2160s | fase=baseline run
+[heartbeat] t=2220s | fase=baseline run
+[heartbeat] t=2280s | fase=baseline run
+[heartbeat] t=2340s | fase=baseline run
+[heartbeat] t=2400s | fase=baseline run
+[heartbeat] t=2460s | fase=baseline run
+[heartbeat] t=2520s | fase=baseline run
+[heartbeat] t=2580s | fase=baseline run
+[heartbeat] t=2640s | fase=baseline run
+[heartbeat] t=2700s | fase=baseline run
+[heartbeat] t=2760s | fase=baseline run

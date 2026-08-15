@@ -1146,3 +1146,29 @@ Sesión de investigación (Tanda D del plan consolidado). Disciplina §14 respet
   evidencia del ciclo.
 - Docs actualizados: AUDITORIA_MECANICA.md (Fase M2 cerrada), ROADMAP.md (item 23
   agregado, item 21 actualizado a "en curso", fecha de actualización).
+
+- **M6 — Ledger de trials HECHO (Command Code, 2026-08-14)**: `app/core/trial_registry.py`
+  (lectura/escritura de `data/trial_registry.json`, `register_trial`/`trials_by_family`/
+  `consumed_budget`/`current_threshold` con corrección Bonferroni), backfill de 29
+  entradas desde `PLAN_MEJORA_MATEMATICA.md` + `RESUMEN_VALIDACION_VARIABLES.md`
+  (`scripts/backfill_trial_registry.py`), auditoría `scripts/audit_trial_budget.py`
+  (imprime presupuesto por familia y avisa si un trial nuevo excedería el umbral),
+  15 tests en `tests/test_trial_registry.py` (registrar/releer, presupuesto por familia,
+  umbral que se endurece, fallo ruidoso ante JSON corrupto/incompleto, n=0 válido para
+  re-tests).
+- **HALLAZGO (contrato M6 — el desacuerdo ES el resultado)**: el backfill cuenta **27
+  n_trials_consumidos** vs el **n_trials=17** citado en §6/§0.6.1/§20 (diferencia +10).
+  No se ajustó nada para cuadrar. Descomposición: 17 = 13 trials #1-#13 (§6) + 4 sin
+  slot (fix #10, re-tests Fase 0.6 #8/#9); 27 = 13 + 8 hipótesis de motor adicionales
+  registradas (trial #14 basket, trial #15 EVT en curso, diagnóstico sectorial,
+  re-evaluación §11.1, gap-reversion, sub-períodos, MA200 clusters, Donchian). El
+  número 17 subestima el presupuesto real consumido: el umbral Bonferroni vigente de
+  la familia motor_signal es 0.9889 (no 0.90). Artefacto:
+  `data/cache/trial_registry_backfill_audit_20260814_202751.txt`.
+- Decisión de diseño (declarada): `n_trials_consumidos=0` es válido para re-tests de
+  variables ya refutadas (Fase 0.6, RESUMEN §6.1 — "no consume slot nuevo"); el umbral
+  actual `current_threshold(familia)` = 1 − (1−0.90)/n con n = consumidos+1.
+- Verificación: suite completa `cd backend && .venv/bin/python -m pytest` → **151
+  passed** (136 previos + 15 nuevos); ruff limpio en los 4 archivos.
+- Docs: `ROADMAP.md` (item 24), `ORDENES_MODULOS.md` (M6 → ✅ hecho). Sin commit/push
+  (regla de ORDENES_MODULOS.md: no commitear sin autorización explícita de Boris).
