@@ -292,6 +292,13 @@ def test_pick_exhibit_from_index_elige_ex991():
     assert _pick_exhibit_from_index("<html></html>") is None
 
 
+def test_pick_exhibit_matchea_nombre_a8_kex991():
+    # el índice real de EDGAR nombra el exhibit "a8-kex991q3202606..." —
+    # el substring "ex99" (sin guion) debe matchear igual
+    index = '<a href="/Archives/edgar/data/320193/000032019326000018/a8-kex991q3202606272026.htm">EX-99.1</a>'
+    assert _pick_exhibit_from_index(index).endswith("a8-kex991q3202606272026.htm")
+
+
 # --------------------------------------------------------------------------- #
 # Conductor de acumulación (red y FinBERT mockeados).
 # --------------------------------------------------------------------------- #
@@ -308,6 +315,54 @@ def _make_filings(prefix: str = ""):
             "accession_url": "https://www.sec.gov/Archives/edgar/data/320193/000000000000000002/",
         },
     ]
+
+
+def test_fetch_document_text_usa_exhibit_cuando_primary_es_referencia(tmp_path, monkeypatch):
+    # 8-K cuyo primary document es solo la referencia administrativa
+    # ("Exhibit 99.1..."): el texto usado debe ser el del exhibit (comunicado).
+    primary_reference = (
+        "<html><body><p>Item 2.02. On July 30, 2026, the company issued a press "
+        "release. Exhibit 99.1 Press release issued by the company.</p></body></html>"
+    )
+    index_html = (
+        '<html><a href="/Archives/edgar/data/1/000000000000000001/a8-kex991q.htm">EX-99.1</a></html>'
+    )
+    exhibit_html = (
+        "<html><body><p>Apple reports third quarter results. Revenue grew 8% year over year "
+        "to a new record. Earnings per share also reached an all-time high for the June "
+        "quarter. The board of directors declared a cash dividend of twenty-five cents per "
+        "share. Services revenue set a new all-time record. We are very pleased with these "
+        "results and remain optimistic about our product pipeline for the coming quarters. "
+        "Forward-looking statements: results may vary based on market conditions and other "
+        "factors that are outside the company's control.</p></body></html>"
+    )
+    sess = _FakeSession(
+        {
+            "https://www.sec.gov/d/x.htm": primary_reference,
+            "https://www.sec.gov/d/index.html": index_html,
+            "https://www.sec.gov/Archives/edgar/data/1/000000000000000001/a8-kex991q.htm": exhibit_html,
+        }
+    )
+    from app.core.earnings_sentiment import fetch_document_text
+
+    text = fetch_document_text("https://www.sec.gov/d/x.htm", session=sess)
+    assert "Apple reports third quarter results" in text
+    assert "Exhibit 99.1 Press release issued" not in text
+
+
+def test_fetch_document_text_usa_primary_si_no_hay_exhibit(tmp_path, monkeypatch):
+    # 8-K con el comunicado completo en el cuerpo (sin exhibit): primary directo.
+    full_body = "<html><body><p>Revenue grew 25%. We are optimistic about 2026.</p></body></html>"
+    sess = _FakeSession(
+        {
+            "https://www.sec.gov/d/y.htm": full_body,
+            "https://www.sec.gov/d/index.html": "<html><a href='other.htm'>x</a></html>",
+        }
+    )
+    from app.core.earnings_sentiment import fetch_document_text
+
+    text = fetch_document_text("https://www.sec.gov/d/y.htm", session=sess)
+    assert "Revenue grew 25%" in text
 
 
 def test_accumulate_end_to_end_con_fakes(tmp_path, monkeypatch):

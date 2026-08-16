@@ -76,6 +76,10 @@ CHUNK_MAX_CHARS = 2500
 # Un 8-K cuyo texto extraído quede por debajo de este umbral es "solo
 # referencia" (apunta al press release en un exhibit) — se busca el texto real.
 MIN_SUBSTANTIVE_CHARS = 400
+# Si el primary document MENCIONA el press release como exhibit adjunto
+# ("Exhibit 99.1", "ex-99.1"), el comunicado real vive en ese exhibit y el
+# primary es solo la referencia administrativa (caso típico de AAPL/NVDA/AMD).
+_EXHIBIT_REFERENCE_RE = re.compile(r"(?:ex-?99|exhibit\s*99)", re.IGNORECASE)
 
 # ETFs / vehículos sin earnings calls: se excluyen explícitamente del universo
 # (SPY/QQQ/IBB/…). Un 8-K 2.02 de un ETF no es un earnings call.
@@ -418,24 +422,34 @@ def fetch_document_text(
     session: Optional[requests.Session] = None,
     _fallback_index: bool = True,
 ) -> str:
-    """Descarga el texto plano del documento.
+    """Descarga el texto plano del documento (el comunicado de la gerencia).
 
-    Si el documento primario resulta ser "solo referencia" (texto <
-    MIN_SUBSTANTIVE_CHARS, típico de los 8-K que ponen el comunicado en un
-    exhibit 99.1), descarga el índice de la accession y busca el .htm del
-    press release. Documentado en el docstring del módulo.
+    Estrategia en dos pasos, documentada porque define la calidad de los datos
+    (y por lo tanto del trial futuro):
+      1. Descarga el primary document. Si este es "solo referencia" (menciona
+         que el press release se adjunta como Exhibit 99.x — caso típico de
+         los 8-K de resultados de las grandes tecnológicas) o queda por debajo
+         de MIN_SUBSTANTIVE_CHARS, busca en el índice de la accession el .htm
+         del exhibit 99.x y usa ESE texto (el comunicado real).
+      2. Si no hay exhibit, usa el primary document tal cual (algunos 8-Ks
+         llevan el comunicado completo en el cuerpo).
     """
     own_session = session is None
     sess = session if session is not None else _edgar_session()
     try:
-        text = html_to_text(_get_with_retry(url, sess).text)
-        if _fallback_index and len(text) < MIN_SUBSTANTIVE_CHARS:
+        primary_html = _get_with_retry(url, sess).text
+        text = html_to_text(primary_html)
+        if _fallback_index and (
+            len(text) < MIN_SUBSTANTIVE_CHARS or _EXHIBIT_REFERENCE_RE.search(text)
+        ):
             index_url = url.rsplit("/", 1)[0] + "/index.html"
             index_html = _get_with_retry(index_url, sess).text
             exhibit = _pick_exhibit_from_index(index_html)
             if exhibit:
                 full_url = exhibit if exhibit.startswith("http") else url.rsplit("/", 1)[0] + "/" + exhibit.split("/")[-1]
-                text = html_to_text(_get_with_retry(full_url, sess).text)
+                exhibit_text = html_to_text(_get_with_retry(full_url, sess).text)
+                if len(exhibit_text) >= MIN_SUBSTANTIVE_CHARS:
+                    return exhibit_text
         return text
     finally:
         if own_session and session is None:
