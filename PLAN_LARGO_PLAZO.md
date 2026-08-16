@@ -98,7 +98,7 @@ paso 2 hasta tener los 8 trimestres — documentarlo como bloqueado, no simular 
 
 ---
 
-## Tarea C — Lead-lag entre símbolos (el que quede libre)
+## Tarea C — Lead-lag entre símbolos (Command Code)
 
 ```
 PROBLEMA: nunca se testeó si un símbolo predice a otro (ej. NVDA→AMD por cadena de

@@ -17,8 +17,10 @@ class SignalEngine:
         # AAPL/MSFT/GOOGL/AMZN/NVDA, sólo días elegibles): momentum IC=0.064,
         # rsi IC=0.032 -> peso proporcional a |IC|. trend y adx quedaron
         # afuera del score ponderado porque trend es constante dentro de la
-        # población elegible (no discrimina) y adx mostró IC negativo
-        # (premiar ADX alto predecía PEOR retorno, no mejor) - ambos siguen
+        # población elegible (no discrimina) y adx no resiste la corrección
+        # de comparaciones múltiples: IC +0.0679 (t=+2.31) nominal intra-día
+        # con Newey-West (§0.5a, rr2_intraday_20260811_150741.txt) — marginal,
+        # no robusto bajo Bonferroni-4 (umbral ≈2.5). Ambos siguen
         # como gates duros en generate_signal, sólo salieron del promedio.
         # No hay evidencia por-régimen todavía; el mismo prior se usa en los
         # 4 regímenes y el BayesianOnlineUpdater lo refina online con el
@@ -55,7 +57,9 @@ class SignalEngine:
         duro de entrada (ver diagnose_factor_ic). trend y adx quedaron
         afuera del promedio -siguen actuando como gates en generate_signal-
         porque trend es constante entre los días elegibles (no discrimina) y
-        adx mostró IC negativo (ADX alto predecía peor retorno, no mejor).
+        adx no resiste la corrección de comparaciones múltiples (IC +0.0679,
+        t=+2.31 nominal intra-día con Newey-West — §0.5a — marginal, no
+        robusto bajo Bonferroni-4 ≈2.5).
         """
         latest = stock_data.iloc[-1]
         mom = latest.get("momentum_12_1")

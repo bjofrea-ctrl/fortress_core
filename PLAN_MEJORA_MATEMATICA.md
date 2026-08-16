@@ -1341,3 +1341,59 @@ mercado. Revisión completa en `AUDITORIA_MECANICA.md` Hallazgo 6**:
    que aísle `shares_by_risk` (p. ej. `fractional_kelly=0` en esa comparación) —
    decisión del usuario. Fase 1 se cierra con §19 (colas reales, ratio 1.26) + §20
    (trial no evaluable) + Hallazgo 6.
+
+   ---
+
+   ## 22. Lead-lag entre símbolos — PRE-REGISTRO (Tarea C, PLAN_LARGO_PLAZO.md, 2026-08-15)
+
+   **Contexto**: nunca se testeó si un símbolo predice a otro (ej. NVDA→AMD por cadena
+   de suministro) — todo lo probado hasta hoy mide un símbolo contra su propio pasado.
+   Barato: no necesita datos nuevos, solo el panel diario que ya existe. Tarea asignada
+   a Command Code por el plan.
+
+   **Pregunta**: ¿el retorno de un símbolo "líder" predice el retorno de un símbolo
+   "seguidor" del mismo sector/cadena a horizontes de 1-5 días, en exceso de lo que el
+   propio pasado del seguidor ya contiene?
+
+   **Lista de pares candidatos (fijada ANTES de mirar resultados, regla anti-p-hacking)**:
+
+   | Par | Líder → Seguidor | Cadena |
+   |---|---|---|
+   | P1 | NVDA → AMD | semis (GPU competencia/cadena) |
+   | P2 | NVDA → AVGO | semis (cadena suministro) |
+   | P3 | NVDA → QCOM | semis (cadena móvil/GPU) |
+   | P4 | AAPL → MSFT | mega-cap tech (ambos en el universo) |
+   | P5 | AAPL → GOOGL | mega-cap tech |
+   | P6 | MSFT → GOOGL | mega-cap tech |
+   | P7 | XOM → CVX | energía (mismo sector) |
+   | P8 | JPM → BAC | bancos (mismo sector) |
+   | P9 | AMZN → WMT | retail (mismo sector) |
+   | P10 | LLY → JNJ | farma (mismo sector) |
+
+   **Metodología** (`diagnose_lead_lag.py`, corre DESPUÉS de este pre-registro):
+   - Panel: universo 50 (7 originales + `NEW_UNIVERSE`), 2019-01-01 → 2026-08-04, OHLC
+   diario vía `load_universe` (misma data del resto del proyecto).
+   - Retornos diarios `r_sym[t] = close[t]/close[t-1] - 1` por símbolo.
+   - Para cada par (líder L, seguidor F) y cada lag k ∈ {1,2,3,4,5}:
+   correlación cruzada de Spearman entre `r_L[t-k]` y `r_F[t]` sobre las fechas
+   comunes, con SE Newey-West (mismo aparato que §0.5a/§21, lags NW = k).
+   - Signo esperado: **positivo** (el líder anticipa al seguidor en la misma dirección).
+   Un lead-lag de "reversión" (negativo) se reporta como contexto, no como hallazgo.
+
+   **Criterio pre-registrado (sin conocer el resultado)**:
+   - Tests: 10 pares × 5 lags = **50 tests**.
+   - Bonferroni-50 sobre los tests nuevos → umbral |t| > ~3.48 (z 0.05/50 bilateral).
+   - Un par es un hallazgo si **≥2 lags consecutivos** del mismo par cruzan el umbral
+   con signo esperado positivo (evita que un lag aislado sea ruido).
+   - VEREDICTO: si algún par cumple → lead-lag real, se documenta como candidato a
+   pre-registro de motor (familia `motor_signal`). Si ninguno → la hipótesis de
+   lead-lag entre símbolos del universo queda refutada con la vara más estricta
+   usada en el proyecto.
+
+   **Riesgo declarado**: los pares se eligieron por cadena/sector ANTES de ver
+   resultados (cero grados de libertad post-hoc); los lags se fijan en 1-5 días sin
+   mirar datos. Si sale un par significativo, se valida contra el sub-período
+   PRE/POST 2022 (mismo patrón que §15) antes de cualquier conclusión.
+
+   **Registro en ledger**: familia `signal_diagnosis` (diagnóstico de señal, no
+   consume slot de motor). Se registra con `register_trial(...)` al cerrar.
