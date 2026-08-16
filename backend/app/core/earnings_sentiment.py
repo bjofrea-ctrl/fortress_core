@@ -76,10 +76,17 @@ CHUNK_MAX_CHARS = 2500
 # Un 8-K cuyo texto extraído quede por debajo de este umbral es "solo
 # referencia" (apunta al press release en un exhibit) — se busca el texto real.
 MIN_SUBSTANTIVE_CHARS = 400
-# Si el primary document MENCIONA el press release como exhibit adjunto
-# ("Exhibit 99.1", "ex-99.1"), el comunicado real vive en ese exhibit y el
-# primary es solo la referencia administrativa (caso típico de AAPL/NVDA/AMD).
-_EXHIBIT_REFERENCE_RE = re.compile(r"(?:ex-?99|exhibit\s*99)", re.IGNORECASE)
+# Si el primary document MENCIONA el press release como adjunto ("Exhibit
+# 99.1", "press release issued..."), el comunicado real vive en un exhibit y
+# el primary es solo la referencia administrativa (caso típico de AAPL/NVDA).
+_PRESS_RELEASE_REFERENCE_RE = re.compile(
+    r"(?:ex-?99|exhibit\s*99|press release)", re.IGNORECASE
+)
+# Patrones de nombre de press release en el índice de la accession. EDGAR no
+# es consistente: AAPL usa "a8-kex991q3...", AMD "q22026991.htm", NVDA
+# "q1fy27pr.htm" — no hay prefijo ex-99 garantizado (ver _pick_press_release).
+_PRESS_RELEASE_NAME_RE = re.compile(r"(?:pr\.htm$|press|ex-?99|99[01])", re.IGNORECASE)
+_MIN_SIZE_CONSIDERED = 40000  # un comunicado real rara vez pesa menos que esto (bytes)
 
 # ETFs / vehículos sin earnings calls: se excluyen explícitamente del universo
 # (SPY/QQQ/IBB/…). Un 8-K 2.02 de un ETF no es un earnings call.
@@ -398,23 +405,50 @@ def _index_document_url(filing: Dict[str, Any]) -> str:
     return filing["accession_url"] + "index.json"
 
 
-def _pick_exhibit_from_index(index_html: str) -> Optional[str]:
-    """Del índice HTML de una accession, elige el .htm que parece el press
-    release (ex-99.x). Función pura, testable. Devuelve la URL completa (el
-    href del índice puede ser relativo o absoluto). None si no hay."""
+def _pick_press_release_from_index(index_html: str, primary_document: str) -> Optional[str]:
+    """Del índice HTML de una accession, elige el archivo .htm del comunicado
+    de prensa (el texto del earnings call). Función pura, testable.
+
+    Heurística (documentada — la inconsistencia de nombres de EDGAR obliga):
+      1. Excluye el primary document, los R*.htm (XBRL inline) y el propio
+         índice.
+      2. Prefiere archivos cuyo nombre suene a press release (pr.htm, press,
+         ex-99, 99[01]).
+      3. Si no matchea ninguno, el .htm de mayor tamaño (el comunicado es
+         casi siempre el archivo más pesado de la accession — NVDA/AMD/AAPL
+         lo confirman: 274KB/448KB/173KB vs un 8-K de ~30KB).
+    Devuelve la URL completa (href del índice). None si no hay candidato.
+    """
+    primary = (primary_document or "").lower()
     soup = BeautifulSoup(index_html, "html.parser")
+    candidates = []
     for link in soup.find_all("a", href=True):
         href = link["href"]
         if not href.lower().endswith(".htm"):
             continue
         name = href.split("/")[-1].lower()
-        if "ex-99" in name or "ex99" in name:
-            if href.startswith("http"):
-                return href
-            if href.startswith("/"):
-                return "https://www.sec.gov" + href
-            return href
-    return None
+        if name == primary or name.startswith("r") and name[1:2].isdigit():
+            continue
+        row = link.find_parent("tr")
+        size = 0
+        if row is not None:
+            for cell in row.find_all("td"):
+                cell_text = cell.get_text(" ", strip=True)
+                if cell_text.isdigit() and len(cell_text) >= 4:
+                    size = int(cell_text)
+        candidates.append((href, name, size))
+    if not candidates:
+        return None
+    matched = [c for c in candidates if _PRESS_RELEASE_NAME_RE.search(c[1])]
+    pool = matched if matched else candidates
+    pool = [c for c in pool if c[2] >= _MIN_SIZE_CONSIDERED] or pool
+    best = max(pool, key=lambda c: (c[2], len(c[1])))
+    href = best[0]
+    if href.startswith("http"):
+        return href
+    if href.startswith("/"):
+        return "https://www.sec.gov" + href
+    return href
 
 
 def fetch_document_text(
@@ -440,11 +474,14 @@ def fetch_document_text(
         primary_html = _get_with_retry(url, sess).text
         text = html_to_text(primary_html)
         if _fallback_index and (
-            len(text) < MIN_SUBSTANTIVE_CHARS or _EXHIBIT_REFERENCE_RE.search(text)
+            len(text) < MIN_SUBSTANTIVE_CHARS
+            or _PRESS_RELEASE_REFERENCE_RE.search(text)
         ):
             index_url = url.rsplit("/", 1)[0] + "/index.html"
             index_html = _get_with_retry(index_url, sess).text
-            exhibit = _pick_exhibit_from_index(index_html)
+            exhibit = _pick_press_release_from_index(
+                index_html, url.rsplit("/", 1)[-1]
+            )
             if exhibit:
                 full_url = exhibit if exhibit.startswith("http") else url.rsplit("/", 1)[0] + "/" + exhibit.split("/")[-1]
                 exhibit_text = html_to_text(_get_with_retry(full_url, sess).text)

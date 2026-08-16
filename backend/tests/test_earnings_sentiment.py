@@ -10,7 +10,7 @@ from app.core.earnings_sentiment import (
     CHUNK_MAX_CHARS,
     ETF_EXCLUSIONS,
     EarningsSentimentStore,
-    _pick_exhibit_from_index,
+    _pick_press_release_from_index,
     accumulate_earnings_sentiment,
     aggregate_chunk_scores,
     chunk_text,
@@ -279,24 +279,49 @@ def test_html_to_text_limpia_y_colapsa():
     assert "  " not in text and "\n" not in text
 
 
-def test_pick_exhibit_from_index_elige_ex991():
+def test_pick_press_release_elige_exhibit_por_nombre():
+    # AAPL: el índice real nombra el exhibit "a8-kex991q3..." — el primary
+    # ("aapl-20260730.htm") debe quedar excluido
     index = """
     <html><body>
-    <a href="/Archives/edgar/data/1045810/000104581026000024/nvda-8k.htm">8-K</a>
-    <a href="/Archives/edgar/data/1045810/000104581026000024/nvda-ex991_6.htm">EX-99.1</a>
+    <table>
+    <tr><td><a href="/Archives/edgar/data/320193/000032019326000018/aapl-20260730.htm">aapl-20260730.htm</a></td><td>38350</td></tr>
+    <tr><td><a href="/Archives/edgar/data/320193/000032019326000018/a8-kex991q3202606272026.htm">a8-kex991q3202606272026.htm</a></td><td>173484</td></tr>
+    </table>
     </body></html>
     """
-    url = _pick_exhibit_from_index(index)
-    assert url.endswith("nvda-ex991_6.htm")
+    url = _pick_press_release_from_index(index, "aapl-20260730.htm")
+    assert url.endswith("a8-kex991q3202606272026.htm")
     assert url.startswith("https://www.sec.gov")
-    assert _pick_exhibit_from_index("<html></html>") is None
 
 
-def test_pick_exhibit_matchea_nombre_a8_kex991():
-    # el índice real de EDGAR nombra el exhibit "a8-kex991q3202606..." —
-    # el substring "ex99" (sin guion) debe matchear igual
-    index = '<a href="/Archives/edgar/data/320193/000032019326000018/a8-kex991q3202606272026.htm">EX-99.1</a>'
-    assert _pick_exhibit_from_index(index).endswith("a8-kex991q3202606272026.htm")
+def test_pick_press_release_sin_prefijo_ex_usa_tamano():
+    # NVDA: "q1fy27pr.htm" (274KB, press release) vs "q1fy27cfocommentary.htm"
+    # (165KB) vs el 8-K (26KB) — sin "ex-99" en los nombres, gana el mayor
+    # que matchea el patrón de nombre (pr.htm)
+    index = """
+    <html><body>
+    <table>
+    <tr><td><a href="/Archives/edgar/data/1045810/000104581026000051/nvda-20260520.htm">nvda-20260520.htm</a></td><td>26803</td></tr>
+    <tr><td><a href="/Archives/edgar/data/1045810/000104581026000051/q1fy27cfocommentary.htm">q1fy27cfocommentary.htm</a></td><td>165436</td></tr>
+    <tr><td><a href="/Archives/edgar/data/1045810/000104581026000051/q1fy27pr.htm">q1fy27pr.htm</a></td><td>274829</td></tr>
+    </table>
+    </body></html>
+    """
+    url = _pick_press_release_from_index(index, "nvda-20260520.htm")
+    assert url.endswith("q1fy27pr.htm")
+
+
+def test_pick_press_release_sin_candidatos_devuelve_none():
+    assert _pick_press_release_from_index("<html></html>", "x.htm") is None
+    # solo el primary y los R*.htm (XBRL): no hay comunicado adjunto
+    index = """
+    <html><table>
+    <tr><td><a href="/d/x.htm">x.htm</a></td><td>10000</td></tr>
+    <tr><td><a href="/d/R1.htm">R1.htm</a></td><td>50000</td></tr>
+    </table></html>
+    """
+    assert _pick_press_release_from_index(index, "x.htm") is None
 
 
 # --------------------------------------------------------------------------- #
@@ -356,7 +381,7 @@ def test_fetch_document_text_usa_primary_si_no_hay_exhibit(tmp_path, monkeypatch
     sess = _FakeSession(
         {
             "https://www.sec.gov/d/y.htm": full_body,
-            "https://www.sec.gov/d/index.html": "<html><a href='other.htm'>x</a></html>",
+            "https://www.sec.gov/d/index.html": "<html><table></table></html>",
         }
     )
     from app.core.earnings_sentiment import fetch_document_text

@@ -1,0 +1,8 @@
+============================================================
+Corrida 2026-08-16T12:31:15
+Universo: 3 símbolos (3 con earnings, 0 ETF excluidos: )
+Símbolos procesados: 3 — AAPL, AMD, NVDA
+8-Ks nuevos: 0
+Total en store: 24
+ERRORES: ninguno
+============================================================
