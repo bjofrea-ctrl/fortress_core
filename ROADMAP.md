@@ -313,6 +313,7 @@ gantt
 | Instrumento | M7 — Pipeline integrado M1+M2+M3 | 🟢 hecho (2026-08-15) | — | `app/core/diagnostic_pipeline.py`, `run_diagnostic_pipeline()`, 10 tests. Instrumento diagnóstico completo (M1-M8) cerrado. Falta el TRIAL pre-registrado que lo use para afirmar algo — decisión del usuario |
 | Investigación | Trial #15 EVT — stops EVT walk-forward (M0) | 🟢 cerrado (2026-08-15) | — | NO CUMPLE 0/3 (DSR 0.0649/0.0253/0.1602, artefacto trial15_evt_stops_20260814_195828.txt). Fase 1 EVT cerrada: §19 diagnóstico PASA + §20 trial NO CUMPLE |
 | Investigación | §22 Lead-lag entre símbolos (Tarea C, Command Code) | 🟢 cerrado (2026-08-15) | — | NO CUMPLE: 10 pares × 5 lags, ningún par con ≥2 lags consecutivos SIG(+) bajo Bonferroni-50 (|t|>3.48). Hipótesis de lead-lag refutada con la vara más estricta. Artefacto lead_lag_20260816_090220.txt. Registrado en ledger (signal_diagnosis) |
+| Investigación | §23 Triple Barrier como target (Tarea A, Cline) | 🟢 cerrado (2026-08-16) | — | NO CUMPLE: re-test de 3 factores refutados (momentum/rsi/adx) contra el label de barrera M1 (en vez de fwd_return_20d), Bonferroni-9 (|t|>2.77). Ningún cruce con signo esperado; máx |t| momentum TOTAL −2.48 (signo −). "Generador vacío" confirmado también contra el target binario que el motor persigue. Artefacto retest_triple_barrier_20260816_091649.txt. Ledger signal_diagnosis n=1 |
 
 **Leyenda**: 🔴 crítico/sin empezar · 🟡 en curso/parcial · ⚪ parqueado, sin decisión de producto · 🟢 cerrado
 

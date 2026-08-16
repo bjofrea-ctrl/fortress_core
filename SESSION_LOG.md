@@ -1400,3 +1400,14 @@ anterior) y `ORDENES_MODULOS.md` (M7 → hecho) actualizados.
   pre-registro §22 y el docstring del script se actualizaron para declarar el SE
   correcto. Primer artefacto (090136) descartado como artefacto del error.
 - Suite completa: 216 passed, ruff limpio. ROADMAP.md (fila §22) actualizado.
+
+## Cierre de sesión 2026-08-16 (Cline) — Tarea A (PLAN_LARGO_PLAZO.md): Triple Barrier como target. CERRADA — NO CUMPLE.
+
+- **Pre-registro §23** en `PLAN_MEJORA_MATEMATICA.md` (3 factores × 3 ventanas, Bonferroni-9, |t|>2.77, signo esperado +1, lags NW por ventana `min(12, n//8)`, exclusión de los 60 barras finales por símbolo declarada ANTES de correr).
+- **Script** `backend/scripts/retest_triple_barrier.py` (solo lectura de `barrier_labeling.py` — M1 — y del motor; no toca ninguno de los dos). Replica el patrón rank IC intra-día + Newey-West de `diagnose_horizon_largo.py`.
+- **Corrida** (artefacto `data/cache/retest_triple_barrier_20260816_091649.txt`, EXIT 0): 142,729 labels (50 símbolos, 2,855 fechas), fidelidad OK (win_rate_neto 0.586, barrera temporal 6.24%, toma parcial 58.95%), 2,028 pares eligible+label.
+- **Resultado**: ningún factor cruza Bonferroni-9 en ninguna ventana. Máximo |t|: momentum TOTAL −2.48 (signo NEGATIVO, no cuenta y no cruza). Nominales contexto: rsi W2 +1.73 (n=22), adx W2 +1.90 (n=19). Veredicto pre-registrado aplicado mecánicamente.
+- **Interpretación**: el re-test contra el objetivo binario que el motor persigue (¿toca TP antes que SL?) reproduce el veredicto de magnitud — la hipótesis de "generador vacío" queda reforzada también en probabilidad, no solo en `fwd_return_20d`. Se cierra la vía "nulo en magnitud pero predice ganar/perder".
+- **Ledger**: registrado `signal_diagnosis` `triple_barrier_retest` (n=1). Nota de coordinación: el texto de PLAN_LARGO_PLAZO decía familia `motor_signal`, pero el contrato del ledger clasifica rank-IC de señal bajo `signal_diagnosis` (igual que §21, §21.1 y §22) — el desvío quedó documentado en §23; `motor_signal` queda intacto (8 consumidos).
+- **Verificación**: suite completa `cd backend && .venv/bin/python -m pytest -q` (ver conteo al pie), ruff limpio en el script nuevo.
+- `ROADMAP.md` fila §23 → 🟢.

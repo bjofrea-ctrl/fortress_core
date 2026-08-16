@@ -1399,3 +1399,112 @@ mercado. Revisión completa en `AUDITORIA_MECANICA.md` Hallazgo 6**:
 
    **Registro en ledger**: familia `signal_diagnosis` (diagnóstico de señal, no
    consume slot de motor). Se registra con `register_trial(...)` al cerrar.
+---
+
+## 23. Triple Barrier como target de investigación — re-test de factores refutados (Tarea A, PLAN_LARGO_PLAZO.md, 2026-08-16, PRE-REGISTRADO)
+
+**Origen**: PLAN_LARGO_PLAZO Tarea A (Cline). Toda la investigación histórica del
+proyecto midió factores contra `fwd_return_20d` (retorno a horizonte fijo). El motor
+real sale por BARRERAS (M1, `app/core/barrier_labeling.py`), no a horizonte fijo.
+`momentum_score`, `rsi_score` y `adx_score` fueron refutados contra `fwd_return_20d`
+(§0.5a, §21 5d/10d, §21.1 60d/125d: ningún t cruza Bonferroni en NINGÚN horizonte),
+pero **nunca se probaron contra el objetivo binario que el motor persigue de verdad**:
+"¿toca TP antes que SL?" (`label` +1/−1/0 de M1).
+
+**Pregunta**: un factor nulo contra `fwd_return_20d` (ruido de magnitud, colas
+dominadas por pocas salidas extremas) puede tener poder real contra la PROBABILIDAD
+binaria de que la barrera cierre en positivo (robusta a colas). ¿Los factores
+refutados seleccionan contra `label_barrier`?
+
+**Metodología** (`backend/scripts/retest_triple_barrier.py`, corre DESPUÉS de este
+pre-registro):
+
+- Mismo panel del resto de la investigación: `factor_panel_20260811_144857.parquet`
+  (universo 50 = 7 originales + `NEW_UNIVERSE`, stride 5 días, 2019-01-02 →
+  2026-07-06), filas `eligible=True` — idéntico a §21/§21.1, comparable.
+- Labels: `barrier_labeling.label_symbol()` (M1, NO se toca ese módulo) por símbolo,
+  sobre precios OHLC diarios vía `load_universe` + `atr14` (indicators.atr), con
+  `max_horizon=60`, costo `settings.COST_PER_SIDE` (0.0015, M4) y la serie `regime`
+  del propio panel (HMM causal, columna real del panel, NO state 0 default).
+- **Exclusión del borde (declarada ANTES de correr)**: los últimos 60 barras de cada
+  símbolo se excluyen del etiquetado — sin 60 barras futuras la barrera no puede
+  resolver y `label_symbol` cerraría por TIME_BARRIER truncado (contaminación). Solo
+  se etiquetan fechas con ventana de evaluación COMPLETA (entry + 60 ≤ fin del panel
+  de precios).
+- rank IC intra-día (Spearman por fecha, patrón §0.5a/§21/§21.1) entre
+  momentum_score / rsi_score / adx_score y `label` (+1/−1/0). SE Newey-West sobre
+  los ICs diarios.
+- **Lags NW por ventana** (regla fijada acá, respeta el límite declarado en §21.1):
+  `L = min(12, floor(n_dias/8))` — 12 = ceil(60/5) del horizonte máximo de la
+  barrera; se recorta según `n` para que la fracción de la muestra nunca supere
+  ~12.5% (el mismo criterio por el que §21.1 descartó 250d).
+- **Ventanas**: W1 2020-2021, W2 2022-2023, W3 2024-2026-07-06 (fin del panel).
+  Se reportan también el total 2019-2026 como referencia.
+- **Cheque de fidelidad**: (a) `label_symbol.summarize` por ventana (n, por barrera,
+  win_rate neto, % barrera temporal) — si `n` o win_rate son absurdos se aborta sin
+  interpretar; (b) el label debe ser independiente en forma de los factores (no hay
+  ninguna transformación compartida).
+- **CHECK de puerta abierta de M1** (`test_barrier_labeling.py` ya cubre la fidelidad
+  de barreras vs `adaptive_risk.py`; se cita como verificación de "no tocar").
+
+**Criterio pre-registrado (sin conocer el resultado)**:
+- Tests: 3 factores × 3 ventanas = **9 tests nuevos**. (El ÍC total 2019-2026 no
+  cuenta: es referencia, igual que 20d en §21.)
+- Bonferroni-9 bilateral: umbral |t| > **2.78** (`z` = ppf(1 − 0.05/18) ≈ 2.78).
+- Signo esperado: **+1** (mayor score → mayor probabilidad de `label>0`; todos los
+  factores se miden con su dirección histórica).
+- VEREDICTO: si ALGÚN factor cruza el umbral en ≥1 ventana con signo esperado → el
+  target de barreras importa: se documenta el/la factor como candidato a pre-registro
+  de motor con el target corregido. Si NINGUNO → la hipótesis de "generador vacío"
+  queda reforzada incluso contra el objetivo que el motor persigue: los rechazos de
+  §0.5a/§21/§21.1 se extienden al target binario.
+- Nota honesta (mismo trato que §21): cualquier |t|>2 sin corregir se reporta como
+  contexto, nunca como hallazgo.
+
+**Riesgo declarado**: el label usa las barreras de M1, cuyas fidelidad al motor está
+cubierta por 17 tests; el stride 5d del panel evita overlap perfecto entre labels
+adyacentes, pero hay overlap parcial (horizonte variable hasta 60d) — por eso el IC
+es POR FECHA (no pooled) y el SE es Newey-West con L recortado. La ventana W2 tiene
+el menor n (~30-40 fechas); su t se lee con la misma reserva que declaró §21.1 para
+125d.
+
+**Registro en ledger**: familia `signal_diagnosis` (diagnóstico de señal rank-IC, no
+consume slot de motor — mismo tratamiento que §21, §21.1 y §22, que están TODOS en
+`signal_diagnosis`; el texto de PLAN_LARGO_PLAZO decía "motor_signal" pero el contrato
+del ledger (`app/core/trial_registry.py`) clasifica este tipo de test bajo
+`signal_diagnosis`; el desvío se documentó acá para que no vuelva a confundirse). Se
+registra con `register_trial(...)` al cerrar, n=1.
+
+**RESULTADO (2026-08-16, corrido por Cline) — artefacto:
+`data/cache/retest_triple_barrier_20260816_091649.txt`**
+
+Cheque de fidelidad del etiquetado: OK. 142,729 labels / 50 símbolos / 2,855 fechas;
+win_rate_neto 0.586, toma parcial 58.95%, barrera temporal 6.24%. Pares eligible+label:
+2,028.
+
+| factor | ventana | n_dias | mean_IC | t-NW | sig(Bonf9) |
+|---|---|---|---|---|---|
+| momentum_score | TOTAL | 163 | −0.0753 | −2.48 | no (signo −) |
+| momentum_score | W1 | 54 | −0.1035 | −1.97 | no |
+| momentum_score | W2 | 30 | −0.1194 | −1.71 | no |
+| momentum_score | W3 | 53 | +0.0003 | +0.00 | no |
+| rsi_score | TOTAL | 144 | +0.0278 | +0.69 | no |
+| rsi_score | W1 | 47 | −0.0480 | −0.96 | no |
+| rsi_score | W2 | 22 | +0.1572 | +1.73 | no |
+| rsi_score | W3 | 50 | +0.0231 | +0.31 | no |
+| adx_score | TOTAL | 133 | +0.0116 | +0.33 | no |
+| adx_score | W1 | 47 | −0.0555 | −1.13 | no |
+| adx_score | W2 | 19 | +0.1546 | +1.90 | no |
+| adx_score | W3 | 45 | −0.0056 | −0.08 | no |
+
+**VEREDICTO (pre-registrado)**: NO CUMPLE — ningún factor cruza Bonferroni-9
+(\|t\|>2.77) en ninguna ventana con signo esperado +1. La hipótesis de "generador
+vacío" queda REFORZADA también contra el objetivo binario que el motor persigue: los
+factores refutados no son nulos solo en magnitud (fwd_return_20d) — tampoco predicen
+la PROBABILIDAD de que la barrera cierre en positivo. La vía "nulo en magnitud pero
+útil para clasificar ganar/perder" queda cerrada con datos.
+
+**Nota honesta**: momentum TOTAL dio el \|t\| más alto (−2.48) con signo NEGATIVO (score
+alto → peor salida de barrera): bajo el criterio no cuenta (signo −) y tampoco cruza
+el umbral. RSI/ADX W2 dieron t nominales +1.73/+1.90 con n chico (19-22 fechas, L
+recortada a 2): contexto, nunca hallazgo.
