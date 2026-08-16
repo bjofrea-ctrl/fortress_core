@@ -1366,3 +1366,20 @@ escribirlo y correrlo.
 
 `ROADMAP.md` (fila Instrumento M7 → 🟢, M2-M5 corregidas de su estado stale
 anterior) y `ORDENES_MODULOS.md` (M7 → hecho) actualizados.
+
+## 2026-08-16 — Comentario/cita falsa sobre ADX en signal_engine.py CORREGIDO (task_22ea3f8d)
+
+- **Task disparado por el usuario** ("continua con el trabajo pendiente") — era el único ítem 🟡
+  de la tabla maestra de `ROADMAP.md`.
+- **Hallazgo verificado contra el artefacto real** (`rr2_intraday_20260811_150741.txt`, §0.5a
+  del `PLAN_MEJORA_MATEMATICA.md`): los comentarios de `backend/app/core/signal_engine.py`
+  afirmaban "adx mostró IC negativo (premiar ADX alto predecía PEOR retorno, no mejor)" en dos
+  lugares (líneas 21 y 58). La medición correcta (rank IC intra-día con Newey-West — la
+  metodología que el propio proyecto estableció como la correcta, no pooled) dice lo contrario:
+  **adx_score IC = +0.0679, t = +2.31, "SIGNIFICATIVO (W3)"** — el ÚNICO factor con señal
+  nominal, POSITIVO, que no resiste Bonferroni-4 (umbral ≈2.5) → marginal, no robusto. El
+  comentario repetía la conclusión de la auditoría pooled vieja, la metodología descartada.
+- **Corrección**: ambos comentarios ahora citan la evidencia correcta (IC +0.0679, t=+2.31
+  nominal, §0.5a, Bonferroni-4 ≈2.5). No se tocó código — solo documentación.
+- **Verificación**: suite completa `pytest` desde `backend/` → 216 passed (174s), sin regresión.
+- `ROADMAP.md` actualizado (fila → 🟢, commit `TBD`).
