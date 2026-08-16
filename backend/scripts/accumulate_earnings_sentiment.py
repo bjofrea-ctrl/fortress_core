@@ -38,7 +38,6 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app.core.earnings_sentiment import (  # noqa: E402
     DEFAULT_DB_PATH,
-    ETF_EXCLUSIONS,
     EarningsSentimentStore,
     accumulate_earnings_sentiment,
 )

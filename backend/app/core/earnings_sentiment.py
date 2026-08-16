@@ -49,8 +49,12 @@ from bs4 import BeautifulSoup
 # Constantes.
 # --------------------------------------------------------------------------- #
 MODEL_NAME = "ProsusAI/finbert"
+# EDGAR rechaza (403) los User-Agent con dominio de email inválido (ej.
+# @localhost): el WAF exige un contacto con dominio real. Este es un contacto
+# genérico de investigación; reemplazarlo por un email controlado vía
+# FORTRESS_EDGAR_USER_AGENT si se va a usar en producción.
 EDGAR_USER_AGENT = os.environ.get(
-    "FORTRESS_EDGAR_USER_AGENT", "fortress-core-research research@localhost"
+    "FORTRESS_EDGAR_USER_AGENT", "fortress-core-research fortressresearch.contact@gmail.com"
 )
 SUBMISSIONS_URL = "https://data.sec.gov/submissions/CIK{0:010d}.json"
 ARCHIVES_BASE = "https://www.sec.gov/Archives/edgar/data"
@@ -169,7 +173,7 @@ def aggregate_chunk_scores(scores: List[float], lengths: List[int]) -> float:
     total_len = sum(lengths)
     if total_len <= 0:
         return 0.0
-    return float(sum(s * l for s, l in zip(scores, lengths)) / total_len)
+    return float(sum(s * length for s, length in zip(scores, lengths)) / total_len)
 
 
 def parse_submissions_json(payload: Dict[str, Any]) -> List[Dict[str, Any]]:
@@ -487,7 +491,7 @@ def finbert_score(
     scores = []
     lengths = []
     for chunk, output in zip(chunks, outputs):
-        prob_pos, prob_neg = finbert_result_to_probs(output)
+        prob_pos, prob_neg = finbert_result_to_probs([output])
         scores.append(score_from_probs(prob_pos, prob_neg))
         lengths.append(len(chunk))
     return {

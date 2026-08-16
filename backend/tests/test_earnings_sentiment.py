@@ -6,10 +6,8 @@ corra en CI sin torch; acá se inyecta un pipeline fake (pipeline_factory) o
 se monkeypatchean las funciones de red.
 """
 import pytest
-
 from app.core.earnings_sentiment import (
     CHUNK_MAX_CHARS,
-    CHUNK_TARGET_CHARS,
     ETF_EXCLUSIONS,
     EarningsSentimentStore,
     _pick_exhibit_from_index,
@@ -157,13 +155,15 @@ def test_finbert_result_to_probs_parsea_labels():
 # finbert_score con pipeline FAKE inyectado (sin transformers reales).
 # --------------------------------------------------------------------------- #
 def test_finbert_score_agrega_chunks_ponderados():
-    # 2 chunks: el primero muy positivo, el segundo negativo; el resultado
-    # debe ser el promedio ponderado por longitud, no la media simple.
-    text = ("positive positive positive. " * 40) + ("negative negative. " * 5)
+    # chunk(s) largos muy positivos + un chunk corto negativo: el resultado
+    # debe ser el promedio ponderado por longitud (≈+1), no la media simple.
+    text = (
+        "positive positive positive revenue growth exceeded expectations. " * 40
+    ) + ("negative. " * 5)
     result = finbert_score(text, pipeline_factory=lambda: _FakeFinbertPipe())
-    assert result["n_chunks"] == 2
+    assert result["n_chunks"] >= 2
     assert -1.0 <= result["score"] <= 1.0
-    assert result["score"] > 0.0  # el chunk largo positivo domina
+    assert result["score"] > 0.5  # el/los chunk(s) largo(s) positivo(s) dominan
 
 
 def test_finbert_score_no_importa_transformers_a_nivel_modulo():
@@ -295,15 +295,15 @@ def test_pick_exhibit_from_index_elige_ex991():
 # --------------------------------------------------------------------------- #
 # Conductor de acumulación (red y FinBERT mockeados).
 # --------------------------------------------------------------------------- #
-def _make_filings():
+def _make_filings(prefix: str = ""):
     return [
         {
-            "accession": "A1", "filing_date": "2026-05-01",
+            "accession": f"{prefix}A1", "filing_date": "2026-05-01",
             "primary_document": "x.htm", "cik": "0000320193",
             "accession_url": "https://www.sec.gov/Archives/edgar/data/320193/000000000000000001/",
         },
         {
-            "accession": "A2", "filing_date": "2026-02-01",
+            "accession": f"{prefix}A2", "filing_date": "2026-02-01",
             "primary_document": "y.htm", "cik": "0000320193",
             "accession_url": "https://www.sec.gov/Archives/edgar/data/320193/000000000000000002/",
         },
@@ -313,10 +313,12 @@ def _make_filings():
 def test_accumulate_end_to_end_con_fakes(tmp_path, monkeypatch):
     store = EarningsSentimentStore(str(tmp_path / "sentiment.db"))
     try:
-        monkeypatch.setattr(
-            "app.core.earnings_sentiment.fetch_submissions",
-            lambda cik, count=8, session=None: _make_filings(),
-        )
+        def fake_fetch(cik, count=8, session=None):
+            # accession únicas por símbolo para que el dedup no las pise
+            prefix = "A" if cik == "0000320193" else "B"
+            return _make_filings(prefix)
+
+        monkeypatch.setattr("app.core.earnings_sentiment.fetch_submissions", fake_fetch)
         monkeypatch.setattr(
             "app.core.earnings_sentiment.fetch_document_text",
             lambda url, session=None: "positive positive positive revenue growth",
@@ -368,10 +370,13 @@ def test_accumulate_excluye_etfs_explicitamente(tmp_path, monkeypatch):
     store = EarningsSentimentStore(str(tmp_path / "sentiment.db"))
     try:
         assert {"SPY", "QQQ"}.issubset(ETF_EXCLUSIONS)
-        monkeypatch.setattr(
-            "app.core.earnings_sentiment.fetch_submissions",
-            lambda cik, count=8, session=None: (_ for _ in ()).throw(AssertionError("no debe llamarse")),
-        )
+        ciks_consultados = []
+
+        def fake_fetch(cik, count=8, session=None):
+            ciks_consultados.append(cik)
+            return []
+
+        monkeypatch.setattr("app.core.earnings_sentiment.fetch_submissions", fake_fetch)
         summary = accumulate_earnings_sentiment(
             ["SPY", "QQQ", "AAPL"], store, ticker_map={"AAPL": "0000320193"},
             log=lambda m: None,
@@ -379,6 +384,8 @@ def test_accumulate_excluye_etfs_explicitamente(tmp_path, monkeypatch):
         assert summary["etf_excluded"] == ["SPY", "QQQ"]
         assert summary["errors"] == {}
         assert store.count() == 0
+        # SPY/QQQ jamás se consultan a EDGAR: solo se consultó AAPL
+        assert ciks_consultados == ["0000320193"]
     finally:
         store.close()
 
