@@ -1375,8 +1375,10 @@ mercado. Revisión completa en `AUDITORIA_MECANICA.md` Hallazgo 6**:
    diario vía `load_universe` (misma data del resto del proyecto).
    - Retornos diarios `r_sym[t] = close[t]/close[t-1] - 1` por símbolo.
    - Para cada par (líder L, seguidor F) y cada lag k ∈ {1,2,3,4,5}:
-   correlación cruzada de Spearman entre `r_L[t-k]` y `r_F[t]` sobre las fechas
-   comunes, con SE Newey-West (mismo aparato que §0.5a/§21, lags NW = k).
+     correlación cruzada de Spearman entre `r_L[t-k]` y `r_F[t]` sobre las fechas
+     comunes. SE asintótico de la correlación: `sqrt((1-ρ²)/(n-2))`. (El SE Newey-West
+     de §0.5a/§21 aplica sobre series de ICs diarios; acá la correlación es un solo
+     número por par-lag, así que el SE es el asintótico estándar.)
    - Signo esperado: **positivo** (el líder anticipa al seguidor en la misma dirección).
    Un lead-lag de "reversión" (negativo) se reporta como contexto, no como hallazgo.
 

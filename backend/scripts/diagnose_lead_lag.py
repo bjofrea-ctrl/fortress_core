@@ -9,8 +9,10 @@ Metodologia (pre-registrada):
   - Universo 50 (7 originales + NEW_UNIVERSE), 2019-01-01 -> 2026-08-04.
   - Retornos diarios r_sym[t] = close[t]/close[t-1] - 1 por simbolo.
   - Para cada par (lider L, seguidor F) y cada lag k en {1,2,3,4,5}:
-    correlacion cruzada de Spearman entre r_L[t-k] y r_F[t] sobre fechas comunes,
-    con SE Newey-West (mismo aparato que §0.5a/§21, lags NW = k).
+    correlacion cruzada de Spearman entre r_L[t-k] y r_F[t] sobre fechas comunes.
+    SE asintotico de la correlacion: sqrt((1-rho^2)/(n-2)). (El SE Newey-West de
+    §0.5a/§21 aplica sobre series de ICs diarios; aca la correlacion es un solo
+    numero por par-lag, asi que el SE es el asintotico estandar.)
   - Signo esperado: POSITIVO (el lider anticipa al seguidor en la misma direccion).
 
 Criterio pre-registrado (fijado ANTES de correr, sin conocer el resultado):
@@ -30,11 +32,15 @@ El script NO decide nada por si mismo mas que aplicar este criterio mecanicament
 """
 import datetime
 import os
+import sys
+
+# Los scripts se corren desde backend/ (cd backend && .venv/bin/python scripts/...).
+# Sin esto, `from app.core...` falla al ejecutar el archivo directamente.
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import numpy as np
-from scipy import stats
-
 from app.core.data_ingestion import load_universe
+from scipy import stats
 from scripts.fetch_universe_data import NEW_UNIVERSE
 
 SYMBOLS = ["SPY", "QQQ", "AAPL", "MSFT", "GOOGL", "AMZN", "NVDA"] + list(NEW_UNIVERSE)
@@ -59,22 +65,6 @@ PARES = [
 N_TESTS = len(PARES) * len(LAGS)  # 50
 Z_BONFERRONI = float(stats.norm.ppf(1 - (0.05 / N_TESTS) / 2))
 MIN_LAGS_CONSECUTIVOS = 2
-
-
-def newey_west_se(z: np.ndarray, lags: int) -> float:
-    """SE con correccion Newey-West (mismo aparato que §0.5a/§21)."""
-    n = len(z)
-    if n < 3:
-        return float(np.std(z, ddof=1) / np.sqrt(n)) if n > 1 else float("nan")
-    lag_max = min(lags, n - 2)
-    if lag_max < 1:
-        return float(np.std(z, ddof=1) / np.sqrt(n))
-    rho = np.array([np.corrcoef(z[:-j], z[j:])[0, 1] for j in range(1, lag_max + 1)])
-    rho = np.nan_to_num(rho, nan=0.0)
-    w = 1 - np.arange(1, len(rho) + 1) / (lags + 1)
-    denom = 1 + 2 * np.sum(w * rho)
-    n_eff = n / max(denom, 1.0)
-    return float(np.std(z, ddof=1) / np.sqrt(n_eff))
 
 
 def main():
@@ -129,7 +119,11 @@ def main():
                 log(f"{lider}->{seguidor:8s} {k:3d} {len(x):7d} {'':>9s} {'':>8s} {'':>7s}  n<30")
                 continue
             rho, _ = stats.spearmanr(x, y)
-            se = newey_west_se(np.asarray(y.values), k)
+            # SE asintotico de la correlacion de Spearman: sqrt((1-rho^2)/(n-2)).
+            # El SE de Newey-West sobre retornos NO aplica aca: la correlacion es un
+            # solo numero por par-lag, no una serie de ICs diarios (a diferencia de
+            # intraday_rank_ic en §0.5a/§21, donde el SE-NW va sobre la serie de ICs).
+            se = float(np.sqrt((1.0 - rho * rho) / max(len(x) - 2, 1)))
             t = rho / se if se > 0 else 0.0
             sig = abs(t) > Z_BONFERRONI
             signo_ok = t > 0  # signo esperado: positivo

@@ -1383,3 +1383,20 @@ anterior) y `ORDENES_MODULOS.md` (M7 → hecho) actualizados.
   nominal, §0.5a, Bonferroni-4 ≈2.5). No se tocó código — solo documentación.
 - **Verificación**: suite completa `pytest` desde `backend/` → 216 passed (174s), sin regresión.
 - `ROADMAP.md` actualizado (fila → 🟢, commit `TBD`).
+
+- **Tarea C — Lead-lag entre símbolos CERRADA (Command Code, 2026-08-15)**: pre-registro
+  §22 en PLAN_MEJORA_MATEMATICA.md (10 pares sector/cadena × 5 lags, Bonferroni-50,
+  umbral |t|>3.48, criterio ≥2 lags consecutivos SIG(+)). Script
+  `backend/scripts/diagnose_lead_lag.py`. **NO CUMPLE**: ningún par con ≥2 lags
+  consecutivos significativos; los t máximos fueron ~2.7 (NVDA→AVGO lag4 −2.69),
+  todos bajo el umbral. Hipótesis de lead-lag entre símbolos del universo refutada
+  con la vara más estricta. Artefacto `data/cache/lead_lag_20260816_090220.txt`.
+  Registrado en ledger (familia signal_diagnosis, 30 entradas totales).
+- Corrección sobre la marcha (declarada): el primer run usó por error el SE de
+  Newey-West sobre la serie de retornos del seguidor (SE ~0.0003 → t de ±24 a ±151,
+  sin sentido estadístico). Corregido al SE asintótico de la correlación de Spearman
+  `sqrt((1-ρ²)/(n-2))` (SE ~0.0185 → t razonables). El SE-NW aplica sobre series de
+  ICs diarios (patrón §0.5a/§21), no sobre una correlación única por par-lag. El
+  pre-registro §22 y el docstring del script se actualizaron para declarar el SE
+  correcto. Primer artefacto (090136) descartado como artefacto del error.
+- Suite completa: 216 passed, ruff limpio. ROADMAP.md (fila §22) actualizado.

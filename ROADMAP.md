@@ -312,6 +312,7 @@ gantt
 | Instrumento | M6 — Ledger de trials | 🟢 hecho (2026-08-14) | — | `app/core/trial_registry.py` + backfill 29 entradas. Hallazgo: 27 n_trials consumidos vs 17 citados — ver `SESSION_LOG.md` |
 | Instrumento | M7 — Pipeline integrado M1+M2+M3 | 🟢 hecho (2026-08-15) | — | `app/core/diagnostic_pipeline.py`, `run_diagnostic_pipeline()`, 10 tests. Instrumento diagnóstico completo (M1-M8) cerrado. Falta el TRIAL pre-registrado que lo use para afirmar algo — decisión del usuario |
 | Investigación | Trial #15 EVT — stops EVT walk-forward (M0) | 🟢 cerrado (2026-08-15) | — | NO CUMPLE 0/3 (DSR 0.0649/0.0253/0.1602, artefacto trial15_evt_stops_20260814_195828.txt). Fase 1 EVT cerrada: §19 diagnóstico PASA + §20 trial NO CUMPLE |
+| Investigación | §22 Lead-lag entre símbolos (Tarea C, Command Code) | 🟢 cerrado (2026-08-15) | — | NO CUMPLE: 10 pares × 5 lags, ningún par con ≥2 lags consecutivos SIG(+) bajo Bonferroni-50 (|t|>3.48). Hipótesis de lead-lag refutada con la vara más estricta. Artefacto lead_lag_20260816_090220.txt. Registrado en ledger (signal_diagnosis) |
 
 **Leyenda**: 🔴 crítico/sin empezar · 🟡 en curso/parcial · ⚪ parqueado, sin decisión de producto · 🟢 cerrado
 

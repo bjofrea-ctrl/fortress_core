@@ -1,0 +1,118 @@
+================================================================================
+§22 (Tarea C) — LEAD-LAG ENTRE SIMBOLOS: correlacion cruzada desfasada
+Pares: 10 | Lags: [1, 2, 3, 4, 5] | Tests: 50
+Bonferroni-50 -> umbral |t| > 3.29
+Criterio: >=2 lags consecutivos con |t|>umbral y signo esperado POSITIVO
+================================================================================
+
+Cargando precios (50 simbolos, 2019-01-01 -> 2026-08-04)...
+  SPY: 2912 retornos
+  QQQ: 2912 retornos
+  AAPL: 2912 retornos
+  MSFT: 2912 retornos
+  GOOGL: 2912 retornos
+  AMZN: 2912 retornos
+  NVDA: 2912 retornos
+  META: 2915 retornos
+  TSLA: 2915 retornos
+  AVGO: 2915 retornos
+  BRK-B: 2915 retornos
+  LLY: 2915 retornos
+  JPM: 2915 retornos
+  WMT: 2915 retornos
+  V: 2915 retornos
+  UNH: 2915 retornos
+  XOM: 2915 retornos
+  MA: 2915 retornos
+  ORCL: 2915 retornos
+  PG: 2915 retornos
+  COST: 2915 retornos
+  HD: 2915 retornos
+  JNJ: 2915 retornos
+  ABBV: 2915 retornos
+  BAC: 2915 retornos
+  MRK: 2915 retornos
+  CRM: 2915 retornos
+  KO: 2915 retornos
+  ADBE: 2915 retornos
+  PEP: 2915 retornos
+  AMD: 2915 retornos
+  NFLX: 2915 retornos
+  TMO: 2915 retornos
+  CVX: 2915 retornos
+  CSCO: 2915 retornos
+  ACN: 2915 retornos
+  MCD: 2915 retornos
+  IBM: 2915 retornos
+  LIN: 2915 retornos
+  QCOM: 2915 retornos
+  GE: 2915 retornos
+  INTU: 2915 retornos
+  PM: 2915 retornos
+  CMCSA: 2915 retornos
+  DIS: 2915 retornos
+  TXN: 2915 retornos
+  CAT: 2915 retornos
+  AMGN: 2915 retornos
+  PFE: 2915 retornos
+  SPGI: 2915 retornos
+
+--- RESULTADOS (Spearman lider[t-k] vs seguidor[t]) ---
+par            lag  n_dias  mean_rho    se_nw       t  veredicto
+NVDA->AMD        1    2911   -0.0168   0.0185   -0.91  
+NVDA->AMD        2    2910    0.0254   0.0185    1.37  
+NVDA->AMD        3    2909   -0.0382   0.0185   -2.06  
+NVDA->AMD        4    2908    0.0051   0.0186    0.28  
+NVDA->AMD        5    2907   -0.0287   0.0185   -1.55  
+NVDA->AVGO       1    2911   -0.0310   0.0185   -1.67  
+NVDA->AVGO       2    2910    0.0033   0.0185    0.18  
+NVDA->AVGO       3    2909   -0.0187   0.0185   -1.01  
+NVDA->AVGO       4    2908   -0.0499   0.0185   -2.69  
+NVDA->AVGO       5    2907   -0.0305   0.0185   -1.65  
+NVDA->QCOM       1    2911   -0.0351   0.0185   -1.89  
+NVDA->QCOM       2    2910    0.0358   0.0185    1.93  
+NVDA->QCOM       3    2909   -0.0088   0.0185   -0.48  
+NVDA->QCOM       4    2908   -0.0271   0.0185   -1.46  
+NVDA->QCOM       5    2907   -0.0216   0.0185   -1.16  
+AAPL->MSFT       1    2911   -0.0489   0.0185   -2.64  
+AAPL->MSFT       2    2910   -0.0077   0.0185   -0.42  
+AAPL->MSFT       3    2909   -0.0278   0.0185   -1.50  
+AAPL->MSFT       4    2908    0.0019   0.0186    0.10  
+AAPL->MSFT       5    2907   -0.0059   0.0186   -0.32  
+AAPL->GOOGL      1    2911   -0.0355   0.0185   -1.91  
+AAPL->GOOGL      2    2910   -0.0020   0.0185   -0.11  
+AAPL->GOOGL      3    2909   -0.0284   0.0185   -1.53  
+AAPL->GOOGL      4    2908   -0.0359   0.0185   -1.94  
+AAPL->GOOGL      5    2907   -0.0195   0.0186   -1.05  
+MSFT->GOOGL      1    2911   -0.0216   0.0185   -1.17  
+MSFT->GOOGL      2    2910   -0.0131   0.0185   -0.71  
+MSFT->GOOGL      3    2909    0.0072   0.0185    0.39  
+MSFT->GOOGL      4    2908   -0.0159   0.0185   -0.86  
+MSFT->GOOGL      5    2907    0.0046   0.0186    0.25  
+XOM->CVX        1    2914   -0.0030   0.0185   -0.16  
+XOM->CVX        2    2913   -0.0235   0.0185   -1.27  
+XOM->CVX        3    2912   -0.0139   0.0185   -0.75  
+XOM->CVX        4    2911    0.0262   0.0185    1.41  
+XOM->CVX        5    2910   -0.0027   0.0185   -0.14  
+JPM->BAC        1    2914    0.0016   0.0185    0.09  
+JPM->BAC        2    2913    0.0158   0.0185    0.85  
+JPM->BAC        3    2912   -0.0126   0.0185   -0.68  
+JPM->BAC        4    2911   -0.0325   0.0185   -1.75  
+JPM->BAC        5    2910   -0.0132   0.0185   -0.71  
+AMZN->WMT        1    2911   -0.0198   0.0185   -1.07  
+AMZN->WMT        2    2910    0.0140   0.0185    0.75  
+AMZN->WMT        3    2909    0.0161   0.0185    0.87  
+AMZN->WMT        4    2908   -0.0068   0.0185   -0.37  
+AMZN->WMT        5    2907    0.0115   0.0186    0.62  
+LLY->JNJ        1    2914   -0.0066   0.0185   -0.36  
+LLY->JNJ        2    2913   -0.0092   0.0185   -0.50  
+LLY->JNJ        3    2912    0.0021   0.0185    0.11  
+LLY->JNJ        4    2911   -0.0196   0.0185   -1.06  
+LLY->JNJ        5    2910    0.0315   0.0185    1.70  
+
+--- VEREDICTO (§22, pre-registrado) ---
+Ningun par con >=2 lags consecutivos SIG(+) -> hipotesis de lead-lag
+refutada con Bonferroni-50 (la vara mas estricta usada en el proyecto).
+=> NO CUMPLE el criterio de hallazgo.
+
+Out: data/cache/lead_lag_20260816_090220.txt
