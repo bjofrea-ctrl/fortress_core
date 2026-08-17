@@ -10,6 +10,7 @@ Uso: python scripts/generate_ranking_panel.py
 import os
 import sys
 import datetime
+from typing import Dict
 import pandas as pd
 import numpy as np
 
