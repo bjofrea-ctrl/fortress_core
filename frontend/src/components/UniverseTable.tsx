@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { DecisionTicket, getStateColor, getTransitionColor, getTransitionLabel } from "../hooks/useDecision";
+import { DecisionTicket, getStateColor, getTransitionColor, getTransitionLabel, useCurrentRankings, RankingEntry } from "../hooks/useDecision";
 
 interface UniverseTableProps {
   apiUrl: string;
