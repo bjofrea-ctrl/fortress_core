@@ -1619,3 +1619,98 @@ constatación de que M2 necesita (a) residuos RELATIVOS (o un modelo de varianza
 para que el ancho dependa del score, y (b) un default de umbral utilizable
 (p. ej. cuantil del ancho en calibración), ANTES de que cualquier trial de
 abstención pueda medir algo. Decisión del usuario, no de un agente.
+---
+
+## 25. Tarea B — ADX walk-forward como candidato a "bueno" (PLAN_LARGO_PLAZO.md, 2026-08-17, PRE-REGISTRADO)
+
+**Origen**: PLAN_LARGO_PLAZO.md Tarea B (Cline). ADX es el ÚNICO factor con señal
+nominal positiva de toda la investigación (IC +0.0679, t=+2.31, §0.5a —
+`rr2_intraday_20260811_150741.txt`), pero: (a) no resiste Bonferroni-4 medido en
+TOTAL (2019-2026); (b) §21/§21.1 lo midieron por HORIZONTE (5d/10d/60d/125d) — ningún
+t cruza; (c) §23 lo midió por VENTANA contra el label de barreras — no cruza ninguna.
+**Lo que nunca se midió**: el rank IC de `adx_score` por VENTANA contra
+`fwd_return_20d` (el target de magnitud). El candidato "ADX alto → operar, ADX bajo →
+abstenerse" nunca se evaluó OOS por ventana con el target de retorno que el motor
+persigue.
+
+**Pregunta**: ¿`adx_score` tiene poder predictivo OOS (W2/W3) contra
+`fwd_return_20d`? ¿La señal nominal de §0.5a sobrevive el corte temporal por ventana,
+o era un artefacto de medir toda la muestra junta?
+
+**Metodología** (`backend/scripts/trial_adx_walkforward.py`, corre DESPUÉS de este
+pre-registro):
+
+- Panel: `factor_panel_*.parquet` (universo 50 = 7 originales + `NEW_UNIVERSE`, stride
+  5 días, 2019-01-02 → 2026-07-06), filas `eligible=True`, idéntico a §21/§21.1/§23 —
+  comparable. `latest_panel()` (misma convención que §23).
+- Factor: `adx_score` — dicotómico por construcción del motor
+  (`signal_engine.compute_factor_frame`: 0.3 si adx14≤25, 0.9 si adx14>25; el gate de
+  elegibilidad ya exige adx14≥20). No se toca el motor: se lee la columna del panel.
+- Target: `fwd_return_20d`.
+- rank IC intra-día (Spearman por fecha, patrón §0.5a/§21/§23): por cada fecha,
+  rankear los símbolos de esa fecha por el factor, correlacionar (Spearman) con el
+  target, promediar sobre fechas con error estándar Newey-West (lags por ventana,
+  pesos Bartlett).
+- Lags NW por ventana: `L = min(12, floor(n_dias/8))` (§23). TOTAL con `L=4`
+  (idéntico a §0.5a) SOLO para el cheque de fidelidad.
+- `MIN_SYMBOLS = 5` por fecha (patrón §0.5a).
+- Ventanas: W1 2020-2021, W2 2022-2023, W3 2024-2026-07-06 (fin del panel). TOTAL
+  2019-2026 como referencia (no cuenta como test).
+- **Cheque de fidelidad (aborta sin interpretar si falla)**: el rank IC TOTAL debe
+  reproducir §0.5a: `mean_IC = +0.0679` y `t = +2.31` (con L=4). Si `|mean_IC −
+  0.0679| > 0.001` o `|t − 2.31| > 0.05` → la reimplementación o el panel no son los
+  de la evidencia → abortar, no interpretar (§14).
+
+**Test secundario (contexto, NUNCA hallazgo — la hipótesis operativa "adx≥20")**:
+- La hipótesis de producto "operar cuando adx≥20, abstenerse cuando no" ya está
+  parcialmente dentro del gate (eligible exige adx≥20). El contraste operativo real
+  dentro de la población elegible es adx14>25 (score 0.9) vs adx14∈[20,25] (score 0.3).
+- Walk-forward declarado ANTES de correr: no hay parámetro libre que calibrar en W1 —
+  la dicotomía 0.3/0.9 la fija el motor y el signo esperado (+1: ADX más alto →
+  retorno forward mayor) viene de §0.5a. W1 es la ventana de observación; W2/W3 son
+  la prueba con el signo congelado. Es lo honesto que puede hacer un factor dicotómico
+  con umbral ya fijado.
+- Métricas por ventana: premia = mean(fwd_ret | score=0.9) − mean(fwd_ret | score=0.3),
+  n por grupo, VPP (fracción fwd_ret>0) por grupo, t pooled de la premia. Se reporta
+  como contexto del valor operativo; el veredicto lo da SOLO el rank IC pre-registrado.
+
+**Criterio pre-registrado (sin conocer el resultado)**:
+- Tests: 1 factor × 3 ventanas = **3 tests nuevos** (TOTAL es referencia, no cuenta).
+- Umbral: |t| > **2.77** (Bonferroni-9 bilateral, z = ppf(1 − 0.05/18); el plan fija
+  Bonferroni-9 aunque los tests formales sean 3 — vara conservadora del patrón del
+  proyecto, nunca más laxa; §23 usó 2.78 con el mismo origen).
+- Signo esperado: **+1**.
+- VEREDICTO: CUMPLE si |t| > 2.77 con signo +1 en **≥2/3 ventanas** → ADX deja de ser
+  "marginal no robusto" y pasa a candidato con evidencia OOS → se discute pre-registro
+  de motor con el usuario. NO CUMPLE en caso contrario. Nota honesta (mismo trato que
+  §21): cualquier |t|>2 sin corregir se reporta como contexto, nunca como hallazgo.
+- El target label (M1) NO se re-testea: §23 ya lo hizo contra adx_score y no cruzó
+  ninguna ventana (t máx +1.90 en W2). La novedad de este trial es la dimensión
+  ventana × fwd_return_20d, que nunca se midió.
+
+**Familia ledger**: `signal_diagnosis` — contrato de `trial_registry.py`
+("diagnósticos de señal: rank IC intra-día, RMT, horizontes, sub-períodos"), mismo
+tratamiento que §21/§21.1/§22/§23. El texto de PLAN_LARGO_PLAZO dice "motor_signal",
+pero el contrato clasifica este test bajo `signal_diagnosis` (un rank-IC de señal NO
+es un trial de motor con DSR OOS) — desvío documentado acá igual que en §23.
+`n_trials_consumidos=1`: signal_diagnosis 14→15, umbral vigente 0.9933 (del trial
+nuevo). `motor_signal` NO se toca (queda en 9 consumidos).
+
+**Riesgo declarado**:
+- `adx_score` es dicotómico → el IC mide "adx>25 vs no" dentro de la población
+  elegible, no la intensidad del ADX continuo. Es lo que el motor usa; la limitación
+  es del factor, no del test.
+- Overlap temporal del `fwd_return_20d` entre filas (stride 5d, horizonte 20d) →
+  mitigado por IC por fecha + NW con L recortado; el t pooled del test secundario se
+  lee con esa reserva explícita.
+- W2 es la ventana con menor n de fechas (~30-50): su t se lee con la reserva que
+  declaró §21.1 para 125d.
+- La población eligible ya pasa el gate completo → la señal se mide donde el motor
+  podría operar, no en todo el mercado (misma decisión de §0.5a/§21/§23).
+
+**Registro en ledger**: `register_trial(...)` al cerrar, id `adx_walkforward`,
+familia `signal_diagnosis`, n=1, veredicto según criterio, artefacto
+`data/cache/trial_adx_walkforward_<ts>.txt`.
+
+**RESULTADO**: (se llena al correr)
+

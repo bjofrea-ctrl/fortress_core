@@ -28,6 +28,19 @@ Series financieras tienen autocorrelación y no-estacionariedad — la garantía
 se debilita con el tiempo. Por eso M5 (detector de deriva) existe: cuando detecta
 deriva, la calibración de este módulo debe rehacerse, no confiar en una calibración
 vieja indefinidamente. Este módulo no re-calibra solo.
+
+CORRECCIÓN ESTRUCTURAL 2026-08-17 (hallazgo del trial #16, PLAN_MEJORA_MATEMATICA §24):
+la versión anterior usaba residuos ABSOLUTOS `|outcome - point|` — el ancho del
+intervalo era CONSTANTE (2×cuantil) para todo score, así que la abstención comparaba
+dos constantes: o abstenía todo (default 2×mediana < 2×cuantil → 100% garantizado)
+o nada. Estructuralmente incapaz de abstención diferencial. Ahora:
+  - Residuos RELATIVOS `|outcome - point| / max(|point|, floor)` — el ancho del
+    intervalo escala con la señal del score → la abstención puede discriminar.
+  - Default de umbral = percentil 90 del ancho de calibración (abstención ~10% de
+    los casos más inciertos), no 2×mediana.
+  - El floor evita la explosión del residuo relativo con puntos ≈ 0 (señal nula:
+    si el punto esperado es ~0, el intervalo relativo explota y el instrumento se
+    abstiene — comportamiento correcto para "señal nula = no confiable").
 """
 from dataclasses import dataclass
 from typing import List, Optional, Sequence
@@ -38,11 +51,11 @@ import numpy as np
 @dataclass(frozen=True)
 class ConformalCalibration:
     """Resultado de calibrar el instrumento contra un set de calibración."""
-    quantile: float          # el cuantil de residuos absolutos que define el intervalo
+    quantile: float          # cuantil de residuos RELATIVOS que define el intervalo
     alpha: float              # nivel de significancia (0.10 = intervalo del 90%)
     n_calibration: int
-    residuals_median: float
-    residuals_p90: float
+    residuals_median: float   # mediana de residuos RELATIVOS
+    residuals_p90: float      # p90 de residuos RELATIVOS
 
 
 @dataclass(frozen=True)
@@ -73,8 +86,8 @@ class ConformalAbstentionEngine:
         """
         alpha: nivel de significancia. 0.10 -> intervalo de cobertura nominal 90%.
         max_interval_width: umbral de abstención. Si None, se fija en calibrate()
-            como el ancho del intervalo en la mediana de residuos (ver docstring
-            de calibrate) — un default razonable, no mágico.
+            como el percentil 90 de los anchos de calibración (abstención ~10% de
+            los casos más inciertos) — un default razonable, no mágico.
         """
         if not 0 < alpha < 1:
             raise ValueError(f"alpha debe estar en (0,1), recibido {alpha}")
@@ -82,6 +95,9 @@ class ConformalAbstentionEngine:
         self.max_interval_width = max_interval_width
         self._calibration: Optional[ConformalCalibration] = None
         self._point_model: Optional[np.poly1d] = None
+        # Floor del residuo relativo: p50(|punto|)/10 de calibración. Evita la
+        # explosión de |outcome - point|/|point| cuando el punto esperado ~ 0.
+        self._floor: float = 1e-12
 
     def calibrate(self, scores: Sequence[float], outcomes: Sequence[float]) -> ConformalCalibration:
         """
@@ -109,8 +125,16 @@ class ConformalAbstentionEngine:
         # no lo dice explícito acá, pero es coherente con "perder mejor, no predecir mejor").
         coeffs = np.polyfit(scores, outcomes, deg=1)
         self._point_model = np.poly1d(coeffs)
+        points = self._point_model(scores)
 
-        residuals = np.abs(outcomes - self._point_model(scores))
+        # Residuos RELATIVOS: |outcome - point| / max(|point|, floor). El floor
+        # escala con la señal típica (p50(|point|)/10) para no explotar con puntos
+        # ~ 0. El ancho del intervalo resultante (2*q*denom) depende del score —
+        # la abstención puede discriminar entre scores (corrección estructural del
+        # hallazgo del trial #16: antes el ancho era constante, abstención 100% o 0%).
+        self._floor = max(float(np.median(np.abs(points))) / 10.0, 1e-12)
+        denom = np.maximum(np.abs(points), self._floor)
+        residuals = np.abs(outcomes - points) / denom
         # Cuantil conforme: ceil((n+1)*(1-alpha))/n -- la corrección de muestra finita
         # de Split Conformal Prediction (Vovk et al. 2005), no un percentil ingenuo.
         n = len(residuals)
@@ -126,11 +150,12 @@ class ConformalAbstentionEngine:
         )
 
         if self.max_interval_width is None:
-            # Default declarado, no mágico: el ancho de un intervalo calibrado en la
-            # MEDIANA de residuos. Un intervalo más ancho que "el caso típico duplicado"
-            # es una señal honesta de que este score en particular es más incierto que
-            # lo normal para este instrumento.
-            self.max_interval_width = 2.0 * self._calibration.residuals_median
+            # Default declarado, no mágico: percentil 90 de los ANCHOS de calibración
+            # (ancho_i = 2*q*denom(point_i)). Un intervalo más ancho que el 90% de los
+            # casos típicos de este instrumento dispara la abstención — ~10% de los
+            # scores más inciertos, no 100% ni 0% (fix del hallazgo del trial #16).
+            calib_widths = 2.0 * quantile * denom
+            self.max_interval_width = float(np.quantile(calib_widths, 0.90))
 
         return self._calibration
 
@@ -141,7 +166,13 @@ class ConformalAbstentionEngine:
 
         point = float(self._point_model(score))
         q = self._calibration.quantile
-        lower, upper = point - q, point + q
+        # El ancho escala con la señal del score (residuos relativos): un score con
+        # punto esperado grande tiene intervalo absoluto ancho, pero el ancho RELATIVO
+        # al punto es el mismo para todos — la abstención compara el ancho absoluto
+        # contra el caso típico de calibración.
+        denom = max(abs(point), self._floor)
+        half_width = q * denom
+        lower, upper = point - half_width, point + half_width
         width = upper - lower
 
         abstenerse = width > self.max_interval_width

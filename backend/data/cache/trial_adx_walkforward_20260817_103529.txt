@@ -1,0 +1,32 @@
+==============================================================================
+PLAN_MEJORA_MATEMATICA §25 — Tarea B: ADX walk-forward (Cline, 2026-08-17)
+Panel: factor_panel_20260811_144857.parquet | filas eligible+target: 2069
+Factor: adx_score (dicotomico 0.3/0.9, motor compute_factor_frame) | Target: fwd_return_20d
+MIN_SYMBOLS: 5 | L por ventana: min(12, n_dias//8) | L TOTAL (fid): 4
+Umbral pre-registrado: |t| > 2.773 (Bonferroni-9 bilateral) con signo +1 en >=2/3 ventanas
+==============================================================================
+
+--- CHEQUE DE FIDELIDAD contra §0.5a (TOTAL 2019-2026, L=4) ---
+  medido: mean_IC=+0.0679  t=+2.31  n_dias=151
+  §0.5a:  mean_IC=+0.0679  t=+2.31
+  OK: reproduccion dentro de tolerancia -> la reimplementacion es la misma evidencia
+
+--- TEST PRINCIPAL (pre-registrado §25): rank IC intra-dia por ventana ---
+ventana rango                  n_dias   mean_IC    SE_NW       t   L signo  |t|>2.77
+W1      2020-01-01 -> 2021-12-31     53   +0.0395   0.0499   +0.79  11     +        no
+W2      2022-01-01 -> 2023-12-31     20   +0.1026   0.0586   +1.75  11     +        no
+W3      2024-01-01 -> 2026-07-06     53   +0.0792   0.0527   +1.50  12     +        no
+TOTAL (ref) 2019-01-02 -> 2026-07-06    151   +0.0679   0.0294   +2.31
+
+Criterio pre-registrado: |t| > 2.77 con signo +1 en >=2/3 ventanas -> ventanas SIG: 0/3
+VEREDICTO: NO_CUMPLE
+
+--- TEST SECUNDARIO (contexto, NUNCA hallazgo): premia ADX alto(0.9) vs bajo(0.3) ---
+ventana n_alto n_bajo    premia  t_pooled  vpp_alto  vpp_bajo
+W1         558    165  +0.00904     +1.15     0.590     0.539
+W2         294     79  +0.00750     +0.75     0.476     0.481
+W3         515    142  +0.01354     +1.73     0.551     0.542
+  Reserva pre-registrada: filas solapadas temporalmente (stride 5d, horizonte 20d) —
+  el t_pooled es contexto; el veredicto lo da SOLO el rank IC.
+
+Out: data/cache/trial_adx_walkforward_20260817_103529.txt
