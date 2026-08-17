@@ -287,6 +287,21 @@ def test_theses_rota_por_stop(monkeypatch, tmp_path):
     assert any("stop" in r for r in t["reasons"])
 
 
+def test_evidence_tolerante_a_umbral_string(monkeypatch, ctx):
+    """Entradas viejas del ledger guardaron umbral_aplicado como str —
+    el endpoint debe tolerarlo, no caer (verificado contra el registro real)."""
+    fake_entries = [
+        {"id": "t1", "fecha": "2026-08-10", "familia": "signal_diagnosis",
+         "hipotesis": "x", "n_trials_consumidos": 1, "umbral_aplicado": "0.90",
+         "veredicto": "NO_CUMPLE", "artefacto": "a", "seccion_doc": "§20"},
+    ]
+    monkeypatch.setattr(advisor.trial_registry, "all_trials", lambda path=None: fake_entries)
+    monkeypatch.setattr(advisor.trial_registry, "consumed_budget",
+                        lambda fam, path=None: 1)
+    body = asyncio.run(advisor.advisor_evidence())
+    assert body["families"][0]["umbral_aplicado_ultimo"] == 0.90
+
+
 # --- GET /api/advisor/evidence ---
 
 def test_evidence_reads_ledger(monkeypatch, ctx):

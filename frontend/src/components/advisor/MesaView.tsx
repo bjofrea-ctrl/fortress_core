@@ -16,13 +16,6 @@ export function MesaView({ data, selectedSymbol, onSelectSymbol }: Props) {
   const [sortKey, setSortKey] = useState<SortKey>("order");
   const [expanded, setExpanded] = useState<string | null>(null);
 
-  const ticketMap = useMemo(() => {
-    const m = new Map<string, AdvisorTicket>();
-    data.states.forEach((t) => m.set(t.symbol, t));
-    return m;
-  }, [data]);
-  void ticketMap;
-
   const rows = useMemo(() => {
     let list = data.states;
     if (filter !== "TODOS") list = list.filter((t) => t.state === filter);

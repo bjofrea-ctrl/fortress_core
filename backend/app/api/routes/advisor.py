@@ -288,10 +288,15 @@ async def advisor_evidence():
 
         families = []
         for fam, es in by_family.items():
+            raw_umbral = es[-1]["umbral_aplicado"]
+            try:
+                umbral = round(float(raw_umbral), 5)
+            except (TypeError, ValueError):
+                umbral = raw_umbral
             families.append({
                 "familia": fam,
                 "n_consumidos": trial_registry.consumed_budget(fam),
-                "umbral_aplicado_ultimo": round(es[-1]["umbral_aplicado"], 5),
+                "umbral_aplicado_ultimo": umbral,
                 "ultimo_veredicto": es[-1]["veredicto"],
                 "ultima_seccion": es[-1]["seccion_doc"],
                 "n_trials_en_ledger": len(es),

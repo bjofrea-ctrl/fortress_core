@@ -1,4 +1,4 @@
-import { ProjectedLabel } from "../api/client";
+import { ProjectedLabel } from "../../api/client";
 
 /**
  * Etiqueta de resultado proyectado (mapeo §29 pre-registrado).
