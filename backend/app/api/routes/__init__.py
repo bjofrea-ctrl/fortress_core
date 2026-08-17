@@ -9,6 +9,7 @@ from app.api.routes import (
     market,
     opportunities,
     predict,
+    ranking,
     risk,
     system,
 )
@@ -17,6 +18,7 @@ from app.api.routes import (
 routers = [
     decision.router,
     decision_history.router,
+    ranking.router,
     backtest.router,
     governance.router,
     live.router,

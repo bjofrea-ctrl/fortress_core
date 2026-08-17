@@ -161,6 +161,82 @@ export function useDecisionHistory(apiUrl: string, symbol: string | null) {
   return { data, loading, error, refetch: fetchData };
 }
 
+export interface RankingEntry {
+  date: string;
+  momentum_rank: number;
+  rsi_rank: number;
+  adx_rank: number;
+  trend_rank: number;
+  momentum_score: number;
+  rsi_score: number;
+  adx_score: number;
+  trend_ok: boolean;
+}
+
+export interface SymbolRanking {
+  symbol: string;
+  history: RankingEntry[];
+}
+
+export function useSymbolRanking(apiUrl: string, symbol: string | null) {
+  const [data, setData] = useState<SymbolRanking | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchData = useCallback(async () => {
+    if (!symbol) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(`${apiUrl}/api/ranking/${symbol}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const json = await response.json();
+      setData(json);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error desconocido");
+    } finally {
+      setLoading(false);
+    }
+  }, [apiUrl, symbol]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  return { data, loading, error, refetch: fetchData };
+}
+
+export function useCurrentRankings(apiUrl: string) {
+  const [data, setData] = useState<{ as_of: string; count: number; rankings: RankingEntry[] } | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchData = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(`${apiUrl}/api/ranking/current`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const json = await response.json();
+      setData(json);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error desconocido");
+    } finally {
+      setLoading(false);
+    }
+  }, [apiUrl]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  return { data, loading, error, refetch: fetchData };
+}
+
 export function getStateColor(state: string): string {
   switch (state) {
     case "INVERTIR":

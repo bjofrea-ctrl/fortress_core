@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { DecisionSymbolResponse, getStateColor, getTransitionColor, getTransitionLabel, useDecisionHistory, SymbolHistory } from "../hooks/useDecision";
+import { DecisionSymbolResponse, getStateColor, getTransitionColor, getTransitionLabel, useDecisionHistory, SymbolHistory, useSymbolRanking, RankingEntry } from "../hooks/useDecision";
 
 interface DecisionPanelProps {
   apiUrl: string;
@@ -11,6 +11,7 @@ export default function DecisionPanel({ apiUrl, symbol }: DecisionPanelProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { data: historyData } = useDecisionHistory(apiUrl, symbol);
+  const { data: rankingData } = useSymbolRanking(apiUrl, symbol);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -205,6 +206,31 @@ export default function DecisionPanel({ apiUrl, symbol }: DecisionPanelProps) {
       {data.blocked_reason && (
         <div className="mt-4 p-3 bg-accent-red/10 border border-accent-red/30 rounded-lg text-accent-red text-xs">
           ⚠️ {data.blocked_reason}
+        </div>
+      )}
+
+      {/* Percentiles Ranking */}
+      {rankingData && rankingData.history && rankingData.history.length > 0 && (
+        <div className="mt-6 p-3 bg-dark-bg rounded-lg">
+          <p className="text-xs text-gray-400 mb-2">Percentiles en el universo (50 símbolos)</p>
+          <div className="grid grid-cols-2 gap-2 text-xs">
+            <div className="flex justify-between">
+              <span>Momentum:</span>
+              <span className="font-mono">{rankingData.history[0].momentum_rank.toFixed(1)}%</span>
+            </div>
+            <div className="flex justify-between">
+              <span>RSI:</span>
+              <span className="font-mono">{rankingData.history[0].rsi_rank.toFixed(1)}%</span>
+            </div>
+            <div className="flex justify-between">
+              <span>ADX:</span>
+              <span className="font-mono">{rankingData.history[0].adx_rank.toFixed(1)}%</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Trend:</span>
+              <span className="font-mono">{rankingData.history[0].trend_rank.toFixed(1)}%</span>
+            </div>
+          </div>
         </div>
       )}
 
