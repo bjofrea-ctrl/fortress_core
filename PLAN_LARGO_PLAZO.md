@@ -13,7 +13,10 @@
 - **Tarea A (Triple Barrier)** y **Tarea C (Lead-lag)**: CERRADAS con artefactos.
 - **Tarea B (FinBERT) PASO 1**: HECHO. `earnings_sentiment.py` + CLI + 25 tests. Backfill inicial 24 filings. PASO 2 (trial) bloqueado hasta 8 trimestres × 30 símbolos.
 - **Instrumento M1-M8 completo**: todos los módulos implementados, faltan trials que los usen.
-- **ADX t=+2.31 nominal**: único factor con señal positiva, marginal no robusto bajo Bonferroni-4 (≈2.5). No se probó en walk-forward.
+- **ADX t=+2.31 nominal**: único factor con señal positiva. §25 (2026-08-17, Cline) lo probó en
+  walk-forward OOS por ventana → **NO CUMPLE** (W1 +0.79 / W2 +1.54 / W3 +1.47, 0/3 cruzan
+  Bonferroni-9 2.77). Queda **marginal-no-robusto con evidencia OOS, CERRADO como candidato a
+  "bueno"**. No retomar sin evidencia nueva.
 - **La línea "macro-como-compuerta" queda CERRADA.** Se probó dos veces y no sostiene. No retomar sin evidencia nueva.
 - `AGENTS.md` de este repo tiene la doctrina de equipo — leerlo si es sesión nueva.
 - **Problema estructural reconocido**: el proyecto tiene criterios claros para refutar, pero no para aceptar "bueno". El trial M2 (abstención calibrada) es el primero que responde "¿debería el motor callarse cuando no hay señal?" con evidencia existente.
@@ -76,7 +79,7 @@ Artefacto en data/cache/trial_m2_abstention_YYYYMMDD_HHMMSS.txt.
 
 ## Tarea B — ADX walk-forward como candidato a "bueno" (Cline)
 
-**ESTADO**: ⚪ NO EMPEZADO — pre-registro pendiente
+**ESTADO**: 🟢 CERRADO (2026-08-17) — NO CUMPLE, trial §25 corrido por Cline
 
 ```
 PROBLEMA: ADX tiene t=+2.31 nominal, el único factor con señal positiva. No alcanza

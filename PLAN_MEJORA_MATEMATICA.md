@@ -1619,6 +1619,139 @@ constatación de que M2 necesita (a) residuos RELATIVOS (o un modelo de varianza
 para que el ancho dependa del score, y (b) un default de umbral utilizable
 (p. ej. cuantil del ancho en calibración), ANTES de que cualquier trial de
 abstención pueda medir algo. Decisión del usuario, no de un agente.
+
+---
+
+## 24.1 TRIAL #17 — PRE-REGISTRO: re-trial de abstención M2 con el instrumento CORREGIDO (2026-08-17)
+
+**Origen**: hallazgo estructural del trial #16 (§24): M2 con su default era incapaz de
+abstención diferencial (ancho constante + default 2×mediana → 100% de abstención
+garantizada) → la hipótesis "¿la abstención mejora el VPP?" quedó SIN MEDIR. Decisión
+del usuario (2026-08-17): corregir M2 y re-medir la misma pregunta. **Esto NO es el
+trial #16 re-corrido: es un trial NUEVO que consume un slot nuevo** (lección del #15
+aplicada: para retomar una línea hace falta pre-registro nuevo — la mecánica del
+instrumento cambió).
+
+**Corrección aplicada a M2** (`app/core/conformal.py`, antes de este pre-registro,
+suite completa 242 passed):
+1. **Residuos RELATIVOS** `|outcome − point| / max(|point|, floor)` (floor =
+   p50(|point|)/10 de calibración) → el ancho del intervalo `2q·denom(point)` depende
+   del score → la abstención puede discriminar entre scores.
+2. **Default de umbral** = percentil 90 de los anchos de calibración → abstención ~10%
+   de los casos de señal más extrema (ni 100% ni 0%).
+3. Test de regresión nuevo (`test_default_produce_abstencion_diferencial_no_100_ni_0`):
+   exige abstención diferencial con el default y que los abstendidos sean los de
+   |point| más grande — el test que faltaba en §24.3.
+
+**Pregunta (idéntica al §24)**: si el motor real (baseline universo 50) hubiera
+aplicado la abstención calibrada M2, ¿el VPP de lo que SÍ opera supera el VPP del
+baseline que opera todo?
+
+**Datos**: `data/cache/baseline_clean_20260811_150643_trades.parquet` — 286 trades
+REALES (2019-01-07 → 2026-08-04).
+**Score**: `win_prob`. **Outcome**: `ret = pnl / (shares × entry_price)`.
+
+**Metodología** (`backend/scripts/trial_m2_abstencion.py`, corre DESPUÉS de este
+pre-registro): walk-forward acumulado SIN lookahead, mismo que §24 — W2 2022-2023
+(calibra con trades < 2022-01-01, n=118), W3 2024-2026-08-04 (calibra con trades <
+2024-01-01, n=167). W1 NO evaluable por diseño (24 trades de 2019 < piso 30 de M2,
+declarado en §24 y vigente). Por trade de la ventana: `engine.predict(win_prob)` con
+el DEFAULT corregido → VPP_baseline vs VPP_M2 (`vpp_bajo_abstencion`), n_operados,
+tasa_abstención, cobertura empírica. Test: z-test unilateral de dos proporciones con
+corrección de continuidad (VPP_M2 > VPP_baseline).
+
+**Criterio pre-registrado (idéntico al §24, sin conocer el resultado)**:
+- Tests: 2 ventanas × 1 test = 2 tests nuevos. Bonferroni-2 unilateral: p < **0.025**
+  por ventana.
+- CUMPLE si, en TODAS las ventanas evaluables (W2, W3): (a) VPP_M2 > VPP_baseline con
+  p < 0.025; (b) n_operados ≥ 30; (c) tasa de abstención ≤ 0.80.
+- Fidelidad: cobertura empírica en [0.80, 0.97] (nominal 0.90); fuera de rango →
+  ventana NO INTERPRETABLE (ni éxito ni fracaso).
+- NO CUMPLE si alguna ventana evaluable falla cualquier condición. Métricas
+  secundarias (retorno medio, delta pnl) = contexto, nunca hallazgo.
+- Abstención ~10% esperada con el nuevo default: si la tasa real quedara > 0.80 se
+  declara NO_CUMPLE igual (criterio ciego al resultado).
+
+**Familia**: `motor_signal` — mecánica del motor (abstención de operar), mismo
+tratamiento que #15/#16. Consume 1 slot: motor_signal pasa de 9 a 10 consumidos; el
+umbral Bonferroni vigente para el próximo trial de la familia queda 1 − 0.10/11 =
+0.9909. **Umbral aplicado en el registro de ESTE trial: 0.99** (el vigente al momento
+de correr, heredado del #16).
+
+**Riesgo declarado**: trades del baseline no independientes (mismo símbolo, salidas
+por barreras) — z-test de proporciones es la vara nominal; cobertura + consistencia
+entre ventanas es la vara de robustez real (TODAS las ventanas, no mayoría). El
+default nuevo abstiene los win_prob de señal extrema (|point| grande): si el motor
+opera mejor en los extremos que en el centro, el trial lo mostrará como NO_CUMPLE —
+la pregunta es genuinamente empírica, el criterio no se ajusta al resultado.
+
+**Registro en ledger**: `register_trial(...)` con familia `motor_signal`,
+n_trials_consumidos=1, veredicto según criterio, al cerrar.
+
+**RESULTADO**: (se llena al correr)
+
+---
+
+## 26. Indicadores sobre velas semanales — ¿el ruido diario oculta señal? (2026-08-17, PRE-REGISTRADO, Tarea C PLAN_LARGO_PLAZO.md)
+
+**Problema**: Todos los indicadores se calculan sobre barras diarias. Nunca se probó
+si una granularidad distinta (semanal) cambia el poder predictivo. Esto NO es cambiar
+el horizonte del retorno futuro (eso ya se probó en §21/§21.1) — es cambiar el RUIDO
+del indicador mismo. Barras semanales tienen menos microestructura (gap de overnight,
+ruido intradía, spread bid-ask) y podrían revelar señal que el ruido diario oculta.
+
+**Hipótesis**: Indicadores calculados sobre velas semanales (resample W-FRI) tienen
+menos ruido y revelan rank IC significativo contra el retorno forward de la próxima
+semana que los indicadores diarios equivalentes no muestran.
+
+**Metodología pre-registrada** (ANTES de ver resultados):
+
+1. **Datos**: OHLCV diario de los 50 símbolos del universo (`data/cache/{SYMBOL}.parquet`,
+   2015-01-01 a 2026-08-04). Resample a semanal con `resample('W-FRI').agg(
+   Open='first', High='max', Low='min', Close='last', Volume='sum')`.
+
+2. **Indicadores sobre serie SEMANAL**:
+   - `momentum_20w`: pct_change(20) × 100 sobre Close semanal (equivalente a ~5 meses)
+   - `rsi_14w`: RSI 14 periodos sobre Close semanal (14 semanas ≈ 3.5 meses)
+   - `adx_14w`: ADX 14 periodos sobre High/Low/Close semanal (mismo algoritmo que
+     `indicators.py:adx`)
+
+3. **Target**: `fwd_ret_1w` = retorno de Close a Close de la próxima semana
+   (`close.shift(-1) / close - 1`). Equivalente semanal a fwd_return_5d del panel diario.
+
+4. **Rank IC intra-semana** (mismo patrón que `diagnose_rr2_intraday.py`):
+   - Por cada semana: rankear símbolos por cada indicador, correlacionar (Spearman) con
+     `fwd_ret_1w`. Mínimo 5 símbolos por semana para computar.
+   - Promediar ICs sobre semanas con Newey-West SE (L = ceil(5/5) = 1 lag, solapamiento
+     semanal del retorno forward).
+
+5. **Ventanas** (mismo período que el proyecto, diferente granularidad):
+   - W1: 2019-01-01 a 2021-12-31 (in-sample)
+   - W2: 2022-01-01 a 2023-12-31 (OOS 1)
+   - W3: 2024-01-01 a 2026-07-06 (OOS 2)
+
+6. **Familia**: `signal_diagnosis` — es un diagnóstico de señal, no un cambio de motor.
+
+**Criterio de éxito/fracaso pre-registrado** (Bonferroni-8: 3 indicadores × 3 ventanas
+= 9 tests, pero usamos 8 porque un indicador puede quedar sin datos en una ventana;
+corrección conservadora):
+- **CUMPLE** si, para al menos 1 indicador: |t| > 2.73 (α/8 ≈ 0.00625, dos colas) en
+  ≥2 de 3 ventanas, con signo consistente (momentum/RSI positivo, ADX positivo).
+- **NO CUMPLE** si ningún indicador alcanza |t| > 2.73 en ≥2 ventanas.
+- **NO INTERPRETABLE** si una ventana tiene <20 semanas con datos (n_insuficiente).
+
+**n_trials**: este es el slot #15 de `signal_diagnosis` (14 consumidos + 1 = 15).
+Umbral Bonferroni vigente: 1 − 0.10/16 = **0.99375** (ya calculado por el ledger).
+
+**Riesgo declarado**: (a) RSI semanal puede tener warmup insuficiente en W1 (pocos
+datos al inicio de 2019); (b) ADX semanal suaviza tanto que puede perder poder
+discriminativo; (c) 50 símbolos × ~260 semanas/W1 = rank IC con ~13000 obs transversales
+por ventana — potencia alta, pero el ruido semanal puede inflar varianza.
+
+**Artefacto**: `data/cache/weekly_indicators_YYYYMMDD_HHMMSS.txt`
+
+**Registro en ledger**: `register_trial(...)` con familia `signal_diagnosis`,
+n_trials_consumidos=1, veredicto según criterio, al cerrar.
 ---
 
 ## 25. Tarea B — ADX walk-forward como candidato a "bueno" (PLAN_LARGO_PLAZO.md, 2026-08-17, PRE-REGISTRADO)
@@ -1712,5 +1845,38 @@ nuevo). `motor_signal` NO se toca (queda en 9 consumidos).
 familia `signal_diagnosis`, n=1, veredicto según criterio, artefacto
 `data/cache/trial_adx_walkforward_<ts>.txt`.
 
-**RESULTADO**: (se llena al correr)
+**RESULTADO (2026-08-17, corrido por Cline) — artefacto:
+`data/cache/trial_adx_walkforward_20260817_103916.txt`**
+
+Cheque de fidelidad: OK — TOTAL mean_IC=+0.0679, t=+2.31 (L=4), reproduce §0.5a
+exacto (151 n_dias). 2069 filas eligible+target.
+
+| ventana | rango | n_dias | mean_IC | SE_NW | t | L | signo | |t|>2.77 |
+|---|---|---|---|---|---|---|---|---|
+| W1 | 2020→2021 | 53 | +0.0395 | 0.0499 | +0.79 | 6 | + | no |
+| W2 | 2022→2023 | 20 | +0.1026 | 0.0668 | +1.54 | 2 | + | no |
+| W3 | 2024→2026-07 | 53 | +0.0792 | 0.0539 | +1.47 | 6 | + | no |
+| TOTAL(ref) | 2019→2026 | 151 | +0.0679 | 0.0294 | +2.31 | 4 | + | — |
+
+**VEREDICTO (pre-registrado): NO CUMPLE** — 0/3 ventanas cruzan Bonferroni-9
+(|t|>2.77). El ADX queda como estaba: marginal, no robusto — pero ahora con evidencia
+OOS por ventana, no solo el Bonferroni sobre el pooled. Lectura honesta: la señal es
+POSITIVA en las 3 ventanas (signo + siempre), el t TOTAL +2.31 era el pooling de esa
+señal débil repartida, no una señal concentrada que una ventana confirme sola. El
+criterio ≥2/3 exige que la señal sea suficientemente fuerte para sostenerse en
+aislamiento; no lo es.
+
+Test secundario (contexto, no cuenta): premia ADX alto(0.9) vs bajo(0.3) siempre
+positiva (W1 +0.0090, W2 +0.0075, W3 +0.0135) pero t pooled no significativos en
+ninguna (máx W3 +1.73) e inconsistente en VPP (W2 alto 0.476 < bajo 0.481). Dirección
+operativa levemente favorable 2/3 ventanas, nunca significativa.
+
+**Acción**: Tarea B CERRADA. ADX NO pasa a candidato a pre-registro de motor. No se
+integró nada (el script solo lee el panel; verificado). Artefacto del primer run
+(`trial_adx_walkforward_20260817_103529.txt`) ELIMINADO: implementaba L con
+`n_days_est` (fechas brutas) en vez de `n_dias` usados — desvío de §23 corregido,
+corrida re-hecha con la regla pre-registrada.
+
+**Ledger**: `register_trial(...)` id `adx_walkforward`, familia `signal_diagnosis`,
+n=1 (14→15, umbral vigente 0.99375), veredicto NO_CUMPLE.
 

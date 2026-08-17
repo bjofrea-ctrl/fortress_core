@@ -71,28 +71,37 @@ def newey_west_se(z: np.ndarray, lags: int) -> float:
     return float(np.std(z, ddof=1) / np.sqrt(n_eff))
 
 
-def intraday_rank_ic(df: pd.DataFrame, lags: int) -> dict:
-    """Spearman por fecha (ranks sobre simbolos de ESA fecha) contra el target.
+def collect_daily_ics(df: pd.DataFrame) -> np.ndarray:
+    """ICS diarios (Spearman por fecha) — pre-pasada para conocer n_dias usado.
 
     La significancia viene de la distribucion temporal de los ICs diarios
     (n fechas), no del n por fecha (nota de diseno de §0.5a).
     """
-    daily_ics = []
+    ics = []
     for _date, day in df.groupby("date"):
         day = day[day[FACTOR].notna() & day[TARGET].notna()]
         if len(day) < MIN_SYMBOLS:
             continue
         rho, _ = stats.spearmanr(day[FACTOR], day[TARGET])
         if np.isfinite(rho):
-            daily_ics.append(rho)
-    ics = np.array(daily_ics)
-    n_days = len(ics)
-    if n_days == 0:
+            ics.append(rho)
+    return np.array(ics)
+
+
+def rank_ic_stats(ics: np.ndarray, lags: int) -> dict:
+    """Media, SE Newey-West y t de la serie de ICs diarios, con el L ya fijado.
+
+    L se fija por ventana segun la regla de §23: L = min(12, floor(n_dias/8)),
+    donde n_dias es el total de ICs USADOS (no las fechas brutas del panel).
+    """
+    n = len(ics)
+    if n == 0:
         return {"n_days": 0, "mean_ic": np.nan, "se_nw": np.nan, "t": np.nan}
     mean_ic = float(ics.mean())
     se_nw = newey_west_se(ics, lags)
     t = mean_ic / se_nw if se_nw > 0 else 0.0
-    return {"n_days": int(n_days), "mean_ic": mean_ic, "se_nw": se_nw, "t": t}
+    return {"n_days": int(n), "mean_ic": mean_ic, "se_nw": se_nw, "t": t}
+
 
 
 def operational_context(df: pd.DataFrame) -> dict:
@@ -148,7 +157,7 @@ def main() -> int:
 
 
     # --- Cheque de fidelidad §0.5a (TOTAL, L=4) ---
-    fid = intraday_rank_ic(df, L_TOTAL_FIDELITY)
+    fid = rank_ic_stats(collect_daily_ics(df), L_TOTAL_FIDELITY)
     out("\n--- CHEQUE DE FIDELIDAD contra §0.5a (TOTAL 2019-2026, L=4) ---")
     out(f"  medido: mean_IC={fid['mean_ic']:+.4f}  t={fid['t']:+.2f}  n_dias={fid['n_days']}")
     out(f"  §0.5a:  mean_IC={REF_MEAN_IC:+.4f}  t={REF_T:+.2f}")
@@ -166,9 +175,9 @@ def main() -> int:
     results = {}
     for name, (start, end) in WINDOWS.items():
         wdf = df[(df["date"] >= start) & (df["date"] <= end)]
-        n_days_est = wdf["date"].nunique()
-        L = min(12, n_days_est // 8)
-        res = intraday_rank_ic(wdf, L)
+        ics_w = collect_daily_ics(wdf)
+        L = min(12, len(ics_w) // 8)
+        res = rank_ic_stats(ics_w, L)
         results[name] = res
         signo = "+" if (np.isfinite(res["t"]) and res["t"] > 0) else "-"
         cross = "SIG" if (np.isfinite(res["t"]) and abs(res["t"]) > THRESHOLD and signo == "+") else "no"
@@ -176,7 +185,8 @@ def main() -> int:
         out(f"{name:7s} {rango:22s} {res['n_days']:6d} {res['mean_ic']:+9.4f} "
             f"{res['se_nw']:8.4f} {res['t']:+7.2f} {L:3d} {signo:>5s} {cross:>9s}")
 
-    res_total = intraday_rank_ic(df, min(12, df["date"].nunique() // 8))
+    ics_total = collect_daily_ics(df)
+    res_total = rank_ic_stats(ics_total, min(12, len(ics_total) // 8))
     out(f"TOTAL (ref) 2019-01-02 -> 2026-07-06 {res_total['n_days']:6d} "
         f"{res_total['mean_ic']:+9.4f} {res_total['se_nw']:8.4f} {res_total['t']:+7.2f}")
 

@@ -13,9 +13,9 @@ Umbral pre-registrado: |t| > 2.773 (Bonferroni-9 bilateral) con signo +1 en >=2/
 
 --- TEST PRINCIPAL (pre-registrado §25): rank IC intra-dia por ventana ---
 ventana rango                  n_dias   mean_IC    SE_NW       t   L signo  |t|>2.77
-W1      2020-01-01 -> 2021-12-31     53   +0.0395   0.0499   +0.79  11     +        no
-W2      2022-01-01 -> 2023-12-31     20   +0.1026   0.0586   +1.75  11     +        no
-W3      2024-01-01 -> 2026-07-06     53   +0.0792   0.0527   +1.50  12     +        no
+W1      2020-01-01 -> 2021-12-31     53   +0.0395   0.0499   +0.79   6     +        no
+W2      2022-01-01 -> 2023-12-31     20   +0.1026   0.0668   +1.54   2     +        no
+W3      2024-01-01 -> 2026-07-06     53   +0.0792   0.0539   +1.47   6     +        no
 TOTAL (ref) 2019-01-02 -> 2026-07-06    151   +0.0679   0.0294   +2.31
 
 Criterio pre-registrado: |t| > 2.77 con signo +1 en >=2/3 ventanas -> ventanas SIG: 0/3
@@ -29,4 +29,4 @@ W3         515    142  +0.01354     +1.73     0.551     0.542
   Reserva pre-registrada: filas solapadas temporalmente (stride 5d, horizonte 20d) —
   el t_pooled es contexto; el veredicto lo da SOLO el rank IC.
 
-Out: data/cache/trial_adx_walkforward_20260817_103529.txt
+Out: data/cache/trial_adx_walkforward_20260817_103916.txt

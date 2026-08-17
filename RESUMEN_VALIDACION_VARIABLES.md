@@ -24,7 +24,7 @@ Ninguno solo, ni el blend original a mano, cruzó DSR≥0.90 (barra de "funciona
 | Piso de stop de régimen | #11 | Empeoró el sistema (W3 DSR 0.234→0.058) |
 | Gate técnico suelto | (pre-trial) | Momentum fuera del gate = ruido puro (IC 0.004) |
 | Pares/cointegración (universo 50) | Fase 4 | 1225 pares, mejor 47%, media 18.1% — no cointegran |
-| ADX, trend como factor ponderado | auditoría original | IC negativo / sin discriminación |
+| ADX, trend como factor ponderado | auditoría original + §25 (2026-08-17) | ADX IC **POSITIVO** +0.0679 (t+2.31, §0.5a) pero marginal-no-robusto: §25 walk-forward OOS 0/3 ventanas (t +0.79/+1.54/+1.47, Bonf-9 2.77). Trend constante entre elegibles (no discrimina). Ambos siguen como gates duros, no como peso |
 | BULL rsi, BEAR trend/momentum | auditoría triad | Invertidos, corregido el signo |
 | **ridge_3f como score del motor** (momentum+RSI+macro vía ridge) | #13 | DSR 0/3 ventanas (0.054/0.001/0.180 vs baseline 0.071/0.028/0.173) — IC mejor no se tradujo en PnL; revert aplicado, motor sigue en #10/V1 |
 

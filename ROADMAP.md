@@ -10,7 +10,7 @@ Code, Cline, OpenCode), leer este documento primero. Al cerrar, actualizarlo ant
 — marcar lo que se cerró, agregar lo que apareció nuevo. Ningún ítem se da por cerrado sin
 marcarlo acá, aunque se haya resuelto "de pasada" en otra conversación.
 
-Última actualización: 2026-08-16.
+Última actualización: 2026-08-17.
 
 ---
 
@@ -317,6 +317,7 @@ gantt
 | Investigación | Tarea B PASO 1 — pipeline FinBERT earnings (OpenCode) | 🟢 hecho (2026-08-16) | — | `backend/app/core/earnings_sentiment.py` (store SQLite dedup por accession + fetch SEC EDGAR 8-K 2.02 + FinBERT ProsusAI/finbert, score=prob_pos−prob_neg ponderado por longitud), CLI `scripts/accumulate_earnings_sentiment.py`, 25 tests → suite 241 passed, ruff limpio. Backfill inicial: 24 filings (AAPL/AMD/NVDA). PASO 2 (trial) ⚪ BLOQUEADO por datos: requiere ≥8 trimestres × ≥30 símbolos — acumulación en curso para universo 50, no simular |
 | Investigación | Trial #16 — abstención calibrada M2 contra baseline real (pre-registro §24) | 🟢 cerrado como trial inválido, no concluyente (2026-08-17) | — | Corrido (`trial_m2_abstencion.py`, artefacto trial16_m2_abstencion_20260817_100548.txt): VEREDICTO FORMAL NO_CUMPLE pero **TAUTOLÓGICO** — abstención 100% en ambas ventanas (n_operados=0). HALLAZGO ESTRUCTURAL DE M2: (1) el ancho del intervalo NO depende del score (residuos absolutos + regresión lineal → ancho constante 2q → abstiene todo o nada, incapaz de abstención diferencial); (2) el default `max_interval_width=2×median` es SIEMPRE < 2×cuantil(91.5%) → 100% de abstención garantizada por construcción (reproducción mínima: 28/28). Cobertura empírica en rango (0.84/0.89) — el instrumento está bien calibrado y aun así nunca opera con su default. Los 16 tests no lo detectaron (fijan max_interval_width explícito). Hipótesis SIN MEDIR, no refutada — requiere fix de diseño de M2 (residuos relativos + default utilizable) antes de cualquier trial de abstención, decisión del usuario. Ledger motor_signal: 8→9 consumidos |
 | Instrumento | M2 — defecto estructural de abstención detectado (2026-08-17) | 🟡 hallazgo abierto | Decisión del usuario | `conformal.py` con su default nunca opera (abstención tautológica 100%): ancho de intervalo constante (residuos absolutos) + default 2×median < 2×quantile. Fix posible: residuos relativos `|outcome−point|/|point|` (ancho escala con el score) + default = cuantil del ancho en calibración. Los 16 tests pasan pero ninguno ejercita el default con datos reales — agregar test de regresión que exija abstención < 100% con default y datos sintéticos realistas |
+| Investigación | §25 Tarea B — ADX walk-forward (PLAN_LARGO_PLAZO, Cline) | 🟢 cerrado (2026-08-17) | — | NO CUMPLE: rank IC intra-día adx_score vs fwd_return_20d por ventana, Bonferroni-9 (|t|>2.77) en ≥2/3 → 0/3 (W1 +0.79, W2 +1.54, W3 +1.47; TOTAL ref +2.31). Señal positiva en las 3 ventanas pero ninguna significativa en aislamiento — el t TOTAL era pooling de señal débil repartida, no robustez OOS. ADX queda marginal-no-robusto con evidencia walk-forward, CERRADO como candidato a "bueno". Test secundario (premia operativa) contexto: positiva pero no sig (máx +1.73). Artefacto trial_adx_walkforward_20260817_103916.txt. Ledger signal_diagnosis: 14→15 |
 
 **Leyenda**: 🔴 crítico/sin empezar · 🟡 en curso/parcial · ⚪ parqueado, sin decisión de producto · 🟢 cerrado
 

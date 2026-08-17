@@ -1467,3 +1467,39 @@ anterior) y `ORDENES_MODULOS.md` (M7 → hecho) actualizados.
   trial de abstención pueda medir algo. Decisión del usuario (mismo patrón que #15).
 - `ROADMAP.md`: filas Trial #16 + M2 defecto estructural agregadas. En paralelo: acumulación
   FinBERT universo 50 en curso (19/47 símbolos al cierre de esta entrada, 0 errores).
+## 2026-08-17 — Tarea B (PLAN_LARGO_PLAZO) ADX walk-forward CERRADA: NO CUMPLE (Cline)
+
+- **Task**: Tarea B del plan de largo plazo (asignada a Cline) — pre-registrar + ejecutar el
+  trial ADX walk-forward para decidir si ADX, el único factor con señal nominal positiva,
+  pasa a candidato a "bueno" con evidencia OOS.
+- **Pre-registro §25 escrito ANTES de correr** en `PLAN_MEJORA_MATEMATICA.md`: rank IC intra-día
+  adx_score vs fwd_return_20d por ventana W1/W2/W3, SE Newey-West con L=min(12, n_dias//8) (§23),
+  umbral |t|>2.77 (Bonferroni-9 bilateral) con signo +1 en ≥2/3 ventanas. Cheque de fidelidad
+  contra §0.5a (TOTAL L=4 debe reproducir IC +0.0679, t +2.31) — aborta sin interpretar si falla.
+  Test secundario (premia operativa alto vs bajo ADX) declarado como contexto, nunca hallazgo.
+- **Script** `backend/scripts/trial_adx_walkforward.py` (solo lectura del panel, NO toca el
+  motor), artefacto `data/cache/trial_adx_walkforward_20260817_103916.txt` (EXIT 0).
+- **Cheque de fidelidad**: OK, reproducción exacta (mean_IC +0.0679, t +2.31, 151 n_dias).
+- **VEREDICTO: NO CUMPLE (0/3)** — W1 t +0.79, W2 t +1.54, W3 t +1.47; ninguna ventana cruza
+  Bonferroni-9 (2.773). TOTAL ref +2.31.
+- **Lectura**: señal positiva en las 3 ventanas (signo + siempre), pero ninguna significativa en
+  aislamiento — el t TOTAL +2.31 era el pooling de señal débil repartida, no robustez OOS. El
+  criterio ≥2/3 (que la señal se sostenga sola) no se cumple. ADX queda **marginal-no-robusto con
+  evidencia walk-forward, CERRADO como candidato a "bueno"**.
+- **Test secundario (contexto)**: premia ADX alto vs bajo positiva (W1 +0.0090, W2 +0.0075, W3
+  +0.0135) pero t pooled no sig (máx +1.73) e inconsistente en VPP (W2 alto 0.476 < bajo 0.481).
+- **Corrección declarada sobre la marcha (declarada)**: el primer run (artefacto
+  `trial_adx_walkforward_20260817_103529.txt`) implementó L con `n_days_est` (fechas brutas) en
+  vez de `n_dias` usados — desvío de la regla de §23. Se corrigió el script a `L=min(12, n_dias
+  //8)` con n_dias = ICs usados, se re-corrió (artefacto válido 103916) y se ELIMINÓ el artefacto
+  inválido. El veredicto no cambió (todos los t quedaron lejos de 2.77).
+- **Ledger**: registrado `adx_walkforward`, familia `signal_diagnosis`, n=1 → **14→15 consumidos**,
+  umbral vigente 0.99375. `motor_signal` intacto (9). El texto del plan decía `motor_signal`, pero
+  por contrato del ledger un rank-IC de señal va a `signal_diagnosis` (mismo desvío documentado en §23).
+- **Docs actualizados**: PLAN_MEJORA_MATEMATICA §25 (RESULTADO completo), PLAN_LARGO_PLAZO
+  (Tarea B → 🟢 cerrado + línea ADX del estado de partida), ROADMAP (fila §25 + fecha),
+  RESUMEN_VALIDACION_VARIABLES (fila ADX corregida: "IC negativo" ↓ por la evidencia real,
+  mismo fix de espíritu que el de signal_engine.py del 16/8).
+- **Verificación**: suite completa `cd backend && .venv/bin/python -m pytest -q` → **242 passed**
+  (196s), ruff limpio en el script nuevo, sin cambios en el motor.
+
