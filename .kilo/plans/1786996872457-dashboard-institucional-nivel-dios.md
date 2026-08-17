@@ -115,11 +115,16 @@ los recharts/lightweight-charts caen solo en las vistas que los usan.
 
 1. Doc de mapeo §3 en `PLAN_MEJORA_MATEMATICA.md` + verificación contra el artefacto
    de asesoría (los VPP/n citados DEBEN coincidir con el archivo, no con memoria).
-2. Backend: `advisor.py` (4 endpoints) + registro en `main.py` + `tests/test_advisor_api.py`.
-   `pytest` verde completo. `ruff` limpio.
-3. Snapshot de tesis: extensión de `decision_states.json` (leer esquema actual primero —
-   si el formato no admite la foto de entrada sin migración, crear `thesis_snapshots.json`
-   aparte; NO romper lo existente ni lo que `_persist_states` escribe).
+2. Backend: `advisor.py` (4 endpoints: universe/{symbol}/theses/evidence) + registro
+   en `app/api/routes/__init__.py` (lista `routers`) **y** `app/main.py`
+   (`app.include_router(advisor.router)` — ambos lugares, patrón verificado) +
+   `tests/test_advisor_api.py`. `pytest` verde completo. `ruff` limpio.
+3. Snapshot de tesis: **esquema verificado** — `decision_states.json` guarda solo
+   `{"as_of", "states": {symbol: estado}}`; no contiene la foto de entrada. Se crea
+   `data/cache/thesis_snapshots.json` APARTE (mismo patrón de persistencia: escribir
+   tmp + rename como `trial_registry._write`; un snapshot por símbolo con fecha,
+   gates de entrada, régimen, win_prob). `/api/advisor/theses` compara ese snapshot
+   con el ticket actual. NO se modifica `_persist_states` ni su formato.
 4. Frontend base: dep `lightweight-charts`, ajuste de tokens §5.2, tabs de navegación
    en Layout (conservando CollapsiblePanel para sub-paneles dentro de cada vista),
    `API_URL` a env de Vite (`import.meta.env.VITE_API_URL || "http://localhost:8000"`).
