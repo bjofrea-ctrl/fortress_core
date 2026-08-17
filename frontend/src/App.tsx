@@ -13,6 +13,8 @@ import TradeDistribution from "./components/TradeDistribution"
 import LiveTicker from "./components/LiveTicker"
 import GovernancePanel from "./components/GovernancePanel"
 import OpportunitiesPanel from "./components/OpportunitiesPanel"
+import UniverseTable from "./components/UniverseTable"
+import DecisionPanel from "./components/DecisionPanel"
 
 const API_URL = "http://localhost:8000"
 
@@ -100,6 +102,22 @@ export default function App() {
 
         {/* Row 10: Oportunidades de hoy */}
         <OpportunitiesPanel apiUrl={API_URL} />
+
+        {/* Row 11: Mesa de Decisión - Universo */}
+        <div className="mb-6">
+          <h2 className="text-lg font-bold mb-3 text-accent-green">Mesa de Decisión - Universo</h2>
+          <UniverseTable
+            apiUrl={API_URL}
+            onSelectSymbol={setSelectedSymbol}
+            selectedSymbol={selectedSymbol}
+          />
+        </div>
+
+        {/* Row 12: Panel de Decisión Detallado */}
+        <div className="mb-6">
+          <h2 className="text-lg font-bold mb-3 text-accent-green">Panel de Decisión - {selectedSymbol}</h2>
+          <DecisionPanel apiUrl={API_URL} symbol={selectedSymbol} />
+        </div>
 
         {/* Footer */}
         <footer className="border-t border-dark-border pt-4 pb-8 text-center text-xs text-gray-500">
