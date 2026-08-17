@@ -1578,3 +1578,44 @@ fidelidad lo delata: cobertura fuera de rango → no interpretable.
 n_trials_consumidos=1, veredicto según criterio, al cerrar.
 
 **RESULTADO**: (se llena al correr)
+**RESULTADO (2026-08-17, corrido por OpenCode) — artefacto:
+`data/cache/trial16_m2_abstencion_20260817_100548.txt`**
+
+| ventana | n | VPP_base | VPP_M2 | n_operados | abst | cobertura | p |
+|---|---|---|---|---|---|---|---|
+| W2 2022-2023 | 49 | 0.4694 | NaN | 0 | 100% | 0.8367 | NaN |
+| W3 2024-2026 | 119 | 0.5798 | NaN | 0 | 100% | 0.8908 | NaN |
+
+VEREDICTO FORMAL (mecánico, aplicado al criterio): **NO_CUMPLE** — ambas ventanas
+fallan n_operados ≥ 30 y abst ≤ 0.80 con n_operados=0.
+
+**PERO EL VEREDICTO ES TAUTOLÓGICO — HALLAZGO ESTRUCTURAL DE M2, no de la
+hipótesis** (mismo patrón que #15 EVT: el sistema midiéndose a sí mismo):
+
+1. **El ancho del intervalo NO depende del score.** `ConformalAbstentionEngine`
+   modela `point = polyfit(score)` y residuos ABSOLUTOS `|outcome − point|` →
+   el cuantil conforme q es una constante por calibración → TODO intervalo mide
+   `2q`. La abstención `width > max_interval_width` compara una constante contra
+   otra: o abstiene todo o nada. Es estructuralmente incapaz de abstención
+   diferencial (la promesa de DISENO_INSTRUMENTO.md §7 "declara CUÁNDO su lectura
+   no es confiable").
+2. **El default `max_interval_width = 2×median(residuos)` es SIEMPRE < 2q**
+   (q = cuantil ~91.5% con α=0.10, n=118/167 → q > mediana en cualquier
+   distribución no degenerada) → **abstención 100% garantizada por
+   construcción**. Reproducción mínima independiente: calibración sintética n=118
+   → q=0.0487, mediana=0.0220, umbral=0.0440, ancho=0.0973 → abstiene 28/28
+   (100%). La cobertura empírica quedó DENTRO de rango (0.8367/0.8908) — el
+   instrumento está bien calibrado y aun así no opera NUNCA con su default.
+3. Los 16 tests de `test_conformal.py` no lo detectaron porque fijan
+   `max_interval_width` explícito (999/0.001/0.0) — el test del default
+   (línea 116) solo verifica que el default SE CALCULA como 2×median, no que
+   produzca abstención utilizable.
+
+**Consecuencia**: el trial #16 tal como está pre-registrado (usar M2 con su
+default) NO PUEDE responder la pregunta "¿la abstención mejora el VPP?" — con
+n_operados=0 no hay nada que medir. La hipótesis NO queda refutada ni
+confirmada: queda SIN MEDIR, igual que #15. **No es un trial nuevo** — es la
+constatación de que M2 necesita (a) residuos RELATIVOS (o un modelo de varianza)
+para que el ancho dependa del score, y (b) un default de umbral utilizable
+(p. ej. cuantil del ancho en calibración), ANTES de que cualquier trial de
+abstención pueda medir algo. Decisión del usuario, no de un agente.

@@ -1434,3 +1434,36 @@ anterior) y `ORDENES_MODULOS.md` (M7 → hecho) actualizados.
   moderno exige torch≥2.6 inexistente para macOS x86_64/Py3.9 → fijado
   `transformers==4.44.2` + `torch==2.2.2`; BRK-B → BRK.B en EDGAR.
 - `ROADMAP.md` fila Tarea B agregada (PASO 1 🟢, PASO 2 ⚪ bloqueado por datos).
+
+## 2026-08-17 — Trial #16 (pre-registro §24): abstención M2 contra baseline — NO CONCLUYENTE, defecto estructural de M2 encontrado (OpenCode)
+
+- **Decisión del usuario** (2026-08-17): pre-registrar y correr el trial de abstención calibrada
+  M2 contra el baseline real — "el motor debe callarse cuando no hay señal" con la evidencia ya
+  existente.
+- **Pre-registro §24** en `PLAN_MEJORA_MATEMATICA.md` (ANTES de correr): familia `motor_signal`,
+  score `win_prob` (el real del motor), outcome `ret = pnl/(shares×entry_price)`, walk-forward
+  acumulado sin lookahead, W2/W3 evaluables (W1 excluida por diseño: 24 trades de 2019 < piso 30
+  de M2, declarado antes), Bonferroni-2 unilateral p<0.025, n_operados≥30, abst≤0.80, cobertura
+  empírica [0.80,0.97] como fidelidad.
+- **Corrida** (`scripts/trial_m2_abstencion.py`, artefacto
+  `data/cache/trial16_m2_abstencion_20260817_100548.txt`): **abstención 100% en ambas ventanas
+  (n_operados=0)** → VEREDICTO FORMAL NO_CUMPLE, pero **tautológico — hipótesis SIN MEDIR**.
+- **HALLAZGO ESTRUCTURAL DE M2** (confirmado con reproducción mínima independiente, no hipótesis):
+  1. El ancho del intervalo de `ConformalAbstentionEngine.predict()` NO depende del score:
+     residuos absolutos + regresión lineal simple → q constante por calibración → ancho SIEMPRE
+     2q. La abstención `width > max_interval_width` compara dos constantes: o abstiene todo o
+     nada — incapaz de abstención diferencial por construcción (contradice la promesa de
+     DISENO_INSTRUMENTO.md §7).
+  2. El default `max_interval_width = 2×median(residuos)` es SIEMPRE < 2×quantile(α=0.10,
+     ~91.5%) → abstención 100% garantizada matemáticamente. Cobertura empírica en rango
+     (0.8367/0.8908): el instrumento calibra bien y aun así nunca opera con su default.
+  3. Los 16 tests de `test_conformal.py` no lo detectan: fijan `max_interval_width` explícito
+     (999/0.001/0.0); el test del default (línea 116) verifica que el default SE CALCULA como
+     2×median, no que produzca abstención utilizable.
+- **Ledger**: `trial_16_m2_abstencion` registrado, familia `motor_signal`, n=1, NO_CUMPLE
+  (formal) → motor_signal 8→9 consumidos, umbral próximo 0.99.
+- **Estado**: hipótesis de abstención ni refutada ni confirmada — M2 necesita fix de diseño
+  (residuos relativos para ancho score-dependiente + default utilizable) antes de que cualquier
+  trial de abstención pueda medir algo. Decisión del usuario (mismo patrón que #15).
+- `ROADMAP.md`: filas Trial #16 + M2 defecto estructural agregadas. En paralelo: acumulación
+  FinBERT universo 50 en curso (19/47 símbolos al cierre de esta entrada, 0 errores).
