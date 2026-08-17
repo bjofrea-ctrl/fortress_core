@@ -3,20 +3,25 @@
 @tailwind utilities;
 
 :root {
-  --color-dark-bg: #0a0e1a;
-  --color-dark-card: #131824;
-  --color-dark-border: #1e2636;
-  --color-accent-green: #00d395;
-  --color-accent-red: #ff4757;
+  --color-dark-bg: #131722;
+  --color-dark-card: #1e222d;
+  --color-dark-border: #2a2e39;
+  --color-accent-green: #26a69a;
+  --color-accent-red: #ef5350;
   --color-accent-yellow: #fbbf24;
   --color-accent-blue: #3b82f6;
+  --color-tv-text: #d1d4dc;
+  --color-tv-dim: #787b86;
 }
 
 body {
   background-color: var(--color-dark-bg);
-  color: white;
+  color: var(--color-tv-text);
   font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
+
+/* Números tabulares en todo el panel institucional */
+.num { font-variant-numeric: tabular-nums; font-feature-settings: "tnum"; }
 
 @keyframes slide-down {
   from {

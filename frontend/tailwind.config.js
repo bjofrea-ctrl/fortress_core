@@ -4,12 +4,15 @@ export default {
   theme: {
     extend: {
       colors: {
-        "dark-bg": "#0a0e1a",
-        "dark-card": "#131824",
-        "dark-border": "#1e2636",
-        "accent-green": "#00d395",
-        "accent-red": "#ff4757",
-        "accent-yellow": "#fbbf24"
+        "dark-bg": "#131722",      // TV exact background
+        "dark-card": "#1e222d",     // TV panel
+        "dark-border": "#2a2e39",   // TV border
+        "accent-green": "#26a69a",  // TV bullish
+        "accent-red": "#ef5350",    // TV bearish
+        "accent-yellow": "#fbbf24",
+        "accent-blue": "#3b82f6",
+        "tv-text": "#d1d4dc",       // TV primary text
+        "tv-dim": "#787b86",        // TV secondary text
       }
     }
   },
