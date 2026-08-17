@@ -30,11 +30,30 @@ interface GovernanceData {
       approved: boolean
       decision: string
       confidence: number
+      position_size_pct: number
+      stop_loss_pct: number
+      take_profit_pct: number
+      risk_checks: Record<string, boolean>
+      llm_model: string | null
     }
     judge?: {
       verdict?: string
       status?: string
-      overruled_agents?: string[]
+      score: number
+      reasoning: string
+      overruled_agents: string[]
+      risk_assessment: string
+      confidence: number
+      conditions: string[]
+      llm_model: string | null
+    }
+    professor?: {
+      recommendation: string
+      lessons: number
+      weight_adjustments: Record<string, number>
+      teaching_summary: string
+      knowledge_repo_stats: Record<string, number>
+      llm_model: string | null
     }
   }
 }
@@ -49,6 +68,7 @@ interface GovernanceStatus {
     absolute_ceiling: number
     risk_per_trade: number
     max_position: number
+    regime_stops: Record<number, number>
   }
   judge?: {
     verdicts_count: number
@@ -56,10 +76,23 @@ interface GovernanceStatus {
   nvidia_nim?: {
     available: boolean
     model: string
+    models_available: string[]
+    models: {
+      triad: Record<string, string>
+      governance: Record<string, string>
+    }
   }
   knowledge_repo?: {
     total_entries: number
     by_domain: Record<string, number>
+  }
+  rag_memory?: {
+    total_lessons: number
+  }
+  prompts?: {
+    professor: string
+    controller: string
+    judge: string
   }
 }
 
@@ -69,6 +102,21 @@ const DECISION_COLORS: Record<string, string> = {
   "MANTENER": "text-accent-yellow",
   "VENDER": "text-accent-red",
   "VENDER_FUERTE": "text-accent-red",
+  "INVERTIR": "text-accent-green",
+  "VIGILAR": "text-accent-yellow",
+  "NO_INVERTIR": "text-accent-red",
+}
+
+const AGENT_COLORS = {
+  bull: "text-accent-green",
+  bear: "text-accent-red",
+  contrarian: "text-accent-yellow",
+}
+
+const AGENT_LABELS = {
+  bull: "🐂 BULL",
+  bear: "🐻 BEAR",
+  contrarian: "🔄 CONTRARIAN",
 }
 
 export default function GovernancePanel({ apiUrl, symbol }: GovernancePanelProps) {
@@ -118,7 +166,11 @@ export default function GovernancePanel({ apiUrl, symbol }: GovernancePanelProps
 
   const predictive = data?.predictive
   const governance = data?.governance
-  const decisionColor = DECISION_COLORS[predictive?.decision ?? ""] || "text-gray-300"
+  const triad = governance?.triad
+  const controller = governance?.controller
+  const judge = governance?.judge
+  const professor = governance?.professor
+  const decisionColor = DECISION_COLORS[predictive?.decision ?? governance?.final_decision ?? ""] || "text-gray-300"
 
   return (
     <div className="bg-dark-card border border-dark-border rounded-lg p-6">
@@ -128,25 +180,38 @@ export default function GovernancePanel({ apiUrl, symbol }: GovernancePanelProps
       </div>
 
       {/* TRIAD Consensus */}
-      {governance?.triad && (
+      {triad && (
         <div className="grid grid-cols-3 gap-3 mb-4">
-          <div className="bg-dark-bg rounded-lg p-3 text-center">
-            <p className="text-xs text-gray-400 mb-1">🐂 BULL</p>
-            <p className="text-lg font-mono font-bold text-accent-green">
-              {(governance.triad.bull.score * 100).toFixed(1)}%
-            </p>
+          {(["bull", "bear", "contrarian"] as const).map(agent => {
+            const agentData = triad[agent]
+            const colorClass = AGENT_COLORS[agent]
+            return (
+              <div key={agent} className="bg-dark-bg rounded-lg p-3 text-center">
+                <p className="text-xs text-gray-400 mb-1">{AGENT_LABELS[agent]}</p>
+                <p className="text-lg font-mono font-bold {colorClass}">
+                  {(agentData.score * 100).toFixed(1)}%
+                </p>
+                <p className="text-xs text-gray-500 mt-1">{agentData.verdict}</p>
+              </div>
+            )
+          })}
+        </div>
+      )}
+
+      {/* TRIAD Summary */}
+      {triad && (
+        <div className="grid grid-cols-2 gap-3 mb-4 bg-dark-bg rounded-lg p-3">
+          <div>
+            <p className="text-xs text-gray-400">Consenso Tríada</p>
+            <p className="font-mono font-bold text-white">{triad.consensus.toFixed(3)}</p>
           </div>
-          <div className="bg-dark-bg rounded-lg p-3 text-center">
-            <p className="text-xs text-gray-400 mb-1">🐻 BEAR</p>
-            <p className="text-lg font-mono font-bold text-accent-red">
-              {(governance.triad.bear.score * 100).toFixed(1)}%
-            </p>
+          <div>
+            <p className="text-xs text-gray-400">Decisión</p>
+            <p className={`font-mono font-bold ${DECISION_COLORS[triad.decision] || "text-white"}`}>{triad.decision}</p>
           </div>
-          <div className="bg-dark-bg rounded-lg p-3 text-center">
-            <p className="text-xs text-gray-400 mb-1">🔄 CONTRARIAN</p>
-            <p className="text-lg font-mono font-bold text-accent-yellow">
-              {(governance.triad.contrarian.score * 100).toFixed(1)}%
-            </p>
+          <div className="col-span-2">
+            <p className="text-xs text-gray-400">Acuerdo</p>
+            <p className="font-mono font-bold text-white">{triad.agreement}</p>
           </div>
         </div>
       )}
@@ -178,40 +243,174 @@ export default function GovernancePanel({ apiUrl, symbol }: GovernancePanelProps
       {/* Governance Flow */}
       {governance && (
         <div className="mb-4">
-          <div className="flex items-center gap-2 flex-wrap">
+          <div className="flex items-center gap-2 flex-wrap mb-2">
+            {/* Controller Badge */}
+            {controller && (
+              <span className={`px-3 py-1 rounded-md text-sm font-bold ${
+                controller.approved
+                  ? "bg-accent-green/20 text-accent-green border border-accent-green/30"
+                  : "bg-accent-red/20 text-accent-red border border-accent-red/30"
+              }`}>
+                Controller: {controller.approved ? "APROBADO" : "RECHAZADO"}
+              </span>
+            )}
+
+            {/* Professor Badge */}
+            {professor && (
+              <span className={`px-3 py-1 rounded-md text-sm font-bold ${
+                professor.recommendation === "APPROVE"
+                  ? "bg-accent-blue/20 text-accent-blue border border-accent-blue/30"
+                  : "bg-accent-yellow/20 text-accent-yellow border border-accent-yellow/30"
+              }`}>
+                Profesor: {professor.recommendation}
+              </span>
+            )}
+
+            {/* Judge Badge */}
+            {judge && (
+              <span className={`px-3 py-1 rounded-md text-sm font-bold ${
+                judge.verdict && judge.verdict.includes("COMPRAR")
+                  ? "bg-accent-green/20 text-accent-green border border-accent-green/30"
+                  : judge.verdict && judge.verdict.includes("VENDER")
+                  ? "bg-accent-red/20 text-accent-red border border-accent-red/30"
+                  : "bg-accent-yellow/20 text-accent-yellow border border-accent-yellow/30"
+              }`}>
+                Juez: {judge.verdict ?? judge.status ?? "—"}
+              </span>
+            )}
+
+            {/* Final Decision Badge */}
             <span className={`px-3 py-1 rounded-md text-sm font-bold ${
-              governance.controller?.approved
-                ? "bg-accent-green/20 text-accent-green"
-                : "bg-accent-red/20 text-accent-red"
-            }`}>
-              Controller: {governance.controller?.approved ? "APROBADO" : "RECHAZADO"}
-            </span>
-            <span className="px-3 py-1 rounded-md text-sm font-bold bg-dark-bg text-gray-300">
-              Juez: {governance.judge?.verdict ?? governance.judge?.status ?? "—"}
-            </span>
-            <span className={`px-3 py-1 rounded-md text-sm font-bold ${
-              governance.final_decision === "COMPRAR" || governance.final_decision === "COMPRAR_FUERTE"
-                ? "bg-accent-green/20 text-accent-green"
-                : governance.final_decision === "VENDER" || governance.final_decision === "VENDER_FUERTE"
-                ? "bg-accent-red/20 text-accent-red"
-                : "bg-accent-yellow/20 text-accent-yellow"
+              governance.final_decision === "COMPRAR" || governance.final_decision === "COMPRAR_FUERTE" || governance.final_decision === "INVERTIR"
+                ? "bg-accent-green/20 text-accent-green border border-accent-green/30"
+                : governance.final_decision === "VENDER" || governance.final_decision === "VENDER_FUERTE" || governance.final_decision === "NO_INVERTIR"
+                ? "bg-accent-red/20 text-accent-red border border-accent-red/30"
+                : "bg-accent-yellow/20 text-accent-yellow border border-accent-yellow/30"
             }`}>
               Final: {governance.final_decision}
             </span>
           </div>
           <p className="text-xs text-gray-400 mt-2">{governance.final_reason}</p>
-          {governance.judge?.overruled_agents && governance.judge.overruled_agents.length > 0 && (
+          {judge?.overruled_agents && judge.overruled_agents.length > 0 && (
             <p className="text-xs text-accent-yellow mt-1">
-              ⚠️ Juez sobrepasó: {governance.judge.overruled_agents.join(", ")}
+              ⚠️ Juez sobrepasó: {judge.overruled_agents.join(", ")}
             </p>
           )}
         </div>
       )}
 
+      {/* Controller Details */}
+      {controller && (
+        <details className="mb-4">
+          <summary className="cursor-pointer text-sm font-bold text-gray-300 hover:text-white flex items-center gap-2">
+            <span>🎛️</span> Controlador (Determinista)
+          </summary>
+          <div className="mt-3 grid grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
+            <div className="bg-dark-bg rounded-lg p-3">
+              <p className="text-xs text-gray-400">Posición %</p>
+              <p className="font-mono text-white">{controller.position_size_pct.toFixed(1)}%</p>
+            </div>
+            <div className="bg-dark-bg rounded-lg p-3">
+              <p className="text-xs text-gray-400">Stop Loss %</p>
+              <p className="font-mono text-accent-red">{controller.stop_loss_pct.toFixed(1)}%</p>
+            </div>
+            <div className="bg-dark-bg rounded-lg p-3">
+              <p className="text-xs text-gray-400">Take Profit %</p>
+              <p className="font-mono text-accent-green">{controller.take_profit_pct.toFixed(1)}%</p>
+            </div>
+            <div className="bg-dark-bg rounded-lg p-3">
+              <p className="text-xs text-gray-400">Confianza</p>
+              <p className="font-mono text-white">{(controller.confidence * 100).toFixed(0)}%</p>
+            </div>
+            <div className="col-span-4 bg-dark-bg rounded-lg p-3">
+              <p className="text-xs text-gray-400 mb-2">Risk Checks</p>
+              <div className="flex flex-wrap gap-2">
+                {Object.entries(controller.risk_checks).map(([check, passed]) => (
+                  <span key={check} className={`px-2 py-1 rounded text-xs font-mono ${passed ? "bg-accent-green/20 text-accent-green" : "bg-accent-red/20 text-accent-red"}`}>
+                    {check}: {passed ? "✓" : "✗"}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </details>
+      )}
+
+      {/* Judge Details */}
+      {judge && judge.verdict && (
+        <details className="mb-4">
+          <summary className="cursor-pointer text-sm font-bold text-gray-300 hover:text-white flex items-center gap-2">
+            <span>⚖️</span> Juez (Determinista)
+          </summary>
+          <div className="mt-3 grid grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
+            <div className="bg-dark-bg rounded-lg p-3">
+              <p className="text-xs text-gray-400">Score</p>
+              <p className="font-mono text-white">{judge.score.toFixed(3)}</p>
+            </div>
+            <div className="bg-dark-bg rounded-lg p-3">
+              <p className="text-xs text-gray-400">Riesgo</p>
+              <p className={`font-mono ${judge.risk_assessment === "ALTO" ? "text-accent-red" : judge.risk_assessment === "MEDIO" ? "text-accent-yellow" : "text-accent-green"}`}>
+                {judge.risk_assessment}
+              </p>
+            </div>
+            <div className="bg-dark-bg rounded-lg p-3">
+              <p className="text-xs text-gray-400">Confianza</p>
+              <p className="font-mono text-white">{(judge.confidence * 100).toFixed(0)}%</p>
+            </div>
+            <div className="col-span-4 bg-dark-bg rounded-lg p-3">
+              <p className="text-xs text-gray-400 mb-1">Razonamiento</p>
+              <p className="text-gray-300 text-sm">{judge.reasoning}</p>
+            </div>
+            {judge.conditions.length > 0 && (
+              <div className="col-span-4 bg-dark-bg rounded-lg p-3">
+                <p className="text-xs text-gray-400 mb-1">Condiciones</p>
+                <div className="flex flex-wrap gap-2">
+                  {judge.conditions.map((c, i) => (
+                    <span key={i} className="px-2 py-1 rounded bg-dark-card text-xs text-gray-400">{c}</span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </details>
+      )}
+
+      {/* Professor Details */}
+      {professor && (
+        <details className="mb-4">
+          <summary className="cursor-pointer text-sm font-bold text-gray-300 hover:text-white flex items-center gap-2">
+            <span>🎓</span> Profesor {professor.llm_model && <span className="text-xs text-accent-blue">({professor.llm_model})</span>}
+          </summary>
+          <div className="mt-3 grid grid-cols-2 lg:grid-cols-3 gap-3 text-sm">
+            <div className="bg-dark-bg rounded-lg p-3">
+              <p className="text-xs text-gray-400">Lecciones</p>
+              <p className="font-mono text-white">{professor.lessons}</p>
+            </div>
+            <div className="bg-dark-bg rounded-lg p-3">
+              <p className="text-xs text-gray-400">Entradas RAG</p>
+              <p className="font-mono text-white">{professor.knowledge_repo_stats.total_entries ?? 0}</p>
+            </div>
+            <div className="bg-dark-bg rounded-lg p-3">
+              <p className="text-xs text-gray-400">Recomendación</p>
+              <p className={`font-mono ${professor.recommendation === "APPROVE" ? "text-accent-green" : "text-accent-red"}`}>
+                {professor.recommendation}
+              </p>
+            </div>
+            <div className="col-span-3 bg-dark-bg rounded-lg p-3">
+              <p className="text-xs text-gray-400 mb-1">Resumen de Enseñanza</p>
+              <pre className="text-xs text-gray-300 whitespace-pre-wrap font-mono">{professor.teaching_summary}</pre>
+            </div>
+          </div>
+        </details>
+      )}
+
       {/* System Status */}
       {status && (
-        <div className="pt-4 border-t border-dark-border">
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <details className="mb-4">
+          <summary className="cursor-pointer text-sm font-bold text-gray-300 hover:text-white flex items-center gap-2">
+            <span>📊</span> Estado del Sistema
+          </summary>
+          <div className="mt-3 grid grid-cols-2 lg:grid-cols-4 gap-3">
             <div className="bg-dark-bg rounded-lg p-3">
               <p className="text-xs text-gray-400">Lecciones Profesor</p>
               <p className="text-lg font-mono font-bold text-white">{status.professor?.lessons_count ?? 0}</p>
@@ -231,7 +430,7 @@ export default function GovernancePanel({ apiUrl, symbol }: GovernancePanelProps
               </p>
             </div>
           </div>
-        </div>
+        </details>
       )}
     </div>
   )

@@ -1,13 +1,27 @@
 import { useEffect, useState } from "react"
 
-export default function RiskPanel() {
-  const [risk, setRisk] = useState<any>(null)
+interface RiskPanelProps {
+  apiUrl: string
+}
+
+interface RiskData {
+  status?: string
+  current_equity: number
+  current_drawdown_pct: number
+  absolute_ceiling: number
+  regime_state: number
+  num_positions: number
+  violations_60d: number
+}
+
+export default function RiskPanel({ apiUrl }: RiskPanelProps) {
+  const [risk, setRisk] = useState<RiskData | null>(null)
 
   useEffect(() => {
-    fetch("http://localhost:8000/api/risk/monitor")
+    fetch(`${apiUrl}/api/risk/monitor`)
       .then(r => r.json())
       .then(setRisk)
-  }, [])
+  }, [apiUrl])
 
   if (!risk || risk.status === "no_data") {
     return (
@@ -42,7 +56,7 @@ export default function RiskPanel() {
         </div>
         <div>
           <p className="text-xs text-gray-400">Ceiling Absoluto</p>
-          <p className="text-2xl font-mono font-bold text-red-400">-12.00%</p>
+          <p className="text-2xl font-mono font-bold text-red-400">-{(risk.absolute_ceiling * 100).toFixed(0)}%</p>
         </div>
         <div>
           <p className="text-xs text-gray-400">Régimen</p>
@@ -61,7 +75,7 @@ export default function RiskPanel() {
             className={`h-full transition-all ${
               isCritical ? "bg-red-500" : isWarning ? "bg-yellow-500" : "bg-accent-green"
             }`}
-            style={{ width: `${Math.min(100, Math.abs(risk.current_drawdown_pct) / 0.12 * 100)}%` }}
+            style={{ width: `${Math.min(100, Math.abs(risk.current_drawdown_pct) / risk.absolute_ceiling * 100)}%` }}
           ></div>
         </div>
       </div>

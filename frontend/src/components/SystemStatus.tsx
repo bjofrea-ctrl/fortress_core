@@ -1,13 +1,27 @@
 import { useEffect, useState } from "react"
 
-export default function SystemStatus() {
-  const [status, setStatus] = useState<any>(null)
+interface SystemStatusProps {
+  apiUrl: string
+}
+
+interface SystemStatusData {
+  risk_manager_active: boolean
+  absolute_ceiling: number
+  risk_per_trade: number
+  violation_window_days: number
+  ai_agents_enabled: boolean
+  phase: string
+}
+
+export default function SystemStatus({ apiUrl }: SystemStatusProps) {
+  const [status, setStatus] = useState<SystemStatusData | null>(null)
 
   useEffect(() => {
-    fetch("http://localhost:8000/api/system/status")
+    fetch(`${apiUrl}/api/system/status`)
       .then(r => r.json())
       .then(setStatus)
-  }, [])
+      .catch(() => {})
+  }, [apiUrl])
 
   if (!status) return <div className="h-8 w-48 animate-pulse bg-dark-border rounded"></div>
 
@@ -23,6 +37,9 @@ export default function SystemStatus() {
       </div>
       <div className="text-gray-400">
         Fase <span className="font-mono text-white">{status.phase.split(" - ")[0]}</span>
+      </div>
+      <div className={`text-gray-400 ${status.ai_agents_enabled ? "text-accent-blue" : "text-gray-500"}`}>
+        LLM: {status.ai_agents_enabled ? "NIM" : "DETERMINISTA"}
       </div>
     </div>
   )
