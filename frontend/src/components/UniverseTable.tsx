@@ -12,6 +12,7 @@ export default function UniverseTable({ apiUrl, onSelectSymbol, selectedSymbol }
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expandedSymbol, setExpandedSymbol] = useState<string | null>(null);
+  const { data: rankingsData } = useCurrentRankings(apiUrl);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -60,12 +61,14 @@ export default function UniverseTable({ apiUrl, onSelectSymbol, selectedSymbol }
   return (
     <div className="bg-dark-card border border-dark-border rounded-lg overflow-hidden">
       {/* Header */}
-      <div className="grid grid-cols-6 gap-4 p-4 border-b border-dark-border font-mono text-xs text-gray-400 bg-dark-bg/50">
+      <div className="grid grid-cols-8 gap-4 p-4 border-b border-dark-border font-mono text-xs text-gray-400 bg-dark-bg/50">
         <span>Estado</span>
         <span>Símbolo</span>
         <span>win_prob</span>
         <span>Precio</span>
-        <span>Cambio</span>
+        <span>M%ile</span>
+        <span>R%ile</span>
+        <span>A%ile</span>
         <span>Transición</span>
       </div>
 
