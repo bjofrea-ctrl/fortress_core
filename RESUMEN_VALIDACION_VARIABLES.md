@@ -57,7 +57,8 @@ Ninguna variable nueva tuvo ese impacto.
 
 | Idea | Estado |
 |---|---|
-| **Cross-sectional / rank IC** (alpha relativo vs beta) | Propuesta, no corrida — la más prometedora sin probar |
+| **Cross-sectional / rank IC** (alpha relativo vs beta) | ✅ PROBADO y REFUTADO (2026-08-17, §28): rank IC de momentum/rsi/adx contra retorno RELATIVO a SPY — 0/3 ventanas todos (t máx +1.54 ADX). El confusor beta existía pero no era la señal perdida; los IC relativos ≈ absolutos |
+| **AAII como timing de fecha** (medición estructuralmente justa) | ✅ PROBADO y REFUTADO (§28): contrarian a nivel fecha, signo esperado −1 → 0/3. W2 t=+2.94 pero CON signo positivo (re-signar post-hoc está prohibido). Línea sentimiento retail cerrada con medición justa |
 | Cálculo de límite de capacidad (frecuencia vs eficiencia) | Propuesto, chico, no corrido |
 | Volatility targeting a nivel portafolio | `TARGET_VOLATILITY` existe en `.env`, sin conectar |
 | Matriz de covarianza completa (extensión de cópulas) | Propuesto |

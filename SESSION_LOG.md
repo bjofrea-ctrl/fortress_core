@@ -1635,3 +1635,35 @@ anterior) y `ORDENES_MODULOS.md` (M7 → hecho) actualizados.
 - **Suite**: 242 passed. ONBOARDING actualizado (sección launchd). ROADMAP fila Datos
   agregada. Pendiente VPS (siguiente paso declarado): migrar este cron + runner M4 a
   un servidor chico; requiere acceso SSH del usuario.
+
+## 2026-08-17 — §28: las dos mediciones justas que faltaban (Kilo Code). NO CUMPLE en ambas.
+
+- **Origen (usuario)**: "lo perfecto es enemigo de lo bueno, pero es más fácil descartar
+  que aprobar — trabajar con lo bueno como apoyo a decisiones; además hay indicadores que
+  no se evaluaron con datos/tiempo suficiente". Consecuencia concreta: dos factores del
+  proyecto nunca fueron medidos contra lo que estructuralmente miden.
+- **Pre-registro §28 ANTES de correr** (PLAN_MEJORA_MATEMATICA): Test A = rank IC de
+  momentum/rsi/adx contra retorno RELATIVO a SPY (resuelve el confusor §6.2, declarado
+  en RESUMEN §5 como "el más prometedor sin probar"); Test B = AAII como timing de fecha
+  (verificado nunique=1 por fecha en el panel → las refutaciones anteriores #8/Fase0.6
+  lo midieron donde estructuralmente no puede variar). Umbral único Bonferroni-12
+  |t|>2.86, signo +1 (A) y −1 contrarian (B), ≥2/3 ventanas.
+- **Corrida** (`scripts/trial_xsec_relative.py`, artefacto
+  `trial_xsec_relative_20260817_184355.txt`): fidelidad §0.5a exacta (n 187/164/151).
+  A: momentum 0/3 (t −0.03/−1.01/−0.11), rsi 0/3, adx 0/3 (t +0.79/+1.54/+1.47).
+  B: 0/3 (t −0.32/+2.94/+0.04) — W2 cruza el umbral PERO con signo positivo, invertido
+  del pre-registrado −1; re-signar post-hoc está prohibido. **VEREDICTO: NO_CUMPLE.**
+- **Lecturas**: (1) la hipótesis "los factores parecían débiles por medir absoluto" queda
+  refutada CON el test que la propia auditoría pidió — los IC relativos ≈ absolutos; el
+  confusor beta era ruido chico, no la señal perdida. (2) AAII queda refutado como timing
+  en su primera medición justa; línea sentimiento retail CERRADA. (3) ADX mantiene la
+  única dirección consistentemente positiva (absoluta y relativa) sin cruzar nunca la
+  barra → marginal-no-robusto confirmado por segunda metodología.
+- **Consecuencia**: ya no queda hipótesis de señal declarada sin medir en el espacio del
+  proyecto (diario, 50 símbolos, factores del gate, sentimiento, relativas y absolutas).
+  RESUMEN §5 actualizado (PROPUESTA → PROBADO Y REFUTADO); ROADMAP fila §28.
+- **Ledger**: signal_diagnosis 17→18, umbral próximo 0.994737. Suite 242 passed.
+  Respuesta al usuario sobre "tiempo suficiente": detección de IC 0.05 con la vara del
+  proyecto necesita ~500 fechas (~2 años de cross-section DIARIO; el panel stride-5 da
+  ~50/año — el límite es frecuencia de observación, no años); eventos de earnings ~5 años
+  (FinBERT reabriría ~2029-30); macro ~2 ciclos (~10-15 años, inalcanzable acá).

@@ -2048,3 +2048,107 @@ para el futuro): NO se borra la store.
 `signal_diagnosis`, n=1 (16→17, umbral próximo 0.99444), veredicto NO_CUMPLE.
 Suite 242 passed, ruff limpio.
 
+
+---
+
+## 28. Dos mediciones justas que nunca se hicieron (2026-08-17, PRE-REGISTRADO)
+
+**Origen**: auditoría de brechas del usuario ("es más fácil descartar que aprobar;
+medir con los años/datos suficientes, no con la vara fácil"). Dos factores del proyecto
+nunca fueron medidos contra lo que realmente miden:
+
+1. **Test A — rank IC intradía contra retorno RELATIVO a mercado** (RESUMEN_VALIDACION_VARIABLES
+   §5/§6.2: "el más prometedor sin probar"). Todos los rank IC previos (§0.5a/§21/§23/§25/§26)
+   usaron `fwd_return_20d` ABSOLUTO: mezclan habilidad de selección con dirección del
+   mercado (confusor §6.2). El test de selección correcto es contra `fwd_return_20d −
+   ret_SPY_misma_ventana`. Factores: momentum_score, rsi_score, adx_score (los 3 del
+   gate; trend_score es constante entre elegibles, se excluye — misma razón que §0.5a).
+
+2. **Test B — AAII (sentimiento retail) como TIMING de fecha** — primera medición
+   estructuralmente válida. Verificado en el panel: `sentiment_v1` es constante por
+   fecha (nunique=1) → los tests anteriores (#8, Fase 0.6) lo midieron como variable
+   por-símbolo donde NO PUEDE variar; sus veredictos refutan esa medición, no la
+   hipótesis. El test correcto es a nivel de fecha: ¿el spread bull-bear de esa fecha
+   se correlaciona con el retorno relativo medio del cross-section elegible hacia
+   adelante? Signo esperado pre-registrado: **−1** (contrarian — spread bajo/bearish =
+   señal alcista; consenso empírico AAII). Se reporta también |+| por ventana.
+
+**Metodología** (`backend/scripts/trial_xsec_relative.py`, corre DESPUÉS de este
+pre-registro):
+
+- Panel: `factor_panel_20260811_144857.parquet` (el único; 2069 filas eligible+target,
+  346 fechas ≥5 símbolos).
+- Target relativo: `rel = fwd_return_20d − spy_fwd_20d`, donde `spy_fwd_20d` = retorno
+  20 ruedas de SPY desde el MISMO día del panel (SPY.parquet, calendario propio;
+  aproximación ≤2 días por feriados — declarada ANTES).
+- Test A: Spearman por fecha entre el factor y `rel`, serie temporal + Newey-West,
+  L = min(12, n_dias//8) (regla §23). Ventanas W1 2020-2021 / W2 2022-2023 /
+  W3 2024→2026-07 (idénticas a §25). Signo esperado: +1 para los 3 factores.
+- Test B: por fecha, `mean(rel)` del cross-section elegible vs `sentiment_v1` de la
+  fecha; Spearman + NW serie temporal, mismas ventanas, L misma. Signo esperado: −1.
+  Fechas con ≥5 símbolos y sentiment no-NaN (verificado: 187/187).
+- **Cheque de fidelidad (aborta sin interpretar si falla)**: el pipeline debe
+  reproducir §0.5a con target ABSOLUTO: momentum n≈187 mean_IC≈−0.0100 t≈−0.28;
+  rsi +0.0404/+1.38; adx +0.0679/+2.31 (L=4). Tolerancias |ΔIC|≤0.001, |Δt|≤0.05.
+
+**Criterio pre-registrado (sin conocer resultados)**:
+- Tests formales: 3 factores × 3 ventanas (A) + 3 ventanas (B) = **12 tests**.
+- Umbral único: |t| > **2.86** (Bonferroni-12 bilateral, z = ppf(1−0.05/24)) — vara
+  conservadora, nunca más laxa (patrón §25/§27).
+- CUMPLE por factor si |t|>2.86 con el signo pre-registrado en ≥2/3 ventanas.
+- NO CUMPLE en caso contrario. Nota de poder declarada ANTES: con n_dias≈50-90 por
+  ventana se requiere rho≳0.30 para cruzar — test exigente, consistente con la
+  historia del proyecto.
+- Limitación declarada: stride 5d del panel limita n_dias; el poder real de este
+  proyecto para ICs chicos (~0.05) requeriría panel diario (no se construye acá;
+  queda como brecha de infraestructura, no de este trial).
+
+**Familia ledger**: `signal_diagnosis` (rank-IC de señal, mismo contrato que
+§21-§27). `n_trials_consumidos=1`: signal_diagnosis 17→18, umbral vigente del trial
+nuevo. `motor_signal` no se toca (10).
+
+**Registro**: id `xsec_relative_and_aaii_timing`, veredicto según criterio, artefacto
+`data/cache/trial_xsec_relative_<ts>.txt`.
+
+**RESULTADO**: (pendiente de corrida)
+
+**RESULTADO (2026-08-17, Kilo Code) — artefacto:
+`data/cache/trial_xsec_relative_20260817_184355.txt`**
+
+Cheque de fidelidad: OK — reproduce §0.5a exacto (n 187/164/151, IC y t dentro de
+tolerancia con L=4). 2069 filas; 0 sin bench.
+
+| test | W1 t | W2 t | W3 t | signo esperado | SIG (|t|>2.86) |
+|---|---|---|---|---|---|
+| momentum × rel | −0.03 | −1.01 | −0.11 | + | 0/3 |
+| rsi × rel | +0.76 | −0.62 | +1.05 | + | 0/3 |
+| adx × rel | +0.79 | +1.54 | +1.47 | + | 0/3 |
+| AAII timing | −0.32 | **+2.94** | +0.04 | − | 0/3 |
+
+**VEREDICTO (pre-registrado): NO_CUMPLE** — ningún test cruza Bonferroni-12 con el
+signo esperado en ≥2/3 ventanas.
+
+Lecturas honestas:
+1. **Test A (relativo)**: la hipótesis §6.2 ("los factores parecían débiles por medir
+   absoluto") queda REFUTADA con el test que la propia auditoría pidió: contra retorno
+   relativo a SPY, momentum/RSI/ADX dan ICs prácticamente idénticos a los absolutos
+   (los t por ventana son casi los mismos que §25 — el componente de mercado que
+   sustrae el bench era ruido pequeño, no la señal perdida). El confusor beta existía
+   pero no era el motivo del fracaso.
+2. **Test B (AAII timing)**: primera medición estructuralmente válida → no hay señal
+   contrarian utilizable. W2 (2022-23) muestra t=+2.94 pero con SIGNO POSITIVO (contra
+   el −1 pre-registrado): en esa ventana el spread alto coincidió con retorno relativo
+   alto, lo opuesto al contrarian clásico; un hallazgo de dirección correcta no se puede
+   re-signar post-hoc. W1/W3 ≈ 0. AAII queda refutado como timing con su medición justa;
+   la línea sentimiento retail queda CERRADA (refutación #8/Fase0.6 + medición justa #18).
+3. ADX sigue siendo el único factor con dirección consistentemente positiva en las 3
+   ventanas en todas las mediciones (absoluta §25, relativa §28: mismos t), pero nunca
+   cruzando la barra — "marginal no robusto" confirmado ahora también contra retorno
+   relativo.
+
+**Acción**: RESUMEN_VALIDACION_VARIABLES §5 — el ítem cross-sectional queda CERRADO
+(como refutado tras su medición). No queda hipótesis de señal declarada sin medir en el
+espacio del proyecto (diario, 50 símbolos, factores del gate + sentimiento).
+
+**Ledger**: id `xsec_relative_and_aaii_timing`, signal_diagnosis n=1 (17→18, umbral
+próximo 0.994737). Suite sin cambios requeridos (solo script nuevo).
