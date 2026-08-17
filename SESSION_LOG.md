@@ -1667,3 +1667,50 @@ anterior) y `ORDENES_MODULOS.md` (M7 → hecho) actualizados.
   proyecto necesita ~500 fechas (~2 años de cross-section DIARIO; el panel stride-5 da
   ~50/año — el límite es frecuencia de observación, no años); eventos de earnings ~5 años
   (FinBERT reabriría ~2029-30); macro ~2 ciclos (~10-15 años, inalcanzable acá).
+
+---
+
+## Sesión 6 — Rediseño completo del Dashboard (Estilo Institucional)
+
+**Fecha**: 2026-08-17
+**Autor**: Claude Code
+**Estado**: Dashboard rediseñado estilo TradingView/Investing.com, build OK, tests OK
+
+### Cambios principales
+
+**Frontend — Arquitectura nueva:**
+- `Layout.tsx` — Componente principal con paneles colapsables, Header unificado, selector de símbolo sticky
+- `Header.tsx` — Estado del sistema en header (Risk Manager, Ceiling, LLM status, fase)
+- `GovernancePanel.tsx` — **Fix crítico**: contrato alineado con backend (triad/controller/judge/professor con campos reales)
+- `SystemStatus.tsx` — Ahora recibe `apiUrl` prop (no hardcoded)
+- `RiskPanel.tsx` — Ahora recibe `apiUrl` prop (no hardcoded)
+- `index.css` — Tokens CSS, animaciones, scrollbar custom, reduced-motion support
+
+**Fixes críticos:**
+- Contrato GovernancePanel ↔ backend: ahora usa `governance.triad`, `governance.controller.approved`, `governance.judge.verdict`, `governance.professor.recommendation` (era `triad_consensus`, `controller_approved`, `judge_verdict`)
+- URLs hardcodeadas `http://localhost:8000` eliminadas de SystemStatus y RiskPanel
+- Build: TypeScript sin errores, Vite build OK (624kB JS, 17kB CSS gzipped)
+
+**Backend verificado:**
+- 242 tests pass (pytest 13.46s)
+- Todos los endpoints de gobernanza funcionan con el nuevo flujo Tríada→Controlador↔Profesor→Juez
+- Rate limit en memoria (10 req/60s) activo en predict y governance
+
+### Archivos creados/modificados
+- **Nuevos**: `frontend/src/components/Header.tsx`, `frontend/src/components/Layout.tsx`
+- **Reescritos**: `frontend/src/App.tsx` (usa Layout), `frontend/src/components/GovernancePanel.tsx`, `frontend/src/components/SystemStatus.tsx`, `frontend/src/components/RiskPanel.tsx`, `frontend/src/index.css`
+- **Existentes reutilizados**: MarketOverview, PriceChart, TechnicalIndicators, EquityCurve, RegimePanel, SymbolSummary, TradesTable, MonteCarloPanel, TradeDistribution, OpportunitiesPanel, UniverseTable, DecisionPanel, LiveTicker, KPICards
+
+### Validación
+- ✅ `npm run build` — 0 errores TS, build exitoso
+- ✅ `pytest` backend — 242 passed
+- ✅ Contrato GovernancePanel verificado contra `advanced_agents.py` y `governance.py`
+- ✅ Sin URLs hardcodeadas en componentes
+
+### Próximos pasos
+- M4: Verificar artefactos de medición de costos Alpaca paper (runner en background)
+- Considerar code-splitting para reducir bundle JS (actualmente 624kB)
+- Panel de deriva (M5) en dashboard si se quiere visualizar
+
+---
+*Fin de Sesión 6 — 2026-08-17*
