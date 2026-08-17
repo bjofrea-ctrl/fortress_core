@@ -1616,3 +1616,22 @@ anterior) y `ORDENES_MODULOS.md` (M7 → hecho) actualizados.
   (slippage medio + comisión), registrarlo en docs y actualizar ROADMAP M4 a cerrado.
 - Higiene de seguridad recordada al usuario: rotar el secret LIVE y la contraseña de la
   cuenta (quedaron en texto plano en Notas antes de la regeneración).
+
+## 2026-08-17 — Pipeline de datos automatizado: refresh OHLCV + cron launchd (Kilo Code)
+
+- **Brecha (auditoría)**: el cache OHLCV estaba estancado al 2026-08-07/10 (43/18/3
+  archivos, hoy 8/17 ≈ 5 ruedas de trading faltantes) y la acumulación FinBERT no tenía
+  ningún cron — ambos flujos corrían solo si alguien los lanzaba. El poder estadístico
+  futuro (sentimiento, re-tests) depende de no perder días/trimestres.
+- **Fix paso 1 (ahora)**: refresh manual del universo 50 vía `download_data()` (ya es
+  incremental por fecha) → 50/50 frescos ≥ 2026-08-14, 0 fallos.
+- **Fix paso 2 (cron)**: `scripts/data_updater.sh` (bash, sin credenciales: yfinance +
+  EDGAR declarativo) + `scripts/com.fortresscore.dataupdater.plist` INSTALADO en
+  `~/Library/LaunchAgents/` y cargado (`launchctl list` OK). Corre 22:00 diario (tras
+  cierre US): (1) OHLCV incremental, (2) acumulación FinBERT incremental. Log
+  `scripts/data_updater.log`. `RunAtLoad=false` a propósito (no correr al boot).
+- **Prueba end-to-end**: corrida manual del script OK — precios actualizados, 48/48
+  símbolos, 8-Ks nuevos 0 (dedup por accession funciona, no re-procesa), ERRORES ninguno.
+- **Suite**: 242 passed. ONBOARDING actualizado (sección launchd). ROADMAP fila Datos
+  agregada. Pendiente VPS (siguiente paso declarado): migrar este cron + runner M4 a
+  un servidor chico; requiere acceso SSH del usuario.

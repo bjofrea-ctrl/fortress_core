@@ -142,7 +142,10 @@ en `PLAN_MEJORA_MATEMATICA.md`. No son sugerencias de estilo.
   registralo acá con su archivo de auto-carga.
 - **Mecanismos automáticos de esta Mac (launchd)**: `com.fortresscore.autobackup.plist`
   está INSTALADO (`~/Library/LaunchAgents/`) y dispara el backup git + espejo en el disco
-  externo. `com.fortresscore.daily_notify.plist` vive en `scripts/` pero NO está instalado
+  externo. `com.fortresscore.dataupdater.plist` está INSTALADO (2026-08-17): a las 22:00
+  diarias actualiza precios OHLCV del universo 50 (yfinance incremental) + acumulación
+  FinBERT de earnings (EDGAR incremental), log en `scripts/data_updater.log`.
+  `com.fortresscore.daily_notify.plist` vive en `scripts/` pero NO está instalado
   (requiere TELEGRAM/SMTP configurados — hoy vacíos, notificación desactivada). `backup.sh`
   es el backup manual/forzado. Los snapshots de `fortress_core_backups/snapshots/` son
   manuales y viejos — el espejo vigente es `current/`.
