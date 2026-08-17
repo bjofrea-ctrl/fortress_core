@@ -1910,3 +1910,106 @@ corrida re-hecha con la regla pre-registrada.
 **Ledger**: `register_trial(...)` id `adx_walkforward`, familia `signal_diagnosis`,
 n=1 (14→15, umbral vigente 0.99375), veredicto NO_CUMPLE.
 
+---
+
+## 27. Trial FinBERT PASO 2 — sentimiento de earnings (8-K 2.02) como factor de retorno relativo (2026-08-17, PRE-REGISTRADO)
+
+**Origen**: Tarea B de `PLAN_LARGO_PLAZO.md`, PASO 2 (trial). El PASO 1
+(`earnings_sentiment.py` + acumulación) quedó hecho el 2026-08-16 y la corrida completa
+del universo 50 terminó el 2026-08-17 12:07 (`data/cache/earnings_sentiment_run_20260817_120713.txt`:
+48/48 símbolos, 369 filings, 0 errores). El contrato de desbloqueo ("≥8 trimestres ×
+≥30 símbolos") se cumple: verificado contra la store SQLite: 8 trimestres
+(2024Q3→2026Q2) con ≥30 símbolos cada uno; 45 símbolos con 8 filings.
+
+**Pregunta**: ¿el tono del comunicado de earnings (FinBERT score = p_pos − p_neg,
+rango [−1,1]) predice el retorno RELATIVO AL MERCADO (no el absoluto — lección §6.2)
+a 20 días hábiles post-filing?
+
+**Naturaleza de los datos (difiere del panel diario de §0.5a/§21/§23)**: un score por
+evento (ticker × fecha de 8-K), no panel diario. La cross-section por día de filing es
+fina (medido: 190 fechas, 41 días con 2 filings, 14 con ≥5; máximo 7) → el rank-IC
+intra-día por símbolo NO es la mecánica correcta acá. Se usa la mecánica event-study
+del proyecto adaptada: **agregar por día de filing** (score y retorno relativos
+promedio de los filings simultáneos) y medir la serie temporal de esas fechas con
+Spearman + Newey-West — misma máquina que §0.5a, con fechas de filing en vez de
+fechas de trading.
+
+**Metodología** (`backend/scripts/trial_finbert_eventstudy.py`, corre DESPUÉS de este
+pre-registro):
+
+- **Eventos**: los 369 filings de la store (`data/cache/earnings_sentiment.db`).
+  Exclusión pre-declarada: eventos sin ventana forward completa de 20 días hábiles
+  (medido hoy: 331/369 quedan; filings con fecha > 2026-08-04 no tienen 20bd de
+  ventana hacia adelante en el cache, que termina 2026-08-04).
+- **t0/t1**: t0 = última rueda de trading ≤ filing_date; t1 = 20 ruedas después.
+  ret_stock = Close[t1]/Close[t0] − 1. ret_bench = lo mismo sobre SPY con las ruedas
+  NEAREST ≤ t0/≤ t1 (el cache del bench no tiene por qué contener t0/t1 exactos).
+  **rel = ret_stock − ret_bench** (retorno relativo pre-declarado como target, NUNCA
+  el absoluto — confusor de dirección de mercado declarado en §6.2).
+- **Test principal (decide)**: regresión OLS rel_evento ~ 1 + score_evento sobre la
+  serie CRONOLÓGICA de eventos individuales (no agregados); el estadístico de decisión
+  es el **t HAC Newey-West de la pendiente** (pesos Bartlett). Un t sobre la media
+  mediría drift de mercado, no predicción — se aclara para que no haya ambigüedad.
+  L = min(40, n_eventos//8): la ventana forward de 20 ruedas implica que filings a
+  ≤20 ruedas de distancia comparten ventana de retorno (hasta ~40 eventos); ese tope
+  se declara como autocorrelación a absorber — conservador, ANTES de correr.
+  Spearman se reporta como contexto nominal.
+- **Agregación por día de filing**: solo para el test secundario — para fechas con
+  >1 filing, score_día y rel_día = medias.
+- **Ventanas por fecha de filing** (3, pre-declaradas):
+  - E1: 2024-08-13 → 2025-06-30 (~137 filings)
+  - E2: 2025-07-01 → 2026-01-31 (~141 filings)
+  - E3: 2026-02-01 → 2026-08-12 (~91 filings)
+- **Signo esperado pre-declarado**: **+1** (tono más positivo → outperformance
+  relativa). No hay parámetro libre que calibrar: el score lo fija FinBERT (modelo
+  congelado) y el signo la hipótesis económica — análogo al factor dicotómico de §25.
+  Ninguna ventana es "calibración"; las tres son prueba con signo congelado, y una
+  cuarta TOTAL es referencia (no cuenta).
+- **Cheque de fidelidad (aborta sin interpretar si falla)**: la store debe coincidir
+  con el artefacto de corrida: 369 filas, 48 símbolos, 0 NULLs en score, modelo
+  `ProsusAI/finbert` en todas. Rango de filing_dates 2024-08-13→2026-08-12. Si algo
+  difiere → exit 2, no interpretar (§14).
+
+**Test secundario (contexto, NUNCA hallazgo)**: premia de terciles de score (alto vs
+bajo) sobre rel, t pooled con reserva declarada de clustering por día de filing y
+overlap (un mismo día reporta hasta 7 tickers del mismo sector tecnológico, p.ej.
+2026 Q2) — se reporta solo como lectura de magnitud.
+
+**Criterio pre-registrado (escrito antes de ver el outcome de ventanas)**:
+- 3 tests formales (E1/E2/E3; TOTAL es referencia).
+- Umbral: |t| > **2.77** (Bonferroni-9 bilateral, z = ppf(1 − 0.05/18)) — la vara
+  conservadora del proyecto, igual que §25 (nunca más laxa aunque los tests sean 3).
+- CUMPLE si |t| > 2.77 con signo +1 en **≥2/3 ventanas**. NO CUMPLE en caso contrario.
+- Nota de poder declarada ANTES: con n_eventos ≈ 90-140 por ventana y umbral 2.77, se
+  necesita rho ≈ 0.3+ por ventana para cruzar — es un test exigente, consistente con
+  la historia del proyecto (casi todos los factores dieron rho ≪ 0.3). Un NO CUMPLE
+  acá es evidencia, no ausencia de evidencia (n suficiente por ventana).
+
+**Familia ledger**: `signal_diagnosis` — un test de rank de señal sobre datos reales,
+mismo tratamiento que §21/§22/§23/§25 (desvío documentado del texto genérico del plan,
+que decía motor_signal; un rank de señal no es un trial de motor con DSR OOS).
+`n_trials_consumidos=1`: signal_diagnosis 16→17, umbral vigente del trial nuevo.
+`motor_signal` NO se toca (queda en 10).
+
+**Riesgos declarados**:
+1. **Proxy del comunicado, no del call verbatim**: limitación heredada del PASO 1 y
+   documentada en `earnings_sentiment.py` — el 8-K 2.02 es el press release editado
+   por la gerencia, no las preguntas/respuestas del call. Si el factor sale nulo
+   puede ser por la proxy y no por ausencia total de señal (y viceversa). Se acepta
+   como la mejor fuente pública gratuita disponible; no se scrapean transcripciones
+   pagas.
+2. **Clustering temporal**: filings del mismo día de temporada de earnings (pico:
+   7 tickers, varios del mismo sector) no son independientes → la agregación por
+   día de filing + Newey-West mitiga; el t secundario pooled se lee con esa reserva.
+3. **Overlap de ventanas forward**: eventos con filing_dates a <20 ruedas de distancia
+   comparten ventanas → NW con L recortado cubre la autocorrelación de la serie
+   agregada; se declara para que no se sobre-interprete.
+4. **Cobertura sectorial**: el universo tiene sesgo tech/large-cap; la conclusión vale
+   para este universo, no se extrapola.
+
+**Registro en ledger**: al cerrar, `register_trial(...)` id `finbert_sentiment_eventstudy`,
+familia `signal_diagnosis`, n=1, veredicto según criterio, artefacto
+`data/cache/trial_finbert_eventstudy_<ts>.txt`.
+
+**RESULTADO**: (pendiente de corrida)
+

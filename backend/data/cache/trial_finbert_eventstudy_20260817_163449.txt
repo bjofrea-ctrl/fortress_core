@@ -1,0 +1,5 @@
+==============================================================================
+PLAN_MEJORA_MATEMATICA §27 — Trial FinBERT PASO 2 (2026-08-17)
+Store: data/cache/earnings_sentiment.db | target: ret relativo a SPY, 20 ruedas post-filing
+Umbral pre-registrado: |t| > 2.773 (Bonferroni-9 bilateral) con signo +1 en >=2/3 ventanas E1/E2/E3
+==============================================================================

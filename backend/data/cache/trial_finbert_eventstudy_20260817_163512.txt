@@ -1,0 +1,37 @@
+==============================================================================
+PLAN_MEJORA_MATEMATICA §27 — Trial FinBERT PASO 2 (2026-08-17)
+Store: data/cache/earnings_sentiment.db | target: ret relativo a SPY, 20 ruedas post-filing
+Umbral pre-registrado: |t| > 2.773 (Bonferroni-9 bilateral) con signo +1 en >=2/3 ventanas E1/E2/E3
+==============================================================================
+
+--- CHEQUE DE FIDELIDAD contra earnings_sentiment_run_20260817_120713.txt ---
+  filas: medido=369 esperado=369 -> OK
+  símbolos: medido=48 esperado=48 -> OK
+  NULLs score: medido=0 esperado=0 -> OK
+  modelo: medido=['ProsusAI/finbert'] esperado={'ProsusAI/finbert'} -> OK
+  fecha min: medido=2024-08-13 esperado=2024-08-13 -> OK
+  fecha max: medido=2026-08-12 esperado=2026-08-12 -> OK
+  OK: la store coincide con el artefacto de la corrida de acumulación
+
+--- Construcción de eventos ---
+Eventos: 369 en store -> 331 con ventana fwd-20 completa (38 excluidos por ventana incompleta, pre-declarado)
+Días de filing agregados: 177 (1 serie temporal por ventana)
+
+--- TEST PRINCIPAL (pre-registrado §27): Spearman score_día ~ rel_día por ventana ---
+ventana rango                       n_dias  spearman    SE_NW       t   L signo   SIG
+E1      2024-08-13 -> 2025-06-30       137   +0.0496   0.0665   +0.38  17     +    no
+E2      2025-07-01 -> 2026-01-31       113   -0.1118   0.0491   -0.85  14     -    no
+E3      2026-02-01 -> 2026-08-12        81   +0.0320   0.0771   -0.08  10     -    no
+TOTAL(ref) 2024-08-13 -> 2026-07-09    331   -0.0098   0.0340   -0.14 (no cuenta)
+
+Criterio pre-registrado: |t| > 2.77 con signo +1 en >=2/3 ventanas -> SIG: 0/3
+VEREDICTO: NO_CUMPLE
+
+--- TEST SECUNDARIO (contexto, NUNCA hallazgo): premia terciles alto vs bajo sobre rel ---
+E1: n_hi=25 n_lo=25 premia=+0.01668 t_pooled=+0.73
+E2: n_hi=19 n_lo=19 premia=-0.00749 t_pooled=-0.39
+E3: n_hi=16 n_lo=16 premia=+0.02930 t_pooled=+0.83
+  Reserva pre-registrada (§27): clustering por día de filing y overlap de ventanas forward —
+  el t secundario pooled se lee solo como magnitud, nunca como hallazgo.
+
+Out: data/cache/trial_finbert_eventstudy_20260817_163512.txt
