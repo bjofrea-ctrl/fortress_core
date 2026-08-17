@@ -12,7 +12,7 @@
 - **Suite actual: 242 tests pasando** (no 216 ni 70/70).
 - **Tarea A (Triple Barrier)** y **Tarea C (Lead-lag)**: CERRADAS con artefactos.
 - **Tarea C (Command Code, §26 indicadores semanales)**: CERRADA — NO CUMPLE (2026-08-17).
-- **Tarea B (FinBERT) PASO 1**: HECHO. `earnings_sentiment.py` + CLI + 25 tests. Backfill inicial 24 filings. PASO 2 (trial) bloqueado hasta 8 trimestres × 30 símbolos.
+- **Tarea B (FinBERT) PASO 1**: HECHO. `earnings_sentiment.py` + CLI + 25 tests. Acumulación completa: 48/48 símbolos, 369 filings. **PASO 2**: CERRADO — trial §27 NO_CUMPLE (2026-08-17, Kilo Code): el tono del comunicado 8-K 2.02 no predice retorno relativo a 20 ruedas (0/3 ventanas, signo inconsistente). Línea cerrada con la evidencia disponible; la store se conserva para re-acumulación futura.
 - **Instrumento M1-M8 completo**: todos los módulos implementados, faltan trials que los usen.
 - **ADX t=+2.31 nominal**: único factor con señal positiva. §25 (2026-08-17, Cline) lo probó en
   walk-forward OOS por ventana → **NO CUMPLE** (W1 +0.79 / W2 +1.54 / W3 +1.47, 0/3 cruzan

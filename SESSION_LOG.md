@@ -1568,3 +1568,31 @@ anterior) y `ORDENES_MODULOS.md` (M7 → hecho) actualizados.
 - **Hallazgo**: con vara de asesoría (Brier), mezclar indicadores NO agrega predictibilidad — el blend actual ya está en el piso del baseline. Consistente con #13 (IC mejor no se tradujo en PnL): tampoco se traduce en mejor probabilidad calibrada.
 - **La selectividad real de asesoría sigue siendo la del win_prob del motor** (calibrado sobre ret_net/barreras): umbral ≥0.65 → VPP real 73.7% (n=19), ≥0.70 → 87.5% (n=8) — cola alta con cobertura chica (6.6%/2.8%).
 - **Conclusión**: la ganancia pendiente de asesoría NO está en combinar indicadores — está en el rank cross-sectional (relativo al universo, confusor §6.2: todo se midió absoluto). No consume slot (diagnóstico read-only, sin cambio de motor).
+
+## 2026-08-17 — §27 Trial FinBERT PASO 2 (Tarea B): NO CUMPLE — línea sentimiento-earnings CERRADA con la evidencia disponible (Kilo Code)
+
+- **Desbloqueo verificado**: el contrato de datos del PASO 2 ("≥8 trimestres × ≥30 símbolos") se
+  cumplió hoy — acumulación completa `earnings_sentiment_run_20260817_120713.txt` (48/48 símbolos,
+  369 filings, 0 errores); DB verificada: 8 trimestres (2024Q3→2026Q2) con ≥30 símbolos, 45 símbolos
+  con 8 filings.
+- **Pre-registro §27** escrito ANTES de correr. Diseño adaptado porque el sentimiento es event-based
+  (no panel diario): pendiente HAC Newey-West de ret_relativo_a_SPY(20 ruedas) ~ score_finbert sobre
+  la serie cronológica de eventos, ventanas E1/E2/E3 por fecha de filing, Bonferroni-9 |t|>2.77
+  signo + en ≥2/3. Target relativo (no absoluto) declarado como lección §6.2. Cheque de fidelidad
+  contra el artefacto de la corrida (aborta si difiere). Bug atrapado antes de correr: el t original
+  del script medía la MEDIA de rel (drift), no la pendiente de predicción — corregida la estadística
+  y aclaramiento en §27.
+- **Corrida** (`scripts/trial_finbert_eventstudy.py`, artefacto
+  `trial_finbert_eventstudy_20260817_163512.txt`, EXIT 0): fidelidad OK (369 filas/48 símbolos exacto).
+  331/369 eventos con ventana completa (38 excluidos, pre-declarado). E1 n=137 t=+0.38, E2 n=113
+  t=−0.85, E3 n=81 t=−0.08 → **0/3, NO_CUMPLE**. Signo spearman inconsistente entre ventanas
+  (+0.05/−0.11/+0.03). Test secundario (premia terciles) mixto y no significativo.
+- **Lectura**: el tono del comunicado 8-K 2.02 no predice retorno relativo a 20 ruedas. Línea
+  CERRADA con la evidencia disponible; dos reservas declaradas como única vía de reapertura: (1)
+  el 8-K es comunicado editado, no transcripción del call; (2) 2 años × ~110-140 eventos/ventana
+  da poder solo para rhos ≳ 0.25-0.30. La store NO se borra (acumulación incremental barata para
+  el futuro). Artefacto inválido del run con KeyError ELIMINADO (precedente §25).
+- **Ledger**: `finbert_sentiment_eventstudy`, signal_diagnosis, n=1 → 16→17 consumidos,
+  umbral próximo 0.99444. motor_signal intacto (10).
+- **Verificación**: suite 242 passed, ruff limpio. ROADMAP (filas Tarea B), PLAN_LARGO_PLAZO y §27
+  actualizados.

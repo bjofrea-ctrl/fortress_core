@@ -2011,5 +2011,40 @@ que decía motor_signal; un rank de señal no es un trial de motor con DSR OOS).
 familia `signal_diagnosis`, n=1, veredicto según criterio, artefacto
 `data/cache/trial_finbert_eventstudy_<ts>.txt`.
 
-**RESULTADO**: (pendiente de corrida)
+**RESULTADO (2026-08-17, Kilo Code) — artefacto:
+`data/cache/trial_finbert_eventstudy_20260817_163512.txt`**
+
+Cheque de fidelidad: OK — la store coincide exactamente con el artefacto de
+acumulación (369 filas, 48 símbolos, 0 NULLs, modelo ProsusAI/finbert, rango
+2024-08-13→2026-08-12). 331/369 eventos con ventana fwd-20 completa (38 excluidos,
+pre-declarado). L por ventana = min(40, n//8).
+
+| ventana | rango | n_eventos | spearman | HAC SE | t | signo | |t|>2.77 |
+|---|---|---|---|---|---|---|---|
+| E1 | 2024-08-13→2025-06-30 | 137 | +0.0496 | 0.0665 | +0.38 | + | no |
+| E2 | 2025-07-01→2026-01-31 | 113 | −0.1118 | 0.0491 | −0.85 | − | no |
+| E3 | 2026-02-01→2026-08-12 | 81 | +0.0320 | 0.0771 | −0.08 | − | no |
+| TOTAL (ref) | 2024-08-13→2026-08-12 | 331 | −0.0098 | 0.0340 | −0.14 | — | — |
+
+**VEREDICTO (pre-registrado): NO_CUMPLE** — 0/3 ventanas cruzan Bonferroni-9
+(|t|>2.77) y el SIGNO es inconsistente entre ventanas (E2 negativo en spearman y
+pendiente). El tono del comunicado de earnings (8-K 2.02) no predice el retorno
+relativo a SPY a 20 ruedas.
+
+Test secundario (contexto, nunca hallazgo): premia terciles alto vs bajo sobre rel:
+E1 +1.67pp (t +0.73), E2 −0.75pp (t −0.39), E3 +2.93pp (t +0.83) — mixta y no
+significativa; inconsistente con el signo del test principal.
+
+Lectura honesta: dos limitaciones declaradas quedan vigentes como única vía de
+reapertura — (1) el 8-K 2.02 es el COMUNICADO editado, no la transcripción del call
+(null puede ser de la proxy); (2) 2 años × ~110-140 eventos por ventana da poder solo
+para rho ≳ 0.25. Con esa doble reserva, la línea FinBERT-sentiment queda CERRADA como
+"sin señal con la evidencia disponible"; se retoma solo con evidencia nueva
+sustancial (≥4-5 años de acumulación incremental, o transcripciones si alguna vez el
+costo lo justifica). La acumulación incremental sigue corriendo (es barata y sirve
+para el futuro): NO se borra la store.
+
+**Ledger**: `register_trial(...)` id `finbert_sentiment_eventstudy`, familia
+`signal_diagnosis`, n=1 (16→17, umbral próximo 0.99444), veredicto NO_CUMPLE.
+Suite 242 passed, ruff limpio.
 
