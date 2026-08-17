@@ -1596,3 +1596,23 @@ anterior) y `ORDENES_MODULOS.md` (M7 → hecho) actualizados.
   umbral próximo 0.99444. motor_signal intacto (10).
 - **Verificación**: suite 242 passed, ruff limpio. ROADMAP (filas Tarea B), PLAN_LARGO_PLAZO y §27
   actualizados.
+
+## 2026-08-17 — M4: cuenta Alpaca paper conectada + medición viva lanzada al open (Kilo Code)
+
+- **Credenciales**: el usuario generó cuenta paper `PA3QUWEX1XBJ` (ACTIVE, $25k sintéticos).
+  Primer intento: las claves de la nota eran de la cuenta LIVE (verificado contra el artefacto
+  real: `api.alpaca.markets` autenticó, `paper-api` rechazó 401) → no se usaron (decisión de
+  producto: no broker real). Usuario regeneró el par PAPER correcto y lo dejó en Notas.
+- **Configuración**: credenciales en `backend/.env` (gitignored, `Settings` las carga; script
+  de medición las lee de `os.environ`). Smoke test sin exponer valores en el chat.
+- **Hallazgo**: fuera de rueda Alpaca rechaza market orders con 422 ("extended hours order
+  must be DAY or GTC limit orders") — la medición real exige mercado abierto.
+- **Runner lanzado**: `scripts/run_costs_at_open.py` (nuevo, ruff limpio) en background
+  (PID 17770, log `backend/data/cache/m4_runner.log`, deadline 36h): al open corre ronda
+  BUY + ronda SELL (cierra posiciones) del universo completo, qt=1, vía
+  `scripts/measure_execution_costs.py`. Artefactos → `data/cache/measure_execution_costs_*.txt`
+  + DB `execution_costs.db`.
+- **Pendiente**: mañana post-open verificar artefactos, extraer el costo real medido
+  (slippage medio + comisión), registrarlo en docs y actualizar ROADMAP M4 a cerrado.
+- Higiene de seguridad recordada al usuario: rotar el secret LIVE y la contraseña de la
+  cuenta (quedaron en texto plano en Notas antes de la regeneración).
