@@ -1,0 +1,19 @@
+====================================================================================================
+RANK IC CROSS-SECTIONAL INTRA-DÍA POR VENTANA — factores + BLEND (2026-08-17)
+Panel: factor_panel_20260811_144857.parquet | método §4.1/0.5a: Spearman por fecha, promedio con NW L=4 | min símbolos/fecha: 5
+====================================================================================================
+factor          W1 2019-2021                W2 2022-2023                W3 2024-2026                TOTAL                       
+[W1 2019-2021] fechas=139 | símbolos/fecha: media=7.5 mediana=7 min=1 max=25
+[W2 2022-2023] fechas=89 | símbolos/fecha: media=4.2 mediana=4 min=1 max=23
+[W3 2024-2026] fechas=118 | símbolos/fecha: media=5.6 mediana=5 min=1 max=19
+[TOTAL] fechas=346 | símbolos/fecha: media=6.0 mediana=5 min=1 max=25
+momentum_score  IC=+0.016 t=+0.36     (n=90)IC=-0.084 t=-1.01     (n=33)IC=-0.008 t=-0.11     (n=64)IC=-0.010 t=-0.28     (n=187)
+rsi_score       IC=+0.062 t=+1.92     (n=80)IC=-0.055 t=-0.64     (n=25)IC=+0.051 t=+1.06     (n=59)IC=+0.040 t=+1.49     (n=164)
+adx_score       IC=+0.051 t=+1.26     (n=78)IC=+0.103 t=+1.60     (n=20)IC=+0.079 t=+1.50     (n=53)IC=+0.068 t=+2.31 SIG (n=151)
+trend_score     n_días<5                    n_días<5                    n_días<5                    n_días<5                    
+macro_composite n_días<5                    n_días<5                    n_días<5                    n_días<5                    
+blend           IC=+0.048 t=+1.08     (n=90)IC=-0.070 t=-0.93     (n=33)IC=-0.001 t=-0.01     (n=64)IC=+0.011 t=+0.31     (n=187)
+
+Criterio: |t|>2 nominal por ventana (diagnóstico, no trial — no consume slot).
+Bonferroni informal: 6 factores x 4 ventanas = 24 tests -> |t|>2.8 para robusto.
+Out: asesoria_rank_crosssectional_20260817_111203.txt
