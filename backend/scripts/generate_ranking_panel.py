@@ -115,7 +115,7 @@ def calculate_rankings(all_data: Dict[str, pd.DataFrame], date: str) -> pd.DataF
         date_df[rank_col] = date_df[col].rank(pct=True) * 100
 
     # Trend rank: 100 si trend_ok, 0 si no
-    date_df["trend_rank"] = date_df["trend_ok"].astype(int) * 100
+    date_df["trend_rank"] = date_df["trend_ok"].fillna(False).astype(int) * 100
 
     return date_df
 
