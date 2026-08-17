@@ -162,6 +162,7 @@ export function useDecisionHistory(apiUrl: string, symbol: string | null) {
 }
 
 export interface RankingEntry {
+  symbol: string;
   date: string;
   momentum_rank: number;
   rsi_rank: number;

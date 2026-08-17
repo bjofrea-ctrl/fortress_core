@@ -90,7 +90,7 @@ export default function UniverseTable({ apiUrl, onSelectSymbol, selectedSymbol }
                     setExpandedSymbol(ticket.symbol);
                   }
                 }}
-                className={`w-full text-left p-4 grid grid-cols-6 gap-4 items-center transition-colors hover:bg-dark-bg/50 ${
+                className={`w-full text-left p-4 grid grid-cols-8 gap-4 items-center transition-colors hover:bg-dark-bg/50 ${
                   isSelected ? "bg-accent-green/10" : ""
                 }`}
               >
@@ -105,10 +105,20 @@ export default function UniverseTable({ apiUrl, onSelectSymbol, selectedSymbol }
                 <span className="font-mono text-sm">
                   ${ticket.entry_price?.toFixed(2) ?? "N/A"}
                 </span>
-                <span className="font-mono text-sm">
-                  {ticket.payoff_ratio !== null ?
-                    (ticket.payoff_ratio > 0 ? "+" : "") + ticket.payoff_ratio.toFixed(2) + "R" : "N/A"}
-                </span>
+                {/* Percentiles */}
+                {rankingsData && (
+                  <>
+                    <span className="font-mono text-sm">
+                      {rankingsData.rankings.find(r => r.symbol === ticket.symbol)?.momentum_rank?.toFixed(0) ?? "N/A"}%
+                    </span>
+                    <span className="font-mono text-sm">
+                      {rankingsData.rankings.find(r => r.symbol === ticket.symbol)?.rsi_rank?.toFixed(0) ?? "N/A"}%
+                    </span>
+                    <span className="font-mono text-sm">
+                      {rankingsData.rankings.find(r => r.symbol === ticket.symbol)?.adx_rank?.toFixed(0) ?? "N/A"}%
+                    </span>
+                  </>
+                )}
                 <span className={`text-xs ${getTransitionColor(ticket.transition)}`}>
                   {getTransitionLabel(ticket.transition)}
                 </span>
