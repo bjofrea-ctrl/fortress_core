@@ -1411,3 +1411,26 @@ anterior) y `ORDENES_MODULOS.md` (M7 → hecho) actualizados.
 - **Ledger**: registrado `signal_diagnosis` `triple_barrier_retest` (n=1). Nota de coordinación: el texto de PLAN_LARGO_PLAZO decía familia `motor_signal`, pero el contrato del ledger clasifica rank-IC de señal bajo `signal_diagnosis` (igual que §21, §21.1 y §22) — el desvío quedó documentado en §23; `motor_signal` queda intacto (8 consumidos).
 - **Verificación**: suite completa `cd backend && .venv/bin/python -m pytest -q` (ver conteo al pie), ruff limpio en el script nuevo.
 - `ROADMAP.md` fila §23 → 🟢.
+
+## 2026-08-17 — Tarea B (PLAN_LARGO_PLAZO.md): PASO 1 FinBERT earnings HECHO + acumulación universo 50 en curso (OpenCode)
+
+- **PASO 1 implementado y verificado**: `backend/app/core/earnings_sentiment.py` — store SQLite
+  (`data/cache/earnings_sentiment.db`, dedup por accession UNIQUE), fetch SEC EDGAR 8-K item 2.02
+  (comunicado oficial, point-in-time; NO transcripción verbatim — limitación documentada en el
+  docstring: el tono del comunicado es proxy del tono del call), FinBERT `ProsusAI/finbert`
+  (import lazy, chunking ~1800 chars, score = prob_pos − prob_neg ponderado por longitud).
+  CLI `backend/scripts/accumulate_earnings_sentiment.py` (universo 50, ETFs excluidos, backfill
+  ~8 8-Ks por símbolo + incremental). 25 tests en `tests/test_earnings_sentiment.py`.
+- **Verificación**: suite completa `cd backend && .venv/bin/python -m pytest -q` → **241 passed**
+  (fresca, esta sesión), ruff limpio. Base con 24 filings (AAPL/AMD/NVDA) de la corrida de
+  desarrollo (2026-08-16).
+- **PASO 2 (trial) BLOQUEADO por datos**: requiere ≥8 trimestres × ≥30 símbolos acumulados.
+  Hoy: 3 símbolos → no simular, documentar bloqueo. En curso: corrida completa universo 50
+  (47 símbolos con earnings) lanzada desacoplada (setsid, log `/tmp/earnings_universe_full.log`)
+  — verificar artefacto `data/cache/earnings_sentiment_run_*.txt` al terminar antes de cerrar.
+- **Gotchas registrados** (heredados de la sesión de desarrollo, verificados en el código):
+  EDGAR 403 sin User-Agent con dominio real; 8-K 2.02 de grandes tecnológicas = solo referencia
+  administrativa (el comunicado vive en exhibit 99 — el fetch lo detecta); transformers
+  moderno exige torch≥2.6 inexistente para macOS x86_64/Py3.9 → fijado
+  `transformers==4.44.2` + `torch==2.2.2`; BRK-B → BRK.B en EDGAR.
+- `ROADMAP.md` fila Tarea B agregada (PASO 1 🟢, PASO 2 ⚪ bloqueado por datos).
