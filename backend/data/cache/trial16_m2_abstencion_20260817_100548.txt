@@ -1,0 +1,38 @@
+========================================================================
+TRIAL #16 — abstención calibrada M2 contra el baseline real
+Corrida 2026-08-17T10:05:48
+Parquet: data/cache/baseline_clean_20260811_150643_trades.parquet
+Trades totales: 286 (2019-01-07 → 2026-07-27)
+VPP baseline global (operar todo): 0.5874
+alpha=0.1 | umbral p<0.025 (Bonferroni-2) | piso operados >=30 | abstencion <= 80% | cobertura [0.8, 0.97]
+========================================================================
+
+--- W2 2022-2023 [2022-01-01 → 2023-12-31] ---
+Calibración: n=118 trades (entry < 2022-01-01)
+Ventana: n=49 trades
+VPP_baseline=0.4694 | VPP_M2=nan | n_operados=0 | tasa_abstencion=100.00% | cobertura=0.8367
+z=nan | p=nan (umbral 0.025) | quantile=0.09341 | resid_mediana=0.02603 | max_interval_width=0.05205
+  [FALLA] VPP_M2 > VPP_baseline con p<0.025
+  [FALLA] n_operados >= 30
+  [FALLA] tasa_abstencion <= 0.80
+VENTANA NO CUMPLE
+
+--- W3 2024-2026 [2024-01-01 → 2026-08-04] ---
+Calibración: n=167 trades (entry < 2024-01-01)
+Ventana: n=119 trades
+VPP_baseline=0.5798 | VPP_M2=nan | n_operados=0 | tasa_abstencion=100.00% | cobertura=0.8908
+z=nan | p=nan (umbral 0.025) | quantile=0.09906 | resid_mediana=0.02862 | max_interval_width=0.05724
+  [FALLA] VPP_M2 > VPP_baseline con p<0.025
+  [FALLA] n_operados >= 30
+  [FALLA] tasa_abstencion <= 0.80
+VENTANA NO CUMPLE
+
+--- Contexto (no criterio) ---
+Ret medio por trade (todos): +0.02039
+Ret medio por trade (pnl>0): +0.06040
+Ret medio por trade (pnl<0): -0.03658
+
+========================================================================
+VEREDICTO FINAL (pre-registrado §24): NO_CUMPLE
+Ventanas: NO_CUMPLE, NO_CUMPLE
+========================================================================

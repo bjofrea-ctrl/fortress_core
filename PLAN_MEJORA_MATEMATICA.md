@@ -1508,3 +1508,73 @@ la PROBABILIDAD de que la barrera cierre en positivo. La vía "nulo en magnitud 
 alto → peor salida de barrera): bajo el criterio no cuenta (signo −) y tampoco cruza
 el umbral. RSI/ADX W2 dieron t nominales +1.73/+1.90 con n chico (19-22 fechas, L
 recortada a 2): contexto, nunca hallazgo.
+
+## 24. TRIAL #16 — PRE-REGISTRO: abstención calibrada M2 contra el baseline real (2026-08-17)
+
+**Origen**: decisión del usuario (2026-08-17). El instrumento diagnóstico M1-M8 está
+completo (DISENO_INSTRUMENTO.md) pero NINGÚN trial lo usó contra datos reales. M2
+(`app/core/conformal.py`, Split Conformal Prediction) envuelve el score real del motor
+(`win_prob`) y declara abstenerse cuando el intervalo de predicción del retorno neto es
+demasiado ancho. Pregunta: **¿la abstención calibrada M2 mejora el VPP de lo que el
+motor SÍ opera, contra el baseline que opera todo?**
+
+**Datos**: `data/cache/baseline_clean_20260811_150643_trades.parquet` — 286 trades
+REALES del baseline universo 50 (2019-01-07 → 2026), con `win_prob` (score que el motor
+usa para sizing, `backtest_engine.py:438`), `pnl`, `entry_date`, `exit_reason`.
+
+**Score**: `win_prob` (el score real del motor, no uno nuevo).
+**Outcome**: retorno neto por trade `ret = pnl / (shares × entry_price)` (el ret_net
+real del trade, no un label sintético).
+
+**Metodología** (`backend/scripts/trial_m2_abstencion.py`, corre DESPUÉS de este
+pre-registro):
+
+- **Walk-forward acumulado sin lookahead** (corrección del usuario del trial #15
+  aplicada): para cada ventana, M2 se calibra SOLO con trades cuya `entry_date` es
+  ANTERIOR al inicio de la ventana (historia completa previa, nunca datos futuros).
+- **Ventanas**: W2 2022-2023, W3 2024-2026-08-04.
+- **Exclusión declarada ANTES de correr — W1 (2020-2021) NO es evaluable**: la
+  calibración de W1 usaría solo los 24 trades de 2019, y el piso de calibración de M2
+  es n ≥ 30 (`conformal.py:99-104`) — calibrar con 24 trades violaría el piso del
+  propio instrumento. W1 se reporta como no evaluable por diseño, no como fracaso.
+- **Calibración**: W2 calibra con trades < 2022-01-01 (n=118 ✓); W3 calibra con
+  trades < 2024-01-01 (n=167 ✓).
+- Por trade de la ventana: `engine.predict(win_prob)` → `abstenerse` (intervalo más
+  ancho que el umbral `2×mediana de residuos`, default declarado de M2).
+- Métricas por ventana: VPP_baseline (fracción de trades con ret>0 operando todo),
+  VPP_M2 (fracción con signo correcto entre los operados, `vpp_bajo_abstencion`),
+  n_operados, tasa_abstención, cobertura empírica de M2.
+- Test: z-test unilateral de dos proporciones con corrección de continuidad
+  (VPP_M2 > VPP_baseline).
+
+**Criterio pre-registrado (sin conocer el resultado)**:
+- Tests: 2 ventanas × 1 test = **2 tests nuevos**. Bonferroni-2 unilateral:
+  umbral p < **0.025** por ventana (α_total 0.05).
+- CUMPLE si, en **TODAS** las ventanas evaluables (W2, W3): (a) VPP_M2 > VPP_baseline
+  con p < 0.025; (b) n_operados ≥ 30 (piso TRADE_FLOOR del proyecto); (c) tasa de
+  abstención ≤ 0.80 (un instrumento que se abstiene el 95% "mejora" trivialmente el
+  VPP con n=2 — no es operativamente útil).
+- Fidelidad: cobertura empírica de M2 en [0.80, 0.97] (nominal 0.90). Si una ventana
+  falla cobertura, se declara NO INTERPRETABLE (DISENO_INSTRUMENTO §8: si la
+  cobertura falla, el instrumento no se usa) — no cuenta como éxito ni fracaso.
+- NO CUMPLE si alguna ventana evaluable falla cualquier condición. Nota honesta:
+  métricas secundarias (retorno medio operado vs baseline, delta pnl) se reportan
+  como contexto, nunca como hallazgo.
+
+**Familia**: `motor_signal` — es un trial de MECÁNICA del motor (abstención de
+operar), mismo tratamiento que #15 EVT (sizing), NO un diagnóstico de señal rank-IC
+(eso es `signal_diagnosis`). Consume 1 slot: motor_signal pasa de 8 a 9 consumidos;
+el umbral Bonferroni vigente para el próximo trial de la familia queda
+1 − 0.10/10 = 0.99.
+
+**Riesgo declarado**: los trades del baseline NO son independientes (mismo símbolo,
+misma fecha, salidas por barreras) — el z-test de proporciones es la vara nominal;
+la cobertura empírica y la consistencia entre ventanas son la vara de robustez real
+(criterio exige TODAS las ventanas, no mayoría). M2 se calibra con `ret` real del
+parquet — si el parquet fuera un artefacto del error (como el primer run de §22), la
+fidelidad lo delata: cobertura fuera de rango → no interpretable.
+
+**Registro en ledger**: `register_trial(...)` con familia `motor_signal`,
+n_trials_consumidos=1, veredicto según criterio, al cerrar.
+
+**RESULTADO**: (se llena al correr)

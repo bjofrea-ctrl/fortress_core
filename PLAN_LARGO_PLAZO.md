@@ -5,15 +5,18 @@
 > de producción — todo vive en `backend/scripts/` + docs, con revert automático si
 > no cumple.
 
+**Actualizado: 2026-08-17.** Estado verificado contra ROADMAP.md, trial_registry.json, y artefactos en data/cache/.
+
 ## Estado de partida (verificado hoy, no asumir nada más)
 
-- Instrumento diagnóstico M1-M8 completo y verificado: 216 tests, ruff limpio.
-- **La línea "macro-como-compuerta" queda CERRADA.** Se probó dos veces: la medición
-  original (+0.198 GOLDILOCKS/−0.173 DEFLATION) estaba contaminada por lookahead
-  (§3.1); la re-medición limpia (`PLAN_MEJORA_MATEMATICA.md:519-527`) da GOLDILOCKS
-  +0.112, REFLATION +0.106, STAGFLATION +0.121, DEFLATION +0.249 — ningún `|t|>2`,
-  el patrón contra-régimen NO se sostiene. **No retomar sin evidencia nueva.**
+- **Suite actual: 241 tests pasando** (no 216 ni 70/70).
+- **Tarea A (Triple Barrier)** y **Tarea C (Lead-lag)**: CERRADAS con artefactos.
+- **Tarea B (FinBERT) PASO 1**: HECHO. `earnings_sentiment.py` + CLI + 25 tests. Backfill inicial 24 filings. PASO 2 (trial) bloqueado hasta 8 trimestres × 30 símbolos.
+- **Instrumento M1-M8 completo**: todos los módulos implementados, faltan trials que los usen.
+- **ADX t=+2.31 nominal**: único factor con señal positiva, marginal no robusto bajo Bonferroni-4 (≈2.5). No se probó en walk-forward.
+- **La línea "macro-como-compuerta" queda CERRADA.** Se probó dos veces y no sostiene. No retomar sin evidencia nueva.
 - `AGENTS.md` de este repo tiene la doctrina de equipo — leerlo si es sesión nueva.
+- **Problema estructural reconocido**: el proyecto tiene criterios claros para refutar, pero no para aceptar "bueno". El trial M2 (abstención calibrada) es el primero que responde "¿debería el motor callarse cuando no hay señal?" con evidencia existente.
 
 ## Regla no negociable para las tres tareas de abajo
 
@@ -32,90 +35,112 @@ Cada una termina en un **trial que corre contra datos reales**. Todas deben:
 
 ---
 
-## Tarea A — Triple Barrier como target de investigación (Cline)
+## Tarea A — Trial de abstención calibrada M2 (OpenCode)
+
+**ESTADO**: 🟡 EN CURSO — pre-registro listo, esperando corrida
 
 ```
-PROBLEMA: toda la investigación histórica de este proyecto midió factores contra
-fwd_return_20d (retorno a horizonte fijo). El motor real sale por barreras (M1,
-app/core/barrier_labeling.py — ya construido y con 17 tests, no tocar ese archivo).
-Nunca se re-testearon los factores YA REFUTADOS (momentum_score, rsi_score,
-adx_score — RESUMEN_VALIDACION_VARIABLES.md §1) contra el objetivo que el motor
-persigue de verdad.
+PROBLEMA ESTRUCTURAL: El proyecto tiene criterios claros para refutar (DSR, Bonferroni,
+pre-registro), pero no definió qué cuenta como "bueno" para decidir operar. Cada trial
+termina en NO CUMPLE, y eso está bien — pero ADX quedó en tierra de nadie (t=+2.31
+nominal, único factor positivo).
 
-HIPÓTESIS: un factor puede ser nulo contra fwd_return_20d (ruido de magnitud) y
-tener poder real contra "¿toca TP antes que SL?" (probabilidad binaria, robusta a
-colas). No contradice el diagnóstico de "generador vacío" — lo refina.
+M2 (conformal.py) YA ESTÁ CONSTRUIDO: 16 tests, métrica vpp_bajo_abstencion, Split
+Conformal Prediction con garantía de cobertura. Lo que falta es el TRIAL que lo
+pruebe contra el baseline real.
+
+HIPÓTESIS: El motor debería abstenerse (no operar) cuando la señal es débil. Un
+instrumento que se abstiene el 80% del tiempo y acierta el 20% restante es un ÉXITO,
+no un fracaso — mejora el VPP de lo que sí opera.
 
 TAREA:
-1. Leer SOLO: backend/app/core/barrier_labeling.py (firmas de label_symbol/summarize,
-   no tocar), backend/scripts/diagnose_horizon_largo.py (mismo patrón de rank IC
-   intra-día + Newey-West que hay que replicar).
-2. Construir backend/scripts/retest_triple_barrier.py:
-   - Para cada símbolo del universo 50 (fetch_universe_data.NEW_UNIVERSE + los 7
-     originales), correr label_symbol(df) → obtener 'label' (+1/-1/0) por fecha.
-   - Rank IC intra-día (Spearman por fecha, igual que todos los trials previos)
-     entre momentum_score/rsi_score/adx_score y 'label' (NO fwd_return_20d).
-   - Newey-West SE, mismo patrón de diagnose_horizon_largo.py.
-   - Ventanas W1/W2/W3 (2020-2021 / 2022-2023 / 2024-2026), mismas de siempre.
-3. PRE-REGISTRAR antes de correr: criterio DSR o significancia (seguir el patrón de
-   §21.1), familia "motor_signal" en el ledger, Bonferroni sobre 3 factores × 3
-   ventanas = 9 tests nuevos.
-4. Correr, documentar veredicto con artefacto, registrar en el ledger.
+1. Pre-registro YA HECHO en PLAN_MEJORA_MATEMATICA.md §24 (nueva sección).
+2. Construir backend/scripts/trial_m2_abstention.py:
+   - Cargar baseline_clean_20260811_150643_trades.parquet (los 286 trades del baseline).
+   - Para cada trade, obtener el score que tenía en el momento de entrada (usar
+     la lógica existente de signal_engine o predictive_engine — NO reinventar).
+   - Calibrar ConformalAbstentionEngine sobre W1 (2020-2021), predecir W2/W3.
+   - Métrica primaria: vpp_bajo_abstencion (predicciones que NO se abstuvieron vs
+     outcomes reales). Secundaria: cobertura empírica del intervalo 90%.
+3. CRITERIO DE ÉXITO (pre-registrado):
+   - vpp_bajo_abstencion > baseline_vpp (el VPP de operar todo sin filtro).
+   - Cobertura empírica dentro de ±5pp del nominal 90%.
+   - Familia "motor_signal", n_trials=9 (el siguiente en el ledger).
+4. Correr, documentar veredicto con artefacto, registrar en ledger.
 
-REGLAS: Python 3.9, no tocar barrier_labeling.py ni el motor, no commitear sin
-autorización de Boris.
+REGLAS: Python 3.9, NO tocar conformal.py ni el motor, solo scripts/ nuevo.
+Artefacto en data/cache/trial_m2_abstention_YYYYMMDD_HHMMSS.txt.
 ```
 
 ---
 
-## Tarea B — FinBERT sobre earnings calls (OpenCode)
+## Tarea B — ADX walk-forward como candidato a "bueno" (Cline)
+
+**ESTADO**: ⚪ NO EMPEZADO — pre-registro pendiente
 
 ```
-PROBLEMA: la única fuente de sentimiento probada fue AAII (encuesta de inversores
-retail, refutada #8 y re-refutada Fase 0.6). FinBERT sobre TONO de earnings calls
-es una fuente de datos distinta — nunca probada — y gratis (HuggingFace).
+PROBLEMA: ADX tiene t=+2.31 nominal, el único factor con señal positiva. No alcanza
+para señar robusta bajo Bonferroni-4 (≈2.5), pero tampoco se probó en walk-forward.
+Si se robustece en OOS, deja de ser marginal.
 
-TAREA (multi-sesión, dividir en pasos):
-PASO 1 — Pipeline de datos:
-1. backend/app/core/earnings_sentiment.py: scraper de transcripciones (fuente
-   pública gratis — evaluar Seeking Alpha o SEC EDGAR 8-K con transcripción
-   adjunta) + FinBERT (transformers, pipeline "sentiment-analysis",
-   modelo "ProsusAI/finbert") → score de sentimiento por (símbolo, fecha earnings).
-2. Persistir en SQLite (mismo patrón que M4: backend/data/cache/earnings_sentiment.db).
-3. Empezar a acumular YA — cada earnings call de cada símbolo del universo 50 que
-   se reporte de acá en adelante. Esto es infraestructura, se construye libre, sin
-   pre-registro (no es un trial todavía).
+HIPÓTESIS: ADX como filtro único (no como parte del gate compuesto actual) podría
+tener poder predictivo suficiente para justificar operar cuando adx≥20, abstenerse
+cuando no.
 
-PASO 2 — cuando haya ≥8 trimestres acumulados para ≥30 símbolos:
-4. Pre-registrar en PLAN_MEJORA_MATEMATICA.md un trial: sentiment_score como factor
-   adicional en rank IC intra-día contra fwd_return_20d Y contra Triple Barrier
-   (label de M1) — mismo patrón que Tarea A. Familia "motor_signal" en el ledger.
+TAREA:
+1. Leer: backend/scripts/diagnose_rr2_intraday.py (patrón de rank IC intra-día),
+   backend/app/core/signal_engine.py (cómo se calcula ADX hoy).
+2. Pre-registrar en PLAN_MEJORA_MATEMATICA.md §25:
+   - Hipótesis: adx_score (o ADX crudo) como factor único.
+   - Ventanas W1/W2/W3, rank IC intra-día, Newey-West.
+   - Criterio: |t|>2.77 en ≥2/3 ventanas (Bonferroni-9 por los 3 horizontes).
+   - Familia "motor_signal", n_trials=10.
+3. Construir backend/scripts/trial_adx_walkforward.py:
+   - Para cada símbolo del universo 50, calcular ADX (usar signal_engine o
+     implementación directa con el mismo lookback que el existente).
+   - Rank IC intra-día entre ADX y fwd_return_20d (y/o Triple Barrier label de M1).
+   - Walk-forward: calibrar en W1, testear en W2/W3.
+4. Documentar veredicto con artefacto, registrar en ledger.
 
-REGLAS: Python 3.9, requests/BeautifulSoup para scraping (agregar a requirements
-si falta), transformers para FinBERT. No pegar a APIs pagas. No correr el trial del
-paso 2 hasta tener los 8 trimestres — documentarlo como bloqueado, no simular datos.
+REGLAS: Python 3.9, NO tocar signal_engine.py sin autorización. Si CUMPLE,
+discutir integración con el gate — no hacer solo.
 ```
 
 ---
 
-## Tarea C — Lead-lag entre símbolos (Command Code)
+## Tarea C — Indicadores sobre velas semanales (Command Code)
+
+**ESTADO**: ⚪ NO EMPEZADO — pre-registro pendiente
 
 ```
-PROBLEMA: nunca se testeó si un símbolo predice a otro (ej. NVDA→AMD por cadena de
-suministro) — todo lo probado hasta hoy mide un símbolo contra su propio pasado.
-Barato: no necesita datos nuevos, solo el panel diario que ya existe.
+PROBLEMA: Todos los indicadores se calculan sobre barras DIARIAS. Nunca se probó
+si una granularidad distinta (semanal) cambia el poder predictivo. Esto NO es cambiar
+el horizonte del retorno futuro (eso ya se probó en M1/M1b) — es cambiar el RUIDO
+del indicador mismo.
+
+HIPÓTESIS: Indicadores calculados sobre velas semanales tienen menos ruido de
+microestructura y podrían revelar señal que el ruido diario oculta.
 
 TAREA:
-1. backend/scripts/diagnose_lead_lag.py: para pares de símbolos del mismo sector/
-   cadena (definir la lista de pares candidatos ANTES de mirar resultados — ej.
-   semis: NVDA-AMD, NVDA-AVGO; mega-cap tech: AAPL-MSFT), correlación cruzada
-   desfasada (lag 1-5 días) de retornos, con el mismo Newey-West de siempre.
-2. PRE-REGISTRAR la lista de pares y los lags a testear ANTES de correr (si se
-   testean N pares × 5 lags, Bonferroni sobre N×5). Esto es fácil de p-hackear
-   si se eligen pares después de ver qué "funciona" — no hacerlo.
-3. Documentar veredicto, registrar en ledger.
+1. Leer: backend/scripts/diagnose_rr2_intraday.py (patrón de rank IC),
+   backend/app/core/signal_engine.py (cómo se calculan momentum/RSI/ADX hoy).
+2. Pre-registrar en PLAN_MEJORA_MATEMATICA.md §26:
+   - Universo: mismos 50 símbolos.
+   - Indicadores: momentum (20 semanas), RSI (14 semanas), ADX (14 semanas).
+   - Target: fwd_return_5d (1 semana hacia adelante) y/o Triple Barrier label.
+   - Ventanas: re-muestrear W1/W2/W3 a semanas (mismo período, diferente granularidad).
+   - Criterio: |t|>2.73 en ≥2/3 ventanas (Bonferroni-8: 3 indicadores × 3 ventanas
+     — aunque solo se probando 3, el patrón del proyecto usa Bonferroni conservador).
+   - Familia "signal_diagnosis", n_trials apropiado.
+3. Construir backend/scripts/diagnose_weekly_indicators.py:
+   - Cargar datos OHLCV del universo 50.
+   - Resample('W-FRI') para convertir a velas semanales.
+   - Calcular momentum/RSI/ADX sobre ESA serie semanal.
+   - Rank IC intra-semana (no intra-día) contra retorno de la próxima semana.
+4. Documentar veredicto con artefacto, registrar en ledger.
 
-REGLAS: mismas de siempre — Python 3.9, revert si NO CUMPLE, artefacto con timestamp.
+REGLAS: Python 3.9, NO tocar el motor existente. Script diagnóstico nuevo.
+Si CUMPLE, discutir integración — no hacer solo.
 ```
 
 ---
