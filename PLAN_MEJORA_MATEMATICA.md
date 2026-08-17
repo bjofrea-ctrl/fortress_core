@@ -1688,7 +1688,37 @@ la pregunta es genuinamente empírica, el criterio no se ajusta al resultado.
 **Registro en ledger**: `register_trial(...)` con familia `motor_signal`,
 n_trials_consumidos=1, veredicto según criterio, al cerrar.
 
-**RESULTADO**: (se llena al correr)
+**RESULTADO (2026-08-17, corrido por OpenCode) — artefacto:
+`data/cache/trial17_m2_abstencion_20260817_104452.txt`**
+
+| ventana | n | VPP_base | VPP_M2 | n_operados | abst | cobertura | p |
+|---|---|---|---|---|---|---|---|
+| W2 2022-2023 | 49 | 0.4694 | 0.4043 | 47 | 4.08% | 0.7755 | 0.8020 |
+| W3 2024-2026 | 119 | 0.5798 | 0.6000 | 100 | 15.97% | 0.8908 | 0.4347 |
+
+VEREDICTO FORMAL (mecánico, aplicado al criterio): **NO_CUMPLE**.
+
+- **W2**: FIDELIDAD — cobertura 0.7755 fuera de [0.80, 0.97] → NO INTERPRETABLE
+  (DISENO_INSTRUMENTO §8: si la cobertura falla, el instrumento no se usa).
+- **W3** (interpretable): VPP_M2 0.6000 vs VPP_base 0.5798 — la abstención mejoró
+  numéricamente +2.0pp pero p=0.4347 ≫ 0.025; n_operados=100 ✓, abst 15.97% ✓.
+- Fix estructural CONFIRMADO FUNCIONANDO: la abstención ahora discrimina (4%/16%,
+  no 100% tautológico) — el defecto del #16 quedó resuelto y verificado por el
+  propio trial.
+
+**Interpretación — hipótesis REFUTADA (medida, no tautológica)**:
+con el instrumento corregido, la abstención calibrada M2 sobre `win_prob` NO mejora
+significativamente el VPP de lo operado (W3: +2.0pp, p=0.43). El motor no gana
+"callándose" con la incertidumbre conforme de win_prob. La respuesta honesta a la
+pregunta del usuario ("¿debería el motor callarse cuando no hay señal?"): con ESTE
+score y ESTA mecánica, la evidencia dice que no — la cobertura W2 además sugiere que
+la garantía conforme no se sostiene en regímenes cambiantes (77.6% vs nominal 90%).
+
+**Decisión tomada**: M2 queda CORREGIDO en el código (el fix del #16 es permanente —
+residuos relativos + default p90 + test de regresión), pero la línea de abstención
+sobre win_prob queda CERRADA como refutada. Si en el futuro hay un score nuevo (ej.
+FinBERT) la abstención M2 podrá re-medirse con pre-registro nuevo — el instrumento
+ahora SÍ es capaz de medir.
 
 ---
 

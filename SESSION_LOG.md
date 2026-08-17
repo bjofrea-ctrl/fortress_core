@@ -1503,3 +1503,33 @@ anterior) y `ORDENES_MODULOS.md` (M7 → hecho) actualizados.
 - **Verificación**: suite completa `cd backend && .venv/bin/python -m pytest -q` → **242 passed**
   (196s), ruff limpio en el script nuevo, sin cambios en el motor.
 
+
+## 2026-08-17 — Trial #17 (pre-registro §24.1): re-trial abstención M2 con instrumento CORREGIDO — hipótesis REFUTADA con medición real (OpenCode)
+
+- **Decisión del usuario** (2026-08-17): "sigue la implementación que a ti te corresponde" —
+  P0 de su tabla: re-medir la abstención M2 tras el hallazgo estructural del #16.
+- **Fix de M2 aplicado ANTES del trial** (`app/core/conformal.py`, suite 242 passed):
+  (1) residuos RELATIVOS `|outcome−point|/max(|point|, floor)` con floor = p50(|point|)/10
+  → el ancho del intervalo escala con el score → abstención diferencial posible; (2) default
+  `max_interval_width` = p90 de los anchos de calibración (~10% de abstención, ni 100% ni 0%);
+  (3) test de regresión nuevo `test_default_produce_abstencion_diferencial_no_100_ni_0`
+  (test_conformal.py: 16→17 tests).
+- **Corrida** (`scripts/trial_m2_abstencion.py`, artefacto
+  `data/cache/trial17_m2_abstencion_20260817_104452.txt`):
+  - W2 2022-2023: VPP_base 0.4694, VPP_M2 0.4043, n_operados 47, abst 4.08%, cobertura 0.7755
+    → **NO INTERPRETABLE** (fidelidad: cobertura fuera de [0.80, 0.97] — DISENO_INSTRUMENTO §8).
+  - W3 2024-2026: VPP_base 0.5798, VPP_M2 0.6000, n_operados 100, abst 15.97%, cobertura 0.8908 ✓
+    → p=0.4347 ≫ 0.025 → **NO CUMPLE**.
+  - VEREDICTO FINAL: **NO_CUMPLE**.
+- **Interpretación**: con el instrumento corregido (abstención ahora discrimina de verdad),
+  la abstención calibrada M2 sobre `win_prob` NO mejora significativamente el VPP (+2.0pp en
+  W3, p=0.43). La pregunta del usuario "¿debería el motor callarse cuando no hay señal?" queda
+  respondida: con este score y esta mecánica, NO. La cobertura W2 (77.6%) confirma además que
+  la garantía conforme no se sostiene en regímenes cambiantes.
+- **Estado de la línea**: abstención sobre win_prob CERRADA como refutada (no re-litigar sin
+  evidencia nueva). M2 queda CORREGIDO en código y disponible para scores futuros (FinBERT
+  podrá re-medirla con pre-registro nuevo cuando haya datos).
+- **Ledger**: `trial_17_m2_abstencion`, familia motor_signal, n=1, umbral aplicado 0.99,
+  NO_CUMPLE → motor_signal 9→10, umbral próximo 0.9909.
+- `ROADMAP.md`: filas #16 (resuelto en cadena), #17 (refutada), M2 defecto (🟢 resuelto).
+  En paralelo: acumulación FinBERT universo 50 en curso (25/47 símbolos al cierre, 0 errores).
