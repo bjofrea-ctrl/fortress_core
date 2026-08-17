@@ -1,12 +1,16 @@
 """
-TRIAL #16 (PLAN §24) — Abstención calibrada M2 contra el baseline real (2026-08-17).
-PRE-REGISTRADO antes de correr (ver §24 en el plan).
+TRIAL #17 (PLAN §24.1) — Abstención calibrada M2 CORREGIDA contra el baseline real (2026-08-17).
+PRE-REGISTRADO antes de correr (ver §24.1 en el plan). Re-trial del #16: el #16 fue
+TAUTOLÓGICO (abstención 100% por defecto estructural de M2, §24) — la hipótesis quedó
+SIN MEDIR. M2 fue corregido (residuos relativos + default = p90 del ancho de
+calibración, ver docstring de app/core/conformal.py) y este trial re-mide la MISMA
+pregunta con el instrumento corregido. Trial NUEVO, consume slot nuevo.
 
 Pregunta: si el motor real (baseline universo 50) hubiera aplicado la abstención
 calibrada M2 (Split Conformal sobre win_prob), ¿el VPP de lo que SÍ opera supera
 el VPP del baseline que opera todo?
 
-Diseño (fijado en §24):
+Diseño (fijado en §24.1):
   - Datos: data/cache/baseline_clean_20260811_150643_trades.parquet (286 trades reales).
   - Score: win_prob (el score real que el motor usa para sizing).
   - Outcome: ret = pnl / (shares * entry_price) — retorno neto real por trade.
@@ -69,7 +73,7 @@ def main() -> None:
 
     lines = [
         "=" * 72,
-        "TRIAL #16 — abstención calibrada M2 contra el baseline real",
+        "TRIAL #17 — abstención calibrada M2 (corregida) contra el baseline real",
         f"Corrida {datetime.datetime.now().isoformat(timespec='seconds')}",
         f"Parquet: {TRADES_PARQUET}",
         f"Trades totales: {len(trades)} ({trades['entry_date'].min().date()} → "
@@ -162,7 +166,7 @@ def main() -> None:
         verdicto_final = "NO_CUMPLE"  # mezcla: exige TODAS las ventanas
 
     lines.append("\n" + "=" * 72)
-    lines.append(f"VEREDICTO FINAL (pre-registrado §24): {verdicto_final}")
+    lines.append(f"VEREDICTO FINAL (pre-registrado §24.1): {verdicto_final}")
     lines.append(f"Ventanas: {', '.join(veredictos)}")
     lines.append("=" * 72)
 
@@ -170,7 +174,7 @@ def main() -> None:
     print(report, flush=True)
 
     stamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
-    artifact = f"data/cache/trial16_m2_abstencion_{stamp}.txt"
+    artifact = f"data/cache/trial17_m2_abstencion_{stamp}.txt"
     with open(artifact, "w", encoding="utf-8") as fh:
         fh.write(report + "\n")
     print(f"\nResumen: {artifact}", flush=True)

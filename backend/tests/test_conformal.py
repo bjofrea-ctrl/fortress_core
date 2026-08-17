@@ -117,7 +117,7 @@ def test_umbral_default_es_percentil_90_de_los_anchos_de_calibracion():
     calib = engine.calibrate(scores, outcomes)
 
     # El default debe ser el p90 de 2*q*denom(point_i) sobre la calibración
-    points = 0.05 * np.asarray(scores)
+    points = engine._point_model(np.asarray(scores))
     floor = max(float(np.median(np.abs(points))) / 10.0, 1e-12)
     denom = np.maximum(np.abs(points), floor)
     expected = float(np.quantile(2.0 * calib.quantile * denom, 0.90))
