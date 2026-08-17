@@ -1,1 +1,26 @@
 # Fortress Core - API routes
+
+from app.api.routes import (
+    backtest,
+    decision,
+    governance,
+    live,
+    market,
+    opportunities,
+    predict,
+    risk,
+    system,
+)
+
+# Router aggregation for main app
+routers = [
+    decision.router,
+    backtest.router,
+    governance.router,
+    live.router,
+    market.router,
+    opportunities.router,
+    predict.router,
+    risk.router,
+    system.router,
+]
