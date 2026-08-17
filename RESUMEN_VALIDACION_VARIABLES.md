@@ -4,15 +4,21 @@ Documento de síntesis pedido por el usuario (2026-08-11), consolidando todo lo 
 en las sesiones 8a-8k+ del `SESSION_LOG.md`. Ver ese archivo para el detalle completo
 de cada trial; acá sólo el veredicto y la evaluación de confusores arquitectónicos.
 
-## 1. Válido por sí solo (IC real, sobrevivió Newey-West + walk-forward)
+## 1. Nominales positivos — ACTUALIZADO 2026-08-17 (antes: "Válido por sí solo")
 
-| Factor | IC medido | Estado |
+| Factor | IC medido | Estado real (tras §21/§21.1/§25/§26) |
 |---|---|---|
-| Momentum (12m-1m) | +0.064 | En producción, `signal_engine.py` |
-| RSI (zona 45-70) | +0.032 | En producción, más débil que momentum |
-| Macro compuesto (DXY/oro, petróleo, SPY invertido) | +0.13 | El más fuerte medido, en `predictive_engine.py` |
+| Momentum (12m-1m) | +0.064 (pooled) | Walk-forward por ventana y horizontes 5d-125d: **0 cruces** Bonferroni en todos los tests (§21/§21.1). Nominal pooled, no robusto OOS. Sigue en producción como parte del gate/blend |
+| RSI (zona 45-70) | +0.032 (pooled) | Ídem; semanal §26: máx |t| 0.44, sin señal alguna |
+| Macro compuesto (DXY/oro, petróleo, SPY invertido) | +0.13 (pooled); contra-régimen (+0.198 GOLDILOCKS) | Como score de motor: trial #13 DSR 0/3; como compuerta: probada dos veces, cerrada. IC más alto medido pero nunca tradujo en DSR |
 
-Ninguno solo, ni el blend original a mano, cruzó DSR≥0.90 (barra de "funciona autónomo").
+Lectura honesta (corrección del 2026-08-17): estos ICs sobrevivieron Newey-West **pooled**
+(toda la muestra junta), pero los re-tests por ventana OOS (§21/§21.1: horizontes; §25:
+ADX como patrón de ventana) muestran que la significancia pooled era señal débil
+repartida, no una señal que se sostenga en aislamiento. Ninguno es "válido por sí solo"
+bajo la vara actual del proyecto; siguen en producción porque el baseline (que los
+incluye) es el único modo de operación documentado, no porque cada uno esté validado
+aisladamente. Ninguno solo, ni el blend original, cruzó DSR≥0.90.
 
 ## 2. Refutado con rigor — no aporta (tal como se probó)
 
