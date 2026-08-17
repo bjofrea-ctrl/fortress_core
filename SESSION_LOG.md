@@ -1714,3 +1714,37 @@ anterior) y `ORDENES_MODULOS.md` (M7 → hecho) actualizados.
 
 ---
 *Fin de Sesión 6 — 2026-08-17*
+
+## 2026-08-17 — Dashboard institucional consolidado: advisor API + vistas lazy + Exit Thesis Monitor (Kilo Code)
+
+- **Contexto**: usuario pidió consolidar lo mejor del rebuild de Claude Code (Layout,
+  tokens, GovernancePanel verificado, componentes funcionales) con el plan Kilo
+  (advisor API, etiquetas proyectadas, charts institucionales, tesis de salida) en UN
+  dashboard nivel dios, sobre `frontend/` (Claude ya terminó, sin rama aparte).
+- **Pre-registro §29**: mapeo de etiquetas proyectadas escrito ANTES de implementar,
+  verificado contra el artefacto real `baseline_clean_20260811_150643_trades.parquet`
+  (286 trades): ≥0.70→VPP 87.5% (n=8), ≥0.65→73.7% (n=19), 0.45-0.65→NEUTRO (sin
+  selectividad), <0.45→RIESGOSA_SIN_APOYO (nunca "pérdida proyectada" — no hay
+  evidencia en la cola baja). Las citas del SESSION_LOG previo coincidieron exactas.
+- **Backend**: `app/api/routes/advisor.py` — 4 endpoints solo lectura (`/universe`,
+  `/theses`, `/evidence`, `/{symbol}`) que REUTILIZAN `_compute_ticket` de decision.py
+  (cero reprogramación del motor). Exit Thesis Monitor en `decision_theses.json`
+  (escritura atómica temp+rename, gitignored como su hermano decision_states.json).
+  Fix durante acceptance: `umbral_aplicado` string en entradas viejas del ledger →
+  endpoint tolerante (test de regresión agregado).
+- **Frontend**: `src/api/{client,hooks}.ts` (VITE_API_URL, sin localStorage), tokens
+  TradingView exactos (#131722/#1e22d/#26a69a/#ef5350), Layout reescrito con tabs de
+ 4 vistas lazy: Mesa (tabla universo 50 + monitor de tesis), Detalle (Lightweight
+  Charts EOD con EMA50/200 + zonas mecánicas entry/stop/target + widget TV con
+  degradación graceful + plan de salida 4 mec + tesis + fundamentales), Portfolio y
+  Gobernanza (componentes de Claude reubicados sin reescribir). Badge de honestidad
+  global, chip staleness (>2 ruedas), Evidence Footer vivo del ledger.
+- **Acceptance (regla #1 — contra el artefacto crudo)**: 263 tests passed (242 previos
+  + 21 nuevos), ruff limpio en archivos nuevos (89 errores pre-existentes en scripts
+  legados, no tocados), tsc+vite build OK sin warning de chunks (main 624→152 kB).
+  Endpoints vivos verificados: universe 44 símbolos régimen 2 STAGFLATION (CVX 0.527→
+  NEUTRO n=0 etiquetado justo), CVX detalle 400 barras con EMAs consistentes con el
+  gate trend_ok, AAPL fundamentals EDGAR reales (pe/roe/etc), theses 0 activas,
+  evidence 37 trials 6 familias.
+- **Pendiente explícito**: verificación visual en navegador + campo costo/trade cuando
+  el runner M4 entregue su artefacto mañana al open.
