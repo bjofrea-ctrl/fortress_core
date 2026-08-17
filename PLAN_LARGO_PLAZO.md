@@ -9,8 +9,9 @@
 
 ## Estado de partida (verificado hoy, no asumir nada más)
 
-- **Suite actual: 241 tests pasando** (no 216 ni 70/70).
+- **Suite actual: 242 tests pasando** (no 216 ni 70/70).
 - **Tarea A (Triple Barrier)** y **Tarea C (Lead-lag)**: CERRADAS con artefactos.
+- **Tarea C (Command Code, §26 indicadores semanales)**: CERRADA — NO CUMPLE (2026-08-17).
 - **Tarea B (FinBERT) PASO 1**: HECHO. `earnings_sentiment.py` + CLI + 25 tests. Backfill inicial 24 filings. PASO 2 (trial) bloqueado hasta 8 trimestres × 30 símbolos.
 - **Instrumento M1-M8 completo**: todos los módulos implementados, faltan trials que los usen.
 - **ADX t=+2.31 nominal**: único factor con señal positiva. §25 (2026-08-17, Cline) lo probó en
@@ -113,7 +114,14 @@ discutir integración con el gate — no hacer solo.
 
 ## Tarea C — Indicadores sobre velas semanales (Command Code)
 
-**ESTADO**: ⚪ NO EMPEZADO — pre-registro pendiente
+**ESTADO**: 🟢 CERRADO — NO CUMPLE (2026-08-17)
+
+Pre-registrado §26 en PLAN_MEJORA_MATEMATICA.md, corrido
+`scripts/diagnose_weekly_indicators.py`, artefacto
+`data/cache/weekly_indicators_20260817_105918.txt`. Ningún indicador semanal
+(momentum_20w, rsi_14w, adx_14w) alcanza |t|>2.73 bajo Bonferroni-8 en ninguna
+de las 3 ventanas (máx |t|=0.44). Ruido semanal no oculta señal. Ledger
+signal_diagnosis 15→16.
 
 ```
 PROBLEMA: Todos los indicadores se calculan sobre barras DIARIAS. Nunca se probó
@@ -150,6 +158,6 @@ Si CUMPLE, discutir integración — no hacer solo.
 
 ## Verificación al cerrar cualquier tarea
 
-`cd backend && .venv/bin/python -m pytest -q` debe seguir en verde (216+ passed)
+`cd backend && .venv/bin/python -m pytest -q` debe seguir en verde (242+ passed)
 antes de dar cualquier cosa por cerrada. Actualizar `ROADMAP.md` y `SESSION_LOG.md`.
 Ninguna requiere que Claude Code esté presente — son autocontenidas.

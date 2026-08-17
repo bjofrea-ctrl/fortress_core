@@ -1533,3 +1533,38 @@ anterior) y `ORDENES_MODULOS.md` (M7 → hecho) actualizados.
   NO_CUMPLE → motor_signal 9→10, umbral próximo 0.9909.
 - `ROADMAP.md`: filas #16 (resuelto en cadena), #17 (refutada), M2 defecto (🟢 resuelto).
   En paralelo: acumulación FinBERT universo 50 en curso (25/47 símbolos al cierre, 0 errores).
+
+## 2026-08-17 — §26 Indicadores semanales (Tarea C, Command Code): NO CUMPLE
+
+- **Tarea C asignada** por PLAN_LARGO_PLAZO.md: probar si indicadores sobre velas
+  semanales (resample W-FRI) revelan rank IC significativo contra fwd_ret_1w.
+- **Pre-registro** §26 en PLAN_MEJORA_MATEMATICA.md: hipótesis, metodología, criterio
+  (Bonferroni-8, |t|>2.73 en ≥2/3 ventanas), n_trials fijado ANTES de correr.
+- **Script**: `backend/scripts/diagnose_weekly_indicators.py` — carga OHLCV diario de
+  50 símbolos, resamplea a semanal, calcula momentum_20w/rsi_14w/adx_14w, rank IC
+  intra-semana con Newey-West (L=1).
+- **Corrida** (artefacto `data/cache/weekly_indicators_20260817_105918.txt`):
+  - W1 (2019-2021): mom −0.17, rsi −0.08, adx +0.31
+  - W2 (2022-2023): mom −0.01, rsi −0.44, adx +0.16
+  - W3 (2024-2026): mom +0.19, rsi +0.14, adx +0.33
+  - Máx |t| = 0.44 (rsi W2) — nowhere near significancia (umbral 2.73).
+- **Veredicto**: **NO_CUMPLE**. Ningún indicador semanal alcanza significancia bajo
+  Bonferroni-8. Ruido semanal no oculta señal — baseline diario sigue siendo el único
+  modo de operación documentado.
+- **Ledger**: `weekly_indicators_2026`, familia signal_diagnosis, n=1, umbral 0.99375,
+  NO_CUMPLE → signal_diagnosis 15→16.
+- **ROADMAP.md**: fila §26 agregada, estado 🟢 cerrado.
+- **Suite**: no se tocó código del motor (solo script diagnóstico nuevo), suite no
+  ejecutada pero sin cambios que pudieran romper.
+
+## 2026-08-17 — Diagnóstico de ASESORÍA: mezclas de indicadores vs blend (Brier/calibración) — NINGUNA MEJORA (OpenCode)
+
+- **Pregunta del usuario**: ¿los indicadores mezclados entre sí aumentan la predictibilidad EN LA ASESORÍA (55-90%)?
+- **Contexto verificado**: las mezclas SÍ se habían evaluado pero solo con vara de señal/DSR (motor): ridge_3f IC OOS +0.0156/ICIR 0.78 (mejoró blend por |IC|) pero 0/3 DSR como score de motor (#13, revertido); BMA existe como método, no factor; macro contra-régimen capturado por ridge. NUNCA se midió Brier/calibración de las combinaciones.
+- **Medición nueva** (`asesoria_combinaciones_20260817_110427.txt`): panel eligible n=2069, purga+embargo (sin lookahead), calibración ISOTÓNICA por fold aplicada OOS. Brier referencia baseline=0.2447 (base_rate 0.5727):
+  - blend_actual 0.2468 (+0.0043) | ridge_3f 0.2484 (+0.0059) | ridge_3f+adx 0.2477 | ridge_macro_crudo 0.2476 | ridge_macro_crudo+adx 0.2475.
+  - VPP@0.55 ≈ base rate en TODOS (0.559-0.574) → sin selectividad en el rango de asesoría.
+  - VPP@0.65: blend 0.667 (n=24); los ridge 0.36-0.43 (n=11-14, ruido) — NINGUNA mejora al blend.
+- **Hallazgo**: con vara de asesoría (Brier), mezclar indicadores NO agrega predictibilidad — el blend actual ya está en el piso del baseline. Consistente con #13 (IC mejor no se tradujo en PnL): tampoco se traduce en mejor probabilidad calibrada.
+- **La selectividad real de asesoría sigue siendo la del win_prob del motor** (calibrado sobre ret_net/barreras): umbral ≥0.65 → VPP real 73.7% (n=19), ≥0.70 → 87.5% (n=8) — cola alta con cobertura chica (6.6%/2.8%).
+- **Conclusión**: la ganancia pendiente de asesoría NO está en combinar indicadores — está en el rank cross-sectional (relativo al universo, confusor §6.2: todo se midió absoluto). No consume slot (diagnóstico read-only, sin cambio de motor).

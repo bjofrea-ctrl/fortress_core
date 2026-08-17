@@ -1,0 +1,66 @@
+========================================================================
+§26 — Indicadores sobre velas semanales
+HIPÓTESIS: ruido diario oculta señal en weekly
+========================================================================
+
+Cargando datos diarios y resampleando a semanal (W-FRI)...
+  Símbolos cargados: 50
+Calculando indicadores semanales (momentum_20w, rsi_14w, adx_14w)...
+
+Semanas totales: 606
+Símbolos/sem promedio: 50.0
+fwd_ret_1w disponible: 30250 / 30300
+
+========================================================================
+VENTANA W1: 2019-01-01 a 2021-12-31 | 157 semanas
+========================================================================
+factor            n_weeks   mean_IC    SE_NW       t          veredicto
+------------------------------------------------------------------------
+momentum_20w          157   -0.0043   0.0248   -0.17             no sig
+rsi_14w               157   -0.0019   0.0229   -0.08             no sig
+adx_14w               157   +0.0062   0.0199   +0.31             no sig
+
+========================================================================
+VENTANA W2: 2022-01-01 a 2023-12-31 | 104 semanas
+========================================================================
+factor            n_weeks   mean_IC    SE_NW       t          veredicto
+------------------------------------------------------------------------
+momentum_20w          104   -0.0005   0.0317   -0.01             no sig
+rsi_14w               104   -0.0123   0.0283   -0.44             no sig
+adx_14w               104   +0.0031   0.0194   +0.16             no sig
+
+========================================================================
+VENTANA W3: 2024-01-01 a 2026-07-06 | 131 semanas
+========================================================================
+factor            n_weeks   mean_IC    SE_NW       t          veredicto
+------------------------------------------------------------------------
+momentum_20w          131   +0.0045   0.0240   +0.19             no sig
+rsi_14w               131   +0.0032   0.0230   +0.14             no sig
+adx_14w               131   +0.0050   0.0154   +0.33             no sig
+
+========================================================================
+RESUMEN CRUZADO (§26)
+========================================================================
+Criterio: |t| > 2.73 en ≥2/3 ventanas, signo correcto
+Bonferroni-8 (3 indicadores × 3 ventanas, corrección conservadora)
+
+  momentum_20w: 0/3 ventanas significativas → NO CUMPLE
+    W1: IC=-0.0043, t=-0.17
+    W2: IC=-0.0005, t=-0.01
+    W3: IC=+0.0045, t=+0.19
+  rsi_14w: 0/3 ventanas significativas → NO CUMPLE
+    W1: IC=-0.0019, t=-0.08
+    W2: IC=-0.0123, t=-0.44
+    W3: IC=+0.0032, t=+0.14
+  adx_14w: 0/3 ventanas significativas → NO CUMPLE
+    W1: IC=+0.0062, t=+0.31
+    W2: IC=+0.0031, t=+0.16
+    W3: IC=+0.0050, t=+0.33
+
+========================================================================
+VEREDICTO §26: NO CUMPLE
+========================================================================
+Ningún indicador semanal alcanza significancia bajo Bonferroni-8.
+→ Baseline diario sigue siendo el único modo de operación documentado.
+
+Artefacto: data/cache/weekly_indicators_20260817_105918.txt
