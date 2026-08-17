@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { DecisionSymbolResponse, getStateColor, getTransitionColor, getTransitionLabel } from "../hooks/useDecision";
+import { DecisionSymbolResponse, getStateColor, getTransitionColor, getTransitionLabel, useDecisionHistory, SymbolHistory } from "../hooks/useDecision";
 
 interface DecisionPanelProps {
   apiUrl: string;
@@ -10,6 +10,7 @@ export default function DecisionPanel({ apiUrl, symbol }: DecisionPanelProps) {
   const [data, setData] = useState<DecisionSymbolResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { data: historyData } = useDecisionHistory(apiUrl, symbol);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -204,6 +205,25 @@ export default function DecisionPanel({ apiUrl, symbol }: DecisionPanelProps) {
       {data.blocked_reason && (
         <div className="mt-4 p-3 bg-accent-red/10 border border-accent-red/30 rounded-lg text-accent-red text-xs">
           ⚠️ {data.blocked_reason}
+        </div>
+      )}
+
+      {/* Transition History */}
+      {historyData && historyData.transitions && historyData.transitions.length > 0 && (
+        <div className="mt-6 p-3 bg-dark-bg rounded-lg">
+          <p className="text-xs text-gray-400 mb-2">Historial de transiciones</p>
+          <div className="space-y-2">
+            {historyData.transitions.slice(-5).reverse().map((t, i) => (
+              <div key={i} className="flex items-center gap-2 text-xs">
+                <span className="text-gray-500">
+                  {new Date(t.from_date).toLocaleDateString()} → {new Date(t.to_date).toLocaleDateString()}
+                </span>
+                <span className={`px-2 py-0.5 rounded ${getStateColor(t.from)}`}>{t.from}</span>
+                <span className="text-gray-400">→</span>
+                <span className={`px-2 py-0.5 rounded ${getStateColor(t.to)}`}>{t.to}</span>
+              </div>
+            ))}
+          </div>
         </div>
       )}
     </div>

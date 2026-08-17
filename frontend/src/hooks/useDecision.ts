@@ -88,6 +88,19 @@ export function useDecisionUniverse(apiUrl: string) {
   return { data, loading, error, refetch: fetchData };
 }
 
+export interface Transition {
+  from: string;
+  to: string;
+  from_date: string;
+  to_date: string;
+}
+
+export interface SymbolHistory {
+  symbol: string;
+  history: Array<{ as_of: string; state: string }>;
+  transitions: Transition[];
+}
+
 export function useDecisionSymbol(apiUrl: string, symbol: string | null) {
   const [data, setData] = useState<DecisionSymbolResponse | null>(null);
   const [loading, setLoading] = useState(true);
@@ -99,6 +112,36 @@ export function useDecisionSymbol(apiUrl: string, symbol: string | null) {
     setError(null);
     try {
       const response = await fetch(`${apiUrl}/api/decision/${symbol}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const json = await response.json();
+      setData(json);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Error desconocido");
+    } finally {
+      setLoading(false);
+    }
+  }, [apiUrl, symbol]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  return { data, loading, error, refetch: fetchData };
+}
+
+export function useDecisionHistory(apiUrl: string, symbol: string | null) {
+  const [data, setData] = useState<SymbolHistory | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchData = useCallback(async () => {
+    if (!symbol) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetch(`${apiUrl}/api/decision/history/${symbol}`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
