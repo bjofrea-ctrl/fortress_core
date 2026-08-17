@@ -2152,3 +2152,42 @@ espacio del proyecto (diario, 50 símbolos, factores del gate + sentimiento).
 
 **Ledger**: id `xsec_relative_and_aaii_timing`, signal_diagnosis n=1 (17→18, umbral
 próximo 0.994737). Suite sin cambios requeridos (solo script nuevo).
+
+---
+
+## 29. Mapeo de etiquetas de resultado proyectado para el dashboard advisor (2026-08-17, PRE-REGISTRADO como doc de presentación)
+
+**Naturaleza**: NO es una hipótesis nueva ni consume slot de trial. Es el mapeo
+documentado y congelado que el dashboard (`/api/advisor`) usa para presentar la
+selectividad YA medida del `win_prob` del motor como apoyo a decisión. Regla #4 de
+ONBOARDING: ninguna etiqueta se presenta como predicción; todas llevan su n de
+evidencia y el badge global de honestidad.
+
+**Evidencia citada (verificada contra el artefacto ANTES de escribir esto)**:
+`data/cache/baseline_clean_20260811_150643_trades.parquet` — 286 trades del baseline,
+columna `win_prob` calibrada por el motor. Verificado hoy: win_rate global 0.5874;
+umbral ≥0.55 → VPP 0.5828 (n=163, NADA sobre el base); umbral ≥0.60 → 0.6452 (n=62);
+umbral ≥0.65 → VPP 0.7368 (n=19); umbral ≥0.70 → VPP 0.8750 (n=8); umbral ≥0.75 →
+3/3 (n=3, sin poder). Coincide con el registro de SESSION_LOG 2026-08-17
+(diagnóstico de asesoría). La selectividad real vive SOLO en la cola alta, con
+cobertura chica (~7%/2.8% de los trades).
+
+**Mapeo congelado (implementación obligatoria del endpoint advisor):**
+
+| win_prob calibrado | Etiqueta | Evidencia mostrada en UI |
+|---|---|---|
+| ≥ 0.70 | `GANANCIA_PROYECTADA_ALTA` | VPP real 87.5%, n=8 |
+| 0.65–0.70 | `GANANCIA_PROYECTADA` | VPP real 73.7%, n=19 |
+| 0.45–0.65 | `NEUTRO` | VPP ≈ base rate 0.58-0.65, sin selectividad medida |
+| < 0.45 | `RIESGOSA_SIN_APOYO` | la cola baja NO tiene evidencia de selectividad — se muestra "sin apoyo estadístico", NUNCA "pérdida proyectada" como predicción |
+
+**Reglas de presentación (no negociables):**
+1. Si el n de evidencia de un casillero es <30 (todos lo son hoy), el n se muestra
+   junto a la etiqueta en la UI.
+2. Régimen DEFLATION (estado 3): el endpoint devuelve `blocked_reason` (mecánica
+   real del motor, `decision.py`) y la UI no muestra etiquetas de entrada.
+3. win_prob nulo (símbolo fuera del gate / sin score) → etiqueta `SIN_SCORE`, no se
+   inventa ni se interpola.
+4. Si el calibrador no está fitteado → todas las etiquetas `SIN_CALIBRAR`.
+5. Cualquier cambio futuro de este mapeo requiere sección nueva + verificación contra
+   artefacto de nuevo (no edición en caliente).
