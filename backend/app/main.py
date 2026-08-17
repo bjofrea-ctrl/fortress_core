@@ -4,7 +4,7 @@ from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy import text
 
-from app.api.routes import backtest, decision, governance, live, market, opportunities, predict, risk, system
+from app.api.routes import backtest, decision, decision_history, governance, live, market, opportunities, predict, risk, system
 from app.config import settings
 from app.models.database import engine, init_db
 from app.utils.logging import get_request_id, logger, setup_logging
@@ -35,6 +35,7 @@ app.include_router(predict.router)
 app.include_router(governance.router)
 app.include_router(opportunities.router)
 app.include_router(decision.router)
+app.include_router(decision_history.router)
 
 
 @app.middleware("http")
