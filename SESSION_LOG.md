@@ -1748,3 +1748,34 @@ anterior) y `ORDENES_MODULOS.md` (M7 → hecho) actualizados.
   evidence 37 trials 6 familias.
 - **Pendiente explícito**: verificación visual en navegador + campo costo/trade cuando
   el runner M4 entregue su artefacto mañana al open.
+
+## 2026-08-17 — Dashboard institucional consolidado: verificación independiente + fix (Kilo Code)
+
+- **Contexto**: la implementación del plan consolidado (advisor API + vistas lazy +
+  tesis) fue completada en sesión paralela (commits d5851fe + auto-backups 19:20-19:37).
+  Este turno: **verificación independiente contra el artefacto real** (regla #1) +
+  cierre de un gap de consistencia.
+- **Verificación backend (todo contra JSON crudo, servidor uvicorn levantado a mano)**:
+  - `/api/advisor/universe` 200: 44 tickets, régimen STAGFLATION (estado 2, conf
+    0.9998), honesty_badge presente ("Apoyo a decisión — sin señal comercial validada"),
+    risk_params {12%, 1.5%, 10%}, staleness OK (cache 2026-08-14, 1 rueda atrás).
+    Distribución: 1 VIGILAR (CVX win_prob 0.527), 43 NO_INVERTIR. Etiquetas §29
+    aplicadas: NEUTRO n=0 + SIN_SCORE n=0 — código coincide con el pre-registro
+    (VPP 87.5%/n=8 ≥0.70; 73.7%/n=19 ≥0.65; RIESGOSA_SIN_APOYO <0.45 sin afirmar pérdida).
+  - `/api/advisor/CVX` 200: 400 barras OHLCV con EMA50/200 completos (realineado por
+    fecha, no posición), entry/stop/tp 200/190.36/219.28 (payoff 2.0, ATR 4.82), exit_plan
+    4 mecanismos (incl. el fix del trial #10 en partial_tp), m2 con intervalo, gates.
+    fundamentals_coverage "sin_cobertura_edgar" honesto (null, no inventado).
+  - `/api/advisor/AAPL` 200: fundamentals EDGAR reales con cobertura.
+  - `/api/advisor/theses` 200 (0 tesis activas — correcto: sin INVERTIR hoy),
+    `/api/advisor/evidence` 200 (18+10 trials, familias + recientes).
+  - `routes/__init__.py` carecía de `advisor` en la lista `routers` → CORREGIDO
+    (consistencia de inventario; main.py ya lo registraba, 4 rutas confirmadas en la app).
+- **Verificación frontend**: `npm run build` OK (main 151.93 kB — code splitting
+    efectivo: Mesa 9.47 / Detail 173.46 / Portfolio 402.92 / Governance 23.33 kB),
+    SPA servida por `vite preview` HTTP 200, Layout con lazy+suspense de 4 vistas,
+    tipos TS espejan el payload backend (client.ts/hooks.ts), TradingViewChart con
+    lightweight-charts + fallback graceful, TVWidget secundario, API_URL por
+    VITE_API_URL.
+- **Suite**: 263 passed (242 + 21 advisor), ruff limpio. Espejo del disco externo
+  pendiente de montar (el autobackup lo resuelve cuando esté).

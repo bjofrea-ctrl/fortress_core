@@ -1,6 +1,7 @@
 # Fortress Core - API routes
 
 from app.api.routes import (
+    advisor,
     backtest,
     decision,
     decision_history,
@@ -16,6 +17,7 @@ from app.api.routes import (
 
 # Router aggregation for main app
 routers = [
+    advisor.router,
     decision.router,
     decision_history.router,
     ranking.router,
