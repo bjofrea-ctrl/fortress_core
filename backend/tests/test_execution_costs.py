@@ -53,14 +53,18 @@ class _FakeSession:
         self.closed = False
 
     def _order_state(self, oid):
-        """Snapshot de la orden: si le quedan polls pendientes, sigue pendiente."""
-        order = dict(self.orders[oid])
-        remaining = order.pop("_pending_polls", 0)
+        """Snapshot de la orden: si le quedan polls pendientes, sigue pendiente;
+        si no, ya está filled (como el paper real tras unos segundos)."""
+        stored = self.orders[oid]
+        remaining = stored.get("_pending_polls", 0)
+        order = dict(stored)
+        order.pop("_pending_polls", None)
         if remaining > 0:
-            order["_pending_polls"] = remaining - 1
-            self.orders[oid] = order
+            stored["_pending_polls"] = remaining - 1
             order["status"] = "pending_new"
             order["filled_avg_price"] = None
+        else:
+            order["status"] = "filled"
         return order
 
     def get(self, url, timeout=None):
