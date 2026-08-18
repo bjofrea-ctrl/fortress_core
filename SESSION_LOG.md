@@ -1,5 +1,60 @@
 # Fortress Core — Memoria de Sesiones (Última sesión resumida)
 
+## Sesión (Kilo Code) — Recuperador de sesión + M4 medición viva COMPLETADA
+
+**Fecha**: 2026-08-18
+**Autor**: Kilo Code + boris
+**Estado**: M4 cerrado con número medido; recuperador de sesión instalado
+
+### Contexto de apertura
+- La sesión de Kilo de ayer estaba guardada (no perdida) pero no aparecía: la ventana se
+  había abierto con raíz `/` en lugar de `~/Desktop/fortress_core`; el historial es por
+  carpeta de proyecto. Sesión original: `ses_feeafaaf6ffe1X8G5BaIcxbZUS`.
+- Construido el recuperador para que ninguna jornada dependa de la memoria del chat:
+  - `~/Desktop/Recuperar-Sesion-Fortress.command` (doble clic → abre VS Code en la carpeta
+    correcta y muestra cuál fue la última sesión)
+  - `scripts/recuperar_ultima_sesion.sh` + alias `fs` en `~/.zshrc`
+    (`fs` retoma última sesión, `fs --listar` las muestra, `fs --nueva` arranca de cero)
+  - Symlink estable `~/.local/bin/kilo` → binario de la extensión (se auto-repara si la
+    extensión cambia de versión)
+  - Documentado como "Ritual de apertura de sesión" en `AGENTS.md` y `ONBOARDING.md`
+
+### M4 — medición viva de costos de ejecución (Alpaca PAPER)
+El runner de ayer (`run_costs_at_open.py`, PID 17770) sobrevivió la noche, detectó la
+apertura, arrancó la ronda BUY y CRASHÓ con 404 en `paper-api.alpaca.markets/v2/last/trade/SPY`.
+
+Tres bugs reales del cliente Alpaca, todos corregidos y testeados (suite 265 passed):
+1. **Endpoint de datos**: el último trade vive en `data.alpaca.markets/v2/stocks/{sym}/trades/latest`,
+   NO en el host de trading (`paper-api`). Verificado en vivo: el viejo daba 404, el nuevo 200.
+   Nuevo atributo `market_data_base_url` (overridable vía `ALPACA_MARKET_DATA_BASE_URL`).
+2. **Fills asincrónicos**: las market orders paper responden `pending_new` en el HTTP POST —
+   el fill llega 1-10s después (verificado manualmente contra SPY). `submit_market_order`
+   ahora hace polling del GET de la orden hasta `filled` (deadline 30s, falla ruidoso en
+   estados terminales unfilled: no registra un fill que no llegó).
+3. **Símbolos con guion**: la API de datos rechaza `BRK-B` con 400 (exige `BRK.B`).
+   Normalización `BRK-B`→`BRK.B` solo en el borde HTTP; la DB persiste el símbolo interno.
+
+**Resultado medido** (ronda viva, mercado abierto, 12:30-13:43 ET):
+- 120 órdenes paper = 60 buy + 60 sell; los 50 símbolos del universo cubiertos
+  (los 10 primeros, SPY…AVGO, se midieron dos veces por lado — muestra extra válida)
+- `cost_per_side_medido = 0.000189` (≈0.019% por lado)
+- slippage_p50 = 0.000122 · slippage_p95 = 0.000519 · comisión media = 0.0 (paper sin comisión)
+- Artefacto: `backend/data/cache/measure_execution_costs_20260818_134338.txt`
+  + DB `backend/data/cache/execution_costs.db` (verificado: cuentas por lado consistentes,
+  BRK-B con fills reales ambos lados, posiciones abiertas = 0 tras la ronda sell)
+
+**Caveat registrado honestamente**: papel = fills instantáneos al último trade, sin
+comisión, sin mercado real detrás. Es un PISO medido del costo de ejecución, no el número
+live. `COST_PER_SIDE` (0.0015 asumido) NO se tocó — cambiarlo por el medido es decisión del
+usuario con pre-registro (afecta retroactivamente los veredictos de todos los trials).
+
+### Validación
+- Suite completa: 265 passed (15 en `test_execution_costs.py`)
+- ruff limpio en los archivos tocados (los 89 errores del resto del repo son preexistentes
+  en scripts de diagnóstico viejos, fuera de alcance del CI que corre lint+test)
+- Smoke en vivo contra las APIs reales de Alpaca antes de cada relanzamiento
+- Orden de diagnóstico manual cerrada a cero (cuenta flat, sin residuos)
+
 ## Sesión 5 — Sistema de Gobernanza Multi-Agente con RAG/OKF + LLMs NVIDIA NIM
 
 **Fecha**: 2026-05-08
