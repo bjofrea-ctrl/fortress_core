@@ -166,7 +166,29 @@ los recharts/lightweight-charts caen solo en las vistas que los usan.
   pre-registrados; el dashboard muestra evidencia, no la crea).
 - Auth de usuario/perfiles (UI pública por decisión del proyecto).
 
-## 9. Dependencias externas de datos
+## 9. Despliegue local (pedido 2026-08-17 21:08)
+
+El proyecto ya usa launchd para servicios persistentes (autobackup, dataupdater).
+Despliegue en el MISMO patrón — dos servicios que sobreviven cierre de sesión y reboot:
+
+1. `scripts/com.fortresscore.api.plist` — uvicorn `app.main:app` en 127.0.0.1:8000
+   (python del venv; WorkingDirectory backend/; KeepAlive; log scripts/api_server.log).
+2. `scripts/com.fortresscore.dashboard.plist` — `vite preview` sirviendo dist/
+   en 127.0.0.1:3000 (puerto 3000 porque CORS_ORIGINS permite localhost:3000 y :5173).
+   Log scripts/dashboard_server.log.
+3. Copiar ambos a ~/Library/LaunchAgents/, `launchctl load`, verificar:
+   `curl -s http://127.0.0.1:3000/` HTTP 200 + `curl -s http://127.0.0.1:8000/docs`
+   + apertura del navegador en http://localhost:3000 (la Mesa debe cargar el
+   universo real — primer request ~55s en frío, spinner de la UI lo cubre).
+4. Agregar al ritual: `launchctl kickstart` tras cada rebuild del frontend
+   (dist/ cambia); el backend KeepAlive se reinicia solo.
+5. Docs: ONBOARDING sección launchd + ROADMAP; commit + push + espejo.
+
+**No va a la VPS todavía** (pendiente anterior: requiere acceso SSH del usuario).
+Este despliegue es local: abre el dashboard en el navegador con un clic y queda
+corriendo permanente.
+
+## 10. Dependencias externas de datos
 
 - M4 runner mide costos reales mañana al open → el campo "costo por trade" del panel
   queda reservado; se llena con el artefacto `measure_execution_costs_*` cuando exista
