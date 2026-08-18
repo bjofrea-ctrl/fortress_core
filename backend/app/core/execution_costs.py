@@ -93,6 +93,16 @@ class AlpacaPaperClient:
             }
         )
 
+    @staticmethod
+    def _alpaca_symbol(symbol: str) -> str:
+        """Traduce la convención interna del motor (BRK-B) a la de Alpaca (BRK.B).
+
+        La API de datos rechaza el formato con guion con 400; en el motor el
+        universo vive con guion (yahoo/parquet), así que la traducción es solo
+        en el borde HTTP — las mediciones persisten con el símbolo interno.
+        """
+        return symbol.replace("-", ".")
+
     def last_trade_price(self, symbol: str) -> float:
         """Precio del último trade del símbolo — el *precio de decisión* de la medición.
 
@@ -101,7 +111,7 @@ class AlpacaPaperClient:
         forma de respuesta ({"symbol", "trade": {"p"}}).
         """
         resp = self._session.get(
-            f"{self.market_data_base_url}/v2/stocks/{symbol}/trades/latest",
+            f"{self.market_data_base_url}/v2/stocks/{self._alpaca_symbol(symbol)}/trades/latest",
             timeout=DEFAULT_TIMEOUT_SECONDS,
         )
         resp.raise_for_status()
@@ -116,7 +126,7 @@ class AlpacaPaperClient:
         un fill real; registrar uno que no llegó contaminaría el número.
         """
         payload = {
-            "symbol": symbol,
+            "symbol": self._alpaca_symbol(symbol),
             "qty": str(qty),
             "side": side,
             "type": "market",

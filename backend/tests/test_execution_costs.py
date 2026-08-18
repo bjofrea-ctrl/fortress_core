@@ -270,6 +270,18 @@ def test_cliente_base_url_es_paper_siempre():
     assert c.market_data_base_url == "https://data.alpaca.markets"
 
 
+def test_cliente_normaliza_simbolos_con_guion():
+    # el motor usa BRK-B (formato yahoo); la API de Alpaca exige BRK.B.
+    # Sin esta traducción la ronda viva de 2026-08-18 murió con 400 en el dato.
+    sess = _FakeSession({"BRK.B": 450.0}, fill_mult=1.001)
+    c = AlpacaPaperClient(api_key="k", secret_key="s", base_url=BASE_URL, session=sess)
+    assert c.last_trade_price("BRK-B") == pytest.approx(450.0)
+    order = c.submit_market_order("BRK-B", 1, "buy")
+    _, payload = sess.post_calls[-1]
+    assert payload["symbol"] == "BRK.B"
+    assert order["filled_avg_price"] == pytest.approx(450.0 * 1.001)
+
+
 # --------------------------------------------------------------------------- #
 # Recorder — persistencia.
 # --------------------------------------------------------------------------- #

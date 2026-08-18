@@ -1,0 +1,136 @@
+================================================================================
+M4 — medición de costos reales (Alpaca PAPER)
+Timestamp: 20260818_134338  |  órdenes: 120  |  lado: sell
+Slippage = (fill - decision)/decision | decision = último trade pre-orden
+================================================================================
+RESUMEN (contrato de salida M4):
+{
+  "cost_per_side_medido": 0.00018883729749502882,
+  "n_ordenes": 120,
+  "slippage_p50": 0.00012199434031920611,
+  "slippage_p95": 0.0005194905531480016,
+  "comision_media": 0.0,
+  "ventana": "2026-08-18 a 2026-08-18"
+}
+================================================================================
+ÓRDENES:
+2026-08-18  SPY    buy  decision=768.28  fill=768.26  slippage=-0.000026  comisión=0.000000
+2026-08-18  QQQ    buy  decision=718.27  fill=718.39  slippage=+0.000160  comisión=0.000000
+2026-08-18  AAPL   buy  decision=310.35  fill=310.36  slippage=+0.000048  comisión=0.000000
+2026-08-18  MSFT   buy  decision=481.69  fill=481.72  slippage=+0.000062  comisión=0.000000
+2026-08-18  GOOGL  buy  decision=343.30  fill=343.33  slippage=+0.000087  comisión=0.000000
+2026-08-18  AMZN   buy  decision=260.83  fill=260.84  slippage=+0.000038  comisión=0.000000
+2026-08-18  NVDA   buy  decision=220.36  fill=220.37  slippage=+0.000045  comisión=0.000000
+2026-08-18  META   buy  decision=548.79  fill=548.84  slippage=+0.000091  comisión=0.000000
+2026-08-18  TSLA   buy  decision=337.18  fill=337.21  slippage=+0.000104  comisión=0.000000
+2026-08-18  AVGO   buy  decision=381.45  fill=381.44  slippage=-0.000026  comisión=0.000000
+2026-08-18  SPY    sell decision=768.27  fill=768.27  slippage=+0.000000  comisión=0.000000
+2026-08-18  QQQ    sell decision=718.39  fill=718.34  slippage=-0.000070  comisión=0.000000
+2026-08-18  AAPL   sell decision=310.30  fill=310.28  slippage=-0.000064  comisión=0.000000
+2026-08-18  MSFT   sell decision=481.85  fill=481.60  slippage=-0.000519  comisión=0.000000
+2026-08-18  GOOGL  sell decision=343.27  fill=343.30  slippage=+0.000087  comisión=0.000000
+2026-08-18  AMZN   sell decision=260.71  fill=260.69  slippage=-0.000077  comisión=0.000000
+2026-08-18  NVDA   sell decision=220.35  fill=220.30  slippage=-0.000227  comisión=0.000000
+2026-08-18  META   sell decision=548.68  fill=548.52  slippage=-0.000292  comisión=0.000000
+2026-08-18  TSLA   sell decision=336.96  fill=336.97  slippage=+0.000015  comisión=0.000000
+2026-08-18  AVGO   sell decision=381.45  fill=381.26  slippage=-0.000498  comisión=0.000000
+2026-08-18  SPY    buy  decision=768.26  fill=768.19  slippage=-0.000091  comisión=0.000000
+2026-08-18  QQQ    buy  decision=718.27  fill=718.20  slippage=-0.000097  comisión=0.000000
+2026-08-18  AAPL   buy  decision=310.06  fill=310.07  slippage=+0.000032  comisión=0.000000
+2026-08-18  MSFT   buy  decision=482.04  fill=481.94  slippage=-0.000207  comisión=0.000000
+2026-08-18  GOOGL  buy  decision=343.21  fill=343.13  slippage=-0.000233  comisión=0.000000
+2026-08-18  AMZN   buy  decision=260.70  fill=260.65  slippage=-0.000192  comisión=0.000000
+2026-08-18  NVDA   buy  decision=220.33  fill=220.35  slippage=+0.000091  comisión=0.000000
+2026-08-18  META   buy  decision=547.46  fill=547.48  slippage=+0.000037  comisión=0.000000
+2026-08-18  TSLA   buy  decision=337.11  fill=337.20  slippage=+0.000267  comisión=0.000000
+2026-08-18  AVGO   buy  decision=381.31  fill=381.36  slippage=+0.000131  comisión=0.000000
+2026-08-18  BRK-B  buy  decision=502.83  fill=502.83  slippage=+0.000000  comisión=0.000000
+2026-08-18  LLY    buy  decision=1213.37  fill=1213.70  slippage=+0.000272  comisión=0.000000
+2026-08-18  JPM    buy  decision=360.81  fill=360.80  slippage=-0.000028  comisión=0.000000
+2026-08-18  WMT    buy  decision=115.53  fill=115.55  slippage=+0.000216  comisión=0.000000
+2026-08-18  V      buy  decision=365.00  fill=364.98  slippage=-0.000055  comisión=0.000000
+2026-08-18  UNH    buy  decision=395.62  fill=395.66  slippage=+0.000101  comisión=0.000000
+2026-08-18  XOM    buy  decision=164.81  fill=164.82  slippage=+0.000091  comisión=0.000000
+2026-08-18  MA     buy  decision=574.96  fill=575.08  slippage=+0.000217  comisión=0.000000
+2026-08-18  ORCL   buy  decision=143.62  fill=143.65  slippage=+0.000209  comisión=0.000000
+2026-08-18  PG     buy  decision=143.54  fill=143.57  slippage=+0.000174  comisión=0.000000
+2026-08-18  COST   buy  decision=965.77  fill=965.81  slippage=+0.000041  comisión=0.000000
+2026-08-18  HD     buy  decision=338.86  fill=338.89  slippage=+0.000103  comisión=0.000000
+2026-08-18  JNJ    buy  decision=270.54  fill=270.75  slippage=+0.000776  comisión=0.000000
+2026-08-18  ABBV   buy  decision=257.56  fill=257.63  slippage=+0.000291  comisión=0.000000
+2026-08-18  BAC    buy  decision=63.90  fill=63.92  slippage=+0.000313  comisión=0.000000
+2026-08-18  MRK    buy  decision=135.38  fill=135.33  slippage=-0.000369  comisión=0.000000
+2026-08-18  CRM    buy  decision=198.35  fill=198.40  slippage=+0.000252  comisión=0.000000
+2026-08-18  KO     buy  decision=88.76  fill=88.76  slippage=+0.000000  comisión=0.000000
+2026-08-18  ADBE   buy  decision=266.27  fill=266.34  slippage=+0.000263  comisión=0.000000
+2026-08-18  PEP    buy  decision=140.23  fill=140.21  slippage=-0.000143  comisión=0.000000
+2026-08-18  AMD    buy  decision=479.25  fill=479.31  slippage=+0.000125  comisión=0.000000
+2026-08-18  NFLX   buy  decision=78.42  fill=78.42  slippage=+0.000000  comisión=0.000000
+2026-08-18  TMO    buy  decision=587.88  fill=588.13  slippage=+0.000425  comisión=0.000000
+2026-08-18  CVX    buy  decision=204.96  fill=204.97  slippage=+0.000049  comisión=0.000000
+2026-08-18  CSCO   buy  decision=111.29  fill=111.29  slippage=+0.000000  comisión=0.000000
+2026-08-18  ACN    buy  decision=176.47  fill=176.39  slippage=-0.000453  comisión=0.000000
+2026-08-18  MCD    buy  decision=268.72  fill=268.74  slippage=+0.000074  comisión=0.000000
+2026-08-18  IBM    buy  decision=233.54  fill=233.55  slippage=+0.000043  comisión=0.000000
+2026-08-18  LIN    buy  decision=480.84  fill=480.98  slippage=+0.000291  comisión=0.000000
+2026-08-18  QCOM   buy  decision=159.30  fill=159.17  slippage=-0.000816  comisión=0.000000
+2026-08-18  GE     buy  decision=372.49  fill=372.52  slippage=+0.000081  comisión=0.000000
+2026-08-18  INTU   buy  decision=353.62  fill=353.58  slippage=-0.000113  comisión=0.000000
+2026-08-18  PM     buy  decision=187.98  fill=187.99  slippage=+0.000053  comisión=0.000000
+2026-08-18  CMCSA  buy  decision=26.11  fill=26.11  slippage=+0.000192  comisión=0.000000
+2026-08-18  DIS    buy  decision=104.63  fill=104.64  slippage=+0.000096  comisión=0.000000
+2026-08-18  TXN    buy  decision=271.36  fill=271.44  slippage=+0.000295  comisión=0.000000
+2026-08-18  CAT    buy  decision=838.62  fill=839.54  slippage=+0.001097  comisión=0.000000
+2026-08-18  AMGN   buy  decision=426.62  fill=426.80  slippage=+0.000434  comisión=0.000000
+2026-08-18  PFE    buy  decision=27.23  fill=27.23  slippage=+0.000184  comisión=0.000000
+2026-08-18  SPGI   buy  decision=420.77  fill=420.92  slippage=+0.000345  comisión=0.000000
+2026-08-18  SPY    sell decision=768.14  fill=768.11  slippage=-0.000039  comisión=0.000000
+2026-08-18  QQQ    sell decision=718.12  fill=718.12  slippage=+0.000007  comisión=0.000000
+2026-08-18  AAPL   sell decision=310.09  fill=310.09  slippage=+0.000000  comisión=0.000000
+2026-08-18  MSFT   sell decision=481.81  fill=481.75  slippage=-0.000114  comisión=0.000000
+2026-08-18  GOOGL  sell decision=343.15  fill=343.15  slippage=-0.000015  comisión=0.000000
+2026-08-18  AMZN   sell decision=260.62  fill=260.61  slippage=-0.000038  comisión=0.000000
+2026-08-18  NVDA   sell decision=220.37  fill=220.37  slippage=+0.000000  comisión=0.000000
+2026-08-18  META   sell decision=547.32  fill=547.30  slippage=-0.000037  comisión=0.000000
+2026-08-18  TSLA   sell decision=337.08  fill=336.97  slippage=-0.000341  comisión=0.000000
+2026-08-18  AVGO   sell decision=381.33  fill=381.32  slippage=-0.000026  comisión=0.000000
+2026-08-18  BRK-B  sell decision=502.89  fill=502.77  slippage=-0.000239  comisión=0.000000
+2026-08-18  LLY    sell decision=1213.54  fill=1213.20  slippage=-0.000280  comisión=0.000000
+2026-08-18  JPM    sell decision=360.81  fill=360.84  slippage=+0.000083  comisión=0.000000
+2026-08-18  WMT    sell decision=115.55  fill=115.54  slippage=-0.000043  comisión=0.000000
+2026-08-18  V      sell decision=364.97  fill=364.92  slippage=-0.000137  comisión=0.000000
+2026-08-18  UNH    sell decision=395.62  fill=395.53  slippage=-0.000227  comisión=0.000000
+2026-08-18  XOM    sell decision=164.80  fill=164.79  slippage=-0.000061  comisión=0.000000
+2026-08-18  MA     sell decision=575.07  fill=574.86  slippage=-0.000365  comisión=0.000000
+2026-08-18  ORCL   sell decision=143.70  fill=143.68  slippage=-0.000139  comisión=0.000000
+2026-08-18  PG     sell decision=143.55  fill=143.54  slippage=-0.000070  comisión=0.000000
+2026-08-18  COST   sell decision=965.77  fill=965.59  slippage=-0.000186  comisión=0.000000
+2026-08-18  HD     sell decision=339.12  fill=339.03  slippage=-0.000265  comisión=0.000000
+2026-08-18  JNJ    sell decision=270.52  fill=270.46  slippage=-0.000222  comisión=0.000000
+2026-08-18  ABBV   sell decision=257.46  fill=257.35  slippage=-0.000427  comisión=0.000000
+2026-08-18  BAC    sell decision=63.93  fill=63.93  slippage=+0.000000  comisión=0.000000
+2026-08-18  MRK    sell decision=135.32  fill=135.30  slippage=-0.000148  comisión=0.000000
+2026-08-18  CRM    sell decision=198.13  fill=198.10  slippage=-0.000151  comisión=0.000000
+2026-08-18  KO     sell decision=88.74  fill=88.74  slippage=+0.000000  comisión=0.000000
+2026-08-18  ADBE   sell decision=265.94  fill=265.90  slippage=-0.000169  comisión=0.000000
+2026-08-18  PEP    sell decision=140.19  fill=140.19  slippage=-0.000036  comisión=0.000000
+2026-08-18  AMD    sell decision=479.43  fill=479.24  slippage=-0.000386  comisión=0.000000
+2026-08-18  NFLX   sell decision=78.44  fill=78.44  slippage=+0.000000  comisión=0.000000
+2026-08-18  TMO    sell decision=587.88  fill=587.61  slippage=-0.000459  comisión=0.000000
+2026-08-18  CVX    sell decision=204.98  fill=205.01  slippage=+0.000146  comisión=0.000000
+2026-08-18  CSCO   sell decision=111.29  fill=111.29  slippage=+0.000000  comisión=0.000000
+2026-08-18  ACN    sell decision=176.38  fill=176.33  slippage=-0.000283  comisión=0.000000
+2026-08-18  MCD    sell decision=268.74  fill=268.73  slippage=-0.000037  comisión=0.000000
+2026-08-18  IBM    sell decision=233.54  fill=233.47  slippage=-0.000300  comisión=0.000000
+2026-08-18  LIN    sell decision=480.84  fill=480.69  slippage=-0.000312  comisión=0.000000
+2026-08-18  QCOM   sell decision=159.20  fill=159.13  slippage=-0.000440  comisión=0.000000
+2026-08-18  GE     sell decision=372.49  fill=372.25  slippage=-0.000644  comisión=0.000000
+2026-08-18  INTU   sell decision=353.41  fill=353.00  slippage=-0.001160  comisión=0.000000
+2026-08-18  PM     sell decision=187.98  fill=187.88  slippage=-0.000532  comisión=0.000000
+2026-08-18  CMCSA  sell decision=26.10  fill=26.10  slippage=+0.000000  comisión=0.000000
+2026-08-18  DIS    sell decision=104.55  fill=104.56  slippage=+0.000096  comisión=0.000000
+2026-08-18  TXN    sell decision=271.19  fill=271.10  slippage=-0.000350  comisión=0.000000
+2026-08-18  CAT    sell decision=839.07  fill=838.78  slippage=-0.000346  comisión=0.000000
+2026-08-18  AMGN   sell decision=426.68  fill=426.60  slippage=-0.000187  comisión=0.000000
+2026-08-18  PFE    sell decision=27.22  fill=27.22  slippage=+0.000000  comisión=0.000000
+2026-08-18  SPGI   sell decision=420.90  fill=420.85  slippage=-0.000119  comisión=0.000000
