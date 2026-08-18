@@ -59,6 +59,19 @@ Nos considera su equipo, no herramientas.
    `RESUMEN_VALIDACION_VARIABLES.md` — muchas ideas "nuevas" ya se probaron y refutaron.
 3. Si tocás código/API/frontend: revisá el hallazgo en `AUDITORIA_TECNICA.md` antes de arreglar a ciegas.
 
+## Ritual de apertura de sesión (si la conversación se perdió)
+
+Las sesiones de Kilo se guardan en `~/.local/share/kilo/kilo.db` y sobreviven reinicios y
+actualizaciones de la extensión. Para retomar la última sesión del proyecto:
+
+- Doble clic en `~/Desktop/Recuperar-Sesion-Fortress.command`, o
+- En Terminal: `fs` (alias del `~/.zshrc`) → retoma la última sesión.
+  (`fs --listar` muestra todas; `fs --nueva` arranca desde cero.)
+
+El script `scripts/recuperar_ultima_sesion.sh` resuelve el binario de la extensión (puede
+cambiar de versión al actualizarse) y consulta la DB de sesiones. Si falla, abrir VS Code
+una vez (repara la extensión) y reintentar.
+
 ## Reglas no negociables (detalle y porqué en ONBOARDING.md)
 
 1. **Verificá TODO contra el artefacto real** — archivo, test, commit. Nunca confíes en resúmenes
