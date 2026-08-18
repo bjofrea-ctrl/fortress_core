@@ -187,6 +187,25 @@ Otros agentes: Claude Code lee `CLAUDE.md` del repo (apunta a este archivo); age
 
 ---
 
+## Ritual de apertura de sesión — si la conversación se perdió
+
+Las conversaciones de Kilo viven en `~/.local/share/kilo/kilo.db` y NO se pierden al reiniciar
+la máquina ni al actualizar la extensión. Para retomar la última sesión:
+
+1. **Doble clic** en `~/Desktop/Recuperar-Sesion-Fortress.command` (abre Terminal y ejecuta el script), o
+2. Desde Terminal: `fs` (alias en `~/.zshrc`) → retoma la última sesión.
+   - `fs --listar` → muestra las sesiones guardadas
+   - `fs --nueva` → arranca sin retomar nada
+
+El script `scripts/recuperar_ultima_sesion.sh` resuelve el binario de la extensión (puede
+cambiar de número de versión cuando se actualiza) y consulta la base de datos de sesiones
+para encontrar la última sesión con `directory='/Users/boris/Desktop/fortress_core'`.
+
+Si el script no funciona (extensión no instalada), el fallback es abrir VS Code una vez —
+eso repara o instala la extensión automáticamente — y luego volver a intentar.
+
+---
+
 ## Ritual de cierre de sesión — no cerrar sin esto
 
 Cada sesión que toque código, documentos o estado deja el MISMO rastro, para que la próxima
