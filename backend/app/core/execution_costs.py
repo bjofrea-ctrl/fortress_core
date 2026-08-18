@@ -31,6 +31,11 @@ import numpy as np
 import requests
 
 DEFAULT_PAPER_BASE_URL = "https://paper-api.alpaca.markets"
+# Los datos de mercado NO viven en el host de trading (paper-api): están en
+# data.alpaca.markets. Pedir el último trade al host de trading da 404
+# (crash de la ronda viva de 2026-08-18). Son hosts distintos que usan las
+# mismas credenciales. El dato es de solo lectura; nunca toca una cuenta live.
+DEFAULT_MARKET_DATA_BASE_URL = "https://data.alpaca.markets"
 DEFAULT_TIMEOUT_SECONDS = 15.0
 
 
@@ -54,6 +59,7 @@ class AlpacaPaperClient:
         api_key: str = "",
         secret_key: str = "",
         base_url: str = "",
+        market_data_base_url: str = "",
         session: Any = None,
     ) -> None:
         self.api_key = api_key or os.environ.get("ALPACA_PAPER_API_KEY", "")
@@ -62,6 +68,11 @@ class AlpacaPaperClient:
             base_url
             or os.environ.get("ALPACA_PAPER_BASE_URL", "")
             or DEFAULT_PAPER_BASE_URL
+        )
+        self.market_data_base_url = (
+            market_data_base_url
+            or os.environ.get("ALPACA_MARKET_DATA_BASE_URL", "")
+            or DEFAULT_MARKET_DATA_BASE_URL
         )
         if not self.api_key or not self.secret_key:
             raise ConfigurationError(
