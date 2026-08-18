@@ -88,9 +88,15 @@ class AlpacaPaperClient:
         )
 
     def last_trade_price(self, symbol: str) -> float:
-        """Precio del último trade del símbolo — el *precio de decisión* de la medición."""
+        """Precio del último trade del símbolo — el *precio de decisión* de la medición.
+
+        Vive en el host de DATOS (data.alpaca.markets), no en el de trading:
+        endpoint `/v2/stocks/{symbol}/trades/latest`. Mismo esquema de auth y misma
+        forma de respuesta ({"symbol", "trade": {"p"}}).
+        """
         resp = self._session.get(
-            f"{self.base_url}/v2/last/trade/{symbol}", timeout=DEFAULT_TIMEOUT_SECONDS
+            f"{self.market_data_base_url}/v2/stocks/{symbol}/trades/latest",
+            timeout=DEFAULT_TIMEOUT_SECONDS,
         )
         resp.raise_for_status()
         return float(resp.json()["trade"]["p"])

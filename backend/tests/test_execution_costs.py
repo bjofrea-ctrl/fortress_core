@@ -49,7 +49,10 @@ class _FakeSession:
 
     def get(self, url, timeout=None):
         self.get_calls.append(url)
-        sym = url.rstrip("/").split("/")[-1]
+        if "/stocks/" in url:  # endpoint de datos: /v2/stocks/<SYM>/trades/latest
+            sym = url.split("/stocks/")[1].split("/")[0]
+        else:
+            sym = url.rstrip("/").split("/")[-1]
         return _FakeResp({"trade": {"p": self.prices[sym]}})
 
     def post(self, url, json=None, timeout=None):
@@ -190,7 +193,9 @@ def test_cliente_last_trade_price_parsea():
     sess = _FakeSession({"SPY": 500.0})
     c = AlpacaPaperClient(api_key="k", secret_key="s", base_url=BASE_URL, session=sess)
     assert c.last_trade_price("SPY") == pytest.approx(500.0)
-    assert sess.get_calls[-1].endswith("/v2/last/trade/SPY")
+    assert sess.get_calls[-1].endswith("/v2/stocks/SPY/trades/latest")
+    # el dato vive en el host de DATOS (el bug de 2026-08-18 fue pedirlo al de trading)
+    assert sess.get_calls[-1].startswith("https://data.alpaca.markets")
     # headers de autenticación puestos en la sesión
     assert sess.headers.get("APCA-API-KEY-ID") == "k"
     assert sess.headers.get("APCA-API-SECRET-KEY") == "s"
@@ -222,6 +227,8 @@ def test_cliente_base_url_es_paper_siempre():
     assert c.base_url == "https://paper-api.alpaca.markets"
     assert c.base_url.startswith("https://paper-api.alpaca.markets")
     assert c.base_url != "https://api.alpaca.markets"
+    # y el dato de mercado va al host de datos de solo lectura
+    assert c.market_data_base_url == "https://data.alpaca.markets"
 
 
 # --------------------------------------------------------------------------- #
