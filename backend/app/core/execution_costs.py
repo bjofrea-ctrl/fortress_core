@@ -23,6 +23,7 @@ con un fake, sin pegar a la red. `AlpacaPaperClient` es la implementación HTTP 
 """
 import os
 import sqlite3
+import time
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any, Dict, List
@@ -37,6 +38,11 @@ DEFAULT_PAPER_BASE_URL = "https://paper-api.alpaca.markets"
 # mismas credenciales. El dato es de solo lectura; nunca toca una cuenta live.
 DEFAULT_MARKET_DATA_BASE_URL = "https://data.alpaca.markets"
 DEFAULT_TIMEOUT_SECONDS = 15.0
+# Las market orders paper NO vuelven con status filled en el HTTP response:
+# nacen pending_new y la API las fillea en 1-10s (verificado en vivo 2026-08-18
+# contra SPY: respuesta enviada como pending_new, filled 6s después). Hay que
+# esperar el estado, no el envío.
+TERMINAL_UNFILLED = ("rejected", "canceled", "expired")
 
 
 class ConfigurationError(RuntimeError):
@@ -104,8 +110,10 @@ class AlpacaPaperClient:
     def submit_market_order(self, symbol: str, qty: float, side: str) -> Dict[str, Any]:
         """Manda una orden MARKET de PAPER y devuelve el JSON de la orden ya fillada.
 
-        Para market orders Alpaca devuelve `filled_avg_price` en la respuesta. Si no,
-        falla ruidoso (no registrar un fill silenciosamente como None).
+        Alpaca no devuelve el fill en el HTTP response: nace como `pending_new`
+        y pasa a `filled` (o a un estado terminal unfilled) unos segundos después,
+        así que se espera haciendo polling al GET de la orden. La medición exige
+        un fill real; registrar uno que no llegó contaminaría el número.
         """
         payload = {
             "symbol": symbol,
@@ -119,11 +127,28 @@ class AlpacaPaperClient:
         )
         resp.raise_for_status()
         order = resp.json()
+        deadline = time.monotonic() + 30.0
+        while order.get("status") != "filled":
+            status = order.get("status")
+            if status in TERMINAL_UNFILLED:
+                raise RuntimeError(
+                    f"Orden {symbol} {side} terminó {status} sin fill: no se registra."
+                )
+            if time.monotonic() > deadline:
+                raise RuntimeError(
+                    f"Orden {symbol} {side} sin fill tras 30s (estado={status}): "
+                    "no se registra. Revisá la orden manualmente."
+                )
+            time.sleep(1.0)
+            resp = self._session.get(
+                f"{self.base_url}/v2/orders/{order['id']}",
+                timeout=DEFAULT_TIMEOUT_SECONDS,
+            )
+            resp.raise_for_status()
+            order = resp.json()
         if not order.get("filled_avg_price"):
             raise RuntimeError(
-                f"Orden {symbol} {side} sin filled_avg_price en la respuesta: "
-                f"{order.get('status')}. Revisá el estado de la orden, no lo registres "
-                "como fill."
+                f"Orden {symbol} {side} con status filled pero sin filled_avg_price."
             )
         return order
 

@@ -35,40 +35,63 @@ class _FakeResp:
 
 
 class _FakeSession:
-    """Sesión fake: get() devuelve el último trade, post() fill de la orden."""
+    """Sesión fake: get() devuelve el último trade o el estado de una orden enviada,
+    post() crea la orden. Emula el paper real: el fill llega por polling, no en la
+    respuesta del envío (status `pending_new` → `filled`)."""
 
-    def __init__(self, prices, fill_mult=1.001, order_status=200, filled=True):
+    def __init__(self, prices, fill_mult=1.001, order_status=200, filled=True,
+                 pending_polls=0):
         self.headers = {}
         self.prices = prices
         self.fill_mult = fill_mult
         self.order_status = order_status
         self.filled = filled
+        self.pending_polls = pending_polls  # polls en que la orden sigue pendiente
         self.get_calls = []
         self.post_calls = []
+        self.orders = {}
         self.closed = False
+
+    def _order_state(self, oid):
+        """Snapshot de la orden: si le quedan polls pendientes, sigue pendiente."""
+        order = dict(self.orders[oid])
+        remaining = order.pop("_pending_polls", 0)
+        if remaining > 0:
+            order["_pending_polls"] = remaining - 1
+            self.orders[oid] = order
+            order["status"] = "pending_new"
+            order["filled_avg_price"] = None
+        return order
 
     def get(self, url, timeout=None):
         self.get_calls.append(url)
-        if "/stocks/" in url:  # endpoint de datos: /v2/stocks/<SYM>/trades/latest
-            sym = url.split("/stocks/")[1].split("/")[0]
-        else:
-            sym = url.rstrip("/").split("/")[-1]
+        if "/v2/orders/" in url:  # polling del estado de una orden enviada
+            oid = url.rstrip("/").split("/")[-1]
+            return _FakeResp(self._order_state(oid))
+        # endpoint de datos: /v2/stocks/<SYM>/trades/latest
+        sym = url.split("/stocks/")[1].split("/")[0]
         return _FakeResp({"trade": {"p": self.prices[sym]}})
 
     def post(self, url, json=None, timeout=None):
         self.post_calls.append((url, json))
         if self.order_status >= 400:
             return _FakeResp({}, status=self.order_status)
-        if not self.filled:
-            return _FakeResp({"symbol": json["symbol"], "status": "new", "filled_avg_price": None})
-        return _FakeResp(
-            {
+        oid = f"oid-{len(self.orders) + 1}"
+        if self.filled:
+            order = {
+                "id": oid,
                 "symbol": json["symbol"],
-                "status": "filled",
+                "status": "pending_new" if self.pending_polls else "filled",
                 "filled_avg_price": self.prices[json["symbol"]] * self.fill_mult,
                 "commission": 0.0,
             }
-        )
+            if self.pending_polls:
+                order["_pending_polls"] = self.pending_polls
+        else:
+            order = {"id": oid, "symbol": json["symbol"], "status": "rejected",
+                     "filled_avg_price": None, "commission": 0.0}
+        self.orders[oid] = order
+        return _FakeResp(dict(order))
 
     def close(self):
         self.closed = True
@@ -215,10 +238,22 @@ def test_cliente_submit_market_order_posteaa_y_lee_fill():
 
 
 def test_cliente_falla_si_no_hay_fill():
-    sess = _FakeSession(PRICES, filled=False)
+    sess = _FakeSession(PRICES, filled=False)  # la orden nace rejected
     c = AlpacaPaperClient(api_key="k", secret_key="s", base_url=BASE_URL, session=sess)
-    with pytest.raises(RuntimeError, match="sin filled_avg_price"):
+    with pytest.raises(RuntimeError, match="sin fill"):
         c.submit_market_order("SPY", 1, "buy")
+
+
+def test_cliente_espera_el_fill_pendiente_del_paper():
+    # El paper real responde pending_new al POST y el fill llega por polling
+    # (verificado en vivo 2026-08-18 contra SPY). Se espera, no se registra vacío.
+    sess = _FakeSession({"QQQ": 400.0}, fill_mult=1.002, pending_polls=2)
+    c = AlpacaPaperClient(api_key="k", secret_key="s", base_url=BASE_URL, session=sess)
+    order = c.submit_market_order("QQQ", 1, "buy")
+    assert order["status"] == "filled"
+    assert order["filled_avg_price"] == pytest.approx(400 * 1.002)
+    order_polls = [u for u in sess.get_calls if "/v2/orders/" in u]
+    assert len(order_polls) >= 1
 
 
 def test_cliente_base_url_es_paper_siempre():
