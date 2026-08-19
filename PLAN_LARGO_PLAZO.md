@@ -266,6 +266,75 @@ SESSION_LOG.md actualizados. Sin commit descriptivo (auto-backup corrió).
 
 ---
 
+## Ronda 2026-08-19 (noche) — Kilo Code y OpenCode
+
+> Verificado antes de escribir esto: tabla maestra de ROADMAP.md está 100% 🟢
+> salvo LEAN (parqueado, no tocar) y broker real (bloqueado, correcto). Las dos
+> tareas de abajo son de investigación/verificación de solo lectura — ninguna
+> toca `advisor.py` ni el motor de decisión. No se pisan entre sí (una es
+> backend/datos, la otra es frontend/navegador).
+
+### Tarea F — Por qué `/api/advisor/universe` devuelve 44 símbolos y no 50 (Kilo Code)
+
+```
+CONTEXTO: ROADMAP.md fila "Dashboard institucional consolidado" registra que la
+verificación en vivo del endpoint mostró "universe 44 símbolos régimen 2" sin
+explicar la causa. Nunca se investigó si es esperado (filtrado por régimen o
+por datos insuficientes) o un bug real.
+
+TAREA (solo lectura/diagnóstico, sin tocar advisor.py):
+1. Leer backend/app/api/routes/advisor.py función `advisor_universe` (línea
+   ~178) y `_compute_ticket` — identificar bajo qué condición un símbolo del
+   universo de 50 queda afuera del array de respuesta (return None, excepción
+   silenciosa, filtro explícito, datos insuficientes).
+2. Correr el endpoint (o el mismo código en un script/notebook de diagnóstico)
+   contra el universo 50 real y listar EXACTAMENTE cuáles 6 símbolos faltan y
+   por qué (log del motivo por símbolo).
+3. Documentar el hallazgo en ROADMAP.md (fila nueva o actualizar la existente):
+   si es comportamiento esperado (ej. datos insuficientes para esos 6), decirlo
+   con evidencia; si es un bug, describirlo y proponer el fix en un pre-registro
+   corto en PLAN_MEJORA_MATEMATICA.md ANTES de tocar el endpoint — no cambiar
+   `advisor.py` en esta tarea sin ese pre-registro aprobado.
+
+REGLAS: NO modificar advisor.py ni el motor de señal en esta tarea — es
+diagnóstico. Si el fix es trivial y sin riesgo (ej. loggear el motivo del
+descarte), documentarlo como propuesta, no aplicarlo. No commitear/pushear sin
+autorización de Boris.
+```
+
+### Tarea G — Verificación visual del navegador del dashboard (OpenCode)
+
+```
+CONTEXTO: ROADMAP.md fila "Dashboard institucional consolidado" tiene
+"Pendiente explícito: verificación visual del navegador" desde el 2026-08-17 —
+nunca se hizo. Ahora además incluye el chip CostField.tsx nuevo (Tarea E).
+
+TAREA:
+1. Levantar el frontend (`npm run dev` o el flujo que ya use el proyecto) y
+   abrir las 4 vistas lazy-loaded (Mesa/Detalle/Portfolio/Gobernanza).
+2. Confirmar por vista: sin errores de consola, chart Lightweight Charts
+   renderiza con EMA50/200 y zonas mecánicas, widget TradingView degrada bien
+   si falla, CostField.tsx visible en el Layout con el tooltip
+   p50/p95/n/fecha, Exit Thesis Monitor visible, Evidence Footer con datos
+   reales del trial_registry (no placeholders).
+3. Documentar el resultado (capturas o descripción) en ROADMAP.md, cerrando el
+   "pendiente explícito" de esa fila con evidencia concreta. Si encontrás un
+   bug visual, documentarlo con severidad — no lo arregles en esta tarea salvo
+   que sea CSS trivial y aislado (no lógica de datos).
+
+REGLAS: solo frontend. No tocar backend/advisor.py. No commitear/pushear sin
+autorización de Boris.
+```
+
+### Verificación de la Ronda 2026-08-19 (noche)
+
+Ninguna de las dos tareas debería tocar tests backend (son diagnóstico +
+verificación visual). Si Tarea F propone un fix, queda como pre-registro
+pendiente de aprobación, no aplicado. Actualizar ROADMAP.md y SESSION_LOG.md al
+cerrar cada una.
+
+---
+
 ## Verificación al cerrar cualquier tarea
 
 `cd backend && .venv/bin/python -m pytest -q` debe seguir en verde (242+ passed)
