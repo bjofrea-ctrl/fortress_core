@@ -304,6 +304,15 @@ autorización de Boris.
 
 ### Tarea G — Verificación visual del navegador del dashboard (OpenCode)
 
+**ESTADO**: 🟢 CERRADO (2026-08-19, OpenCode) — verificación hecha con Chrome
+headless + CDP (verificación post-render del DOM + logs de consola, no solo
+endpoints). Las 4 vistas cargan sin errores de consola; CostField muestra datos
+reales (0.017% · n=156 · curva 1/10/50); Detalle renderiza chart Lightweight
+Charts + Zonas mecánicas + M2 + Plan de salida 4 mecanismos. **Hallazgo no
+bloqueante (backend, NO arreglado)**: `/api/advisor/AAPL` tarda ~80s por intentos
+de descarga de Yahoo de símbolos fantasma en `_compute_ticket` — propuesto como
+fix aparte (no aplicado). Ver ROADMAP fila dashboard + SESSION_LOG. NO reasignar.
+
 ```
 CONTEXTO: ROADMAP.md fila "Dashboard institucional consolidado" tiene
 "Pendiente explícito: verificación visual del navegador" desde el 2026-08-17 —

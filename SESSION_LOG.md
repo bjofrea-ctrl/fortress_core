@@ -1968,3 +1968,31 @@ anterior) y `ORDENES_MODULOS.md` (M7 → hecho) actualizados.
   actualizadas ("COST_PER_SIDE ACTUALIZADO a 0.0005"). Sin commit descriptivo (regla
   de la ronda; el auto-backup cubre el estado — verificar si conviene commit explícito
   con Boris).
+
+## 2026-08-19 (noche) — Tarea G CERRADA: verificación visual del dashboard (OpenCode)
+- **Origen**: Ronda 2026-08-19 (noche) escrita por Claude Code — la Tarea G (verificación
+  visual del navegador, pendiente desde el 17/08) me corresponde a OpenCode.
+- **Método (no solo endpoints — verificación post-render real)**: levanté el stack
+  (uvicorn app.main:8000 + vite :3000) y usé Chrome headless con remote-debugging +
+  scripts Node por CDP para inspeccionar el DOM renderizado DESPUÉS de los fetch y
+  capturar errores de consola por vista.
+- **Resultado por vista** (sin errores de consola en ninguna):
+  - Mesa: universo carga (AAPL/ABBV/...), badge honestidad, chip staleness.
+  - Portfolio: panel curva de capital + régimen + riesgo.
+  - Gobernanza: resumen de mercado + gobernanza multi-agente.
+  - Detalle (AAPL/MSFT): chart Lightweight Charts renderiza (7 canvas, EMA50/200),
+    Zonas mecánicas de salida (Entrada/Stop 2×ATR/Target 4×ATR), M2 conforme,
+    Plan de salida 4 mecanismos (partial tp / trailing stop / technical / regime stop).
+  - **CostField (Tarea E) VERIFICADO con datos reales** en todas las vistas:
+    `COSTO REAL/LADO: 0.017% · n=156 · q1: 0.019% · q10: 0.013% · q50: 0.004%`.
+  - Evidence Footer con datos del trial_registry (NO_CUMPLE/CUMPLE reales, 37 trials).
+- **HALLAZGO (no bloqueante, backend — NO arreglado, es Tarea F/otro dueño)**:
+  `/api/advisor/AAPL` tarda ~80s (vs MSFT 2.8s). Causa en el log: `_compute_ticket`
+  intenta descargar de Yahoo símbolos fantasma (`$BASELINE_CLEAN_..._EVENTS`,
+  `$CAPITAL_USAGE_...`, `$COT_2019`, etc.) que dan "possibly delisted; no price data"
+  con timeout ~1s c/u — el endpoint de detalle paga el costo en cache fría; el frontend
+  renderiza bien una vez completado (chart aparece). **Propuesta (no aplicada)**:
+  cachear/saltar esos símbolos no-parseables en la descarga de precios del ticket.
+  Esto es coherente con la Tarea F (44 vs 50 en universe) — posible causa común.
+- **Docs**: ROADMAP fila dashboard (pendiente visual → HECHA + hallazgo),
+  PLAN_LARGO_PLAZO Tarea G → CERRADA. Sin commit descriptivo (regla de la ronda).
