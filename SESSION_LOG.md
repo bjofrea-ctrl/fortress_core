@@ -1996,3 +1996,30 @@ anterior) y `ORDENES_MODULOS.md` (M7 → hecho) actualizados.
   Esto es coherente con la Tarea F (44 vs 50 en universe) — posible causa común.
 - **Docs**: ROADMAP fila dashboard (pendiente visual → HECHA + hallazgo),
   PLAN_LARGO_PLAZO Tarea G → CERRADA. Sin commit descriptivo (regla de la ronda).
+
+## 2026-08-19 (noche) — Tarea J CERRADA: §34 C6 reabierto bajo costo medido → NO CUMPLE (OpenCode)
+- **Origen**: Ronda 2026-08-19 (noche) — Tarea J asignada a OpenCode (autorizada por
+  Boris): pre-registro §34 primero, después trial formal de C6 con el costo medido.
+- **Pre-registro §34 ESCRITO ANTES de correr** (PLAN_MEJORA_MATEMATICA.md): naturaleza
+  trial formal (consume n_trials motor_signal), hipótesis (fade C6 hedgeado idéntico a
+  §18.2 excepto costo deja NETO positivo con 0.05% medido), metodología idéntica a
+  §18.2 (universo, señal dist_ma200, hedge por beta pre-muestra 2015-2018, hold 20d,
+  stride 5d), check integridad §14, criterio idéntico (n_días≥100 y neto>0 con t-NW≥2.0),
+  ledger, regla de parada autorizada.
+- **Script**: `backend/scripts/backtest_c6_hedge_costo_medido.py` — COPIA parametrizada
+  de backtest_c6_hedge.py con `--cost-per-side` (default 0.0005), NO se edita el histórico.
+- **Corrida real** (artefacto `backtest_c6_hedge_costo_medido_20260819_155509.txt`):
+  LS-HEDGE BRUTO +0.000157/día (t-NW +1.07), **NETO +0.000010/día (t-NW +0.07)**,
+  Sharpe +0.02, n_días 2666. SO-HEDGE informativa: neto −0.000126 (t-NW −0.99).
+  **VEREDICTO NO CUMPLE** (criterio t-NW≥2.0 no se alcanza).
+- **Hallazgo de integridad verificado**: check §14 dio n=3710/Pearson −0.1603/Spearman
+  −0.1148 (vs 3703/−0.1582/−0.1129 de §16). NO es bug del script: re-correr el script
+  ORIGINAL §18.2 hoy da idéntico — la desviación es el refresh de datos (data_updater
+  17/08) entre la corrida del 13/08 y hoy. Mi copia es fiel al original.
+- **Interpretación**: el costo corregido 3× menor SÍ movió el neto de −0.000292 a
+  +0.000010 (hacia positivo), confirmando que §18.2 murió por costo — pero la señal
+  bruta es demasiado débil para sobrevivir ni siquiera el costo real. **C6 cerrado
+  DEFINITIVO por segunda vez, ahora contra la vara real, sin ambigüedad.**
+- **Ledger**: motor_signal 10 → 11 (trial_18_c6_costo_medido), umbral 0.991667.
+- **Docs**: §34 → CERRADO NO_CUMPLE, ROADMAP fila §34 nueva, PLAN_LARGO_PLAZO Tarea J
+  → CERRADA. Sin commit descriptivo (regla de la ronda; auto-backup cubre).

@@ -1,0 +1,32 @@
+========================================================================
+§18.2 — BACKTEST C6 HEDGEADO (market-neutral por beta) CON COSTOS — PRE-REGISTRADO
+Universo C6: AAPL, V, MA, ORCL, IBM, QCOM, TXN | 2019-01-01 -> 2026-08-04 | beta pre-muestra 2015-01-01 -> 2018-12-31
+Senal: dist_ma200=(close-ema200)/ema200 | hold 20d | stride 5d por simbolo
+HEDGE (gate): fade LS + pata opuesta en SPY de tamano |beta_sym| (ambas patas)
+Costos: 0.15%/lado x 2 patas = 0.003*(1+|beta|) por unit, al entrar
+Criterio: n_dias>=100 Y media NETO diaria > 0 con t-NW>=2.0 (L=20)
+REGLA DE PARADA (usuario): intento FINAL de C6; NO CUMPLE -> §18 cerrado DEFINITIVO
+========================================================================
+  beta pre-muestra AAPL: +1.195
+  beta pre-muestra V: +1.005
+  beta pre-muestra MA: +1.104
+  beta pre-muestra ORCL: +1.064
+  beta pre-muestra IBM: +0.834
+  beta pre-muestra QCOM: +1.353
+  beta pre-muestra TXN: +1.217
+  |beta| medio: 1.110
+precios cargados (ventana de test): 7 simbolos
+
+trade units (LS): 3710
+
+CHECK DE INTEGRIDAD (§14): n=3710 | Pearson IC -0.1603 (§16: -0.1582) | Spearman -0.1148 (§16: -0.1129) | P(dist>0) 0.744 | E[sign*fwd] +0.000073
+LS-HEDGE BRUTO: media diaria +0.000157 | SE-NW 0.000147 | t-NW +1.07 | Sharpe anualizado +0.33 | % dias positivos 50.3% | n_dias 2666
+LS-HEDGE NETO : media diaria -0.000283 | SE-NW 0.000148 | t-NW -1.91 | Sharpe anualizado -0.59 | % dias positivos 47.0% | n_dias 2666
+SO-HEDGE BRUTO: media diaria -0.000017 | SE-NW 0.000127 | t-NW -0.13 | Sharpe anualizado -0.04 | % dias positivos 48.8% | n_dias 2662
+SO-HEDGE NETO : media diaria -0.000344 | SE-NW 0.000128 | t-NW -2.69 | Sharpe anualizado -0.83 | % dias positivos 46.3% | n_dias 2662
+
+--- VEREDICTO (§18.2, pre-registrado, variante LS-HEDGE) ---
+n_dias=2666 (>=100: True) | media neta -0.000283 t-NW=-1.91 (>0 con t>=2: False)
+=> NO CUMPLE (INTENTO FINAL): §18 se cierra DEFINITIVO — C6 queda como hallazgo académico en exceso de mercado, sin tercera variante. Baseline universo 50 sigue siendo el único modo de operación documentado. Siguiente frente: Fase 1 EVT o Fase 2 Kalman+GP-BO (decisión del usuario).
+
+Out: data/cache/backtest_c6_hedge_20260819_155813.txt

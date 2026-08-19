@@ -346,6 +346,18 @@ cerrar cada una.
 
 ### Tarea J — §34: reabrir C6 (MA200 hedged) bajo el costo MEDIDO (OpenCode)
 
+**ESTADO**: 🟢 CERRADO (2026-08-19, OpenCode) — **NO CUMPLE**. §34 pre-registrado
+ANTES de correr; trial formal `motor_signal` (ledger 10→11, umbral 0.991667),
+artefacto `backtest_c6_hedge_costo_medido_20260819_155509.txt`. Con el costo medido
+0.05%/lado (3× menor al 0.15% asumido), el LS-HEDGE NETO pasó de −0.000292 a
+**+0.000010/día (t-NW +0.07)** — el costo corregido SÍ movió el neto hacia positivo,
+pero la señal bruta es débil (+0.000157, t-NW +1.07) y NO cruza el criterio t-NW ≥ 2.0.
+**C6 queda cerrado DEFINITIVO por segunda vez, ahora contra el costo real medido,
+sin ambigüedad.** NO se integra al motor. Check integridad: n=3710/Pearson −0.1603/
+Spearman −0.1148 — desviación menor vs §16 (3703/−0.1582/−0.1129) verificada como
+refresh de datos (data_updater 17/08): el script ORIGINAL §18.2 re-corrido hoy da
+idéntico, mi copia es fiel. NO reasignar.
+
 **AUTORIZADO por Boris (2026-08-19 noche)**: "lo más sólido, no lo más fácil" —
 se reabre C6 con el protocolo COMPLETO, no un atajo. No es un re-run casual del
 script viejo: es un TRIAL FORMAL nuevo que consume `n_trials` de la familia

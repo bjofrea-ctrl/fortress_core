@@ -2533,7 +2533,24 @@ legítimo (no es re-parametrizar la señal).
 Regla de parada §18.2 ("sin tercera variante") se relaja SOLO porque la vara de
 costos cambió por medición, no por variante de señal.
 
-**Estado**: ⚪ PRE-REGISTRADO — a la espera de correr el trial.
+**Estado**: ✅ CERRADO 2026-08-19 — NO CUMPLE (ver RESULTADO abajo).
+
+**RESULTADO (2026-08-19, corrida real, costo 0.05%/lado, artefacto
+`data/cache/backtest_c6_hedge_costo_medido_20260819_155509.txt`)**:
+- Check de integridad §14: n=3710 (vs 3703 de §16), Pearson IC −0.1603 (vs −0.1582),
+  Spearman −0.1148 (vs −0.1129). **Desviación menor verificada NO es bug del script**:
+  el script ORIGINAL §18.2 re-corrido HOY da idéntico (3710/−0.1603/−0.1148) — la
+  diferencia con los números de §16 se debe al refresh de datos (data_updater 17/08)
+  entre la corrida del 13/08 y hoy. Mi copia es fiel al original.
+- LS-HEDGE: BRUTO +0.000157/día (t-NW +1.07), **NETO +0.000010/día (t-NW +0.07)**,
+  Sharpe +0.02, 49.1% días positivos, n_días 2666.
+- SO-HEDGE (informativa): BRUTO −0.000017 (t-NW −0.13), NETO −0.000126 (t-NW −0.99).
+- **VEREDICTO: NO CUMPLE** (media neta >0 pero t-NW +0.07 ≪ 2.0). El costo corregido
+  3× menor SÍ movió el neto de −0.000292 (§18.2) a +0.000010, pero la señal bruta es
+  demasiado débil (+0.000157, t-NW +1.07) y ni siquiera el costo real la deja
+  sobrevivir. **C6 queda cerrado DEFINITIVO por segunda vez, ahora contra el costo
+  real medido — sin ambigüedad.** Ledger motor_signal: 10 → 11 (trial_18), umbral
+  0.991667. NO se integra nada al motor.
 
 **Hipótesis (pre-registrada)**: el fade C6 hedgeado (market-neutral por beta),
 idéntico a §18.2 en TODO excepto el costo, deja retorno diario NETO positivo con
