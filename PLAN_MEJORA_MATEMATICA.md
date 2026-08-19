@@ -2520,6 +2520,68 @@ la evidencia acota el rango:
 **Post-condición**: esta sección queda con el valor elegido, la fecha y el commit;
 ROADMAP fila M4 refleja "COST_PER_SIDE actualizado a X (medido M4/Tarea D)".
 
+### 33.1 — Validación externa del costo adoptado (Perplexity + JoF 2025, 2026-08-19)
+
+**No es un pre-registro de trial** — no hay hipótesis de señal, no consume
+`n_trials`. Es documentación de respaldo externo para un parámetro de config ya
+vigente (0.0005, adoptado arriba), a pedido de Boris con acceso temporal a
+Perplexity con modelo potente.
+
+**Pregunta**: ¿0.05%/lado (10bps round-trip) es realista para ejecución LIVE, o
+solo válido para el piso PAPER medido en M4/Tarea D?
+
+**Fuente**: Schwarz, Barber, Huang, Jorion, Odean — *"The Actual Retail Price of
+Equity Trades"*, Journal of Finance, 2025. **Cita verificada directamente contra la
+fuente** (WebFetch a instituteforautomatedresearch.org/wiki, resumen del paper) —
+no se aceptó la síntesis de Perplexity sin chequear. Confirmado sin errores.
+
+**Diseño real**: 6 cuentas en 5 brokers (TD Ameritrade, Fidelity, E*Trade,
+Robinhood, IBKR Pro, IBKR Lite), ~85.000 órdenes de MERCADO simultáneas (mismo tipo
+de orden que usa el motor: market-at-close) en 128 acciones, dic-2021 a jun-2022,
+tamaño objetivo $100/orden.
+
+**Costo round-trip medido por broker (bps)**:
+
+| Broker | bps round-trip |
+|---|---|
+| TD Ameritrade | 7.2 |
+| Fidelity | 19.7 |
+| E*Trade | 23.4 |
+| Robinhood | 31.4 |
+| IBKR Lite | 44.3 |
+| IBKR Pro | 46.2 |
+
+Gap mejor-peor: 39bps, atribuido al routing hacia wholesalers (calidad de
+ejecución), NO a comisión explícita ni a payment-for-order-flow como tal.
+
+**Veredicto**: 0.05%/lado (10bps round-trip) **NO es optimista** — cae en el rango
+bajo-medio de brokers de buena calidad de ejecución (TD Ameritrade/Fidelity), no en
+un extremo irreal. Queda validado como caso BASE razonable, con dos escenarios
+adicionales para uso futuro (sensibilidad, no cambio de default):
+
+- **5bps** (0.025%/lado) — best-case, broker de alta calidad de ejecución.
+- **10bps** (0.05%/lado) — BASE, el valor ya adoptado en §33. Sin cambios.
+- **25-30bps** (0.125-0.15%/lado) — conservador, broker con routing desfavorable
+  (extremo IBKR Lite/Pro del estudio).
+
+**Caveat**: el estudio no incluye Alpaca ni Schwab directamente. Alpaca queda sin
+dato propio (PFOF-dependiente, prudente asumir escenario medio); Schwab, por sus
+propios reportes de price improvement (no independientes), se ubicaría en el grupo
+bueno junto a TD/Fidelity. Tamaño de orden del estudio ($100) es menor al de
+fortress_core (sub-$50k notional) — la literatura de wholesalers (citada por
+Perplexity, no verificada acá independientemente) sugiere que el costo no escala
+fuerte con tamaño en rango retail, consistente con la curva plana/decreciente medida
+en Tarea D (qty 1/10/50).
+
+**No cambia ningún veredicto activo**: Tarea J (§34, abajo) cerró NO CUMPLE incluso
+al costo base optimista (neto +0.000010/día, t-NW +0.07, lejos de t≥2.0) — correrlo
+a 25-30bps sería estrictamente peor, no aporta nada nuevo. Sin acción sobre C6.
+
+**Uso futuro**: si algún día una señal deja edge neto validado con el costo BASE y
+se reconsidera la conexión a broker real (hoy bloqueada, fila ROADMAP), esta tabla
+ya da el ranking de brokers para elegir con qué conectar — evita repetir la
+investigación.
+
 ## 34. C6 (MA200 hedged) reabierto bajo el costo MEDIDO — PRE-REGISTRO (Tarea J, autorizado por Boris 2026-08-19)
 
 **Naturaleza**: TRIAL FORMAL de señal/mecánica — CONSUME `n_trials` de la familia
