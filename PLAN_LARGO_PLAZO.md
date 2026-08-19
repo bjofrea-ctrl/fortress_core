@@ -156,6 +156,83 @@ Si CUMPLE, discutir integración — no hacer solo.
 
 ---
 
+---
+
+## Ronda 2026-08-19 — Kilo Code y OpenCode
+
+> Verificado antes de escribir esto: los 3 scripts de la ronda anterior
+> (retest_triple_barrier.py, earnings_sentiment.py, diagnose_lead_lag.py) ya
+> existen — no se reasignan. El bug "sin señal" (advisor.py, event loop
+> bloqueado) ya está arreglado y pusheado (commit 2f6fbeb) — no tocar
+> `_load_context_sync`/`_get_context()` en ese archivo salvo que sea
+> exactamente para lo que dice la Tarea E.
+
+### Tarea D — Curva de costo por tamaño (Kilo Code)
+
+```
+CONTEXTO: M4 ya midió costo real con qty=1 (cost_per_side_medido≈0.000189,
+120 fills reales, backend/data/cache/measure_execution_costs_20260818_134338.txt).
+Boris aprobó medir qty=10 y qty=50 para ver si el costo escala con el tamaño
+(slippage por impacto de mercado). Esto es Tarea D, la wiring al motor real
+(Tarea E de otro handoff) queda diferida hasta tener la curva completa.
+
+TAREA:
+1. Leer backend/app/core/execution_costs.py (measure_slippage, summarize — no
+   modificar la firma de nada usado por M4 qty=1, solo agregar parámetro qty
+   si no lo tiene ya) y el artefacto de qty=1 arriba citado, como referencia.
+2. PRE-REGISTRAR en PLAN_MEJORA_MATEMATICA.md (próxima sección libre) ANTES de
+   correr: hipótesis (el costo por lado sube con qty por impacto de mercado),
+   qty a testear (10, 50, además del 1 ya medido), criterio de comparación
+   (slippage_p50/p95 por qty, no un test estadístico formal — es medición, no
+   trial de señal, así que no consume el ledger de n_trials).
+3. Correr measure_execution_costs.py (o una copia parametrizada) con qty=10 y
+   qty=50, SOLO con el mercado abierto (verificar horario US ET antes de
+   correr), cuenta paper PA3QUWEX1XBJ (credenciales en backend/.env, NUNCA en
+   chat/commit).
+4. Documentar los 3 puntos (qty=1/10/50) en una tabla en PLAN_MEJORA_MATEMATICA.md,
+   con los 3 artefactos citados. Actualizar ROADMAP.md M4.
+
+REGLAS: paper trading únicamente. No tocar cost wiring al motor (settings.COST_PER_SIDE
+sigue en 0.0015, deliberado, deferred). No commitear/pushear sin autorización de Boris.
+```
+
+### Tarea E — Campo de costo real en el dashboard (OpenCode)
+
+```
+CONTEXTO: ROADMAP.md menciona un campo "costo/trade" en el dashboard que no
+existe en el frontend (verificado: 0 referencias a cost_per_side o similar en
+frontend/src). Ahora hay un número real medido (Tarea D en curso, o el de
+qty=1 ya cerrado) — mejor construir el campo que borrar la mención.
+
+TAREA:
+1. Leer backend/app/api/routes/advisor.py SOLO para ver el patrón de router
+   existente (prefix, HTTPException) — NO TOCAR ESE ARCHIVO, fue recién
+   arreglado (bug de event loop bloqueado, commit 2f6fbeb) y cualquier edición
+   ahí hoy corre riesgo de pisar la Tarea D si Kilo Code también lo toca.
+2. Crear backend/app/api/routes/costs.py (archivo NUEVO, propio):
+   GET /api/costs/current — lee el último artefacto/registro de
+   execution_costs.db (o el .txt más reciente de measure_execution_costs_*)
+   y devuelve {cost_per_side_medido, slippage_p50, slippage_p95, n_ordenes,
+   ventana, fecha_medicion}. Si no hay medición, 200 con
+   {"medido": false, "nota": "..."} — nunca inventar un número.
+3. Registrar el router nuevo en app/api/routes/__init__.py (mismo patrón que
+   los demás routers).
+4. Frontend: un componente/campo chico que consuma /api/costs/current y
+   muestre el costo medido (o "sin medición" si medido=false) — no simular
+   datos si el endpoint no tiene nada todavía.
+5. Tests: backend/tests/test_costs_api.py (mock del archivo/db, no red).
+
+REGLAS: no tocar advisor.py. Python 3.9. No commitear/pushear sin autorización.
+```
+
+### Verificación de la Ronda 2026-08-19
+
+`cd backend && .venv/bin/python -m pytest -q` debe seguir en 265+ passed antes
+de cerrar cualquiera de las dos. Actualizar ROADMAP.md (la discrepancia del
+campo queda resuelta, no solo señalada) y SESSION_LOG.md.
+
+---
+
 ## Verificación al cerrar cualquier tarea
 
 `cd backend && .venv/bin/python -m pytest -q` debe seguir en verde (242+ passed)
