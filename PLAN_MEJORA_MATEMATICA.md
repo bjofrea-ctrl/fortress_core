@@ -2208,6 +2208,35 @@ listos (Kilo Code: `backend/scripts/measure_execution_costs.py` + `execution_cos
 PA3QUWEX1XBJ necesita activación). Acción requerida del usuario: habilitar trading
 en la cuenta paper / regenerar la API key con permisos. Mientras tanto NO se corre.
 
+**ENMIENDA 1 (2026-08-19, escrita ANTES de correr — diagnóstico real y plan ajustado)**:
+El 403 NO era por permisos de la API key. Cuenta `PA3QUWEX1XBJ` ACTIVE, sin
+bloqueos (`trading_blocked: false`); el error era `40310000 "insufficient buying
+power"` con `buying_power: 0`. Causa: el intento qty=10 de esta mañana alcanzó a
+entrar en 18 símbolos (~$81k de notional) antes de agotar el margen; quedaron 18
+posiciones qty=10 abiertas, cash −$56k, BP 0 (todo orden posterior → 403). Se
+liquidaron las 18 posiciones residuales (paper): cash $24.9k, equity $25.1k,
+BP $100k, cuenta limpia, sin runners activos. Credenciales de la nota "Alpaca
+Paper" (Apple Notes) = las ya presentes en `backend/.env` (cuenta PRUEBA, mismo
+par) — no había que rotar nada.
+
+Restricción estructural: el notional del universo completo (50 símbolos) es
+inviable en esta cuenta — qty=10 ≈ $150k y qty=50 ≈ $750k contra BP $100k
+(equity $25k, margen 4x). ENMIENDA del universo de medición (la hipótesis y el
+criterio NO cambian):
+- qty=10 → `BASE_SYMBOLS` (los 7 que opera el motor: SPY, QQQ, AAPL, MSFT,
+  GOOGL, AMZN, NVDA), notional ≈ $31k. Relevancia: es exactamente lo que el
+  motor compra/vende.
+- qty=50 → subset líquido SPY, QQQ, AAPL (notional ≈ $90k, dentro del BP). Si
+  una orden falla por BP, se reduce a SPY+QQQ y se documenta.
+
+**Comandos exactos (corrida real, 2026-08-19, mercado abierto 12:2x ET)**:
+```
+.venv/bin/python -m scripts.measure_execution_costs --qty 10 --side buy  --symbols SPY,QQQ,AAPL,MSFT,GOOGL,AMZN,NVDA
+.venv/bin/python -m scripts.measure_execution_costs --qty 10 --side sell --symbols SPY,QQQ,AAPL,MSFT,GOOGL,AMZN,NVDA
+.venv/bin/python -m scripts.measure_execution_costs --qty 50 --side buy  --symbols SPY,QQQ,AAPL
+.venv/bin/python -m scripts.measure_execution_costs --qty 50 --side sell --symbols SPY,QQQ,AAPL
+```
+
 **Hipótesis (pre-registrada)**: el costo por lado SUBE con el tamaño de la orden
 por impacto de mercado — el slippage no es lineal en qty. qty=1 (ya medido,
 2026-08-18, artefacto `measure_execution_costs_20260818_134338.txt`) dio
