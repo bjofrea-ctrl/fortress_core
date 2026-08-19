@@ -2023,3 +2023,21 @@ anterior) y `ORDENES_MODULOS.md` (M7 → hecho) actualizados.
 - **Ledger**: motor_signal 10 → 11 (trial_18_c6_costo_medido), umbral 0.991667.
 - **Docs**: §34 → CERRADO NO_CUMPLE, ROADMAP fila §34 nueva, PLAN_LARGO_PLAZO Tarea J
   → CERRADA. Sin commit descriptivo (regla de la ronda; auto-backup cubre).
+
+## 2026-08-19 (noche) — Tarea F (Kilo Code): diagnóstico universe 44 vs 50
+
+- **Pregunta**: ¿por qué `/api/advisor/universe` devuelve 44 símbolos y no 50?
+- **Respuesta (NO bug)**: el endpoint itera `opportunities.SYMBOLS`, una lista
+  curada HARDCODED de 44 símbolos — NO el "universo 50" (BASE_SYMBOLS 7 +
+  NEW_UNIVERSE 43 de `fetch_universe_data.py`/`measure_execution_costs.py`) que
+  usan los trials de investigación y la medición de costos.
+- **Verificación empírica**: `load_universe(SYMBOLS)` cargó 44/44 (0 descartados
+  por el filtro `len(df) > 200`). El loop de `advisor_universe` no descarta nada:
+  `_compute_ticket` devuelve ticket aunque `sig=None`, y `calculate_all_indicators`
+  está protegido contra NaN. El endpoint devuelve exactamente los 44 definidos.
+- **Diferencia de listas**: en 50-no-44 = [AMD, CMCSA, DIS, INTU, META, PFE, QCOM,
+  SPGI, TSLA]; en 44-no-50 = [ABT, GS, WFC]. No es subconjunto: son listas distintas.
+- **Artefacto**: `data/cache/diagnostico_universo_20260819_174613.txt`.
+- **Acción**: no aplicada (es diagnóstico). Si Boris quiere cubrir los 50, cambiar
+  `opportunities.SYMBOLS` al universo 50; si no, documentar 44 como universo de
+  decisión intencional. ROADMAP fila Dashboard actualizada.
