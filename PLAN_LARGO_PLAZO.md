@@ -520,6 +520,146 @@ signal_engine.py, trial_registry.py, ni ningún archivo de trial histórico. Pyt
 
 ---
 
+## Ronda en cola — evaluación completa de indicadores (para cuando Tarea K/L cierren)
+
+**Corrección de Boris (2026-08-19)**: "perfecto es enemigo de lo bueno" no era sobre
+frenar las auditorías — era sobre el propio criterio de los indicadores: no exigir
+la vara más estricta posible antes de darle a un indicador una oportunidad real, y
+evaluar TODOS los indicadores, no solo el subconjunto que yo había priorizado
+(dejé afuera HMA/Supertrend por baja confianza a priori — eso fue el error, filtrar
+antes de medir). La vara de aceptación NO baja (walk-forward + Bonferroni/BH + DSR
+sigue siendo "bueno", no un lujo) — lo que cambia es que se prueban los 5, no 2.
+
+**"En las diferentes estrategias"**: cada indicador se testea también condicionado
+por régimen de mercado (reusar `regime_gate.py`/M3, ya construido y sin usar — HMM
+de 3 estados), no solo pooled sobre todo el período. Un indicador puede no tener
+edge global y sí tenerlo en un régimen específico — eso es parte de la pregunta
+original de Boris sobre "diferentes condiciones y escenarios del mercado".
+
+**Regla añadida (2026-08-19), aplica a Tarea M y N y a cualquier indicador futuro**:
+el error que corrigió Boris en Bollinger (tratarlo como factor direccional cuando
+mide régimen de volatilidad) fue tratar el diseño del test como un molde único para
+todos los indicadores. Antes de pre-registrar CUALQUIER indicador, primero escribir
+en una línea qué mide conceptualmente — ¿dirección/momentum? ¿régimen/volatilidad?
+¿fuerza de tendencia sin dirección? — y derivar el test de ESO, no aplicar
+automáticamente "rank IC vs fwd_return_20d" porque es el test que ya usamos para
+momentum/RSI. Si el indicador no es direccional, la pregunta correcta no es sobre
+retorno futuro. Aplicado abajo a los 3 de Tarea M (los 3 SÍ son direccionales, por
+eso comparten protocolo con momentum/RSI) y ya aplicado a MACD/Bollinger en Tarea N.
+
+### Tarea M — KAMA, HMA, Supertrend: familia de tendencia adaptativa (Kilo Code, después de Tarea K)
+
+**Qué mide cada uno — verificado contra la fuente/origen, no contra mi supuesto
+(búsqueda 2026-08-19, antes de diseñar cualquier test)**:
+
+- **KAMA** (Perry Kaufman, técnica desde 1972, publicada en *"Trading Systems and
+  Methods"*, 1995 — origen práctico/de industria, con seguimiento académico
+  posterior): media móvil que usa el **Efficiency Ratio** (ER = cambio neto de
+  precio / suma de cambios absolutos barra-a-barra en la ventana) para ajustar su
+  propia velocidad — ER cerca de 1 = movimiento eficiente/direccional (acelera),
+  ER cerca de 0 = movimiento ineficiente/choppy (se aplana). **Mide DIRECCIÓN**,
+  misma familia que EMA, diseñada para tener menos lag en tendencia y menos ruido
+  en lateral. [Fuente: StockCharts ChartSchool, Corporate Finance Institute]
+- **HMA** (Alan Hull, 2005, publicación propia del autor —
+  [alanhull.com](https://alanhull.com/the-hull-moving-average/)): fórmula
+  `WMA(2×WMA(n/2) − WMA(n), √n)` — combina dos medias ponderadas para cancelar el
+  lag estructural de las medias móviles tradicionales, aplicando la suavizada
+  final sobre la raíz cuadrada del período. **Mide DIRECCIÓN**, misma familia que
+  EMA/KAMA, diseñada específicamente para reducir lag sin perder suavizado.
+- **Supertrend** (atribuido a Olivier Seban, ~2009 — **SIN origen académico ni
+  publicación formal**, es una creación de comunidad de trading retail, a
+  diferencia de los otros 4): `hl2 ± multiplicador×ATR`, con flip binario
+  alcista/bajista cuando el precio cruza la banda. Combina volatilidad (ATR) pero
+  el OUTPUT es una señal de DIRECCIÓN binaria, no una medida de régimen en sí
+  misma — a diferencia de Bollinger, que da un ancho (régimen), Supertrend da
+  lado. **Caveat que pesa en la evaluación**: de los 5 indicadores en cola, es el
+  único sin respaldo de autor/práctica documentada seria — evaluarlo con la misma
+  vara que a los demás, pero no darle el beneficio de la duda que sí tienen
+  KAMA/HMA/MACD/Bollinger por su origen.
+
+Los 3 son legítimamente comparables entre sí y con momentum/RSI porque los 3
+responden la misma pregunta (¿hacia dónde va el precio?), solo con mecánica
+distinta. Por eso comparten protocolo — no es el mismo error que Bollinger.
+
+```
+TAREA:
+1. Implementar los 3 en backend/app/core/indicators.py (funciones nuevas, no tocar
+   las existentes):
+   - KAMA: usar el Kaufman Efficiency Ratio YA calculado en predictive_indicators.py
+     (compute_efficiency_ratio) — no reinventarlo.
+   - HMA: fórmula estándar (WMA(2×WMA(n/2) − WMA(n), sqrt(n))).
+   - Supertrend: ATR-based, dirección (usa atr() ya existente en indicators.py).
+2. Pre-registrar en PLAN_MEJORA_MATEMATICA.md (próxima sección libre): para los 3,
+   rank IC walk-forward (patrón de diagnose_factor_ic.py) contra fwd_return_20d,
+   W1/W2/W3, PERO reportar también el IC condicionado por régimen (usar
+   regime_gate.py para clasificar cada fecha de señal en su estado HMM antes de
+   correr — no post-hoc). Criterio de éxito fijado antes de correr: mismo estándar
+   que trials previos (|t| sobre el umbral Bonferroni vigente, reportar también
+   bajo BH si Tarea L ya cerró y dejó el método).
+3. Correr, documentar los 3 con artefacto real (CUMPLE o NO CUMPLE cada uno, y su
+   desglose por régimen si aplica), actualizar ROADMAP.md.
+4. Tests: cada función con caso sintético de tendencia conocida.
+
+REGLAS: no tocar signal_engine.py ni el score en vivo. Python 3.9. No
+commitear/pushear sin autorización de Boris.
+```
+
+### Tarea N — MACD (dirección) y Bollinger (régimen de volatilidad): dos preguntas DISTINTAS, no la misma prueba (OpenCode, después de Tarea L)
+
+**Corrección de Boris (2026-08-19)**: MACD y Bollinger no son el mismo tipo de
+indicador. La versión anterior de esta tarea las trataba con el mismo protocolo —
+error corregido acá, ahora con la definición verificada contra el origen de cada
+uno (búsqueda 2026-08-19), no contra mi supuesto:
+
+- **MACD** (Gerald Appel, ~1977, libro *"Understanding MACD"* — histograma
+  agregado por Thomas Aspray en 1986): diferencia entre dos EMAs (12/26) más línea
+  de señal (EMA9 del MACD) — diseñado explícitamente para revelar cambios de
+  fuerza, dirección y duración de una tendencia. **Mide DIRECCIÓN/momentum**, un
+  rank IC directo contra retorno futuro es la pregunta correcta, igual que
+  momentum/RSI/KAMA/HMA.
+- **Bollinger Bands** (John Bollinger, 1983, publicación propia del autor —
+  [bollingerbands.com](https://www.bollingerbands.com/bollinger-bands)): media
+  móvil (20 períodos) ± 2 desvíos estándar de la misma serie. Bollinger la diseñó
+  explícitamente para **visualizar volatilidad dinámica** (en su momento la
+  volatilidad se trataba como estática) — no para predecir dirección. **NO señala
+  dirección** — señala si el mercado está en fase TRANQUILA (bandas juntas, baja
+  volatilidad) o de EXPANSIÓN (bandas separadas, alta volatilidad), por diseño del
+  propio autor, no por interpretación nuestra. Preguntarle "¿predecís el retorno
+  futuro?" es la pregunta equivocada — la pregunta correcta es sobre RÉGIMEN.
+
+```
+TAREA:
+1. Confirmar que macd()/bollinger_bands() en indicators.py siguen sin usarse en el
+   score (peso 0 en triad_agents.py/predictive_engine.py) — no crear código nuevo,
+   ya existen.
+
+2A. MACD (pregunta de DIRECCIÓN — mismo protocolo que Tarea M):
+    Pre-registrar rank IC walk-forward de macd_hist contra fwd_return_20d,
+    W1/W2/W3 + condicionado por régimen (regime_gate.py). Igual estándar que
+    momentum/RSI/KAMA/HMA.
+
+2B. Bollinger (pregunta de RÉGIMEN, no de dirección — protocolo DISTINTO):
+    Pre-registrar DOS mediciones separadas, declaradas ANTES de correr:
+    - (i) ¿El ancho de banda (bb_upper−bb_lower)/bb_middle predice VOLATILIDAD
+      REALIZADA futura (no retorno)? Rank IC de ancho_actual vs
+      std(retornos_futuros_20d) — esto es lo que Bollinger mide por diseño.
+    - (ii) ¿Condicionar el score de momentum+RSI por régimen de banda (tranquilo
+      vs expansión, split por terciles de ancho histórico) cambia su rank IC?
+      Es decir: ¿momentum funciona mejor en mercado tranquilo o en expansión? Este
+      es un test de INTERACCIÓN sobre el factor YA VALIDADO, no un factor nuevo
+      compitiendo solo. Comparar también contra el split por régimen HMM de
+      regime_gate.py (M3) — dos formas de medir "régimen", ver si coinciden.
+    NO correr un rank IC de ancho-de-banda contra retorno futuro directo — esa
+    pregunta no corresponde a lo que el indicador mide conceptualmente.
+
+3. Correr ambos (2A y 2B), documentar con artefacto real, actualizar ROADMAP.md.
+
+REGLAS: no tocar signal_engine.py ni el score en vivo. Python 3.9. No
+commitear/pushear sin autorización de Boris.
+```
+
+---
+
 ## Verificación al cerrar cualquier tarea
 
 `cd backend && .venv/bin/python -m pytest -q` debe seguir en verde (242+ passed)

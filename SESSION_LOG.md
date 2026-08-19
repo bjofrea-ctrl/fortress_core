@@ -2057,3 +2057,21 @@ anterior) y `ORDENES_MODULOS.md` (M7 → hecho) actualizados.
 - **Pendiente de decisión que queda (del usuario)**: si cubrir los 50 símbolos en el
   dashboard (cambiar `opportunities.SYMBOLS` al universo 50) o dejar 44 como universo
   de decisión intencional. NO es bloqueante de nada.
+
+## 2026-08-19 (noche) — Dashboard cubre los 50 símbolos (decisión del usuario, OpenCode)
+- **Decisión de Boris**: "los 50" — el dashboard debe cubrir el universo completo de
+  50, no la lista hardcoded de 44.
+- **Causa raíz (bug 2026-08-19, Tarea F)**: `opportunities.SYMBOLS` era una lista
+  curada HARDCODED de 44, distinta del "universo 50" (7 base + NEW_UNIVERSE 43) que
+  usan los trials. La raíz era la DUPLICACIÓN manual de la lista.
+- **Fix (sólido, no el atajo)**: creé `app/api/routes/opportunities_universe.py` —
+  módulo CANÓNICO que deriva SYMBOLS desde `scripts/fetch_universe_data.NEW_UNIVERSE`
+  (la fuente de verdad) + 7 base, con dedup y fallback. `opportunities.py` ahora
+  importa de ahí (re-exporta); `decision.py` y `advisor.py` quedan conectados vía la
+  re-exportación. NUNCA más dos listas a mano.
+- **Verificación contra el artefacto real** (endpoint vivo, no solo imports):
+  `/api/advisor/universe` → **50 states**, los 9 nuevos presentes (AMD, CMCSA, DIS,
+  INTU, META, PFE, QCOM, SPGI, TSLA), ABT/GS/WFC (fuera del universo 50) correctamente
+  ausentes. Régimen STAGFLATION (state 2, conf 0.9997) sin cambio. Suite 271 passed.
+- **Docs**: ROADMAP fila Dashboard (universe 44 → 50 documentado), SESSION_LOG.
+  Sin commit descriptivo (regla de la ronda; auto-backup cubre).

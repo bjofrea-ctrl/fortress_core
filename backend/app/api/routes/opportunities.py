@@ -16,6 +16,7 @@ import numpy as np
 import pandas as pd
 from fastapi import APIRouter, HTTPException
 
+from app.api.routes.opportunities_universe import SYMBOLS, MARKET_TICKERS
 from app.core.adaptive_risk import REGIME_THRESHOLDS
 from app.core.backtest_engine import BacktestEngine
 from app.core.data_ingestion import load_universe
@@ -31,13 +32,6 @@ from app.core.suggestions_store import (
 
 router = APIRouter(prefix="/api/opportunities", tags=["opportunities"])
 
-SYMBOLS = ["SPY", "QQQ", "AAPL", "MSFT", "GOOGL", "AMZN", "NVDA",
-           "BRK-B", "LLY", "AVGO", "JPM", "XOM", "UNH", "V", "MA",
-           "PG", "COST", "JNJ", "WMT", "HD", "NFLX", "ABBV", "BAC",
-           "CVX", "KO", "PEP", "MRK", "CRM", "ORCL", "ADBE", "WFC",
-           "MCD", "CSCO", "ACN", "ABT", "TMO", "LIN", "PM", "TXN",
-           "IBM", "GE", "AMGN", "CAT", "GS"]
-MARKET_TICKERS = ["SPY", "EFA", "QQQ", "GLD", "DBC", "TIP", "TLT", "AGG", "^VIX"]
 HISTORY_START = "2019-01-01"
 DATA_START = "2015-01-01"
 MIN_SCORE = 0.6
