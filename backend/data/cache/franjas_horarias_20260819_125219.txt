@@ -1,0 +1,67 @@
+================================================================================
+Fase A §31 — franjas horarias (1-min, Alpaca IEX)
+Timestamp: 20260819_125219 | ventana: 2024-01-01 -> 2026-08-19 | franjas ET: 09:30-11:30 / 11:30-14:00 / 14:00-16:00
+================================================================================
+[
+  {
+    "symbol": "QQQ",
+    "n_barras": 256724,
+    "franjas": {
+      "APERTURA": {
+        "n_barras": 79080,
+        "ret_medio_por_barra": -2.090914572695906e-06,
+        "ret_abs_medio_por_barra": 0.0004343654802829753,
+        "volatilidad_por_barra": 0.0006384890868344857,
+        "volumen_medio_por_barra": 134063.45925644916,
+        "rango_medio": 0.0008428191464819799
+      },
+      "MEDIA": {
+        "n_barras": 98827,
+        "ret_medio_por_barra": 2.055617240711343e-06,
+        "ret_abs_medio_por_barra": 0.0002772334727341004,
+        "volatilidad_por_barra": 0.0004330547104697043,
+        "volumen_medio_por_barra": 75331.94706912078,
+        "rango_medio": 0.0005303291578148208
+      },
+      "CIERRE": {
+        "n_barras": 78817,
+        "ret_medio_por_barra": -1.161736540825895e-06,
+        "ret_abs_medio_por_barra": 0.0002691905359573305,
+        "volatilidad_por_barra": 0.00041608639047228165,
+        "volumen_medio_por_barra": 105713.55116282021,
+        "rango_medio": 0.000525678406705597
+      }
+    }
+  },
+  {
+    "symbol": "SPY",
+    "n_barras": 256808,
+    "franjas": {
+      "APERTURA": {
+        "n_barras": 79080,
+        "ret_medio_por_barra": -7.622757233147312e-07,
+        "ret_abs_medio_por_barra": 0.0002922072572414371,
+        "volatilidad_por_barra": 0.0004550104182370032,
+        "volumen_medio_por_barra": 157602.82295144157,
+        "rango_medio": 0.0005696576700877517
+      },
+      "MEDIA": {
+        "n_barras": 98844,
+        "ret_medio_por_barra": 1.9882468011191675e-06,
+        "ret_abs_medio_por_barra": 0.00020926620877881943,
+        "volatilidad_por_barra": 0.00034709209708499436,
+        "volumen_medio_por_barra": 96651.41464327628,
+        "rango_medio": 0.0004021551733700624
+      },
+      "CIERRE": {
+        "n_barras": 78884,
+        "ret_medio_por_barra": -4.012056301062689e-07,
+        "ret_abs_medio_por_barra": 0.00021448038668968658,
+        "volatilidad_por_barra": 0.0003398886937365879,
+        "volumen_medio_por_barra": 178759.08333755896,
+        "rango_medio": 0.00042191717186766334
+      }
+    }
+  }
+]
+================================================================================

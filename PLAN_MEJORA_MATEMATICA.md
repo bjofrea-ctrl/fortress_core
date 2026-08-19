@@ -2302,3 +2302,110 @@ global ≈ 0.00017–0.00019 (≈0.018–0.019%/lado) sigue siendo la cifra a us
 decisión de bajar `settings.COST_PER_SIDE` (0.0015 → ~0.0002) queda del usuario con
 pre-registro aparte. El endpoint `/api/costs/current` expone la curva (sizes 1/10/50)
 sin cambios de contrato.
+
+## 31. Análisis exploratorio de franjas horarias (Nasdaq/QQQ 1-min) — PRE-REGISTRO (Ronda 2026-08-19)
+
+**Naturaleza**: ANÁLISIS EXPLORATORIO de datos (no trial de señal — NO consume
+n_trials del ledger). Genera evidencia descriptiva para decidir si construir un
+meta-sistema de rotación por franja horaria (idea del usuario: cambiar estrategia
+por franja, rotar indicadores, revisión regresiva). Respeta la lección ya pagada
+(27 trials, 17 citados): NO se declara señal; se mide estructura y se decide.
+
+**Pregunta**: ¿la microestructura del Nasdaq (QQQ) difiere por franja horaria lo
+suficiente como para justificar estrategias/indicadores distintos por franja?
+Control: SPY (S&P 500).
+
+**Data**: QQQ y SPY, barras 1-min vía API de Alpaca (IEX free, historial verificado
+hasta 2019). Ventana inicial: 2024-01-01 → hoy (2.5 años; ampliable si la estructura
+aparece). Franjas ET: APERTURA 09:30–11:30, MEDIA 11:30–14:00, CIERRE 14:00–16:00.
+
+**Métricas por franja (descriptivas, sin test formal de señal)**:
+- Retorno medio por barra (y por día equivalente), volatilidad (std por barra),
+  volumen medio por barra, rango intrabarra (high-low)/close.
+- Ratio apertura/cierre: ¿el primer 60 min concentra volatilidad/volumen?
+
+**Criterio de interpretación (pre-registrado)**:
+- Estructura APARECE si la volatilidad por barra difiere ≥ 1.5× entre franjas Y el
+  volumen medio por barra difiere ≥ 1.5× entre franjas (p. ej. apertura >> media).
+  Eso es microestructura conocida de mercado; si NO aparece, la data 1-min está mal
+  descargada o el instrumento es atípico.
+- Estructura EXPLOTABLE (para el siguiente paso) si, ADEMÁS, la predictividad de los
+  indicadores del motor (momentum/RSI/EMA — ya medidos como sin poder intra-día
+  global en §4.1) difiere MATERIALMENTE entre franjas (p. ej. IC o accuracy por franja
+  con signos opuestos o magnitud ≥ 2×). Esto se mide en la Fase B, solo si la Fase A
+  muestra estructura de volatilidad/volumen.
+
+**Plan de corridas**:
+- Fase A (este pre-registro): descarga 1-min QQQ+SPY → parquets locales
+  `data/cache/qqq_1min.parquet`, `spy_1min.parquet` → tabla de métricas por franja.
+- Fase B (pre-registro aparte, solo si A da estructura): predictividad por franja de
+  los indicadores del motor (protocolo §4.1 adaptado: correlación temporal del
+  indicador con retorno forward dentro de la franja).
+
+**Restricciones**: data pública de mercado (QQQ/SPY son ETFs — sin datos personales);
+credenciales solo en `backend/.env`; nada de órdenes (solo lectura de data).
+**Post-condición**: tabla de métricas por franja agregada aquí + veredicto
+estructura sí/no + recomendación sobre si construir el meta-sistema de rotación.
+
+**RESULTADO Fase A (2026-08-19, corrida real)**:
+Data: 256,724 barras 1-min QQQ + 256,808 SPY (2024-01-01 → 2026-08-19, Alpaca IEX).
+Artefacto: `data/cache/franjas_horarias_20260819_125219.txt` + parquets
+`qqq_1min.parquet` / `spy_1min.parquet`.
+
+| símbolo | franja | n_barras | vol_por_barra | volumen/barra |
+|---------|--------|----------|---------------|---------------|
+| QQQ | APERTURA | 79,080 | 0.000638 | 134,063 |
+| QQQ | MEDIA | 98,827 | 0.000433 | 75,332 |
+| QQQ | CIERRE | 78,817 | 0.000416 | 105,714 |
+| SPY | APERTURA | 79,080 | 0.000455 | 157,603 |
+| SPY | MEDIA | 98,844 | 0.000347 | 96,651 |
+| SPY | CIERRE | 78,884 | 0.000340 | 178,759 |
+
+Ratios contra MEDIA: QQQ volumen 1.78x / volatilidad 1.47x; SPY volumen 1.63x /
+volatilidad 1.31x. Cierre concentra volumen (SPY 178k > apertura) sin volatilidad
+extra — patrón clásico de rebalanceos.
+
+**VEREDICTO Fase A (criterio §31)**: estructura horaria CONFIRMADA en dirección
+clásica (apertura caliente, mediodía desierto, cierre con volumen) pero MODERADA:
+el umbral estricto era >= 1.5x en vol Y volumen; se cumple volumen (1.6-1.8x) y la
+volatilidad queda justo debajo (1.31-1.47x). No hay diferencia extrema de volatilidad
+por franja. La pregunta que decide la rotación de indicadores es la Fase B:
+¿la PREDICTIVIDAD de los indicadores del motor difiere materialmente por franja?
+Los 2.5 años de 1-min ya descargados permiten medirla sin nueva descarga.
+
+## 32. Fase B — Predictividad de indicadores por franja horaria: PRE-REGISTRO (Ronda 2026-08-19)
+
+**Naturaleza**: ANÁLISIS EXPLORATORIO de predictividad (no trial de señal formal —
+no consume n_trials; genera evidencia para decidir si construir el meta-sistema de
+rotación por franja). Solo se ejecuta porque la Fase A (§31) confirmó estructura
+horaria de volumen/volatilidad.
+
+**Pregunta**: ¿la correlación del momentum intraday y del RSI(14) con el retorno
+forward (5/15/30 min) difiere MATERIALMENTE entre franjas (APERTURA/MEDIA/CIERRE)?
+Si la predictividad es uniforme, la rotación por franja no tiene base; si difiere con
+signos opuestos o magnitud >= 2x, hay base para ponderar indicadores distinto por franja.
+
+**Data**: parquets ya descargados en Fase A — `data/cache/qqq_1min.parquet` y
+`spy_1min.parquet` (2024-01-01 → 2026-08-19). Sin nueva descarga.
+
+**Método** (protocolo §4.1 adaptado de cross-sectional a temporal por símbolo):
+- Indicadores por barra: retorno acumulado de los últimos 5/15/30 min (momentum
+  intrabarra) y RSI(14) de barras 1-min.
+- Retorno forward: próximas 5/15/30 min.
+- Por símbolo y por franja: Spearman(indicator_t, retorno_forward_t) con correlación
+  de Pearson sobre rango (rank IC), promedio por día (evita inflar por días atípicos),
+  error Newey-West (lag 4) — mismo espíritu de §4.1.
+- Métricas: IC medio, t-stat, hit-rate de dirección (sign(indicator)==sign(forward)).
+
+**Criterio de interpretación (pre-registrado)**:
+- Base para rotación: existe AL MENOS UN indicador con |IC| >= 0.02 y t-stat >= 2.0
+  en una franja Y |IC| <= 0.01 o signo opuesto en otra franja (diferencia material
+  entre franjas). El umbral IC>=0.02 es exigente para datos 1-min (el promedio
+  intra-día del motor ya fue medido cerca de 0 — §4.1).
+- Sin base: ICs bajos y uniformes en las 3 franjas → la rotación por franja no está
+  justificada por predictividad y el meta-sistema no se construye (se documenta como
+  descarte honesto).
+
+**Restricciones**: solo lectura de parquets locales; nada de órdenes; data pública.
+**Post-condición**: tabla de IC por indicador×franja×símbolo + veredicto
+base_si/no + recomendación (construir rotador vs. descartar la hipótesis horaria).
