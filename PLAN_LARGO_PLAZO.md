@@ -344,6 +344,61 @@ cerrar cada una.
 
 ---
 
+### Tarea J — §34: reabrir C6 (MA200 hedged) bajo el costo MEDIDO (OpenCode)
+
+**AUTORIZADO por Boris (2026-08-19 noche)**: "lo más sólido, no lo más fácil" —
+se reabre C6 con el protocolo COMPLETO, no un atajo. No es un re-run casual del
+script viejo: es un TRIAL FORMAL nuevo que consume `n_trials` de la familia
+`motor_signal` (verificado contra el ledger real ahora: **consumidos 10,
+próximo umbral Bonferroni 0.990909**).
+
+```
+CONTEXTO: §18.2 (backend/scripts/backtest_c6_hedge.py, 2026-08-13) cerró la línea
+C6 como DEFINITIVA con costo asumido 0.15%/lado: BRUTO +0.000149/día (t-NW +1.01,
+positivo — el hedge neutralizó el drift), NETO −0.000292/día (t-NW −1.97) — murió
+por costo, no por falta de señal. Hoy (§33, 2026-08-19) el costo real medido con
+156 órdenes paper es 0.05%/lado — 3× menos que el 0.15% que mató a C6. Esto es
+evidencia nueva y externa (no una re-parametrización de la señal), el único motivo
+que el propio §18.2 reconoce como legítimo para reabrir.
+
+TAREA:
+1. Leer backend/scripts/backtest_c6_hedge.py completo (NO modificarlo — es
+   artefacto histórico, regla de §33) y backend/app/config.py (COST_PER_SIDE
+   actual 0.0005).
+2. PRE-REGISTRAR §34 en PLAN_MEJORA_MATEMATICA.md ANTES de correr nada:
+   - Hipótesis: el fade C6 hedgeado (idéntico a §18.2: mismo universo AAPL/V/MA/
+     ORCL/IBM/QCOM/TXN, misma señal dist_ma200, mismo hold 20d, mismo hedge por
+     beta pre-muestra 2015-2018) deja retorno NETO diario positivo con el costo
+     REAL medido (0.05%/lado, no 0.15%).
+   - Metodología: IDÉNTICA a §18.2 en todo excepto el costo — panel debe
+     reproducir n=3703, Pearson IC −0.1582, Spearman −0.1129 (check de
+     integridad §14, igual que el original).
+   - Criterio de éxito (fijado ANTES de correr, igual que §18.1/§18.2 para
+     comparabilidad): `n_días_con_posiciones ≥ 100` Y retorno diario NETO medio
+     > 0 con `t-NW ≥ 2.0`.
+   - Familia `motor_signal`, n_trials 10→11, umbral Bonferroni 0.990909
+     (confirmar de nuevo con el comando del ledger antes de cerrar, puede haber
+     cambiado si otro trial corrió antes).
+3. Construir `backend/scripts/backtest_c6_hedge_costo_medido.py` — COPIA
+   parametrizada de `backtest_c6_hedge.py` con `cost_per_side` como argumento
+   (default 0.0005), NO se edita el script original.
+4. Correr. Documentar el veredicto — CUMPLE o NO CUMPLE — con artefacto real en
+   `data/cache/`, sea cual sea el resultado.
+5. Registrar el trial en el ledger (`trial_registry.py: register_trial(...)`)
+   al cerrar, con su veredicto real.
+6. Actualizar ROADMAP.md (fila C6/§18) y SESSION_LOG.md. Si CUMPLE: NO se
+   integra al motor en esta tarea — queda como candidato real, la integración
+   es un trial de motor aparte con su propio pre-registro. Si NO CUMPLE: la
+   línea C6 queda cerrada definitivamente por segunda vez, ahora también contra
+   el costo real, sin ambigüedad posible.
+
+REGLAS: no tocar advisor.py, signal_engine.py, ni el score en vivo. No
+modificar backtest_c6_hedge.py (histórico). Python 3.9. No commitear/pushear
+sin autorización de Boris.
+```
+
+---
+
 ## Verificación al cerrar cualquier tarea
 
 `cd backend && .venv/bin/python -m pytest -q` debe seguir en verde (242+ passed)

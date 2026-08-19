@@ -2519,3 +2519,58 @@ la evidencia acota el rango:
 
 **Post-condición**: esta sección queda con el valor elegido, la fecha y el commit;
 ROADMAP fila M4 refleja "COST_PER_SIDE actualizado a X (medido M4/Tarea D)".
+
+## 34. C6 (MA200 hedged) reabierto bajo el costo MEDIDO — PRE-REGISTRO (Tarea J, autorizado por Boris 2026-08-19)
+
+**Naturaleza**: TRIAL FORMAL de señal/mecánica — CONSUME `n_trials` de la familia
+`motor_signal`. Reabre la línea C6 (§18, cerrada DEFINITIVO en 2026-08-13) porque
+§33 introdujo evidencia nueva y externa: el costo real medido (0.05%/lado, 156
+órdenes paper) es 3× menor que el 0.15% asumido que mató a §18.2. Reabrir por
+evidencia nueva de costos es el único motivo que el propio §18.2 reconoce como
+legítimo (no es re-parametrizar la señal).
+
+**Autorización**: Boris, 2026-08-19 noche ("lo más sólido, no lo más fácil").
+Regla de parada §18.2 ("sin tercera variante") se relaja SOLO porque la vara de
+costos cambió por medición, no por variante de señal.
+
+**Estado**: ⚪ PRE-REGISTRADO — a la espera de correr el trial.
+
+**Hipótesis (pre-registrada)**: el fade C6 hedgeado (market-neutral por beta),
+idéntico a §18.2 en TODO excepto el costo, deja retorno diario NETO positivo con
+el costo REAL medido (0.05%/lado) en lugar del 0.15% asumido.
+
+**Metodología (idéntica a §18.2 en todo excepto costo)**:
+- Universo: AAPL, V, MA, ORCL, IBM, QCOM, TXN.
+- Señal: `dist_ma200 = (close − ema200)/ema200`; fade LS: side = −1 si dist>0,
+  +1 si dist<0; stride 5d; hold 20d; entry al close; salida t+20.
+- Hedge: cada unit SHORT (dist>0) se cubre comprando |beta_sym| de SPY; la pata
+  LONG se cubre simétricamente shorteando |beta_sym| de SPY (cubrir solo el short
+  dejaría drift residual — decisión declarada en §18.2).
+- Beta: OLS diario (ret_sym ~ ret_SPY, con constante) sobre ventana PRE-MUESTRA
+  2015-01-01 → 2018-12-31; NADA de la ventana de test participa del estimador.
+- Costos: `cost_per_side * 2 * (1 + |beta|)` por trade unit hedged (C6 round-trip
+  + SPY round-trip proporcional al beta), deducidos el día de entrada, misma
+  convención §18.2. **`cost_per_side = 0.0005`** (0.05%/lado, §33) en lugar del
+  COST_SIDE=0.0015 original.
+- Ventana de test: 2019-01-01 → 2026-08-04 (idéntica a §18.2).
+
+**Check de integridad (§14, pre-registrado)**: el panel debe reproducir n=3703,
+Pearson IC −0.1582, Spearman −0.1129 (igual que §16/§18.1/§18.2). Si no coincide,
+el trial es inválido y se documenta como tal — no se interpreta.
+
+**Criterio de éxito (fijado ANTES de correr, idéntico a §18.1/§18.2 para
+comparabilidad)**: `n_días_con_posiciones ≥ 100` Y retorno diario NETO medio > 0
+con `t-NW ≥ 2.0` (L=20). Variante LS-HEDGE es el gate; SO-HEDGE informativa, no gate.
+
+**Ledger**: familia `motor_signal`, n_trials 10 → 11, umbral Bonferroni 0.990909
+(verificado en ledger real el 2026-08-19; confirmar de nuevo al cerrar por si otro
+trial corrió antes). Se registra el trial al cerrar con su veredicto real.
+
+**Regla de parada (autorizada por Boris)**: es el re-trial de C6 bajo costo
+medido. NO CUMPLE → C6 queda cerrado definitivamente por segunda vez, ahora contra
+el costo real, sin ambigüedad. CUMPLE → C6 candidato REAL de motor; NO se integra
+en esta tarea — la integración es un trial de motor aparte con su propio pre-registro.
+
+**Post-condición**: artefacto en `data/cache/backtest_c6_hedge_costo_medido_*.txt`
+con el veredicto CUMPLE/NO_CUMPLE; ROADMAP fila C6/§18 y SESSION_LOG actualizados;
+trial registrado en el ledger.
