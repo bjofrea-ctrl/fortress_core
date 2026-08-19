@@ -2446,3 +2446,76 @@ diario (indicator_t vs retorno forward 5 min) promediado, t-stat Newey-West lag 
    correcto sería CONTRARIAN (comprar dips de 15-30 min), no momentum. Eso merece un
    trial formal pre-registrado (consumiría n_trials) — NO es parte de este análisis
    exploratorio, que queda cerrado.
+
+## 33. Actualización de `settings.COST_PER_SIDE` al costo MEDIDO — PRE-REGISTRO (decisión del usuario, 2026-08-19)
+
+**Naturaleza**: CAMBIO DE CONSTANTE DE CONFIGURACIÓN del motor, no trial de señal —
+NO consume n_trials del ledger (es el "pre-registro aparte" pedido explícitamente en
+§30, ROADMAP filas M4/Tarea D y PLAN_LARGO_PLAZO Tarea D: "actualizarlo es decisión
+del usuario + pre-registro aparte").
+
+**Estado**: ✅ CERRADO 2026-08-19 — usuario eligió **0.0005 (0.05%/lado)**;
+`settings.COST_PER_SIDE` actualizado en `backend/app/config.py`, suite 271 passed.
+
+**Valor adoptado (decisión del usuario, 2026-08-19)**: **0.0005** (0.05%/lado) —
+punto medio conservador: ~2.6× el piso paper medido (0.000189), margen para comisión
+y slippage LIVE reales sin volver al 0.15% asumido. Comentario del código actualizado
+con la evidencia y la fecha.
+
+**Evidencia (verificada contra el artefacto real, no resúmenes)**:
+- Medición M4 qty=1 (2026-08-18, 120 órdenes paper, artefacto
+  `measure_execution_costs_20260818_134338.txt`): `cost_per_side_medido = 0.0001888`
+  (≈0.019%/lado), slippage p50 0.000122, p95 0.000519, comisión 0 (paper).
+- Tarea D qty=10/50 (2026-08-19, 156 órdenes totales en
+  `backend/data/cache/execution_costs.db`). **Corrección de transcripción**: la tabla
+  de §30 transcriptó `slippage_p50` en la columna `cost_per_side_medido`; el valor
+  del contrato M4 (`mean(|slippage|) + mean(comisión)`, verificado con SQL contra la
+  DB) es:
+  - size=1: n=120 → **0.000189** (p50 0.000122 / p95 0.000519)
+  - size=10: n=32 → **0.000131** (p50 0.000116 / p95 0.000417)
+  - size=50: n=4 → **0.000043** (p50 0.000029 / p95 0.000098)
+- Veredicto §30: curva plana/decreciente → qty=1 representativo → **cifra global a
+  usar ≈ 0.00019** (0.019%/lado).
+
+**Valor actual**: `settings.COST_PER_SIDE = 0.0015` (0.15%/lado, asumido 0.10%
+comisión + 0.05% slippage) — **≈ 8× el costo medido**. El motor viene evaluando
+toda señal contra un costo inflado en un orden de magnitud.
+
+**CAVEAT (heredado de M4/§30, no se puede ignorar)**: es costo de ejecución PAPER —
+fills instantáneos al último trade, sin comisión, sin cola ni impacto real de tamaño
+(la curva plana 1→50 lo confirma). La ejecución LIVE real tendrá más slippage y
+comisión ≠ 0. El número medido es un **piso inferior medido**, no el número final.
+
+**Decisión en juego (del usuario)**: qué valor adopta el motor. El menú NO es libre —
+la evidencia acota el rango:
+- **~0.0002 (0.02%/lado)**: piso paper medido, sin margen para live.
+- **~0.0005 (0.05%/lado)**: punto medio conservador — cubre comisión live y slippage
+  extra con margen ~2.6× sobre el piso medido, sin volver al 0.15% asumido.
+- **0.0015 (mantener)**: conservador máximo, pero con evidencia de que infla ~8×.
+
+**Criterio de éxito del cambio (pre-registrado)**:
+1. `settings.COST_PER_SIDE` actualizado al valor elegido con el comentario del
+   artefacto/DB que lo respalda y la fecha de medición.
+2. Suite completa `cd backend && .venv/bin/python -m pytest -q` sigue en verde
+   (hoy 271 passed) — los tests de barrier_labeling pasan `cost_per_side` explícito,
+   no dependen del default.
+3. Sin cambio de contrato: `/api/costs/current` sigue exponiendo la curva medida
+   (no se toca); los scripts históricos con costo hardcodeado (backtest_gap_costs.py,
+   backtest_c6_hedge.py, reeval_trial14_basket_adx.py) NO se modifican — su costo
+   quedó fijado en su pre-registro original y re-correrlos con vara nueva sería
+   reabrir líneas cerradas sin pre-registro nuevo.
+4. ROADMAP fila M4 y SESSION_LOG actualizados con el valor adoptado.
+
+**Impacto declarado (qué cambia al bajar el costo)**:
+- `DEFAULT_COST_PER_SIDE` en `barrier_labeling.py` (ret_net del etiquetado M1) y
+  `diagnostic_pipeline.py` heredan el nuevo valor → los labels netos futuros se
+  calculan con el costo medido.
+- **NO reabre automáticamente veredictos cerrados**: §13 (gap-reversion) murió por
+  retorno bruto ≈0 (t-NW −0.20), no por costos — no cambia; §18.2 (C6 hedged) murió
+  con neto −0.000292 vs costo hedged 0.63%/trade, y §18.1 con neto −0.000228 — esos
+  veredictos quedaron fijados con su vara declarada en su momento. La vara nueva
+  aplica a trials FUTUROS. Si el usuario quiere re-evaluar alguna línea cerrada con
+  el costo medido, eso es un pre-registro NUEVO aparte — no se asume.
+
+**Post-condición**: esta sección queda con el valor elegido, la fecha y el commit;
+ROADMAP fila M4 refleja "COST_PER_SIDE actualizado a X (medido M4/Tarea D)".

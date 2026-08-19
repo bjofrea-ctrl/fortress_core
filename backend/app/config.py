@@ -43,12 +43,14 @@ class Settings(BaseSettings):
     TARGET_VOLATILITY: float = 0.10
     VIOLATION_WINDOW_DAYS: int = 60
 
-    # Costo de transacción por lado usado en los backtests de costos. Valor ASUMIDO
-    # (0.10% comisión + 0.05% slippage), pendiente de medición real por M4
-    # (app/core/execution_costs.py). Cuando exista medición, este es el único lugar
-    # a actualizar — lo consumen barrier_labeling (ret_net) y los trials de costos.
-    # NO cambiarlo a mano a un valor "realista": la medición manda.
-    COST_PER_SIDE: float = 0.0015
+    # Costo de transacción por lado usado en los backtests de costos. MEDIDO por M4
+    # (app/core/execution_costs.py, Alpaca PAPER) + Tarea D (curva qty=1/10/50):
+    # piso medido ≈ 0.00019 (0.019%/lado, 156 órdenes). Se adopta 0.0005 (0.05%/lado)
+    # como punto medio conservador — margen ~2.6x sobre el piso paper para comisión y
+    # slippage LIVE reales (decisión del usuario 2026-08-19, PLAN_MEJORA_MATEMATICA §33).
+    # Lo consumen barrier_labeling (ret_net), diagnostic_pipeline y los trials de costos.
+    # NO cambiarlo a mano: la medición manda.
+    COST_PER_SIDE: float = 0.0005
 
     # Alpaca PAPER TRADING — medición de costos reales (M4, app/core/execution_costs.py).
     # ÚNICO propósito: medir slippage/fill reales contra el precio de decisión. Jamás

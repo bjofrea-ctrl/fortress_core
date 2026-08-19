@@ -1939,3 +1939,32 @@ anterior) y `ORDENES_MODULOS.md` (M7 → hecho) actualizados.
 - **Documentación**: §30 actualizado (estado CERRADA + Enmienda 1 + RESULTADO con tabla y
   veredicto), ROADMAP fila Tarea D 🟢 cerrada, artefactos `measure_execution_costs_20260819_1213*.txt`.
 - **Sin commit descriptivo** (regla de la ronda; el auto-backup cubre el estado).
+
+## 2026-08-19 (noche) — COST_PER_SIDE actualizado al costo medido (§33, decisión del usuario) — OpenCode
+- **Origen**: "prosigue con el trabajo pendiente" — el pendiente más concreto era la
+  decisión de actualizar `settings.COST_PER_SIDE` (0.0015 asumido → medido), pedida
+  explícitamente en §30, ROADMAP (M4/Tarea D) y PLAN_LARGO_PLAZO Tarea D.
+- **Verificación previa (regla #1, contra el artefacto real)**: suite 271 passed;
+  SQL directo contra `execution_costs.db` (156 órdenes) con la fórmula del contrato
+  M4 (`mean(|slippage|)+mean(comisión)`): size=1 → 0.000189, size=10 → 0.000131,
+  size=50 → 0.000043. **Hallazgo de transcripción**: la tabla de §30 había puesto
+  `slippage_p50` en la columna `cost_per_side_medido` (0.000122/0.000116/0.000029) —
+  los valores correctos del contrato son los mean (arriba); corregido en §33.
+- **Pre-registro §33 escrito ANTES del cambio** (PLAN_MEJORA_MATEMATICA.md): naturaleza
+  (config, no trial — no consume n_trials), evidencia verificada, caveat PAPER
+  heredado, rango de decisión acotado por la evidencia, criterio de éxito (suite verde,
+  sin cambio de contrato, scripts históricos intactos), impacto declarado (barrier_labeling
+  y diagnostic_pipeline heredan el default; **NO reabre líneas cerradas** — §13 murió por
+  bruto ≈0 y §18.1/§18.2 quedaron fijados con su vara declarada; re-evaluarlos con vara
+  nueva sería pre-registro nuevo aparte).
+- **Decisión del usuario**: eligió **0.0005 (0.05%/lado)** — punto medio conservador,
+  ~2.6× sobre el piso paper medido, margen para comisión y slippage LIVE reales sin
+  volver al 0.15% asumido.
+- **Cambio aplicado**: `backend/app/config.py` `COST_PER_SIDE: 0.0015 → 0.0005` con
+  comentario que cita la evidencia (M4/Tarea D, 156 órdenes) y la decisión.
+- **Verificación post-cambio**: suite completa **271 passed** (17.3s) — los tests de
+  barrier_labeling pasan cost_per_side explícito, no dependen del default.
+- **Documentación**: §33 → CERRADO con valor adoptado; ROADMAP filas M4 y Tarea D
+  actualizadas ("COST_PER_SIDE ACTUALIZADO a 0.0005"). Sin commit descriptivo (regla
+  de la ronda; el auto-backup cubre el estado — verificar si conviene commit explícito
+  con Boris).
