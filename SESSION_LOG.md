@@ -1873,3 +1873,40 @@ anterior) y `ORDENES_MODULOS.md` (M7 → hecho) actualizados.
 - **No tocado**: `advisor.py` (verificado con `git status` — solo los archivos de la
   Tarea E). **Sin commit/push** — regla de la ronda ("No commitear/pushear sin
   autorización de Boris").
+
+## 2026-08-19 — Orquestación de la Ronda 2026-08-19: Tarea E cerrada, Tarea D bloqueada por Alpaca (OpenCode)
+
+- **Contexto**: Claude Code sin créditos; Kilo Code entregó su reporte de cierre.
+  Este turno (OpenCode): verificar el estado real de la ronda contra el repo,
+  cerrar lo que se podía cerrar y dejar planificado lo que depende de acciones
+  externas (Alpaca).
+- **Verificación de integridad (regla #1 — contra el artefacto real)**:
+  - Suite backend completa: **271 passed** (265+ exigido por la ronda) — los 21
+    tests de costs (15 de execution_costs de Kilo + 6 de test_costs_api míos) integrados, nada roto.
+  - `backend/scripts/measure_execution_costs.py` existe (Kilo), parametrizado con
+    `--qty`, importa `NEW_UNIVERSE` — consistente.
+  - `git status` limpio en código: la Tarea E quedó en el auto-backup db56f84
+    (10:02, el auto-backup no espera autorización; los archivos están commiteados).
+- **Hallazgo de orquestación**: el pre-registro de la Tarea D NO existía en
+  PLAN_MEJORA_MATEMATICA.md (cero menciones a qty) — la regla #1 del proyecto
+  exige criterio escrito ANTES de correr, y la corrida está bloqueada, así que
+  todavía estábamos a tiempo. **Escribí el pre-registro §30** (naturaleza: medición,
+  no consume ledger; hipótesis: el costo por lado sube con qty por impacto de
+  mercado; qty=10/50 + el 1 ya medido; criterio descriptivo slippage_p50/p95 por
+  qty — p95(q50) ≳ 3× p95(q1) ⇒ impacto medible; comandos exactos; restricciones
+  paper + credenciales en .env; post-condición: tabla 3 puntos + ROADMAP).
+- **PLAN_LARGO_PLAZO.md actualizado** (estados reales para que ningún agente
+  reasigne): Tarea A CERRADA por trials #16/#17 (el archivo decía "EN CURSO"),
+  Tarea D con estado de bloqueo + referencia a §30 (Kilo ya había dejado su
+  VERIFICACIÓN), Tarea E CERRADA con verificación (la cabecera de la sección se
+  había perdido en la edición de Kilo — restaurada), Verificación de la Ronda con
+  el resultado real 271 passed.
+- **ROADMAP.md**: fila M4 intacta (historia qty=1 conservada) + fila nueva Tarea D
+  con estado 🟡, bloqueo explícito (403 Alpaca) y acción requerida del usuario.
+- **Bloqueo externo documentado**: 403 Forbidden de Alpaca paper al enviar market
+  orders (PA3QUWEX1XBJ). Market data funciona; trading no. Acción requerida:
+  Boris habilita trading en la cuenta paper o regenera la API key con permisos.
+  Comandos listos en §30. El endpoint /api/costs/current sirve la curva
+  automáticamente cuando las mediciones qty=10/50 existan.
+- **Sin commit descriptivo** (regla de la ronda: no commitear/pushear sin
+  autorización de Boris; el auto-backup cubre el estado).

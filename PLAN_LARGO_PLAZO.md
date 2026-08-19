@@ -41,7 +41,10 @@ Cada una termina en un **trial que corre contra datos reales**. Todas deben:
 
 ## Tarea A — Trial de abstención calibrada M2 (OpenCode)
 
-**ESTADO**: 🟡 EN CURSO — pre-registro listo, esperando corrida
+**ESTADO**: 🟢 CERRADO (2026-08-17) — trials #16 (tautológico: abstención 100% por
+defecto estructural de M2) y #17 (con M2 corregido: hipótesis REFUTADA — la abstención
+no mejora el VPP, p=0.4347). Pre-registros §24/§24.1. Línea cerrada como refutada;
+M2 corregido queda disponible para scores futuros. NO reasignar.
 
 ```
 PROBLEMA ESTRUCTURAL: El proyecto tiene criterios claros para refutar (DSR, Bonferroni,
@@ -169,6 +172,13 @@ Si CUMPLE, discutir integración — no hacer solo.
 
 ### Tarea D — Curva de costo por tamaño (Kilo Code)
 
+**ESTADO**: 🟡 CÓDIGO + TESTS LISTOS (21 tests costs, Kilo Code 2026-08-19) —
+MEDICIÓN VIVA BLOQUEADA: **403 Forbidden de Alpaca paper** al enviar market orders
+(la API key no tiene permisos de trading o la cuenta PA3QUWEX1XBJ necesita
+activación). Pre-registro ESCRITO: PLAN_MEJORA_MATEMATICA.md **§30** (2026-08-19).
+Acción requerida del USUARIO: habilitar trading en la cuenta paper / regenerar la
+API key. Comandos listos en §30. NO reasignar a otro agente hasta desbloquear.
+
 ```
 CONTEXTO: M4 ya midió costo real con qty=1 (cost_per_side_medido≈0.000189,
 120 fills reales, backend/data/cache/measure_execution_costs_20260818_134338.txt).
@@ -193,10 +203,27 @@ TAREA:
    con los 3 artefactos citados. Actualizar ROADMAP.md M4.
 
 REGLAS: paper trading únicamente. No tocar cost wiring al motor (settings.COST_PER_SIDE
-sigue en 0.0015, deliberado, deferred). No commitear/pushear sin autorización de Boris.
+    sigue en 0.0015, deliberado, deferred). No commitear/pushear sin autorización de Boris.
 ```
 
+**VERIFICACIÓN 2026-08-19 Kilo Code:**
+- Scripts `measure_execution_costs.py` + `execution_costs.py` implementados y tests pasan (21/21).
+- Qty=1 ya medido: 120 orders, cost_per_side ≈ 0.000189, artefacto en data/cache/measure_execution_costs_20260818_134338.txt.
+- **Bloqueado**: Qty=10/50 no se puede correr: Alpaca paper API devuelve 403 Forbidden en submit_order.
+  Credenciales existen (market data funciona), pero el API key no tiene trading permissions o
+  la cuenta PA3QUWEX1XBJ necesita activación.
+- **Falta**: activar trading permissions en la API key paper de Alpaca para PA3QUWEX1XBJ.
+  Una vez hecho: `.venv/bin/python -m scripts.measure_execution_costs --qty 10`
+  y `--qty 50`. Los datos caen en execution_costs.db y costs.py los sirve automáticamente.
+
 ### Tarea E — Campo de costo real en el dashboard (OpenCode)
+
+**ESTADO**: 🟢 CERRADO (2026-08-19, OpenCode) — `backend/app/api/routes/costs.py`
+(GET /api/costs/current, DB-first + fallback .txt, curva por tamaño `sizes[]`,
+nunca inventa), 6 tests nuevos (suite 271 passed), frontend `CostField.tsx` en
+Layout + tipos/hook. Verificado contra el artefacto real (0.00018883729749502882
+idéntico al .txt). `advisor.py` NO tocado. Sin commit descriptivo (auto-backup
+db56f84). NO reasignar.
 
 ```
 CONTEXTO: ROADMAP.md menciona un campo "costo/trade" en el dashboard que no
@@ -230,6 +257,12 @@ REGLAS: no tocar advisor.py. Python 3.9. No commitear/pushear sin autorización.
 `cd backend && .venv/bin/python -m pytest -q` debe seguir en 265+ passed antes
 de cerrar cualquiera de las dos. Actualizar ROADMAP.md (la discrepancia del
 campo queda resuelta, no solo señalada) y SESSION_LOG.md.
+
+**ESTADO 2026-08-19 (OpenCode)**: suite **271 passed** ✓ (265+ cumplido). Tarea E
+CERRADA y verificada. Tarea D: código+tests listos, medición viva BLOQUEADA por
+403 Alpaca (acción del usuario: activar trading en la cuenta paper PA3QUWEX1XBJ /
+regenerar API key con permisos; pre-registro §30 + comandos listos). ROADMAP.md y
+SESSION_LOG.md actualizados. Sin commit descriptivo (auto-backup corrió).
 
 ---
 

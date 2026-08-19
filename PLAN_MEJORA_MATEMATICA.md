@@ -2191,3 +2191,55 @@ cobertura chica (~7%/2.8% de los trades).
 4. Si el calibrador no está fitteado → todas las etiquetas `SIN_CALIBRAR`.
 5. Cualquier cambio futuro de este mapeo requiere sección nueva + verificación contra
    artefacto de nuevo (no edición en caliente).
+
+---
+
+## 30. M4 — Curva de costo por tamaño de orden: PRE-REGISTRO de la medición qty=10/50 (Tarea D, Ronda 2026-08-19)
+
+**Naturaleza**: MEDICIÓN, no trial de señal. No consume n_trials del ledger
+(registrado en el plan de la ronda: "es medición, no trial de señal, así que no
+consume el ledger de n_trials"). Es la extensión de M4 (DISENO_INSTRUMENTO.md §7)
+al protocolo ya ejecutado con qty=1.
+
+**Estado**: 🟡 PRE-REGISTRADO 2026-08-19 — PENDIENTE DE CORRIDA. Código y tests
+listos (Kilo Code: `backend/scripts/measure_execution_costs.py` + `execution_costs.py`,
+21 tests). BLOQUEADO en la medición viva por **403 Forbidden de Alpaca paper**
+(al enviar market orders: la API key no tiene permisos de trading o la cuenta
+PA3QUWEX1XBJ necesita activación). Acción requerida del usuario: habilitar trading
+en la cuenta paper / regenerar la API key con permisos. Mientras tanto NO se corre.
+
+**Hipótesis (pre-registrada)**: el costo por lado SUBE con el tamaño de la orden
+por impacto de mercado — el slippage no es lineal en qty. qty=1 (ya medido,
+2026-08-18, artefacto `measure_execution_costs_20260818_134338.txt`) dio
+`cost_per_side_medido = 0.0001888` (≈0.019%/lado), slippage p50 0.000122, p95
+0.0005195, comisión 0 (paper), 120 órdenes.
+
+**qty a testear**: 10 y 50 (además del 1 ya medido). Mismo protocolo que qty=1:
+universo completo (BASE_SYMBOLS + NEW_UNIVERSE), un buy y un sell por símbolo por
+qty, mercado abierto US ET obligatorio.
+
+**Criterio de comparación (pre-registrado)**: descriptivo, sin test estadístico
+formal — se comparan `slippage_p50`, `slippage_p95` y `cost_per_side_medido` entre
+qty=1/10/50:
+- Si p95(qty=50) ≳ 3× p95(qty=1) → impacto de mercado MEDIBLE en el rango → el
+  costo real depende del tamaño y el campo del dashboard debe citar la curva.
+- Si la curva queda plana (p95 similar entre qtys) → el costo NO escala con el
+  tamaño en este rango (mercados US líquidos) → qty=1 es representativo.
+
+**Comandos exactos (cuando se desbloquee)**, desde `backend/`:
+```
+.venv/bin/python -m scripts.measure_execution_costs --qty 10 --side buy
+.venv/bin/python -m scripts.measure_execution_costs --qty 10 --side sell
+.venv/bin/python -m scripts.measure_execution_costs --qty 50 --side buy
+.venv/bin/python -m scripts.measure_execution_costs --qty 50 --side sell
+```
+
+**Restricciones**: PAPER únicamente (el módulo fuerza paper-api.alpaca.markets).
+Credenciales SOLO en `backend/.env` / variables de entorno — nunca en chat ni commit.
+No tocar `settings.COST_PER_SIDE` (sigue 0.0015 deliberado; actualizarlo es decisión
+del usuario + pre-registro aparte).
+
+**Post-condición**: tabla con los 3 puntos (qty=1/10/50: cost_per_side_medido,
+slippage_p50/p95, n_ordenes, artefacto citado) agregada a esta sección; actualizar
+ROADMAP.md fila M4. El endpoint `/api/costs/current` (Tarea E) ya expone la curva
+por tamaño sin cambios de contrato.
