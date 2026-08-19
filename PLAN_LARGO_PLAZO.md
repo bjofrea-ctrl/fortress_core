@@ -421,6 +421,105 @@ sin autorización de Boris.
 
 ---
 
+### Tarea K — Fix perf: símbolos fantasma en `/api/advisor/{symbol}` (Kilo Code)
+
+**Contexto**: Tarea F y Tarea G ya cerraron — Kilo Code y OpenCode están libres.
+Hallazgo real de OpenCode (Tarea G, no bloqueante): `/api/advisor/AAPL` tarda ~80s
+(vs MSFT 2.8s) porque algo intenta descargar de Yahoo símbolos fantasma
+(`$BASELINE_CLEAN_..._EVENTS`, `$COT_2019`, `$CAPITAL_USAGE_...`) que timeoutean
+~1s c/u. Encontré la pista concreta (lectura de 15 líneas, no investigación
+completa — falta que alguien lo termine de trazar):
+
+```
+PISTA YA ENCONTRADA (no reinvestigar desde cero):
+backend/app/api/routes/advisor.py:105, función _cache_date() — itera TODOS los
+.parquet de data/cache/ con glob.glob(), y filtra con
+`if not base[:1].isupper() or base.startswith("factor_panel"): continue` (línea 107).
+Ese filtro es INSUFICIENTE: archivos de artefactos como
+BASELINE_CLEAN_20260811_150643_EVENTS.parquet o CAPITAL_USAGE_....parquet también
+empiezan con mayúscula y pasan el filtro. _cache_date() en sí NO llama a Yahoo (solo
+lee metadata local) — la pista es que ALGO MÁS en el mismo archivo o en
+_get_context()/decision.py probablemente reusa un patrón de glob/listado de cache
+parecido para construir una lista de "símbolos a descargar", y esa lista sí golpea
+Yahoo. Falta confirmar cuál función es la que efectivamente dispara las descargas.
+
+TAREA:
+1. Trazar con grep/lectura desde advisor.py (_get_context, _compute_ticket) hacia
+   abajo hasta encontrar el punto exacto donde se arma la lista de símbolos que se
+   pasa a download_data()/yfinance para el endpoint de detalle. Confirmar que es el
+   mismo problema (glob de data/cache/*.parquet sin filtro robusto) o uno distinto.
+2. Fix: el filtro correcto no es "empieza con mayúscula" — es "el símbolo pertenece
+   al universo real" (SYMBOLS de opportunities.py, o BASE_SYMBOLS+NEW_UNIVERSE de
+   fetch_universe_data.py — usar la lista correcta según cuál universo alimenta ese
+   endpoint, ver hallazgo de Tarea F sobre cuál es cuál). Validar contra esa lista,
+   no contra una heurística de nombre de archivo.
+3. Medir antes/después: tiempo de `/api/advisor/AAPL` en frío debe bajar de ~80s a
+   algo comparable a MSFT (~3s).
+4. Tests: caso con un .parquet de artefacto (nombre tipo BASELINE_CLEAN_..._EVENTS)
+   en el cache dir de test, confirmar que NO se intenta descargar/tratar como símbolo.
+5. Documentar en ROADMAP.md (mismo hallazgo, ahora resuelto) y SESSION_LOG.md.
+
+REGLAS: no tocar signal_engine.py ni el score. Cambio acotado a las funciones de
+carga de símbolos del router advisor.py. Python 3.9. No commitear/pushear sin
+autorización de Boris.
+```
+
+---
+
+### Tarea L — Auditoría FDR (Benjamini-Hochberg) sobre TODOS los factores cerrados, no solo ADX (OpenCode)
+
+**Contexto**: Boris investigó con Perplexity si Bonferroni (el método que usa todo
+el proyecto) es demasiado conservador — la literatura (Harvey-Liu-Zhu RFS 2016,
+Bailey-López de Prado DSR) dice que sí, para un programa secuencial de ~29 trials
+(verificado: `motor_signal` 11 consumidos + `signal_diagnosis` 18 = 29) lo académicamente
+alineado es FDR (Benjamini-Hochberg) sobre TODO el pool de factores, no Bonferroni
+por-ventana. **PERO el propio cálculo de Perplexity con los números reales de ADX
+(t≈2.31, p≈0.02) muestra que NO cruza el corte BH realista (q=0.05-0.10, m≈34) —
+la hipótesis "ADX resucita" NO se confirma con la aritmética simple.** No asumir que
+esto revive nada — es una auditoría honesta, no una búsqueda de un resultado.
+
+**Es diagnóstico/auditoría, NO un trial nuevo**: no consume `n_trials` (no hay
+hipótesis de mercado nueva, es re-análisis estadístico de resultados YA obtenidos).
+Si algo SÍ flipea de refutado a candidato, eso NO se promueve solo — vuelve a la
+mesa de Boris, mismo patrón que C6/§34.
+
+**Por qué hacerlo bien (no solo ADX)**: el corte BH depende del ranking de p-values
+de TODO el pool — evaluar un solo factor aislado (ADX) es exactamente el sesgo
+post-hoc que el protocolo del proyecto existe para evitar. Hay que correrlo sobre
+los ~11-12 factores realmente testeados (momentum, RSI, ADX, lead-lag, triple
+barrier, indicadores semanales, FinBERT, AAII-timing, rank-IC-relativo, C6 bruto/
+hedge, EVT), no sobre uno elegido a mano.
+
+```
+TAREA:
+1. Leer app/core/trial_registry.py (formato del ledger, qué campos tiene cada
+   trial registrado) y recorrer PLAN_MEJORA_MATEMATICA.md (§16-§30-ish, grep
+   "VEREDICTO" y "t-NW" o "|t|") para extraer, por cada factor YA CERRADO con
+   walk-forward de 3 ventanas: el t-stat de cada ventana.
+2. Para cada factor, calcular UN p-value combinado por pooling de las 3 ventanas
+   (método de Fisher para combinar p-values independientes, o meta-análisis con
+   varianza inversa sobre los t-stats — documentar cuál se usa y por qué antes de
+   correr, no elegir el método que dé mejor resultado después de ver el número).
+3. Aplicar Benjamini-Hochberg sobre el set completo de p-values combinados
+   (m = número real de factores, no de ventanas), a q=0.05 Y q=0.10 (reportar
+   ambos, no elegir el que convenga).
+4. Reportar tabla: factor | t pooled | p pooled | rank | corte BH(q) | veredicto
+   BH (discovery/no) | veredicto Bonferroni original (para comparar).
+5. Artefacto en data/cache/auditoria_fdr_20260819_HHMMSS.txt. Documentar en
+   PLAN_MEJORA_MATEMATICA.md como sección de auditoría (no pre-registro de trial —
+   aclarar esto explícitamente en el encabezado) y en ROADMAP.md.
+6. Si ALGÚN factor flipea a "discovery" bajo BH: NO integrarlo al motor, NO
+   cambiar su estado en el ledger — reportarlo a Boris como hallazgo pendiente de
+   decisión, igual que se hizo con C6.
+
+REGLAS: solo lectura de artefactos/ledger existentes + un script nuevo de análisis
+(no se corren backtests nuevos, no se toca mercado ni datos). No tocar
+signal_engine.py, trial_registry.py, ni ningún archivo de trial histórico. Python
+3.9. No commitear/pushear sin autorización de Boris.
+```
+
+---
+
 ## Verificación al cerrar cualquier tarea
 
 `cd backend && .venv/bin/python -m pytest -q` debe seguir en verde (242+ passed)
