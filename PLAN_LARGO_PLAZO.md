@@ -627,11 +627,33 @@ uno (búsqueda 2026-08-19), no contra mi supuesto:
   propio autor, no por interpretación nuestra. Preguntarle "¿predecís el retorno
   futuro?" es la pregunta equivocada — la pregunta correcta es sobre RÉGIMEN.
 
+**Hallazgo (2026-08-19): ya existe evidencia académica de nivel superior en el
+propio repo**, `RESEARCH_PREDICTIVE_INDICATORS.md` (2026-08-05, previo a esta
+ronda) — mejor que las fuentes genéricas de mi propia búsqueda, porque cita
+estudios peer-reviewed con efecto documentado, no solo definición/origen:
+- **MACD**: Appel (1979); Chong & Ng (2008, *Applied Financial Economics*);
+  Chen/Metghalchi/Chang (2008). Correlación documentada 0.05-0.08, horizonte
+  óptimo **2-8 semanas** — compatible con fwd_return_20d (~4 semanas), usar como
+  prior de sanity-check del resultado del trial, no como sustituto de medirlo.
+- **Bollinger**: Bollinger (1992); Lento, Gradojevic & Wright (2007, *Applied
+  Financial Economics Letters*) — el mismo paper ya citado en
+  `triad_agents.py` para la reversión en extremos. Correlación documentada
+  0.03-0.05, horizonte óptimo **1-2 semanas** — MÁS CORTO que fwd_return_20d.
+  **Implicación para el diseño**: si Tarea N solo mide contra fwd_return_20d,
+  puede estar testeando a un horizonte donde el efecto de Bollinger ya se
+  disipó según la propia literatura — agregar una medición secundaria a
+  horizonte más corto (5-10d) antes de descartarlo por horizonte equivocado.
+- **KAMA/HMA/Supertrend (Tarea M)**: confirmado — NINGUNO aparece en este
+  documento tampoco (`rg` verificado). Refuerza el hallazgo de la búsqueda
+  anterior: sin el mismo nivel de respaldo peer-reviewed que MACD/Bollinger/ADX.
+
 ```
 TAREA:
-1. Confirmar que macd()/bollinger_bands() en indicators.py siguen sin usarse en el
-   score (peso 0 en triad_agents.py/predictive_engine.py) — no crear código nuevo,
-   ya existen.
+1. Leer RESEARCH_PREDICTIVE_INDICATORS.md (secciones MACD y Bollinger) antes de
+   pre-registrar — usar los horizontes documentados para decidir el diseño, no
+   asumir 20d por default. Confirmar que macd()/bollinger_bands() en
+   indicators.py siguen sin usarse en el score (peso 0 en
+   triad_agents.py/predictive_engine.py) — no crear código nuevo, ya existen.
 
 2A. MACD (pregunta de DIRECCIÓN — mismo protocolo que Tarea M):
     Pre-registrar rank IC walk-forward de macd_hist contra fwd_return_20d,
@@ -639,7 +661,12 @@ TAREA:
     momentum/RSI/KAMA/HMA.
 
 2B. Bollinger (pregunta de RÉGIMEN, no de dirección — protocolo DISTINTO):
-    Pre-registrar DOS mediciones separadas, declaradas ANTES de correr:
+    Pre-registrar DOS mediciones separadas, declaradas ANTES de correr — la
+    de volatilidad realizada usar horizonte 10-20d (consistente con lo medido);
+    la de interacción con momentum/RSI probar tanto a 20d (estándar del
+    proyecto) como a 5-10d (horizonte donde Lento et al. 2007 documenta el
+    efecto) — declarar ambos horizontes ANTES de correr, no elegir el que
+    convenga después:
     - (i) ¿El ancho de banda (bb_upper−bb_lower)/bb_middle predice VOLATILIDAD
       REALIZADA futura (no retorno)? Rank IC de ancho_actual vs
       std(retornos_futuros_20d) — esto es lo que Bollinger mide por diseño.
