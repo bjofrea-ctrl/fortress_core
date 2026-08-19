@@ -38,5 +38,13 @@
     "win_prob": 0.527,
     "outcome": null,
     "evaluated_at": null
+  },
+  {
+    "symbol": "CVX",
+    "date": "2026-08-19",
+    "score": 0.6392,
+    "win_prob": 0.527,
+    "outcome": null,
+    "evaluated_at": null
   }
 ]
