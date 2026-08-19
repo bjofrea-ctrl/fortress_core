@@ -24,14 +24,17 @@ GET /api/advisor/theses   — Exit Thesis Monitor (tesis de entrada vs hoy).
 GET /api/advisor/evidence — footer de confianza: ledger de trials.
 """
 
+import asyncio
 import glob
 import json
 import os
+import time
 from typing import Dict, List, Optional
 
 import numpy as np
 import pandas as pd
 from fastapi import APIRouter, HTTPException
+from starlette.concurrency import run_in_threadpool
 
 from app.api.routes.decision import (
     _STATE_RANK,
@@ -129,8 +132,11 @@ def _staleness(today: pd.Timestamp, last_cache: Optional[pd.Timestamp]) -> Dict:
     }
 
 
-def _load_context():
-    """Idéntico a decision._load_context (misma fuente de verdad)."""
+def _load_context_sync():
+    """Idéntico a decision._load_context (misma fuente de verdad). SÍNCRONO Y
+    PESADO a propósito (red vía yfinance en download_data si el cache tiene
+    >7 días de atraso, refit de calibradores sobre ~2 años) — nunca se llama
+    directo desde un handler async. Ver _get_context()."""
     from app.core.backtest_engine import BacktestEngine
     from app.core.signal_engine import SignalEngine
 
@@ -145,6 +151,30 @@ def _load_context():
     return price_data, today, regime, regime_state, signal_engine, calibrator, conformal
 
 
+# Cache en memoria + offload a threadpool (HANDOFF 2026-08-19, bug "sin señal"):
+# _load_context_sync corría síncrono dentro de `async def` — bloqueaba el ÚNICO
+# event loop, así que hasta /health (que no toca esto) quedaba colgado detrás.
+# TTL 5 min: el universo de 50 símbolos no cambia más rápido que eso para este
+# uso de solo-lectura. El lock asyncio evita manada (varias requests concurrentes
+# disparando el mismo refit caro a la vez) — la primera hace el trabajo, las
+# demás esperan sin bloquear el loop y reciben el mismo resultado cacheado.
+_CONTEXT_CACHE_TTL_SECONDS = 300
+_context_lock = asyncio.Lock()
+_context_cache: Optional[tuple] = None
+_context_cache_time: float = 0.0
+
+
+async def _get_context():
+    global _context_cache, _context_cache_time
+    async with _context_lock:
+        now = time.monotonic()
+        if _context_cache is not None and (now - _context_cache_time) < _CONTEXT_CACHE_TTL_SECONDS:
+            return _context_cache
+        _context_cache = await run_in_threadpool(_load_context_sync)
+        _context_cache_time = time.monotonic()
+        return _context_cache
+
+
 @router.get("/universe")
 async def advisor_universe():
     """Mesa consolidada: ticket por activo + etiqueta proyectada + transición,
@@ -155,7 +185,7 @@ async def advisor_universe():
     La persistencia sigue en decision.py donde siempre estuvo.
     """
     try:
-        price_data, today, regime, regime_state, signal_engine, calibrator, conformal = _load_context()
+        price_data, today, regime, regime_state, signal_engine, calibrator, conformal = await _get_context()
 
         tickets = []
         for symbol, df in price_data.items():
@@ -235,7 +265,7 @@ async def advisor_theses():
     de un símbolo es INVERTIR y no tiene snapshot, lo CREA (captura la foto).
     """
     try:
-        price_data, today, regime, regime_state, signal_engine, calibrator, conformal = _load_context()
+        price_data, today, regime, regime_state, signal_engine, calibrator, conformal = await _get_context()
 
         current = {}
         for symbol, df in price_data.items():
@@ -332,7 +362,7 @@ async def advisor_symbol(symbol: str):
     """Detalle de un símbolo: OHLCV EOD (para chart), overlays del motor,
     plan de salida, M2, fundamentals EDGAR o null honesto, etiqueta proyectada."""
     try:
-        price_data, today, regime, regime_state, signal_engine, calibrator, conformal = _load_context()
+        price_data, today, regime, regime_state, signal_engine, calibrator, conformal = await _get_context()
         symbol = symbol.upper()
 
         if symbol not in price_data:

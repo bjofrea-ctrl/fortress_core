@@ -85,7 +85,7 @@ def ctx(monkeypatch, tmp_path):
     price_data = {s: _bull(s) for s in ["TESTA", "TESTB", "TESTC"]}
     monkeypatch.setattr(
         advisor,
-        "_load_context",
+        "_load_context_sync",
         lambda: (
             price_data,
             pd.Timestamp("2026-08-17"),
@@ -96,6 +96,10 @@ def ctx(monkeypatch, tmp_path):
             FakeConformal(),
         ),
     )
+    # Resetear el cache en memoria de _get_context — si no, un test anterior
+    # dentro del TTL (5min) devolvería SU contexto fake, no el de este test.
+    monkeypatch.setattr(advisor, "_context_cache", None)
+    monkeypatch.setattr(advisor, "_context_cache_time", 0.0)
     monkeypatch.setattr(advisor, "_cache_date", lambda: pd.Timestamp("2026-08-14"))
     monkeypatch.setattr(advisor, "DECISION_STATES_PATH", str(tmp_path / "decision_states.json"))
     monkeypatch.setattr(advisor, "_theses_path", lambda: str(tmp_path / "decision_theses.json"))
@@ -182,7 +186,7 @@ def test_universe_blocked_regime_3(monkeypatch, tmp_path):
     price_data = {s: _bull(s) for s in ["TESTA", "TESTB"]}
     monkeypatch.setattr(
         advisor,
-        "_load_context",
+        "_load_context_sync",
         lambda: (
             price_data,
             pd.Timestamp("2026-08-17"),
@@ -193,6 +197,8 @@ def test_universe_blocked_regime_3(monkeypatch, tmp_path):
             FakeConformal(),
         ),
     )
+    monkeypatch.setattr(advisor, "_context_cache", None)
+    monkeypatch.setattr(advisor, "_context_cache_time", 0.0)
     monkeypatch.setattr(advisor, "_cache_date", lambda: pd.Timestamp("2026-08-14"))
     monkeypatch.setattr(advisor, "DECISION_STATES_PATH", str(tmp_path / "ds.json"))
     body = asyncio.run(advisor.advisor_universe())
@@ -255,7 +261,7 @@ def test_theses_rota_por_stop(monkeypatch, tmp_path):
 
     monkeypatch.setattr(
         advisor,
-        "_load_context",
+        "_load_context_sync",
         lambda: (
             price_data,
             pd.Timestamp("2026-08-17"),
@@ -266,6 +272,8 @@ def test_theses_rota_por_stop(monkeypatch, tmp_path):
             FakeConformal(),
         ),
     )
+    monkeypatch.setattr(advisor, "_context_cache", None)
+    monkeypatch.setattr(advisor, "_context_cache_time", 0.0)
     monkeypatch.setattr(advisor, "DECISION_STATES_PATH", str(tmp_path / "ds.json"))
     theses_path = str(tmp_path / "decision_theses.json")
     monkeypatch.setattr(advisor, "_theses_path", lambda: theses_path)
