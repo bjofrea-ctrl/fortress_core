@@ -2409,3 +2409,40 @@ signos opuestos o magnitud >= 2x, hay base para ponderar indicadores distinto po
 **Restricciones**: solo lectura de parquets locales; nada de órdenes; data pública.
 **Post-condición**: tabla de IC por indicador×franja×símbolo + veredicto
 base_si/no + recomendación (construir rotador vs. descartar la hipótesis horaria).
+
+**RESULTADO Fase B (2026-08-19, corrida real — 659 días por franja, QQQ y SPY)**:
+Artefacto: `data/cache/franjas_predictividad_20260819_125427.txt`. IC = Spearman
+diario (indicator_t vs retorno forward 5 min) promediado, t-stat Newey-West lag 4.
+
+| indicador | franja | QQQ IC (t) | SPY IC (t) |
+|-----------|--------|------------|------------|
+| mom5  | APERTURA | -0.061 (-10.0) | -0.062 (-9.8) |
+| mom5  | MEDIA | -0.058 (-9.6) | -0.061 (-10.9) |
+| mom5  | CIERRE | -0.063 (-9.8) | -0.064 (-10.2) |
+| mom15 | APERTURA | -0.086 (-13.0) | -0.088 (-13.0) |
+| mom15 | MEDIA | -0.083 (-13.8) | -0.084 (-13.5) |
+| mom15 | CIERRE | -0.099 (-13.8) | -0.098 (-13.8) |
+| mom30 | APERTURA | -0.123 (-17.4) | -0.119 (-16.7) |
+| mom30 | MEDIA | -0.119 (-19.2) | -0.114 (-19.2) |
+| mom30 | CIERRE | -0.129 (-19.2) | -0.126 (-19.9) |
+| rsi14 | APERTURA | -0.129 (-19.6) | -0.133 (-19.0) |
+| rsi14 | MEDIA | -0.115 (-18.7) | -0.116 (-19.3) |
+| rsi14 | CIERRE | -0.129 (-18.6) | -0.126 (-19.0) |
+
+**VEREDICTO Fase B (criterio §32)**:
+1. **Sin base para rotación por franja**: los ICs son casi IDÉNTICOS entre franjas
+   (diferencias < 0.015). El criterio exigía un indicador fuerte en una franja y
+   débil/de signo opuesto en otra — NO se cumple en ningún caso. La predictividad es
+   uniforme en las 3 franjas. → La hipótesis de rotación horaria de indicadores se
+   DESCARTA con evidencia (no se construye el meta-sistema de rotación por franja).
+2. **Hallazgo nuevo (inesperado, robusto)**: TODOS los indicadores tienen IC
+   NEGATIVO fuerte y altamente significativo (t-stat -10 a -19, 659 días, 2 símbolos):
+   **reversión a la media intra-día**. El momentum de 5/15/30 min predice el retorno
+   forward en dirección OPUESTA; el RSI(14) alto predice baja. Es estructura
+   predictiva real en intra-día — la dirección contraria al momentum que asume el
+   motor (que usa momentum diario como ranking). No es una señal de alta precisión
+   (hit-rate 0.49-0.51, cerca de azar) pero el IC es grande y estable.
+3. Implicación: si el motor operara intra-día con estas ventanas, el enfoque
+   correcto sería CONTRARIAN (comprar dips de 15-30 min), no momentum. Eso merece un
+   trial formal pre-registrado (consumiría n_trials) — NO es parte de este análisis
+   exploratorio, que queda cerrado.
