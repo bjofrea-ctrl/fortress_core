@@ -137,6 +137,27 @@ export interface EvidenceResponse {
   note: string;
 }
 
+export interface CostsPoint {
+  size: number;
+  cost_per_side_medido: number;
+  slippage_p50: number;
+  slippage_p95: number;
+  n_ordenes: number;
+}
+
+export interface CostsResponse {
+  medido: boolean;
+  cost_per_side_medido: number | null;
+  slippage_p50: number | null;
+  slippage_p95: number | null;
+  comision_media: number | null;
+  n_ordenes: number;
+  ventana: string | null;
+  fecha_medicion: string | null;
+  sizes: CostsPoint[];
+  nota: string;
+}
+
 async function get<T>(path: string): Promise<T> {
   const resp = await fetch(`${API_URL}${path}`);
   if (!resp.ok) {
@@ -157,4 +178,5 @@ export const api = {
   symbol: (symbol: string) => get<AdvisorSymbolResponse>(`/api/advisor/${symbol}`),
   theses: () => get<AdvisorThesesResponse>("/api/advisor/theses"),
   evidence: () => get<EvidenceResponse>("/api/advisor/evidence"),
+  costs: () => get<CostsResponse>("/api/costs/current"),
 };

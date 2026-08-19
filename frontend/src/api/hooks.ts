@@ -4,6 +4,7 @@ import {
   AdvisorSymbolResponse,
   AdvisorThesesResponse,
   AdvisorUniverseResponse,
+  CostsResponse,
   EvidenceResponse,
   api,
 } from "./client";
@@ -50,4 +51,8 @@ export function useAdvisorTheses() {
 
 export function useAdvisorEvidence() {
   return useFetch<EvidenceResponse>(() => api.evidence(), []);
+}
+
+export function useExecutionCosts() {
+  return useFetch<CostsResponse>(() => api.costs(), []);
 }

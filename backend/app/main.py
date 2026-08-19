@@ -7,6 +7,7 @@ from sqlalchemy import text
 from app.api.routes import (
     advisor,
     backtest,
+    costs,
     decision,
     decision_history,
     governance,
@@ -50,6 +51,7 @@ app.include_router(opportunities.router)
 app.include_router(decision.router)
 app.include_router(decision_history.router)
 app.include_router(advisor.router)
+app.include_router(costs.router)
 app.include_router(ranking.router)
 
 

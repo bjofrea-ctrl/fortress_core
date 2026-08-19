@@ -3,6 +3,7 @@ import { API_URL } from "../api/client";
 import { useAdvisorUniverse } from "../api/hooks";
 import LiveTicker from "./LiveTicker";
 import Header from "./Header";
+import { CostField } from "./advisor/CostField";
 import { EvidenceFooter } from "./advisor/EvidenceFooter";
 
 // Code splitting por vista: lightweight-charts/recharts caen solo donde se usan.
@@ -70,6 +71,7 @@ export default function Layout() {
             )}
           </nav>
           <div className="flex-1" />
+          <CostField />
           <span
             className="px-2 py-1 rounded text-[10px] font-mono bg-accent-yellow/10 text-accent-yellow border border-accent-yellow/30"
             title={universe?.honesty_badge}

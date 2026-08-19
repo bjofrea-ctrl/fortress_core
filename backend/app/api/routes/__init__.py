@@ -3,6 +3,7 @@
 from app.api.routes import (
     advisor,
     backtest,
+    costs,
     decision,
     decision_history,
     governance,
@@ -18,6 +19,7 @@ from app.api.routes import (
 # Router aggregation for main app
 routers = [
     advisor.router,
+    costs.router,
     decision.router,
     decision_history.router,
     ranking.router,

@@ -1834,3 +1834,42 @@ anterior) y `ORDENES_MODULOS.md` (M7 → hecho) actualizados.
     VITE_API_URL.
 - **Suite**: 263 passed (242 + 21 advisor), ruff limpio. Espejo del disco externo
   pendiente de montar (el autobackup lo resuelve cuando esté).
+
+## 2026-08-19 — Tarea E (Ronda 2026-08-19, OpenCode): campo de costo real en el dashboard
+
+- **Contexto**: PLAN_LARGO_PLAZO.md Ronda 2026-08-19 asigna a OpenCode la Tarea E —
+  construir el campo "costo/trade" que ROADMAP mencionaba y el frontend no tenía.
+  El número real ya existe (M4, 2026-08-18, qty=1: cost_per_side_medido 0.000189,
+  120 órdenes paper). Regla dura de la ronda: NO tocar `advisor.py` (fix recién
+  pusheado del bug de event loop, commit 2f6fbeb) y NO cruzar archivos con la
+  Tarea D (Kilo Code, curva qty=10/50).
+- **Backend** (`backend/app/api/routes/costs.py`, NUEVO): `GET /api/costs/current`
+  solo lectura. Fuentes en orden: (1) `execution_costs.db` — registro canónico vía
+  `ExecutionCostRecorder.records()` + `summarize()` de `app.core.execution_costs`
+  (importado, NO editado); (2) si no existe o está vacía, el artefacto `.txt` más
+  reciente `measure_execution_costs_*` (parsea el JSON del bloque RESUMEN); (3) si
+  no hay nada → 200 `{"medido": false, "nota"}` — NUNCA inventa un número. Respuesta:
+  `{medido, cost_per_side_medido, slippage_p50, slippage_p95, comision_media,
+  n_ordenes, ventana, fecha_medicion, sizes[], nota}`. `sizes[]` es la curva por
+  tamaño de orden (ya lista para qty=1/10/50 de la Tarea D, sin cambio de contrato).
+  Caveat PAPER adjunto siempre (`nota`). Robustez: DB corrupta/ilegible → cae al
+  fallback honesto, nunca 500. Registrado en `routes/__init__.py` + `main.py`.
+- **Tests** (`backend/tests/test_costs_api.py`, 6 nuevos): contrato desde DB real
+  (tmp_path), curva por tamaño (3 tallas), fallback al .txt (parseo del RESUMEN),
+  artefacto corrupto → medido=false, sin medición → medido=false con nota, DB
+  corrupta → medido=false. Patrón del repo: `asyncio.run` + monkeypatch, sin red.
+- **Frontend**: `client.ts` (interfaces `CostsPoint`/`CostsResponse` + `api.costs()`),
+  `hooks.ts` (`useExecutionCosts`), `components/advisor/CostField.tsx` NUEVO — chip
+  en la barra sticky de Layout (visible en todas las vistas): "COSTO REAL/LADO:
+  0.019% · n=120", tooltip con caveat + p50/p95/fecha; si `medido=false` →
+  "COSTO REAL: SIN MEDICIÓN" (amarillo, tooltip con la nota); si la curva tiene más
+  de un punto, muestra "q1: 0.019% · q10: X% · q50: Y%". `Layout.tsx` monta el chip
+  junto al badge de honestidad.
+- **Verificación (regla #1 — contra el artefacto real)**: endpoint corrido contra la
+  DB de producción: `cost_per_side_medido 0.00018883729749502882` — idéntico al
+  artefacto `measure_execution_costs_20260818_134338.txt`. Suite backend 271 passed
+  (265+ exigido por la ronda), ruff limpio en archivos nuevos, `npm run build` OK
+  (tsc sin errores, bundle main 152.95 kB sin cambio significativo).
+- **No tocado**: `advisor.py` (verificado con `git status` — solo los archivos de la
+  Tarea E). **Sin commit/push** — regla de la ronda ("No commitear/pushear sin
+  autorización de Boris").
