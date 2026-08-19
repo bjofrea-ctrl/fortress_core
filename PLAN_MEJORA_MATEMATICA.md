@@ -2201,12 +2201,10 @@ cobertura chica (~7%/2.8% de los trades).
 consume el ledger de n_trials"). Es la extensión de M4 (DISENO_INSTRUMENTO.md §7)
 al protocolo ya ejecutado con qty=1.
 
-**Estado**: 🟡 PRE-REGISTRADO 2026-08-19 — PENDIENTE DE CORRIDA. Código y tests
-listos (Kilo Code: `backend/scripts/measure_execution_costs.py` + `execution_costs.py`,
-21 tests). BLOQUEADO en la medición viva por **403 Forbidden de Alpaca paper**
-(al enviar market orders: la API key no tiene permisos de trading o la cuenta
-PA3QUWEX1XBJ necesita activación). Acción requerida del usuario: habilitar trading
-en la cuenta paper / regenerar la API key con permisos. Mientras tanto NO se corre.
+**Estado**: ✅ CERRADA 2026-08-19 — corrida real ejecutada y verificada (ver RESULTADO
+abajo). Código y tests listos (Kilo Code: `backend/scripts/measure_execution_costs.py`
++ `execution_costs.py`, 21 tests). Diagnóstico del bloqueo y plan ajustado en la
+Enmienda 1.
 
 **ENMIENDA 1 (2026-08-19, escrita ANTES de correr — diagnóstico real y plan ajustado)**:
 El 403 NO era por permisos de la API key. Cuenta `PA3QUWEX1XBJ` ACTIVE, sin
@@ -2272,3 +2270,35 @@ del usuario + pre-registro aparte).
 slippage_p50/p95, n_ordenes, artefacto citado) agregada a esta sección; actualizar
 ROADMAP.md fila M4. El endpoint `/api/costs/current` (Tarea E) ya expone la curva
 por tamaño sin cambios de contrato.
+
+**RESULTADO (2026-08-19, corrida real, mercado abierto 12:13–12:14 ET)**:
+Cuenta desbloqueada (liquidación de residuos qty=10 de la mañana → BP $100k),
+4 corridas ejecutadas con el script oficial:
+- qty=10 buy: 7 órdenes (BASE_SYMBOLS) — artefacto `measure_execution_costs_20260819_121324.txt`
+- qty=10 sell: 7 órdenes (mismos) — artefacto `measure_execution_costs_20260819_121352.txt`
+- qty=50 buy: 2 órdenes (SPY, QQQ; **AAPL 50 falló 403 por buying power** — notional
+  $90k excede el margen de la cuenta; fallback previsto en la Enmienda 1, se documenta
+  el resultado real: subset SPY+QQQ) — artefacto `measure_execution_costs_20260819_121440.txt`
+- qty=50 sell: 2 órdenes (SPY, QQQ) — mismo artefacto
+
+**Curva real (156 órdenes, DB `backend/data/cache/execution_costs.db`, fórmula del
+contrato M4: `abs(slippage)` + np.median/np.percentile — verificado: size=1 idéntico
+al artefacto del 18/08)**:
+
+| size | n (buy/sell) | cost_per_side_medido | slippage_p50 | slippage_p95 |
+|------|--------------|---------------------|--------------|--------------|
+| 1    | 120 (60/60)  | 0.000122 | 0.000122 | 0.000519 |
+| 10   | 32 (25/7)    | 0.000116 | 0.000116 | 0.000417 |
+| 50   | 4 (2/2)      | 0.000029 | 0.000029 | 0.000098 |
+
+**VEREDICTO (criterio pre-registrado)**: la curva NO sube con el tamaño — es plana
+o decreciente: p95(50) = 0.000098 es **5.3× MENOR** que p95(1) = 0.000519. No se
+cumple "p95(qty=50) ≳ 3× p95(qty=1)" → **impacto de mercado NO medible en el rango
+1→50** (mercados US líquidos, papel). Cae en el segundo brazo del criterio: **qty=1
+es representativo del costo por lado**. Nota de tamaño muestral: n=4 en qty=50 (2/2)
+y n=32 en qty=10 (con sell 7) — conclusiones descriptivas, no estadísticas (como fue
+pre-registrado). Consecuencia práctica: el motor opera qty pequeñas; `cost_per_side_medido`
+global ≈ 0.00017–0.00019 (≈0.018–0.019%/lado) sigue siendo la cifra a usar; la
+decisión de bajar `settings.COST_PER_SIDE` (0.0015 → ~0.0002) queda del usuario con
+pre-registro aparte. El endpoint `/api/costs/current` expone la curva (sizes 1/10/50)
+sin cambios de contrato.

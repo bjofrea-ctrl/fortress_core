@@ -1910,3 +1910,32 @@ anterior) y `ORDENES_MODULOS.md` (M7 → hecho) actualizados.
   automáticamente cuando las mediciones qty=10/50 existan.
 - **Sin commit descriptivo** (regla de la ronda: no commitear/pushear sin
   autorización de Boris; el auto-backup cubre el estado).
+
+## 2026-08-19 (tarde) — DESBLOQUEO Y CIERRE DE LA TAREA D (curva qty=10/50) — OpenCode
+- **Origen**: Boris indicó que la API de la cuenta prueba está en Apple Notes ("Alpaca Paper").
+- **Diagnóstico del 403 (clave)**: NO era falta de permisos. La cuenta PA3QUWEX1XBJ está ACTIVE
+  sin bloqueos; el error real era `40310000 "insufficient buying power"` con BP=0. Causa: la
+  corrida qty=10 de la mañana (Kilo Code) alcanzó a entrar en 18 símbolos (~$81k notional) antes
+  de agotar el margen; quedaron 18 posiciones abiertas, cash −$56k, BP 0 → todo lo posterior daba
+  403. Las credenciales de la nota = las del `backend/.env` (mismo par) — no había que rotar nada.
+- **Acción**: liquidé las 18 posiciones residuales (paper) → cash $24.9k, equity $25.1k, BP $100k,
+  cuenta limpia, sin runners activos. Verifiqué que el 403 se reproduce con orden mínima (SPY qty=1)
+  → confirmado el diagnóstico.
+- **Enmienda 1 al pre-registro §30 (escrita ANTES de correr)**: el universo completo (50 símbolos)
+  es inviable en esta cuenta (qty=10 ≈ $150k, qty=50 ≈ $750k vs BP $100k). Nuevo plan: qty=10 sobre
+  los 7 BASE_SYMBOLS (los que opera el motor), qty=50 sobre SPY,QQQ,AAPL con fallback SPY+QQQ.
+- **Corrida real (mercado abierto 12:13–12:14 ET, 4 comandos del script oficial)**:
+  qty=10 buy 7 órdenes + qty=10 sell 7 órdenes (BASE_SYMBOLS); qty=50 buy 2 + sell 2 (SPY+QQQ;
+  AAPL 50 dio 403 por BP — notional $90k > margen — fallback aplicado y documentado).
+- **Curva real (156 órdenes en DB; fórmula contrato M4: abs(slippage); size=1 verificado idéntico
+  al artefacto del 18/08: p50 0.000122 / p95 0.000519)**:
+  - qty=1: n=120, p50 0.000122, p95 0.000519
+  - qty=10: n=32, p50 0.000116, p95 0.000417
+  - qty=50: n=4, p50 0.000029, p95 0.000098
+- **VEREDICTO (criterio pre-registrado)**: curva plana/decreciente — p95(50) es 5.3× MENOR que
+  p95(1). Impacto de mercado NO medible en rango 1→50 (mercados US líquidos, paper) → qty=1 es
+  representativo (0.019%/lado). Consecuencia: `COST_PER_SIDE` (0.0015 asumido) sigue en pie;
+  bajarlo a ~0.0002 es decisión del usuario con pre-registro aparte.
+- **Documentación**: §30 actualizado (estado CERRADA + Enmienda 1 + RESULTADO con tabla y
+  veredicto), ROADMAP fila Tarea D 🟢 cerrada, artefactos `measure_execution_costs_20260819_1213*.txt`.
+- **Sin commit descriptivo** (regla de la ronda; el auto-backup cubre el estado).
