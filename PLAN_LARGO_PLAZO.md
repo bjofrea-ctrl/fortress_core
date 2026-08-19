@@ -276,6 +276,16 @@ SESSION_LOG.md actualizados. Sin commit descriptivo (auto-backup corrió).
 
 ### Tarea F — Por qué `/api/advisor/universe` devuelve 44 símbolos y no 50 (Kilo Code)
 
+**ESTADO**: 🟢 CERRADO (2026-08-19, Kilo Code + OpenCode) — **NO es bug**. El endpoint
+itera `opportunities.SYMBOLS`, una lista curada HARDCODED de 44 símbolos — distinta del
+"universo 50" (BASE_SYMBOLS 7 + NEW_UNIVERSE 43) que usan los trials de investigación y
+la medición de costos. Verificación empírica: `load_universe(SYMBOLS)` cargó 44/44 (0
+descartados), el loop de `advisor_universe` no descarta nada. Diferencia de listas:
+50−44 = [AMD, CMCSA, DIS, INTU, META, PFE, QCOM, SPGI, TSLA]; 44−50 = [ABT, GS, WFC].
+No es subconjunto. Artefacto `diagnostico_universo_20260819_174613.txt`. Acción no
+aplicada (diagnóstico): cubrir los 50 sería cambiar `opportunities.SYMBOLS` — decisión
+del usuario. NO reasignar.
+
 ```
 CONTEXTO: ROADMAP.md fila "Dashboard institucional consolidado" registra que la
 verificación en vivo del endpoint mostró "universe 44 símbolos régimen 2" sin

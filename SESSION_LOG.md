@@ -2041,3 +2041,19 @@ anterior) y `ORDENES_MODULOS.md` (M7 → hecho) actualizados.
 - **Acción**: no aplicada (es diagnóstico). Si Boris quiere cubrir los 50, cambiar
   `opportunities.SYMBOLS` al universo 50; si no, documentar 44 como universo de
   decisión intencional. ROADMAP fila Dashboard actualizada.
+
+## 2026-08-19 (noche) — Cierre administrativo de la Ronda 2026-08-19 (OpenCode, sin Claude Code)
+- **Contexto**: Claude Code sin créditos. Verifiqué que NINGÚN pendiente de la ronda
+  depende de Claude — OpenCode (yo) y Kilo son gratis.
+- **Ronda 2026-08-19 (noche) COMPLETA — las 3 tareas resueltas**:
+  - Tarea F (Kilo Code) ✅ resuelta (44 vs 50 NO es bug — lista hardcoded de 44 en
+    `opportunities.SYMBOLS`); cerré su ESTADO en PLAN_LARGO_PLAZO.md y documenté el
+    universo 44 como intencional en ROADMAP fila Dashboard.
+  - Tarea G (OpenCode) ✅ cerrada (verificación visual, ya hecha).
+  - Tarea J (OpenCode) ✅ cerrada (§34 C6 costo medido → NO CUMPLE, ya hecha).
+- **Acción de este turno**: marqué Tarea F → CERRADA en PLAN_LARGO_PLAZO.md, actualicé
+  ROADMAP (universe 44 documentado como intencional + decisión pendiente del usuario
+  sobre cubrir los 50). Ronda de la noche cerrada completa.
+- **Pendiente de decisión que queda (del usuario)**: si cubrir los 50 símbolos en el
+  dashboard (cambiar `opportunities.SYMBOLS` al universo 50) o dejar 44 como universo
+  de decisión intencional. NO es bloqueante de nada.
