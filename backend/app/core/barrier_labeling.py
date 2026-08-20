@@ -260,8 +260,8 @@ def verify_fidelity() -> dict:
     en la apertura de la barra siguiente) es una dimensión distinta, declarada en
     la sección TIMING DE EJECUCIÓN del docstring.
     """
-    from app.core import adaptive_risk
     from app.config import settings as _cfg
+    from app.core import adaptive_risk
 
     issues = []
 

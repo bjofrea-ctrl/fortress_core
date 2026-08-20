@@ -4,6 +4,7 @@ Mide Sharpe/CAGR/max_dd sobre el mismo universo/periodo con los dos lags.
 Universo chico y periodo corto para que corra rápido — no todo el universo 50.
 """
 import datetime
+
 from app.core.backtest_engine import BacktestEngine
 
 CACHE = "data/cache"

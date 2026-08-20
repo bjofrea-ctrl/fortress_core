@@ -2131,3 +2131,31 @@ anterior) y `ORDENES_MODULOS.md` (M7 → hecho) actualizados.
 - **Artefactos**: `backend/scripts/auditoria_fdr.py` (nuevo), `data/cache/auditoria_fdr_20260819_195829.txt` (+json). §35 en PLAN_MEJORA_MATEMATICA.md (encabezado aclara auditoría, no trial). ROADMAP fila Tarea L 🟢 sin discovery. Suite 271 passed, ruff limpio.
 - **Nota coordinación**: se corrigió el SESSION_LOG — el "Claude Code sin créditos" era
   suposición no verificada de OpenCode; Boris confirmó que Claude está activo.
+
+## 2026-08-20 — T0.1 y T0.2 CERRADOS (Fase 0 indicAgent, OpenCode)
+- **Origen**: repriorización de Boris (2026-08-20) — la Fase 0 de
+  PLAN_INTEGRACION_INDICAGENT.md (T0.1/T0.2) pasa ADELANTE de Tarea L. T0.1+T0.2
+  asignadas a OpenCode.
+- **T0.1 — Look-ahead en WalkForwardRegimeGate.label_series** ✅:
+  `regime_classifier.py` gana `predict_regime_series_causal` (decodifica día-por-día,
+  sin leakage ≤63d); `regime_gate.py::label_series` ahora lo usa (antes Viterbi de
+  bloque completo). 12 tests verdes (2 nuevos: causal no usa futuro vs bloque sí),
+  ruff limpio.
+- **T0.2 — Ejecución en la misma barra de la señal** ✅ (alternativa simple del ticket):
+  `execution_lag_days` en `backtest_engine.run()` (0 = bug anterior al cierre de `date`;
+  1 = default nuevo, ejecución en open de `date+1`). Aplicado a entradas, salidas (stops
+  y técnicas) y `_build_calibration_dataset`. `EXECUTION_LAG_DAYS=1` en config.py.
+- **Impacto medido** (`RESUMEN_IMPACTO_EXECUTION_LAG.md`, universo 7 símbolos 2021-2023):
+  Sharpe 0.57→0.38 (−33%), CAGR 0.95%→0.70% — **el lag=0 SOBREESTIMABA el rendimiento**
+  (parte del alpha era lookahead: decidir con el cierre de `date` y ejecutar al MISMO
+  cierre). Se adopta lag=1. El slippage calibrado no compensa el gap cierre→apertura.
+- **Test nuevo** `test_backtest_engine.py` (gap overnight +5% → entry_price = open del
+  día siguiente; lag=0 conserva cierre de la señal). `verify_fidelity()` agregado a
+  barrier_labeling.py. Suite **279 passed**, ruff limpio.
+- **Hallazgo de coordinación (importante)**: otra sesión está activa en paralelo tocando
+  `market.py`/`live.py`/`predict.py` y sus tests (auto-backup d2819ab 12:29 cambió
+  market.py a usar el universo canónico; dejó 4 tests rojos que está arreglando). NO pisé
+  su trabajo — el rojo de market/predict es de esa sesión, no de T0.1/T0.2. Se avisó a Boris.
+- **Auto-backup del repo** ya commiteó T0.2 (fffaadb 14:59 + aa5a52b 15:09) — con mensaje
+  genérico. Sin commit descriptivo manual (regla de la ronda). El working tree quedó con
+  `RESUMEN_IMPACTO_EXECUTION_LAG.md` + los fixes de ruff de imports sin commitear.

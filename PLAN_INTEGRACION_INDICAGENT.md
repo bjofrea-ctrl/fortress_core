@@ -160,6 +160,15 @@ cachear `clf` por bloque (ya se hace) y paralelizar el loop de fechas si es nece
 
 ### T0.2 — [CRÍTICO] Ejecución en la misma barra usada para generar la señal (`generate_signal` + `backtest_engine.run`)
 
+**ESTADO: ✅ CERRADO (2026-08-20, OpenCode).** Se implementó la alternativa simple del
+ticket: parámetro `execution_lag_days: int = 1` en `run()` (0 = bug anterior, 1 = default
+nuevo, ejecución en open de `date+1`). Se aplicó a entradas, salidas (stops y técnicas) y
+`_build_calibration_dataset`. `EXECUTION_LAG_DAYS=1` en config.py. Test nuevo
+`test_backtest_engine.py` (gap overnight +5%, verifica entry_price=open[siguiente]).
+`verify_fidelity()` agregado a barrier_labeling.py. **Impacto medido** (RESUMEN_IMPACTO_EXECUTION_LAG.md):
+Sharpe 0.57→0.38 (−33%), CAGR 0.95%→0.70% — el lag=0 sobreestimaba; se adopta lag=1.
+Suite 279 passed, ruff limpio. Ver SESSION_LOG.
+
 **Objetivo:** eliminar el supuesto de ejecución no realista donde el backtest calcula
 indicadores y genera la señal usando el cierre de la fecha `date`, y transacciona (compra/vende)
 al precio de cierre de esa misma fecha `date` — algo imposible en trading real, porque el

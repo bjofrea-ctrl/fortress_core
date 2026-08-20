@@ -13,7 +13,6 @@ siguiente y NO el cierre del día de la señal.
 import numpy as np
 import pandas as pd
 import pytest
-
 from app.core.backtest_engine import BacktestEngine
 from app.core.indicators import calculate_all_indicators
 
