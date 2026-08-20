@@ -7,7 +7,6 @@ usa precios que arrancan dentro de la ventana de train).
 """
 import numpy as np
 import pandas as pd
-
 from app.core.probabilistic_engine import SignalQualityMetrics, WalkForwardValidator
 
 

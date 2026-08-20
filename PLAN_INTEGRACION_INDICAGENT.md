@@ -763,6 +763,21 @@ son los gaps genuinos que encontré, no una reimplementación de algo que ya exi
 
 ### T2.1 — Verificar/agregar purge-embargo en `WalkForwardValidator`
 
+**ESTADO: ✅ CERRADO (2026-08-20, Kilo Code).** Hallazgo verificado contra el código real:
+el corte train/test era CONTIGUO — no había purga ninguna (verificado en
+`probabilistic_engine.py:636-653` pre-fix). No obstante, el análisis completo del mecanismo
+de leakage (en el docstring de la clase, si se lee el código actual) concluye que el embargo
+relevante es excluir las primeras barras del fold de TEST post-corte, ya que en este diseño
+no se entrena modelo sobre train y el lado train no contamina nada (cada ventana mide test-con-test).
+`validate()` ahora tiene `purge_bars: Optional[int] = None` → default `horizon` (siguiendo
+el criterio de indicAgent), `purge_bars=0` reproduce el comportamiento pre-fix para comparar
+resultados históricos, `purge_bars >= test_window` devuelve el error elegante
+"no hay suficientes ventanas". `purge_bars` se reporta en el dict resultado.
+7 tests nuevos en `tests/test_probabilistic_engine.py` (invariante de embargo por fold via
+captura de índices, default=horizon, purge_bars=0 reproducible, purge explícito, degenerado,
+negativo, humo end-to-end con horizonte=20 reales → IC↑ por construcción). Suite 286 passed
+(279 baseline + 7). ruff limpio.
+
 **Objetivo:** confirmar si `probabilistic_engine.py::WalkForwardValidator` ya excluye una
 ventana de purga entre el fold de entrenamiento y el de test (necesaria porque
 `CALIBRATION_HORIZON_DAYS=20` genera retornos con ventanas solapadas — el mismo problema que

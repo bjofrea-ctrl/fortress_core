@@ -2223,3 +2223,37 @@ anterior) y `ORDENES_MODULOS.md` (M7 → hecho) actualizados.
   ROADMAP fila Tarea N actualizada. Nada se integra al motor. Sin commit/push (regla de la ronda).
 - **Nota**: no se tocó indicadores.py/signal_engine.py/trial_registry.py/market.py/live.py/predict.py.
   Git status previo: `backend/tests/test_probabilistic_engine.py` sin trackear de OTRA sesión — NO se tocó.
+
+## 2026-08-20 (tarde) — T2.1 CERRADA: purge/embargo en WalkForwardValidator (Kilo Code)
+- **Origen**: PLAN_INTEGRACION_INDICAGENT.md Fase 2 (asignado por Boris junto a T1.1/T1.2/T1.3).
+  El único gap metodológico "no confirmado" del plan — había que leer el cuerpo de la clase
+  y decidir si ya estaba cubierto o faltaba.
+- **HALLAZGO (verificado contra el código real)**: NO había purga ninguna — el corte
+  train/test era contiguo (`test_signal = signal.iloc[train_end:test_end]`,
+  probabilistic_engine.py:652 pre-fix). Con `forward_returns = prices.shift(-horizon)/prices-1`,
+  las primeras `horizon` observaciones del fold de test usan ventanas de retorno que arrancan
+  dentro del bloque que el walk-forward trata como "train".
+- **Matiz documentado en el código (docstring de la clase)**: en este diseño NO se entrena
+  modelo sobre train (cada ventana solo computa IC de test con si misma), así que la vía
+  clásica de leakage "pesos entrenados ven el futuro" no existe — pero el embargo del lado
+  test post-corte es igualmente la barrera estadísticamente limpia, y es lo que se implementó.
+- **FIX**: `validate(..., purge_bars: Optional[int] = None)` → default `horizon` (criterio de
+  indicAgent: sizeado al horizonte de retorno largo); `purge_bars=0` deja el corte contiguo
+  (para reproducir mediciones históricas si hiciera falta); `purge_bars >= test_window` →
+  error elegante, no crash; `purge_bars` negativo → 0; se reporta en el dict resultado para
+  auditar qué embargo se usó en cada corrida.
+- **Tests**: 7 nuevos en `tests/test_probabilistic_engine.py` (archivo nuevo — el módulo no
+  tenía cobertura acoplada en tests/): invariante de embargo por fold (captura de índices de
+  test con monkeypatch, verifica `min(indices) == train_end + purge` en CADA fold),
+  default=horizon, purge_bars=0 reproduce pre-fix, purge explícito>horizon, degenerado,
+  negativo, humo end-to-end horizon=20 reales con señal predictiva → IC medio >0.3.
+- **Verificación**: suite completa **286 passed** (baseline 279 + 7); smoke script
+  `scripts/test_probabilistic.py` sigue verde (Windows=11, MeanIC 0.28, sin regressión);
+  ruff limpio en los 2 archivos tocados. Aceptación del ticket: criterio 1 ✅ (documentado en
+  docstring citando T2.1), criterio 2 ✅ (test de invariante), criterio 3 ✅
+  (`pytest -k walk_forward` verde).
+- **Docs**: ESTADO ✅ en PLAN_INTEGRACION_INDICAGENT.md T2.1. Sin commit descriptivo
+  (regla de la ronda; auto-backup cubre). Sigue en la misma ronda: T1.1 → T1.2 → T1.3.
+- **Nota coordinación**: el working tree arrancó con 2 archivos de OTRA sesión (Tarea N de
+  OpenCode: SESSION_LOG + trial_macd_bollinger.py) — no se tocaron; mi entrada va después
+  de la de Tarea N. Nada mío pisa nada de OpenCode ni de la sesión market/live/predict.
