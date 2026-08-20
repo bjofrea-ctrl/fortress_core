@@ -2724,3 +2724,72 @@ también da k=0; agregar single-t solo sube m y endurece el corte → veredicto 
 **Artefacto**: `data/cache/auditoria_fdr_20260819_195829.txt` (+ `.json` resumen).
 **Ledger**: NO se registra trial (es auditoría, no consume n_trials). **Suite**: 271 passed.
 **Post-condición**: ROADMAP + SESSION_LOG actualizados. Nada se integra al motor.
+
+---
+
+## 36. TAREA N — MACD (dirección) y Bollinger (régimen de volatilidad): dos preguntas DISTINTAS
+
+**Naturaleza**: TRIAL pre-registrado, familia `signal_diagnosis`, consume **1** slot.
+**Estado**: PRE-REGISTRADO 2026-08-20 (ANTES de correr; veredicto se llena al cierre).
+Familia `signal_diagnosis` ya consumida: **18** → con este trial **n_trials = 19**.
+Confirmado con el ledger: `consumed_budget('signal_diagnosis')=18`,
+`current_threshold('signal_diagnosis')=0.99474`.
+
+**Umbral Bonferroni de la familia (criterio |t|)**: con n_trials=19, dos colas,
+`ALPHA_PER = 0.05/(2·19) = 0.05/38` → **|t| > z(1−0.05/38) = 3.008**. Este es el umbral
+Bonferroni de la familia `signal_diagnosis` que se usa como vara para TODOS los rank IC
+de este trial. (Patrón idéntico a §25/§27/§28, que usaban Bonferroni-9/12 bilateral
+derivado del nº de tests; acá se deriva del nº de trials de la familia.)
+
+**Fuentes**: `RESEARCH_PREDICTIVE_INDICATORS.md` (leída antes de pre-registrar) —
+MACD Appel 1979 / Chong-Ng 2008 / Chen-Metghalchi-Chang 2008, correlación 0.05-0.08,
+horizonte 2-8 sem (compatible con 20d); Bollinger Bollinger 1992 / Lento-Gradojevic-
+Wright 2007, correlación 0.03-0.05, horizonte 1-2 sem (MÁS corto — por eso se mide
+también a 5-10d, no solo 20d). `macd()`/`bollinger_bands()` de indicators.py se
+LEEN, no se tocan; siguen sin usarse en el score (peso 0) — este trial NO integra nada.
+
+**DATOS**: universo 50 (`opportunities_universe.SYMBOLS`), desde `data/cache/*.parquet`
+vía `load_universe` (ya descargados, NO se baja nada nuevo). Ventanas:
+W1 2020-01-01→2021-12-31, W2 2022-01-01→2023-12-31, W3 2024-01-01→2026-07-06
+(mismas que §25 para comparabilidad). Columnas vía `calculate_all_indicators`
+(macd/macd_signal/macd_hist, bb_upper/middle/lower, rsi14, momentum_12_1, close).
+
+### 2A — MACD (pregunta de DIRECCIÓN — mismo protocolo que Tarea M/§25)
+**Hipótesis**: `macd_hist` rank IC cross-sectional contra `fwd_return_20d` con **signo +1**
+(más momentum alcista → mayor retorno futuro), consistente con momentum/RSI.
+**Método**: Spearman por fecha (ranks sobre símbolos de esa fecha) vs fwd_return_20d,
+promedio sobre fechas con **SE Newey-West**, `L = min(12, n_dias//8)` por ventana
+(mismo que §25/§23).
+**Criterio (pre-registrado)**: **|t| > 3.008 con signo +1 en ≥ 2/3 ventanas** → CUMPLE.
+
+### 2B — Bollinger (pregunta de RÉGIMEN, NO de dirección — protocolo DISTINTO)
+Se declaran DOS mediciones separadas ANTES de correr:
+
+**(i) VALIDACIÓN — el ancho de banda mide volatilidad (por diseño del autor).**
+`band_width = (bb_upper−bb_lower)/bb_middle`. Rank IC cross-sectional de band_width vs
+**volatilidad realizada futura** `std(retornos_diarios futuros)` a **horizonte 10d y 20d**
+(`real_vol_10d`, `real_vol_20d`). Esperado **signo +1** (banda ancha → más vol futura).
+Esto es cheque de VALIDEZ del instrumento (clustering de vol), NO discovery de edge:
+por eso NO dispara el veredicto CUMPLE del trial. Se reporta con su |t| (misma vara 3.008).
+**Criterio (i)**: |t| > 3.008 con signo +1 en ≥ 1 de los 2 horizontes → validez confirmada.
+
+**(ii) INTERACCIÓN — ¿condicionar momentum+RSI por régimen de banda cambia su rank IC?**
+Factor compuesto `mom_rsi = rank01(momentum_12_1) + rank01(rsi14)` (rank cross-sectional
+por fecha). Rank IC de `mom_rsi` vs retorno futuro **a 20d Y a 5-10d** (se declaran AMBOS
+horizontes ahora), split por **terciles de band_width por fecha** (tranquilo/media/expansión)
+y además **split por régimen HMM** de `regime_gate.py`/`regime_classifier.py` (walk-forward,
+fit ≤2024-12-31, decodificación causal). Pregunta: ¿momentum+RSI funciona mejor en mercado
+tranquilo o en expansión? y ¿coinciden los dos "regímenes" (banda vs HMM)?
+**Criterio (ii) — interacción presente**: el rank IC de `mom_rsi` difiere entre el tercil
+tranquilo y el de expansión en **|ΔIC| ≥ 0.05** a horizonte 20d O a 5-10d, y el IC del
+tercil ganador es **significativo (|t| > 3.008)** en al menos 1 ventana/horizonte.
+Si hay interacción → podría ser un factor de régimen; si no, Bollinger no condiciona el score.
+
+### VEREDICTO COMBINADO DEL TRIAL (UN solo slot en el ledger)
+El trial se registra **CUMPLE si (MACD CUMPLE) O (Bollinger-ii CUMPLE)** — las dos
+preguntas de "edge" pre-registradas. Bollinger-(i) es validación del instrumento y se
+reporta pero NO dispara CUMPLE por sí sola (bandwidth→vol futura está casi garantizado por
+clustering de vol, no es edge transable). Bollinger-(ii) y MACD son las que pueden abrir
+puertas. **Post-condición**: artefacto `data/cache/trial_macd_bollinger_*.txt` con tablas
+y veredictos; registro en ledger `signal_diagnosis` n=1; ROADMAP (fila Tarea N) y
+SESSION_LOG actualizados; suite completa en verde. Nada se integra al motor.
