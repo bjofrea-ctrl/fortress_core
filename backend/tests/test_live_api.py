@@ -63,21 +63,27 @@ def _patch_yf(monkeypatch, ticker=None, intraday=None):
 
 
 def test_overview_sin_cache_dir(monkeypatch, tmp_path):
-    _patch_yf(monkeypatch)
-    real_exists = os.path.exists
-    monkeypatch.setattr(
-        live.os.path, "exists",
-        lambda p: False if p == "data/cache" else real_exists(p),
-    )
+    """get_live_overview solo consulta símbolos del universo canónico, no artefactos."""
+    called_with = []
+
+    class TrackingTicker:
+        def __init__(self, symbol):
+            called_with.append(symbol)
+            self.fast_info = _FakeFastInfo()
+
+    _patch_yf(monkeypatch, ticker=TrackingTicker)
+    monkeypatch.setattr(live, "SYMBOLS", ["TESTA", "TESTB"])
+    monkeypatch.setattr(live, "_cache", {})
+
     body = asyncio.run(live.get_live_overview())
-    assert body["symbols"] == []
-    assert body["timestamp"] is None
+    assert len(body["symbols"]) == 2
+    assert called_with == ["TESTA", "TESTB"]
 
 
 def test_overview_construye_y_cachea(monkeypatch):
     _patch_yf(monkeypatch, ticker=lambda s: _FakeTicker(s))
-    monkeypatch.setattr(live.os, "listdir",
-                        lambda p: ["TESTA.parquet"] if p == "data/cache" else live.os.listdir(p))
+    monkeypatch.setattr(live, "SYMBOLS", ["TESTA"])
+    monkeypatch.setattr(live, "_cache", {})
 
     body1 = asyncio.run(live.get_live_overview())
     assert len(body1["symbols"]) == 1

@@ -87,6 +87,7 @@ def test_universe_rankea_y_skip_series_cortas(monkeypatch, tmp_path):
     pd.DataFrame({"close": [1.0]}).to_parquet(str(tmp_path / "CORTO.parquet"))
     _macro_df().to_parquet(str(tmp_path / "LARGO.parquet"))
 
+    monkeypatch.setattr(predict, "SYMBOLS", ["CORTO", "LARGO"])
     _patch_io(monkeypatch, result=_fake_result())
     # el download de CORTOS dura 1 fila -> el universo lo saltea
     monkeypatch.setattr(predict, "download_data",

@@ -40,6 +40,7 @@ def test_symbols_lista_cache(monkeypatch, cache_dir, ohlcv_df):
 
 def test_symbols_sin_cache_devuelve_vacio(monkeypatch, tmp_path, ohlcv_df):
     _patch_io(monkeypatch, str(tmp_path / "vacio"), ohlcv_df)
+    monkeypatch.setattr(market, "SYMBOLS", [])
     assert asyncio.run(market.get_symbols()) == {"symbols": []}
 
 
