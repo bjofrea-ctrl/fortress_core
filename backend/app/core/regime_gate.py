@@ -117,10 +117,15 @@ class WalkForwardRegimeGate:
 
             # Predecir sobre datos hasta el final de la ventana (incluye el propio
             # bloque a etiquetar), pero solo se PUBLICAN las fechas >= recalib_date.
+            # Decodificación DÍA POR DÍA (predict_regime_series_causal), no Viterbi
+            # de bloque completo: cada etiqueta solo se informa con datos <= a su
+            # fecha. La variante de bloque (predict_regime_series) filtra información
+            # posterior dentro del bloque (leakage <= recalib_every días) — no es
+            # aceptable para un walk-forward gate (T0.1, PLAN_INTEGRACION_INDICAGENT).
             predict_data = {
                 sym: df[df.index <= window_end_date] for sym, df in price_data.items()
             }
-            series = clf.predict_regime_series(predict_data)
+            series = clf.predict_regime_series_causal(predict_data)
 
             block_dates = all_dates[recalib_idx:window_end_idx]
             for d in block_dates:

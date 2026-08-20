@@ -56,3 +56,73 @@ def test_confidence_indexed_by_raw_hmm_state_not_semantic_label():
     assert result["confidence"] != pytest.approx(raw_probs_last[result["state"]])
 
 
+# --- T0.1: predict_regime_series_causal (sin leakage) vs predict_regime_series ---
+def _causal_regime_pair(n_days=300):
+    """
+    Clasificador mockeado para el test causal: una función de decodificación que
+    registra el ÚLTIMO índice del array que se le pasa en cada llamada.
+
+    - predict_regime_series (bloque) llama predict() UNA vez con todo el array
+      (último índice = n-1 = TODO el futuro visible para todas las etiquetas).
+    - predict_regime_series_causal llama predict_current_regime por fecha, que a su
+      vez llama predict() truncado a esa fecha (el último índice que ve cada etiqueta
+      es su propio índice -> cada etiqueta solo se informa con datos <= a ella).
+    """
+    clf = GlobalRegimeClassifier()
+    clf.is_fitted = True
+    clf.scaler = MagicMock()
+    clf.scaler.transform = lambda x: x
+
+    dates = pd.date_range("2022-01-01", periods=n_days)
+    growth = pd.Series(np.arange(n_days) * 0.001, index=dates)
+    feats = pd.DataFrame({"growth_SPY": growth}, index=dates)
+
+    seen_last = []
+
+    def fake_predict(scaled):
+        seen_last.append(len(scaled) - 1)
+        return np.zeros(len(scaled), dtype=int)
+
+    clf.model.predict = fake_predict
+    clf.model.predict_proba = lambda scaled: np.tile([0.25, 0.25, 0.25, 0.25], (len(scaled), 1))
+    # align_states con < 50 estados no remapea; con >=50 y métricas iguales el
+    # max() por equity elegiría un solo estado; forzamos identidad simple: como
+    # todas las etiquetas son 0 y features solo tienen growth, _align_states
+    # con >=50 vería un solo estado presente -> metrics len < 4 -> devuelve tal cual.
+    clf._extract_features = lambda price_data: feats
+    return clf, seen_last
+
+
+def test_predict_regime_series_causal_no_usa_futuro():
+    """La propiedad central de T0.1: el método causal nunca deja que una etiqueta
+    vea datos posteriores a su propia fecha. `seen_last` registra el último índice
+    del array que cada llamada predict() recibe: para la etiqueta en el índice i,
+    causal debe ver como máximo i (nunca el futuro del bloque)."""
+    clf, seen_last = _causal_regime_pair(n_days=80)
+
+    price_data = {"SPY": pd.DataFrame({"close": [1.0] * 300})}
+    causal = clf.predict_regime_series_causal(price_data)
+
+    assert len(causal) == 80
+    assert list(causal.index) == list(clf._extract_features(price_data).index)
+    # cada etiqueta (posición i) se predijo con un predict() truncado a i:
+    # el último índice visto en la i-ésima llamada es i.
+    assert len(seen_last) == 80
+    for i, last in enumerate(seen_last):
+        assert last == i, f"etiqueta {i} vio hasta el índice {last} (futuro)"
+
+
+def test_predict_regime_series_bloque_si_usa_futuro():
+    """Contraste: la variante de bloque (la que T0.1 reemplaza) SÍ deja ver TODO el
+    futuro — predict() se llama una sola vez con el array completo. El test muestra
+    la diferencia entre ambos métodos, no solo que el causal corre."""
+    clf, seen_last = _causal_regime_pair(n_days=80)
+
+    price_data = {"SPY": pd.DataFrame({"close": [1.0] * 300})}
+    clf.predict_regime_series(price_data)
+
+    # una sola llamada, con el último índice = 79 (todo el futuro visible)
+    assert len(seen_last) == 1
+    assert seen_last[0] == 79
+
+

@@ -118,7 +118,14 @@ class GlobalRegimeClassifier:
         fecha, no solo la última. Reutiliza el mismo pipeline de features/alineación
         para que un walk-forward externo (M3, regime_gate.py) pueda re-ajustar el
         modelo periódicamente y etiquetar cada ventana con el modelo vigente en ese
-        momento, sin tener que re-implementar extracción de features."""
+        momento, sin tener que re-implementar extracción de features.
+
+        ADVERTENCIA (leakage): esta variante decodifica Viterbi UNA vez sobre la
+        secuencia completa pasada (`self.model.predict(scaled)`). La etiqueta de un
+        día temprano de la secuencia puede quedar informada por días posteriores de
+        la misma secuencia (leakage acotado a la longitud de la secuencia). Usar
+        SOLO para diagnóstico; para walk-forward de gates o trials pre-registrados
+        usar `predict_regime_series_causal`."""
         if not self.is_fitted:
             return pd.Series(dtype=int)
         feats = self._extract_features(price_data)
@@ -127,6 +134,30 @@ class GlobalRegimeClassifier:
         scaled = self.scaler.transform(feats.values)
         aligned = self._align_states(self.model.predict(scaled), feats)
         return pd.Series(aligned, index=feats.index)
+
+    def predict_regime_series_causal(self, price_data: Dict[str, pd.DataFrame]) -> pd.Series:
+        """Como predict_regime_series pero decodifica día por día SIN leakage.
+
+        Para cada fecha, trunca `price_data` a esa fecha y llama
+        `predict_current_regime`, tomando solo la última etiqueta. Son O(n)
+        decodificaciones Viterbi en vez de 1, pero cada etiqueta solo puede estar
+        informada por datos <= a esa fecha — nunca por el futuro del bloque.
+
+        Usar en cualquier contexto donde el leakage acotado de
+        `predict_regime_series` no sea aceptable (walk-forward gates, trials
+        pre-registrados, etiquetado de régimen histórico).
+        """
+        if not self.is_fitted:
+            return pd.Series(dtype=int)
+        feats = self._extract_features(price_data)
+        if feats.empty:
+            return pd.Series(dtype=int)
+        labels = {}
+        for date in feats.index:
+            truncated = {s: df[df.index <= date] for s, df in price_data.items()}
+            result = self.predict_current_regime(truncated)
+            labels[date] = result["state"]
+        return pd.Series(labels, index=feats.index)
 
     def _default(self) -> Dict:
         return {

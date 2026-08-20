@@ -5,6 +5,8 @@ GlobalRegimeClassifier en su propio código) — es que el walk-forward NUNCA us
 futuros para etiquetar una fecha pasada. Esa es la propiedad que este módulo existe
 para garantizar.
 """
+import inspect
+
 import numpy as np
 import pandas as pd
 import pytest
@@ -69,6 +71,29 @@ def test_ninguna_fecha_se_etiqueta_antes_de_su_recalibracion():
     for d in series.index:
         recalibs_validas = [r for r in diag.fechas_recalibracion if r <= d]
         assert len(recalibs_validas) > 0, f"fecha {d} etiquetada sin recalibración previa"
+
+
+def test_label_series_usa_decodificacion_causal_no_de_bloque():
+    """T0.1 (PLAN_INTEGRACION_INDICAGENT): label_series debe etiquetar día por día
+    (predict_regime_series_causal), no decodificar el bloque completo en una sola
+    llamada Viterbi (predict_regime_series, que filtra hasta recalib_every días de
+    información futura). Verificamos que el método que label_series invoca es el
+    causal — sin re-implementar el clasificador completo."""
+    import app.core.regime_gate as rg
+    import app.core.regime_classifier as rc
+
+    # label_series construye su propio GlobalRegimeClassifier y le llama
+    # predict_regime_series_causal; la variante de bloque (con leakage) NO debe
+    # invocarse. Verificamos por inspección del método llamado (string en el
+    # código fuente) + el invariante anti-lookahead ya cubierto por el test anterior.
+    source = inspect.getsource(rg.WalkForwardRegimeGate.label_series)
+    assert "predict_regime_series_causal" in source
+    assert "predict_regime_series(predict_data)" not in source
+
+    # El clasificador expone ambos métodos (causal y bloque) — el causal es el que
+    # label_series usa.
+    clf_methods = [m for m in dir(rc.GlobalRegimeClassifier) if "predict_regime_series" in m]
+    assert "predict_regime_series_causal" in clf_methods
 
 
 def test_operar_es_booleano_y_coincide_con_favorable_states():
