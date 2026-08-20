@@ -2257,3 +2257,55 @@ anterior) y `ORDENES_MODULOS.md` (M7 → hecho) actualizados.
 - **Nota coordinación**: el working tree arrancó con 2 archivos de OTRA sesión (Tarea N de
   OpenCode: SESSION_LOG + trial_macd_bollinger.py) — no se tocaron; mi entrada va después
   de la de Tarea N. Nada mío pisa nada de OpenCode ni de la sesión market/live/predict.
+
+## 2026-08-20 (noche) — T1.1 + T1.2 + T1.3 CERRADOS: OFI/CVD implementados y refutados, market_structure (SMC) disponible (Kilo Code)
+- **Origen**: PLAN_INTEGRACION_INDICAGENT.md Fase 1 — asignado por Boris tras verificar
+  que solo Fase 0 estaba cerrada ("no se implementó todo"). Orden: T2.1 (hecha antes,
+  ver entrada previa) → T1.1 → T1.2 → T1.3.
+- **T1.1 — OFI proxy**: `ofi_proxy` + `ofi_features` (6 columnas `ofi_*`: raw, ewma
+  fast/slow, spike z, price_ret_z, divergence) en `indicators.py`, wired a
+  `calculate_all_indicators`, 6 tests (13 del archivo). **IC trial pre-registrado §37
+  ANTES de correr**: z rodante CAUSAL 100d por símbolo (se corrigió el diseño de z por
+  ventana completa que cometí en el primer borrador del pre-registro — ese z usaba
+  fechas futuras de la ventana para normalizar; el rolling trailing solo usa ≤ t),
+  `ofi_ewma_fast_z` vs fwd_20d, universo 50, protocolo familia (Spearman por fecha +
+  NW L=12, W1/W2/W3) → **NO_CUMPLE: 0/3 ventanas con |t|>3.023 y signo +1** (t −2.30,
+  +0.10, +0.19; TOTAL t −1.66, dirección además contraria a la hipótesis). Las otras
+  features tampoco (máx |t| 2.68, signo −). Artefacto
+  `data/cache/trial_ofi_proxy_20260820_184638.txt`. Ledger `trial_ofi_proxy` →
+  signal_diagnosis 19→20 (umbral vigente 0.995).
+- **T1.2 — CVD proxy**: decisión de diseño EXPLÍCITA documentada en docstring +
+  diccionario (lo que exige el ticket): el reset por sesión intradía de indicAgent
+  NO aplica a barras diarias → acumulación **rolling 20 días** en su lugar (alineada
+  al horizonte de calibración; NO acumulador infinito por drift). `cvd_proxy` +
+  `cvd_features` (4 columnas), 5 tests (18 del archivo). **Trial pre-registrado §38**:
+  `cvd_rolling_z` vs fwd_20d, misma vara → **NO_CUMPLE: 0/3** (t +0.73, −0.84, +0.38;
+  TOTAL −0.73; `cvd_slope_5bar_z` máx |t| 0.78 — ruido puro). Artefacto
+  `data/cache/trial_cvd_proxy_20260820_185959.txt`. Ledger `trial_cvd_proxy` →
+  signal_diagnosis 20→21 (umbral próximo 0.05/42 bilateral).
+- **T1.3 — market_structure.py (SMC)**: módulo NUEVO con los 4 detectores desde
+  indicAgent (`find_swing_highs/lows`, `detect_order_blocks`, `detect_fair_value_gaps`,
+  `detect_bos_choch`, `detect_liquidity_sweeps`) + `analyze_market_structure` (dict
+  consumible por T1.4, incluye `nearest_swing_low`/`nearest_resistance`, corrida
+  ÚNICA por símbolo como exige la nota de performance). 18 tests en
+  `tests/test_market_structure.py`: sintéticos exactos por detector (FVG de 3 velas
+  con top/bottom exactos, OB alcista con cuerpo de vela bajista previa, BOS alcista
+  en tendencia HH+HL sin CHoCH, CHoCH contra-tendencia, fuerza normalizada por ATR
+  3/2=1.5 exacto), mitigación en los 4 (OB/FVG/sweep), historial insuficiente y
+  min_lookbacks 50/30/60/60 como constantes del ticket. **Smoke real**: AAPL 2921
+  barras en 0.17 s — OB alcista no mitigado 321.7, FVG bajista abierto 309-310,
+  sweep alcista reclaimed, sin NaN/None. **No es señal**: estado descriptivo disponible;
+  cualquier uso en el motor requiere trial pre-registrado propio.
+- **DICCIONARIO_INDICADORES.md**: sección "4. Flujo de órdenes y volumen" nueva
+  (OFI, CVD con resultados; SMC agregado a estructura de mercado).
+- **Verificación final**: suite completa **315 passed** (279 de la mañana → +7 T2.1,
+  +6 OFI, +5 CVD, +18 market_structure; el resto de la diferencia es de la sesión
+  paralela que cerró sus tests), ruff limpio en los 8 archivos tocados/nuevos.
+- **Lectura de fondo (disciplina, no decisión)**: OFI y CVD desde OHLCV diario son la
+  refutación 10ª/11ª de la familia "flujo/volumen derivado de posición del cierre".
+  Ninguna de estas versiones diarias contiene información cross-sectional para el
+  retorno a 20 ruedas en el universo 50 — mismo patrón de generador vacío que el resto.
+  Los 10 slots consumidos de la familia hasta hoy siguen todos NO_CUMPLE.
+- **Docs**: PLAN_INTEGRACION (3 ESTADOS ✅), PLAN_MEJORA §37/§38 con resultados,
+  ROADMAP fila nueva. Disciplina: nada se integró al motor; OFI/CVD quedan disponibles
+  en los indicadores por si algún día otra teoría los necesita.

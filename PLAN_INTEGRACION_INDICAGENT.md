@@ -423,6 +423,21 @@ promover a `signal_engine.py`, no wirear directo).
 
 ### T1.3 — Módulo de estructura de mercado (SMC): Order Blocks, Fair Value Gaps, BOS/CHoCH, Liquidity Sweeps
 
+**ESTADO: ✅ CERRADO (2026-08-20, Kilo Code).** Módulo nuevo
+`backend/app/core/market_structure.py` con los 4 detectores + `find_swing_highs/lows`
++ `analyze_market_structure` (corrida única por símbolo, devuelve el dict consumible
+por T1.4: `order_block`/`fair_value_gap`/`bos_choch`/`liquidity_sweep` +
+`nearest_swing_low`/`nearest_resistance`). 18 tests en
+`backend/tests/test_market_structure.py` (sintéticos exactos por detector, tests de
+mitigación, historial insuficiente, símbolo real sin crash, min_lookbacks 50/30/60/60),
+todos verdes; suite completa 315 passed; ruff limpio. Smoke real: AAPL 2921 barras
+analizado en 0.17 s (OB alcista no mitigado a 321.7, FVG bajista abierto a 309-310,
+sweep alcista reclaimed — sin NaN/None). NO se promociona a señal: los detectores son
+ESTADO descriptivo, y cualquier uso en score requiere su propio trial pre-registrado
+(regla no negociable del repo). Entrada agregada en DICCIONARIO_INDICADORES.md.
+Nota de implementación (del ticket, respetada): los 4 detectores se llaman UNA vez
+por símbolo junto a `indicators_cache`, jamás dentro del loop por fecha.
+
 **Objetivo:** crear un módulo nuevo `market_structure.py` con 4 detectores de estructura,
 adaptados directamente del código fuente de indicAgent (`src/intelligence/archive/smc_context/
 order_blocks.py`, `fair_value_gap.py`, `bos_choch.py`, `liquidity_sweeps.py`) — código

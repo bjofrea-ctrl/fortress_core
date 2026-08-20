@@ -108,6 +108,21 @@ mismo cuidado metodológico si se testea (no es factor direccional).
 **High-Low Bands, ZigZag, Darvas Box** — Herramientas estructurales/visuales de
 rango y swings. Ninguna es trigger mecánico aislado con evidencia fuerte.
 
+**Smart Money Concepts (SMC): Order Blocks, Fair Value Gaps, BOS/CHoCH, Liquidity
+Sweeps** — Detectores de estructura de mercado implementados en
+`backend/app/core/market_structure.py` (T1.3, PLAN_INTEGRACION_INDICAGENT.md, 2026-08-20):
+zones con estado (nivel top/bottom, mitigada/rellena o no) devueltas como "zona activa
+más reciente", no series continuas por barra. **Order Block**: última vela opuesta a un
+impulso de ≥3 velas con movimiento ≥0.3%; la zona es el cuerpo de esa vela. **Fair
+Value Gap**: desbalance de 3 velas (low[i+1] > high[i-1] o inverso), zona abierta si el
+precio no volvió. **BOS/CHoCH**: cierre rompiendo el último swing high/low; CHoCH si
+la ruptura va contra la tendencia HH-HL/LH-LL. **Liquidity Sweep**: mecha que perfora
+un swing pero cierra adentro (stop hunt), con confirmación de reclaim en 3 barras.
+**Estado en el proyecto**: código verificado con 18 tests sintetizados + smoke real
+(AAPL 2921 barras, 0.17 s), pero **NO es señal ni está integrado al motor** — para eso
+requiere su propio trial pre-registrado con la disciplina del repo (regla no
+negociable). Conceptualmente tomado de indicadores SMC de TradingView, sin respaldo peer-reviewed.
+
 ### 2. Momentum y osciladores
 
 **RSI** — Ya usado y validado en el motor (IC=0.0322, ver `signal_engine.py`).
