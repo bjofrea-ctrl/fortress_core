@@ -122,7 +122,6 @@ def _fvg_df(fill: bool = False) -> pd.DataFrame:
     high = close + 1.0                           # high[m-1] = 111.0 con m=20
     low = close - 1.0                            # low[m+1]  = 116.0 con m=20
     m = 20  # vela media del patrón
-    H = 109.0  # == high[m-1] (close=109.5+1.0)... high[19] = 109.5+1.0 = 110.5 → recolocar
     high[m - 1] = 111.0
     low[m - 1] = 108.0
     open_[m], close[m], high[m], low[m] = 110.5, 112.5, 113.0, 109.5

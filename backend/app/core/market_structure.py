@@ -355,7 +355,6 @@ def detect_liquidity_sweeps(df: pd.DataFrame, neighbor: int = 5,
     if not swing_highs and not swing_lows:
         return empty
 
-    last_close = float(close_arr[-1])
     best = None  # (bar, type, level, depth, reclaimed, reclaim_velocity)
     for i in range(1, n):
         # Candidate levels: swings strictly before the sweep bar
