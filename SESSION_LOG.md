@@ -1,5 +1,45 @@
 # Fortress Core — Memoria de Sesiones (Última sesión resumida)
 
+## 2026-08-20 (tarde) — DEPLOY PERMANENTE DEL DASHBOARD (Kilo Code)
+
+**Fecha**: 2026-08-20
+**Autor**: Kilo Code
+**Estado**: despliegue permanente del dashboard COMPLETADO — el pendiente más viejo de la lista
+
+### Contexto
+El deploy (uvicorn :8000 + dashboard :3000 via launchd) quedó bloqueado en plan-mode
+la noche del 17/08 y nunca se cerró. Hoy se completó de punta a punta.
+
+### Work done
+1. **Plists escritos**: `scripts/com.fortresscore.api.plist` (uvicorn 127.0.0.1:8000,
+   WorkingDirectory backend/) + `scripts/com.fortresscore.dashboard.plist` (vite preview
+   del `dist/` 127.0.0.1:3000, WorkingDirectory frontend/), ambos KeepAlive + RunAtLoad +
+   ThrottleInterval 10. Instalados en `~/Library/LaunchAgents/` via `launchctl bootstrap`.
+2. **Verificado EN VIVO**: dashboard HTTP 200 en :3000; API :8000 con
+   `/api/system/status` 200, `/api/advisor/evidence` 200 (38 trials en ledger),
+   `/api/costs/current` 200 → **0.000173/lado, n=156** (registry vigente, corrida 19/08).
+   Logs limpios (solo warning urllib3/LibreSSL benigno).
+3. **Dist correcto**: sources frontend sin cambios desde el build del 19/08
+   (`find -newer` vacía) → el `dist/` servido cubre CostField + todas las vistas.
+4. **Docs**: ONBOARDING sección launchd (dos mecanismos nuevos registrados),
+   ROADMAP fila nueva, plan `.kilo/plans/1786996872457` §11 con el cierre.
+
+### Verificación
+- `curl -s http://127.0.0.1:3000/` → 200
+- `curl -s http://127.0.0.1:8000/api/system/status` → 200
+- `/api/costs/current` → cost_per_side 0.000173, N=156 (DB real)
+- `/api/advisor/evidence` → 38 trials (motor_signal 11, signal_diagnosis 18)
+- Suite backend 279 passed (estado previo, no se tocó)
+
+### Estado operativo permanente
+4 agentes launchd fortress activos: `autobackup` (10min), `dataupdater` (22:00),
+`api` (:8000), `dashboard` (:3000). Dashboard abre en **http://localhost:3000**.
+Kickstart tras cada rebuild: `launchctl kickstart -k gui/$(id -u)/com.fortresscore.dashboard`.
+
+### Pendiente residual (1 min, solo Boris)
+Verificación visual HUMANA del dashboard (la automatizada con Chrome headless se hizo
+el 19/08, 4 vistas OK — queda solo la mirada de Boris).
+
 ## Sesión (Kilo Code) — Recuperador de sesión + M4 medición viva COMPLETADA
 
 **Fecha**: 2026-08-18
