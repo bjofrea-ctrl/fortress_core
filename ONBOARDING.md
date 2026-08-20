@@ -145,6 +145,12 @@ en `PLAN_MEJORA_MATEMATICA.md`. No son sugerencias de estilo.
   externo. `com.fortresscore.dataupdater.plist` está INSTALADO (2026-08-17): a las 22:00
   diarias actualiza precios OHLCV del universo 50 (yfinance incremental) + acumulación
   FinBERT de earnings (EDGAR incremental), log en `scripts/data_updater.log`.
+  `com.fortresscore.api.plist` y `com.fortresscore.dashboard.plist` están INSTALADOS
+  (2026-08-20): el backend (uvicorn) permanente en :8000 y el dashboard (vite preview
+  del `dist/`) permanente en **http://localhost:3000** (puerto 3000 porque
+  CORS_ORIGINS lo permite). Ambos KeepAlive/RunAtLoad; logs en `scripts/api_server.log`
+  y `scripts/dashboard_server.log`. Tras cada rebuild del frontend:
+  `launchctl kickstart -k gui/$(id -u)/com.fortresscore.dashboard`.
   `com.fortresscore.daily_notify.plist` vive en `scripts/` pero NO está instalado
   (requiere TELEGRAM/SMTP configurados — hoy vacíos, notificación desactivada). `backup.sh`
   es el backup manual/forzado. Los snapshots de `fortress_core_backups/snapshots/` son

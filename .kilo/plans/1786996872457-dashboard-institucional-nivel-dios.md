@@ -190,7 +190,43 @@ corriendo permanente.
 
 ## 10. Dependencias externas de datos
 
-- M4 runner mide costos reales mañana al open → el campo "costo por trade" del panel
-  queda reservado; se llena con el artefacto `measure_execution_costs_*` cuando exista
-  (reemplaza visualmente el 0.30% asumido; ver ROADMAP M4).
-- Cron diario (instalado hoy 22:00) mantiene OHLCV + FinBERT frescos para el panel.
+- Cron diario (instalado 17/08, 22:00) mantiene OHLCV + FinBERT frescos para el panel.
+- M4 costos: medición CERRADA (Tarea D, 19/08; curva qty=1/10/50, 0.019%/lado p50;
+  COST_PER_SIDE asumido 0.0005 por decisión del usuario; ver ROADMAP M4/Tarea E).
+  El dist del frontend cubre el CostField con esas mediciones (build 19/08).
+
+## 11. Estado al cierre (2026-08-20 16:35 ART) — despliegue PERMANENTE COMPLETADO
+
+Todo lo pendiente de la sesión noche 17/08 quedó CERRADO hoy:
+
+1. **Plists escritos** (`scripts/com.fortresscore.api.plist` +
+   `scripts/com.fortresscore.dashboard.plist`, con ProcessType Interactive y
+   ThrottleInterval 10) → copiados a `~/Library/LaunchAgents/` → `launchctl bootstrap`.
+2. **Verificado EN VIVO**:
+   - `com.fortresscore.api` (PID 95615) → `GET /api/system/status` 200,
+     `/api/advisor/evidence` 200 (38 trials: motor_signal 11 @0.9909, signal_diagnosis 18),
+     `/api/costs/current` 200 → **0.000173/lado, n=156** (registry con la corrida 19/08).
+   - `com.fortresscore.dashboard` (PID 95618) → `http://127.0.0.1:3000/` 200 (vite preview
+     del build 19/08; 4 vistas lazy, CostField, evidence footer).
+   - Puertos: 8000 API, 3000 preview (origen permitido por CORS_ORIGINS).
+   - Logs: `scripts/api_server.log` (solo warning urllib3/LibreSSL, benigno) y
+     `scripts/dashboard_server.log` limpios.
+3. **Frontend serving el dist 19/08**: fuentes sin cambios desde el build (find -newer vacía),
+   VITE_API_URL default localhost:8000, sin .env → el build servido es el correcto.
+4. **Cierre ritual en curso**: ROADMAP + SESSION_LOG actualizados, commit descriptivo,
+   push origin main, espejo `/Volumes/EMPRESA`, Engram proyecto "boris".
+
+**Estado operativo permanente (no tocar salvo incidente):**
+- 4 agentes launchd fortress: `autobackup` (10 min), `dataupdater` (22:00),
+  `api`, `dashboard`. KeepAlive → sobreviven reboot y crash. Kickstart tras cada
+  rebuild: `launchctl kickstart -k gui/$(id -u)/com.fortresscore.dashboard`.
+- Dashboard abre en navegador: **http://localhost:3000** (verificación visual ya
+  hecha 19/08 con Chrome headless; pendiente solo la mirada humana de Boris).
+
+**Abiertos para mañana (sin riesgo de perder nada):**
+- Verificación visual HUMANA del dashboard (boris, 1 min).
+- Fix no-bloqueante: `/api/advisor/AAPL` ~80s por símbolos fantasma ($BASELINE_CLEAN…,
+  $COT_2019) en la descarga de precios del ticket — propuesta: saltarlos/cache.
+- VPS: sigue esperando acceso SSH del usuario.
+- EVT (#15): única línea con medición rota que podría reabrirse con instrumento
+  corregido (requiere pre-registro nuevo).
