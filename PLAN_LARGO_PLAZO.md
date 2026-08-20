@@ -466,7 +466,42 @@ autorización de Boris.
 
 ---
 
+## REPRIORIZACIÓN (2026-08-20) — Fase 0 de PLAN_INTEGRACION_INDICAGENT.md pasa ADELANTE de Tarea L
+
+Análisis externo (github.com/WallStArb/indicAgent vs. codebase real, ver
+`PLAN_INTEGRACION_INDICAGENT.md`) encontró 2 tickets CRÍTICOS, ambos **verificados
+por Claude Code directo contra el código real, línea por línea, no solo relayed**:
+
+- **T0.1** — `WalkForwardRegimeGate.label_series` (regime_gate.py) decodifica Viterbi
+  de bloque completo (63 días) en vez de causal día-por-día → leakage acotado en
+  cualquier trial que use esa clase para régimen. El loop principal de
+  `backtest_engine.py::run()` NO está afectado (usa `predict_current_regime`,
+  correcto). Sin dependencias, empezar de inmediato.
+- **T0.2** — CRÍTICO, mayor impacto de todo el análisis: `backtest_engine.py`
+  genera la señal Y ejecuta la compra al cierre de la MISMA barra (`date`) —
+  verificado línea por línea (`backtest_engine.py:401,444` +
+  `signal_engine.py:127,144`). Imposible en trading real. Afecta potencialmente
+  el PnL simulado de CADA backtest corrido con `backtest_engine.run()` hasta hoy
+  (Sharpe, DSR, CAGR, drawdown) — no afecta los tests de rank-IC puro
+  (`diagnose_factor_ic` y la mayoría de los §-diagnósticos de
+  `PLAN_MEJORA_MATEMATICA.md`, que no simulan ejecución).
+
+**Por qué salta adelante de Tarea L**: auditar con FDR veredictos que podrían estar
+sesgados por T0.2 es auditar sobre una base potencialmente movediza. Resolver T0.1/
+T0.2 primero, después Tarea L tiene sentido pleno. **NO bloquea Tarea M/N** (usan
+rank-IC, no simulación de ejecución) ni Tarea K de Kilo Code (dashboard, ortogonal)
+— esas siguen en paralelo sin cambios.
+
+**Asignación**: T0.1 + T0.2 → OpenCode, AHORA, antes de retomar Tarea L (ver
+`PLAN_INTEGRACION_INDICAGENT.md` para el ticket completo con pseudocódigo y
+criterio de aceptación — no reescribir acá, vivir en un solo lugar).
+
+---
+
 ### Tarea L — Auditoría FDR (Benjamini-Hochberg) sobre TODOS los factores cerrados, no solo ADX (OpenCode)
+
+**NOTA (2026-08-20): esperar a que T0.1/T0.2 (arriba) cierren antes de retomar
+esta tarea** — ver razón en la reprioritización.
 
 **Contexto**: Boris investigó con Perplexity si Bonferroni (el método que usa todo
 el proyecto) es demasiado conservador — la literatura (Harvey-Liu-Zhu RFS 2016,

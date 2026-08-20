@@ -64,6 +64,48 @@ Esto también implica: un indicador nunca es causa del movimiento de precio, es
 consecuencia — cuidado con el lenguaje ("el MACD generó la suba") que invierte la
 causalidad real.
 
+### Precepto 8 — No estacionariedad temporal: lo que funciona hoy puede dejar de funcionar, y viceversa
+
+Una estrategia o indicador que mide edge hoy puede perderlo mañana, y uno sin edge
+hoy puede empezar a tenerlo después. No es una posibilidad remota — es un fenómeno
+documentado en la literatura (McLean & Pontiff, 2016, *"Does Academic Research
+Destroy Stock Return Predictability?"*, *Journal of Finance*: factores publicados
+pierden ~⅓ de su retorno post-publicación, por crowding — más capital persiguiendo
+la misma señal la erosiona) y consistente con los cambios de régimen macro que el
+propio proyecto ya mapea (GOLDILOCKS/DEFLATION/STAGFLATION vía `regime_gate.py`).
+
+**Consecuencia práctica — esto es lo que operacionaliza el precepto, no una idea
+abstracta**: el proyecto YA construyó `app/core/drift_detector.py` (M5, KS +
+Bonferroni + detección de concepto, 18 tests) — pero **verificado ahora: no está
+conectado a ningún path en vivo** (`advisor.py`, `signal_engine.py`) — existe,
+tiene tests, y no monitorea nada en producción todavía. Momentum y RSI (los dos
+factores validados) podrían estar decayendo ahora mismo y el sistema no se
+enteraría. Conectar M5 al monitoreo continuo de esos dos factores es una tarea
+real y barata (el módulo ya existe) — más urgente que sumar indicadores nuevos.
+
+### Precepto 9 — Las estrategias deben ser flexibles y rotar; la no-estacionariedad también existe a granularidad fina
+
+No es solo "el régimen macro cambia mes a mes" — la actividad de mercado varía
+incluso dentro del mismo día. Patrón bien documentado en microestructura (Admati &
+Pfleiderer, 1988, y literatura posterior): volumen y volatilidad forman una curva
+en U durante la rueda — alta actividad en la apertura, un "valle" al mediodía, alta
+actividad de nuevo al cierre. Un indicador o timing que funciona bien cerca del
+cierre no necesariamente funciona igual a media mañana.
+
+**Caveat honesto de aplicabilidad**: el motor de fortress_core opera con señal
+diaria (EOD) y holds de ~20 ruedas — esta granularidad intradía HOY no es
+directamente accionable para la señal misma. Donde sí podría aplicar es en el
+**timing de ejecución de la orden** dentro del día (algo que Tarea D/M4 ya rozó al
+medir costos de ejecución) — pero explotar esto de verdad sería una línea de
+investigación nueva, con su propio pre-registro y datos intradía, no una extensión
+gratis de lo que ya existe. No confundir "es un patrón real" con "ya lo estamos
+usando" — no lo estamos usando.
+
+La idea de "rotar entre estrategias según la condición" ya tiene su mecanismo
+construido y sin usar: `regime_gate.py` (M3) — ver Precepto 6 y Parte 2. Es el
+mismo punto repetido: la infraestructura para adaptarse existe, lo que falta es el
+trial que la conecte a una decisión real.
+
 ### Precepto 6 — Un indicador sirve según el momento y condición de mercado, no de forma universal
 
 La eficacia de un indicador NO es constante en el tiempo — depende del régimen
@@ -129,3 +171,21 @@ resumen aplicable a cualquier análisis futuro:
   nuevos — es la línea de investigación activa hoy (Tarea M/N + `regime_gate.py`/M3).
 - **El costo real medido (§33, validado contra JoF 2025) es 0.05%/lado** — cualquier
   análisis de rentabilidad neta parte de ese número, no del 0.15% viejo.
+- **Sentimiento retail (AAII) como señal contrarian — refutado RETROSPECTIVAMENTE,
+  dos veces** (§28 y su re-test, `PLAN_MEJORA_MATEMATICA.md` líneas 2126/2686):
+  primera medición dio signo contrario al esperado por la hipótesis (W2 t=+2.94,
+  contrarian predice negativo), segunda medición (vara más justa) t=+1.18, tampoco
+  significativo. El retail sí subrinde por sesgos de comportamiento documentados
+  (Barber-Odean 2000, Taiwán 2008 — ya citados en `RESEARCH_EXTERNA_CRITICA.md`),
+  pero el intento más directo de explotar eso como señal de timing ya falló acá con
+  datos históricos.
+  **Condición de Boris (2026-08-20) sobre cómo re-abrir esto**: no re-testear
+  retrospectivamente pegado al backtest — eso ya se hizo, dos veces, con el mismo
+  resultado. Si se retoma, es con **evaluación PROSPECTIVA**: monitorear la
+  relación AAII↔retorno hacia adelante, sobre datos que todavía no existen al
+  momento de pre-registrar, no sobre una ventana histórica ya vista. Es un estándar
+  más alto que el backtest (cero riesgo de data-mining porque el dato no existía
+  cuando se formuló la hipótesis) — no un atajo para reabrir sin evidencia nueva.
+  No pre-registrar esto como trial hasta tener el mecanismo de monitoreo prospectivo
+  (ej. wired a `drift_detector.py`/M5, ver Precepto 8) listo para correr hacia
+  adelante, no hacia atrás.
