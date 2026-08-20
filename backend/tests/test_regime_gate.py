@@ -79,8 +79,8 @@ def test_label_series_usa_decodificacion_causal_no_de_bloque():
     llamada Viterbi (predict_regime_series, que filtra hasta recalib_every días de
     información futura). Verificamos que el método que label_series invoca es el
     causal — sin re-implementar el clasificador completo."""
-    import app.core.regime_gate as rg
     import app.core.regime_classifier as rc
+    import app.core.regime_gate as rg
 
     # label_series construye su propio GlobalRegimeClassifier y le llama
     # predict_regime_series_causal; la variante de bloque (con leakage) NO debe

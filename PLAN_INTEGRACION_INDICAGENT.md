@@ -47,6 +47,12 @@ discretos para ejecución por agentes de coding (OpenCode / Kilo Code).
 
 ### T0.1 — [CRÍTICO] Look-ahead acotado en `WalkForwardRegimeGate.label_series` vía decodificación Viterbi de bloque completo
 
+**ESTADO: ✅ CERRADO (2026-08-20, OpenCode).** Método nuevo `predict_regime_series_causal`
+(día-por-día, sin leakage) en `regime_classifier.py`; `regime_gate.py::label_series` ahora
+lo usa. 12 tests verdes (2 nuevos: causal no usa futuro vs bloque sí); ruff limpio. Suite
+completa: los 4 tests de market/live/predict que quedaron rojos son de OTRA sesión que
+cambió market.py en paralelo (auto-backup d2819ab 12:29) — no de este ticket. Ver SESSION_LOG.
+
 **Objetivo:** eliminar el look-ahead bias residual (acotado a ≤63 días) en el etiquetado de
 régimen que usa `regime_gate.py`, causado por decodificar un bloque de recalibración completo
 en una sola llamada Viterbi en vez de barra por barra.
