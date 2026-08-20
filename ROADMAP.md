@@ -284,6 +284,9 @@ gantt
 
 | Área | Ítem | Estado | Bloqueado por | Próxima acción |
 |---|---|---|---|---|
+| Integración indicAgent | PLAN_INTEGRACION_INDICAGENT.md — Fase 1 tickets T1.1/T1.2/T1.3 + Fase 2 T2.1 (Kilo Code) | 🟢 cerrados (2026-08-20) | — | **T2.1**: el corte train/test era contiguo sin purga → `purge_bars` en `WalkForwardValidator.validate()` (default=horizon, =0 reproduce pre-fix); 7 tests. **T1.1 OFI**: `ofi_*` en indicators.py + trial §37 → **NO_CUMPLE** 0/3 (TOTAL t −1.66); ledger signal_diagnosis 19→20. **T1.2 CVD**: `cvd_*` en indicators.py (decisión rolling-20d documentada en vez del reset intradía inaplicable) + trial §38 → **NO_CUMPLE** 0/3 (TOTAL t −0.73); ledger 20→21. **T1.3 market_structure**: module new with 4 detectors SMC + `analyze_market_structure` (18 tests, smoke real AAPL 0.17s) — descriptivo disponible, NO es señal (requiere trial propio si se usa). Suite 315 passed.
+Ninguna integración al motor. Abiertos del plan: T1.4 (requiere T1.3, ya disponible),
+T1.5, T1.6 (Fase 1) y T2.2, T2.3 (Fase 2) |
 | Investigación | §13 gap-reversion: backtest con costos reales | 🟢 cerrado (2026-08-12) | — | NO CUMPLE: bruto ~0 (t-NW −0.20), neto −11.53 → §13 CERRADO (PLAN §13.1, artefacto backtest_gap_costs_20260812_173951.txt) |
 | Investigación | §12 régimen-vs-volatilidad | 🟢 cerrado como pista sin acción (2026-08-12) | — | Decisión del usuario: sin TARGET_VOLATILITY, sin reducir HMM, sin esperar historia. Se retoma solo con pre-registro y razón nueva |
 | Investigación | Fase 0.6 — re-test sentimiento/fundamentales | 🟢 cerrado (2026-08-12) | — | NO CUMPLE 0/3 ambas variantes (artefacto fase06_retest_20260812_175055.txt): V1 DSR 0.041/0.002/0.225, FUND 0.121/0.004/0.330 vs base 0.071/0.028/0.173 → refutación #8/#9 confirmada con vara arreglada; baseline universo 50 = único modo operativo |
