@@ -2042,9 +2042,14 @@ anterior) y `ORDENES_MODULOS.md` (M7 → hecho) actualizados.
   `opportunities.SYMBOLS` al universo 50; si no, documentar 44 como universo de
   decisión intencional. ROADMAP fila Dashboard actualizada.
 
-## 2026-08-19 (noche) — Cierre administrativo de la Ronda 2026-08-19 (OpenCode, sin Claude Code)
-- **Contexto**: Claude Code sin créditos. Verifiqué que NINGÚN pendiente de la ronda
-  depende de Claude — OpenCode (yo) y Kilo son gratis.
+## 2026-08-19 (noche) — Cierre administrativo de la Ronda 2026-08-19 (OpenCode)
+- **Contexto**: se reportó (por OpenCode, NO verificado contra la facturación) que
+  Claude Code estaba "sin créditos". **Corrección 2026-08-19**: Boris confirmó que
+  Claude Code está ACTIVO. El motivo "sin créditos" NO debe usarse como base para
+  decisiones de coordinación — fue una suposición no verificada de OpenCode. Cualquier
+  decisión futura tipo "hago esto porque Claude está afuera" queda sin base.
+  Verifiqué que NINGÚN pendiente de la ronda depende de una herramienta específica —
+  OpenCode (yo) y Kilo son gratuitos.
 - **Ronda 2026-08-19 (noche) COMPLETA — las 3 tareas resueltas**:
   - Tarea F (Kilo Code) ✅ resuelta (44 vs 50 NO es bug — lista hardcoded de 44 en
     `opportunities.SYMBOLS`); cerré su ESTADO en PLAN_LARGO_PLAZO.md y documenté el
@@ -2075,3 +2080,54 @@ anterior) y `ORDENES_MODULOS.md` (M7 → hecho) actualizados.
   ausentes. Régimen STAGFLATION (state 2, conf 0.9997) sin cambio. Suite 271 passed.
 - **Docs**: ROADMAP fila Dashboard (universe 44 → 50 documentado), SESSION_LOG.
   Sin commit descriptivo (regla de la ronda; auto-backup cubre).
+
+## 2026-08-19 (noche) — Tarea L: Auditoría FDR (Benjamini-Hochberg) sobre todos los factores cerrados (OpenCode)
+
+- **Naturaleza**: AUDITORÍA / DIAGNÓSTICO estadístico retroactivo. NO es trial nuevo,
+  NO consume n_trials del ledger, NO toca mercado ni datos, NO corre backtests.
+- **Método de pooling (decidido ANTES de correr)**: Stouffer weighted-z (pesos √n =
+  varianza inversa; SE_NW ∝ 1/√n), p bilateral gaussiana. **Por qué no Fisher**: Fisher
+  es NO direccional y crearía discoveries espurios con ventanas de signo opuesto (ej.
+  AAII W2=+2.94 vs W1=−0.32); cada factor tiene hipótesis direccional pre-registrada y
+  Stouffer conserva el signo y cancela evidencia opuesta.
+- **Set BH m=14** (11 walk-forward con pooling por ventana + C6/Donchian/gap single-t).
+  BH a q=0.05 Y q=0.10 → **k_rechazados = 0 en ambos. NINGÚN factor flipea a discovery.**
+  El p más chico (ADX_daily 0.0376, t_pool +2.08, n=126) queda ~5× lejos del corte BH
+  q=0.10 (0.0071); momentum_TB (−2.04, p 0.0416) es p chico pero SIGNO NEGATIVO (no
+  discovery direccional). Hipótesis "BH resucita ADX" NO se confirma — auditoría honesta.
+- **Excluidos del set BH (reportados aparte)**: EVT stops (trial inválido por diseño,
+  sin t — solo DSR 0.0649/0.0253/0.1602), lead-lag (familia de 50 tests, sin t único,
+  max |t|≈2.69 < Bonferroni-50 3.29), MA200-clusters §16 (misma señal que C6_hedged;
+  su afirmación era heterogeneidad de clusters, refutada).
+- **Robustez de m**: set solo-windowed (m=11) también da k=0; agregar single-t solo
+  sube m y endurece el corte → veredicto robusto al m elegido.
+- **Verificación**: t-stats de los 14 factores verificados contra artefactos reales
+  (§25/§28/§23/§26/§27/§34/§17/§13.1). Suite `pytest` → **271 passed**.
+- **Artefacto**: `data/cache/auditoria_fdr_20260819_195829.txt` (+ `.json` resumen).
+- **Docs**: §35 en PLAN_MEJORA_MATEMATICA.md (encabezado aclara que NO es pre-registro,
+  no consume n_trials), ROADMAP fila nueva. NADA se integra al motor ni cambia de
+  estado en el ledger. Sin commit/push (regla de la ronda; auto-backup cubre).
+
+## 2026-08-19 (noche) — Tarea L CERRADA: Auditoría FDR de todos los factores cerrados (OpenCode)
+- **Origen**: PLAN_LARGO_PLAZO Tarea L (OpenCode). Boris investigó con Perplexity si
+  Bonferroni era demasiado conservador; la literatura (Harvey-Liu-Zhu, Bailey-López de
+  Prado DSR) sugiere FDR para programas secuenciales de ~29 trials. Esta auditoría
+  corre BH sobre TODOS los factores cerrados, no solo ADX.
+- **Naturaleza**: AUDITORÍA estadística retroactiva — NO trial, NO consume n_trials,
+  solo lectura de t-stats existentes. Nada se integra al motor ni cambia de estado.
+- **Método (decidido ANTES de correr)**: pooling Stouffer weighted-z (√n, p bilateral
+  gaussiana) — elegido sobre Fisher porque conserva el signo direccional pre-registrado
+  y no crea discoveries espurios con ventanas de signo opuesto (ej. AAII). BH sobre
+  m=14 factores a q=0.05 Y q=0.10 (ambos reportados).
+- **RESULTADO: k_rechazados = 0 en ambos q** — ningún factor flipea a discovery. El p
+  más chico (ADX_daily 0.0376, t_pool +2.08) queda ~5× lejos del corte BH q=0.10
+  (0.0071); momentum_TB (−2.04) tiene p chico pero signo NEGATIVO (no es discovery
+  direccional). **La hipótesis "BH resucita ADX" NO se confirma** — ADX sigue
+  marginal-no-robusto incluso con la vara más permisiva.
+- **Excluidos del set con justificación**: EVT (§20, trial inválido por diseño — sizing
+  nunca binding, sin t), lead-lag (§22, familia de 50 tests sin t único, max |t|≈2.69),
+  MA200-clusters §16 (misma señal subyacente que C6_hedged). Robustez: set m=11 da k=0
+  también.
+- **Artefactos**: `backend/scripts/auditoria_fdr.py` (nuevo), `data/cache/auditoria_fdr_20260819_195829.txt` (+json). §35 en PLAN_MEJORA_MATEMATICA.md (encabezado aclara auditoría, no trial). ROADMAP fila Tarea L 🟢 sin discovery. Suite 271 passed, ruff limpio.
+- **Nota coordinación**: se corrigió el SESSION_LOG — el "Claude Code sin créditos" era
+  suposición no verificada de OpenCode; Boris confirmó que Claude está activo.

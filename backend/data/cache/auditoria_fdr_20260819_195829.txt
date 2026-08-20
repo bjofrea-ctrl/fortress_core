@@ -1,0 +1,48 @@
+================================================================================
+AUDITORIA FDR (Benjamini-Hochberg) — todos los factores cerrados
+Generado: 20260819_195829 | NO es trial nuevo, NO consume n_trials, solo lectura
+Metodo de pooling (decidido ANTES de correr): Stouffer weighted-z
+  z_pool = sum(sqrt(n_i)*t_i)/sqrt(sum(n_i)); p bilateral gaussiana
+BH sobre m=14 factores (no ventanas), q=0.05 y q=0.10 (ambos)
+================================================================================
+
+factor               t_pool      p_pool      n  rank   corte05   corte10  BH05  BH10  Bonf_orig
+--------------------------------------------------------------------------------------------
+ADX_daily             +2.08      0.0376    126     1    0.0036    0.0071    no    no  NO_CUMPLE
+momentum_TB           -2.04      0.0416    137     2    0.0071    0.0143    no    no  NO_CUMPLE
+AAII_timing           +1.18      0.2398    157     3    0.0107    0.0214    no    no  NO_CUMPLE
+C6_hedged             +1.07      0.2846   2666     4    0.0143    0.0286    no    no  NO_CUMPLE
+rsi_daily             +0.90      0.3698    137     5    0.0179    0.0357    no    no  NO_CUMPLE
+Donchian              -0.81      0.4179    187     6    0.0214    0.0429    no    no  NO_CUMPLE
+momentum_daily        -0.55      0.5811    157     7    0.0250    0.0500    no    no  NO_CUMPLE
+adx_weekly            +0.47      0.6388    392     8    0.0286    0.0571    no    no  NO_CUMPLE
+rsi_TB                +0.34      0.7327    119     9    0.0321    0.0643    no    no  NO_CUMPLE
+FinBERT               -0.29      0.7705    331    10    0.0357    0.0714    no    no  NO_CUMPLE
+gap_reversion         -0.20      0.8415   2206    11    0.0393    0.0786    no    no  NO_CUMPLE
+rsi_weekly            -0.20      0.8444    392    12    0.0429    0.0857    no    no  NO_CUMPLE
+momentum_weekly       -0.00      0.9977    392    13    0.0464    0.0929    no    no  NO_CUMPLE
+adx_TB                -0.00      0.9999    111    14    0.0500    0.1000    no    no  NO_CUMPLE
+
+Resultado BH q=0.05: k_rechazados = 0
+Resultado BH q=0.10: k_rechazados = 0
+
+Nota corte BH(k): el k-esimo p mas chico debe ser <= q*k/m para ser rechazado.
+
+--------------------------------------------------------------------------------
+EXCLUIDOS del set BH (se reportan por separado, con justificacion):
+  - EVT stops (§20): trial INVALIDO por diseno — el sizing EVT nunca fue
+    binding (min() con Kelly); nunca midio un efecto. Solo DSR
+    0.0649/0.0253/0.1602, sin t por ventana. No es candidato a discovery.
+  - lead-lag (§22): familia de 50 tests de correlacion cruzada, sin un t
+    unico. Ningun par cruzo Bonferroni-50 (|t|>3.29); max |t| ~ 2.69.
+  - MA200 clusters (§16): mismo senal subyacente que C6_hedged; su
+    afirmacion era heterogeneidad de clusters (REFUTADA: mismo signo en
+    todos: C3 y C6 negativos). No es un factor direccional independiente.
+
+--------------------------------------------------------------------------------
+ROBUSTEZ de m: el set solo-windowed (m=11, los 11 con pooling por ventana):
+  BH q=0.05 -> k=0 | BH q=0.10 -> k=0
+  (agregar factores single-t solo sube m y ENDURECE el corte; el veredicto
+   de 'sin discovery' es robusto al m elegido)
+
+Out: data/cache/auditoria_fdr_20260819_195829.txt

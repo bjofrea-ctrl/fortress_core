@@ -2653,3 +2653,74 @@ en esta tarea — la integración es un trial de motor aparte con su propio pre-
 **Post-condición**: artefacto en `data/cache/backtest_c6_hedge_costo_medido_*.txt`
 con el veredicto CUMPLE/NO_CUMPLE; ROADMAP fila C6/§18 y SESSION_LOG actualizados;
 trial registrado en el ledger.
+
+## 35. AUDITORÍA FDR (Benjamini-Hochberg) sobre todos los factores cerrados — NO es un trial
+
+**Naturaleza**: AUDITORÍA / DIAGNÓSTICO ESTADÍSTICO retroactivo sobre resultados YA
+obtenidos. **NO es pre-registro de trial, NO consume `n_trials` del ledger, NO toca
+mercado ni datos, NO corre backtests.** Solo lectura de t-stats ya medidos en los
+artefactos de `data/cache/` + un script nuevo de análisis (`scripts/auditoria_fdr.py`).
+Motivo: Bonferroni es demasiado conservador para un programa secuencial de ~29 trials;
+la literatura (Harvey-Liu-Zhu RFS 2016, Bailey-López de Prado DSR) alinea FDR (BH) con
+este caso. Auditoría HONESTA — si algo flipea a "discovery" NO se integra al motor ni
+se cambia su estado en el ledger; se reporta como hallazgo pendiente de decisión.
+
+**Estado**: ✅ COMPLETO 2026-08-19 — **ningún factor flipea a discovery bajo BH**.
+
+**MÉTODO DE POOLING (decidido ANTES de correr, no después de ver números)**:
+- **Stouffer weighted-z** (meta-análisis de varianza inversa): `z_pool = Σ√nᵢ·tᵢ / √Σnᵢ`,
+  p bilateral gaussiana. Pesos √n = varianza inversa (SE_NW ∝ 1/√n), consistente con el
+  pooling "TOTAL" que el proyecto ya usa (ADX ref t=+2.31 sobre n=151).
+- **POR QUÉ no Fisher**: Fisher combina p's bilaterales de forma NO direccional y crea
+  discoveries espurios cuando una ventana es fuerte y otra opuesta (p.ej. AAII W2=+2.94
+  con W1=−0.32). Cada factor tiene hipótesis direccional pre-registrada; Stouffer
+  conserva el signo y cancela evidencia opuesta — es el comportamiento correcto.
+- BH sobre m = nº real de FACTORES (no ventanas), reportando **q=0.05 Y q=0.10** (ambos,
+  no se elige el que convenga).
+
+**Set BH (m=14)** — t_pool / p_pool (Stouffer), ordenado por p:
+| factor | t_pool | p_pool | n | rank | corte BH(q=.05) | corte BH(q=.10) | BH05 | BH10 | Bonferroni orig |
+|---|---|---|---|---|---|---|---|---|---|
+| ADX_daily | +2.08 | 0.0376 | 126 | 1 | 0.0036 | 0.0071 | no | no | NO_CUMPLE |
+| momentum_TB | −2.04 | 0.0416 | 137 | 2 | 0.0071 | 0.0143 | no | no | NO_CUMPLE |
+| AAII_timing | +1.18 | 0.2398 | 157 | 3 | 0.0107 | 0.0214 | no | no | NO_CUMPLE |
+| C6_hedged | +1.07 | 0.2846 | 2666 | 4 | 0.0143 | 0.0286 | no | no | NO_CUMPLE |
+| rsi_daily | +0.90 | 0.3698 | 137 | 5 | 0.0179 | 0.0357 | no | no | NO_CUMPLE |
+| Donchian | −0.81 | 0.4179 | 187 | 6 | 0.0214 | 0.0429 | no | no | NO_CUMPLE |
+| momentum_daily | −0.55 | 0.5811 | 157 | 7 | 0.0250 | 0.0500 | no | no | NO_CUMPLE |
+| adx_weekly | +0.47 | 0.6388 | 392 | 8 | 0.0286 | 0.0571 | no | no | NO_CUMPLE |
+| rsi_TB | +0.34 | 0.7327 | 119 | 9 | 0.0321 | 0.0643 | no | no | NO_CUMPLE |
+| FinBERT | −0.29 | 0.7705 | 331 | 10 | 0.0357 | 0.0714 | no | no | NO_CUMPLE |
+| gap_reversion | −0.20 | 0.8415 | 2206 | 11 | 0.0393 | 0.0786 | no | no | NO_CUMPLE |
+| rsi_weekly | −0.20 | 0.8444 | 392 | 12 | 0.0429 | 0.0857 | no | no | NO_CUMPLE |
+| momentum_weekly | −0.00 | 0.9977 | 392 | 13 | 0.0464 | 0.0929 | no | no | NO_CUMPLE |
+| adx_TB | −0.00 | 0.9999 | 111 | 14 | 0.0500 | 0.1000 | no | no | NO_CUMPLE |
+
+**VEREDICTO**: k_rechazados = 0 en q=0.05 y q=0.10. El p más chico (ADX_daily 0.0376,
+rank 1) queda lejos del corte BH (q·k/m = 0.10·1/14 = 0.0071). **Ningún factor flipea
+a discovery** — la hipótesis "BH resucita algo" NO se confirma. Incluso el único factor
+positivo (ADX) es ~5× más débil de lo que exigiría FDR a q=0.10. momentum_TB (−2.04)
+tiene p chico pero con SIGNO NEGATIVO (reversión, no continuación esperada) — no sería
+un discovery direccional de todos modos. **Robustez de m**: set solo-windowed (m=11)
+también da k=0; agregar single-t solo sube m y endurece el corte → veredicto robusto.
+
+**Excluidos del set BH (reportados aparte, con justificación)**:
+- **EVT stops (§20)**: trial INVALIDO por diseño (sizing EVT nunca fue binding por el
+  `min()` con Kelly; nunca midió un efecto). Solo DSR 0.0649/0.0253/0.1602, sin t por
+  ventana. No es candidato a discovery.
+- **lead-lag (§22)**: familia de 50 tests de correlación cruzada, sin un t único.
+  Ningún par cruzó Bonferroni-50 (|t|>3.29); max |t| ≈ 2.69.
+- **MA200 clusters (§16)**: misma señal subyacente que C6_hedged; su afirmación era
+  heterogeneidad de clusters (REFUTADA: mismo signo en todos — C3 y C6 negativos). No
+  es un factor direccional independiente.
+
+**Fuentes (t-stats verificados contra artefactos reales)**: §25 `trial_adx_walkforward_
+20260817_103916.txt`, §28 `trial_xsec_relative_20260817_184355.txt`, §23
+`retest_triple_barrier_20260816_091649.txt`, §26 `weekly_indicators_20260817_105918.txt`,
+§27 `trial_finbert_eventstudy_20260817_163512.txt`, §34 `backtest_c6_hedge_costo_medido_
+20260819_155509.txt`, §17 `diagnose_donchian_intraday_20260812_201008.txt`, §13.1
+`backtest_gap_costs_20260812_173951.txt` (bruto).
+
+**Artefacto**: `data/cache/auditoria_fdr_20260819_195829.txt` (+ `.json` resumen).
+**Ledger**: NO se registra trial (es auditoría, no consume n_trials). **Suite**: 271 passed.
+**Post-condición**: ROADMAP + SESSION_LOG actualizados. Nada se integra al motor.
