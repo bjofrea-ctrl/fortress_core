@@ -46,8 +46,8 @@ def test_historia_insuficiente_falla_explicito():
 
 
 def test_walk_forward_recalibra_en_los_intervalos_declarados():
-    price_data = _synthetic_price_data(n_days=550, seed=1)
-    gate = WalkForwardRegimeGate(favorable_states=frozenset({0}), min_history=320, recalib_every=70)
+    price_data = _synthetic_price_data(n_days=340, seed=1)
+    gate = WalkForwardRegimeGate(favorable_states=frozenset({0}), min_history=255, recalib_every=20)
     _, diag = gate.label_series(price_data)
 
     assert isinstance(diag, WalkForwardDiagnostics)
@@ -56,15 +56,15 @@ def test_walk_forward_recalibra_en_los_intervalos_declarados():
     dates = diag.fechas_recalibracion
     for a, b in zip(dates, dates[1:]):
         gap = (b - a).days
-        assert 50 <= gap <= 110, f"gap entre recalibraciones {gap}d fuera de rango esperado"
+        assert 25 <= gap <= 45, f"gap entre recalibraciones {gap}d fuera de rango esperado (recalib_every=20)"
 
 
 def test_ninguna_fecha_se_etiqueta_antes_de_su_recalibracion():
     """La propiedad central del módulo: anti-lookahead. Si esto pasara, el assert
     interno ya habría matado el test — acá se verifica el resultado publicado
     también respeta el invariante desde afuera."""
-    price_data = _synthetic_price_data(n_days=550, seed=2)
-    gate = WalkForwardRegimeGate(favorable_states=frozenset({0, 1}), min_history=320, recalib_every=70)
+    price_data = _synthetic_price_data(n_days=340, seed=2)
+    gate = WalkForwardRegimeGate(favorable_states=frozenset({0, 1}), min_history=255, recalib_every=20)
     series, diag = gate.label_series(price_data)
 
     # Cada fecha etiquetada debe ser >= alguna fecha de recalibración <= ella misma
@@ -97,10 +97,10 @@ def test_label_series_usa_decodificacion_causal_no_de_bloque():
 
 
 def test_operar_es_booleano_y_coincide_con_favorable_states():
-    price_data = _synthetic_price_data(n_days=550, seed=3)
+    price_data = _synthetic_price_data(n_days=340, seed=3)
     # Declarar TODOS los estados como favorables -> operar debe ser True siempre
     gate_todo = WalkForwardRegimeGate(favorable_states=frozenset({0, 1, 2, 3}),
-                                       min_history=320, recalib_every=70)
+                                       min_history=255, recalib_every=20)
     series_todo, _ = gate_todo.label_series(price_data)
     assert series_todo.dtype == bool
     assert series_todo.all()
@@ -108,23 +108,23 @@ def test_operar_es_booleano_y_coincide_con_favorable_states():
     # Declarar NINGUNO favorable (imposible por validación) -> probamos con un solo
     # estado que es improbable que domine, comparando contra "todos favorables"
     gate_uno = WalkForwardRegimeGate(favorable_states=frozenset({0}),
-                                      min_history=320, recalib_every=70)
+                                      min_history=255, recalib_every=20)
     series_uno, _ = gate_uno.label_series(price_data)
     # Con un solo estado favorable, operar=True nunca puede superar al caso "todos"
     assert series_uno.sum() <= series_todo.sum()
 
 
 def test_distribucion_de_regimenes_suma_al_total_etiquetado():
-    price_data = _synthetic_price_data(n_days=550, seed=4)
-    gate = WalkForwardRegimeGate(favorable_states=frozenset({0}), min_history=320, recalib_every=70)
+    price_data = _synthetic_price_data(n_days=340, seed=4)
+    gate = WalkForwardRegimeGate(favorable_states=frozenset({0}), min_history=255, recalib_every=20)
     _, diag = gate.label_series(price_data)
     assert sum(diag.distribucion_regimenes.values()) == diag.n_fechas_etiquetadas
 
 
 def test_label_symbol_dates_abstiene_fuera_de_rango():
-    price_data = _synthetic_price_data(n_days=550, seed=5)
+    price_data = _synthetic_price_data(n_days=340, seed=5)
     gate = WalkForwardRegimeGate(favorable_states=frozenset({0, 1, 2, 3}),
-                                  min_history=320, recalib_every=70)
+                                  min_history=255, recalib_every=20)
 
     fechas_validas = price_data["SPY"].index[150:160]
     fecha_futura_invalida = pd.Timestamp("2099-01-01")
@@ -137,9 +137,9 @@ def test_label_symbol_dates_abstiene_fuera_de_rango():
 
 
 def test_label_symbol_dates_devuelve_serie_indexada_por_fecha():
-    price_data = _synthetic_price_data(n_days=550, seed=6)
+    price_data = _synthetic_price_data(n_days=340, seed=6)
     gate = WalkForwardRegimeGate(favorable_states=frozenset({0, 1, 2, 3}),
-                                  min_history=320, recalib_every=70)
+                                  min_history=255, recalib_every=20)
     fechas = list(price_data["SPY"].index[150:155])
     result = gate.label_symbol_dates(price_data, fechas)
     assert list(result.index) == fechas
