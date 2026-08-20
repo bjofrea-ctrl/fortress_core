@@ -1,5 +1,6 @@
 from typing import Tuple
 
+import numpy as np
 import pandas as pd
 
 
@@ -110,6 +111,54 @@ def ofi_features(high: pd.Series, low: pd.Series, close: pd.Series, volume: pd.S
     })
 
 
+def cvd_proxy(high: pd.Series, low: pd.Series, close: pd.Series,
+              volume: pd.Series) -> pd.Series:
+    """Proxy de delta de volumen por barra desde OHLCV puro (sin ticks).
+
+    Adaptado de ``cvd.py`` de indicAgent (T1.2, PLAN_INTEGRACION_INDICAGENT.md):
+    posición del cierre dentro del rango, centrada en cero y ponderada por
+    volumen: cierre al high → todo el volumen se cuenta como comprador;
+    cierre al low → todo como vendedor; cierre al medio → delta cero.
+    """
+    eps = 1e-9
+    return (2 * close - high - low) / (high - low + eps) * volume
+
+
+def cvd_features(high: pd.Series, low: pd.Series, close: pd.Series,
+                 volume: pd.Series, window: int = 20) -> pd.DataFrame:
+    """Features derivados del CVD — acumulación rolling, pendiente y divergencia.
+
+    DECISIÓN DE DISEÑO (documentada según exige T1.2): el original de indicAgent
+    resetea el acumulador de CVD cada sesión intradía (09:30 ET). Fortress opera
+    en barras DIARIAS — no hay "sesión" dentro de una barra, así que el reset por
+    sesión NO aplica. Se eligió una ACUMULACIÓN ROLLING de ``window`` días
+    (default 20 ~ 1 mes hábil, alineado a CALIBRATION_HORIZON_DAYS) en vez de un
+    acumulador infinito: un acumulador sin límite acumula drift histórico sin
+    relación con la presión reciente y no es comparable entre símbolos ni fechas.
+    El valor de window es una decisión de diseño, NO medido — si el diagnóstico
+    de IC pide otro window, se pre-registra y se vuelve a medir.
+
+    Columnas devueltas::
+
+        cvd_bar_delta   delta de la barra individual [-vol, +vol]
+        cvd_rolling     suma de deltas de las últimas `window` barras
+        cvd_slope_5bar  (cvd_rolling[t] - cvd_rolling[t-5]) / 5 — aceleración
+        cvd_divergence  sign(cvd_slope_5bar) - sign(close.diff(5)): cúando el flujo
+                        va en dirección distinta al precio (patrón de divergencia SMC)
+    """
+    bar_delta = cvd_proxy(high, low, close, volume)
+    cvd_rolling = bar_delta.rolling(window).sum()
+    cvd_slope_5bar = cvd_rolling.diff(5) / 5
+    price_change_5 = close.diff(5)
+    cvd_divergence = np.sign(cvd_slope_5bar) - np.sign(price_change_5)
+    return pd.DataFrame({
+        "cvd_bar_delta": bar_delta,
+        "cvd_rolling": cvd_rolling,
+        "cvd_slope_5bar": cvd_slope_5bar,
+        "cvd_divergence": cvd_divergence,
+    })
+
+
 def calculate_all_indicators(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
     df["ema20"] = ema(df.close, 20)
@@ -133,5 +182,8 @@ def calculate_all_indicators(df: pd.DataFrame) -> pd.DataFrame:
     # OFI proxy (T1.1 — PLAN_INTEGRACION_INDICAGENT.md): disponible para
     # diagnóstico de IC; NO está wired a signal_engine hasta que se mida.
     for col, series in ofi_features(df.high, df.low, df.close, df.volume).items():
+        df[col] = series
+    # CVD proxy (T1.2 — PLAN_INTEGRACION_INDICAGENT.md): misma condición.
+    for col, series in cvd_features(df.high, df.low, df.close, df.volume).items():
         df[col] = series
     return df.ffill().dropna()

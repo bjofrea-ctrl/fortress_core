@@ -1,0 +1,23 @@
+==============================================================================
+PLAN_MEJORA_MATEMATICA §38 — T1.2: diagnóstico de IC del proxy CVD
+Umbral familia signal_diagnosis (n=21, dos colas): |t| > 3.038
+Ventanas: W1 2020-01-01->2021-12-31, W2 2022-01-01->2023-12-31, W3 2024-01-01->2026-07-06
+Feats: z rodante causal 100d por símbolo (min_periods=50); target fwd_20
+==============================================================================
+
+Panel: 133450 filas | 2669 fechas | 50 símbolos
+Rango fechas: 2016-01-04 -> 2026-08-14
+
+Rank IC por ventana, por feature (signo esperado: +1)
+feature              ventana n_dias   mean_IC    SE_NW       t   L  sig+
+------------------------------------------------------------------------
+cvd_rolling_z        W1         505   +0.0189   0.0258   +0.73  12    no
+cvd_rolling_z        W2         501   -0.0212   0.0253   -0.84  12    no
+cvd_rolling_z        W3         628   +0.0074   0.0193   +0.38  12    no
+cvd_slope_5bar_z     W1         505   -0.0134   0.0172   -0.78  12    no
+cvd_slope_5bar_z     W2         501   +0.0062   0.0210   +0.29  12    no
+cvd_slope_5bar_z     W3         628   -0.0110   0.0166   -0.66  12    no
+
+TOTAL por feature (solo informativo, NO pre-registrado)
+feature              n_dias   mean_IC    SE_NW       t
+cvd_rolling_z          2600   -0.0076   0.0104   -0.73

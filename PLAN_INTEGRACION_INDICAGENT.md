@@ -293,6 +293,17 @@ auditoría, y T0.1 es más contenido/rápido de validar primero).
 
 ### T1.1 — Proxy de Order Flow Imbalance (OFI) desde OHLCV puro
 
+**ESTADO: ✅ CERRADO (2026-08-20, Kilo Code).** Implementado y diagnosticado:
+`ofi_proxy`/`ofi_features` en `indicators.py` + wiring en `calculate_all_indicators`
+(6 columnas `ofi_*`), 6 tests nuevos en `test_indicators.py` (13 passed), entrada en
+`DICCIONARIO_INDICADORES.md`. El IC de diagnóstico se corrió como trial pre-registrado
+§37 (PLAN_MEJORA_MATEMATICA.md): rank IC cross-sectional de `ofi_ewma_fast_z`
+(z rodante causal 100d) vs fwd_20d, universo 50, W1/W2/W3 → **0/3 ventanas con |t|>3.023
+y signo +1 (máx t +0.19; TOTAL t −1.66) → NO_CUMPLE**. Ledger signal_diagnosis 19→20.
+`ofi_*` queda disponible en los indicadores pero NO se promueve a `_factor_scores`
+(regla no negociable del repo: medir antes de integrar — se midió y no predice).
+Artefacto: `backend/data/cache/trial_ofi_proxy_20260820_184638.txt`.
+
 **Objetivo:** agregar una función que aproxime el desequilibrio de flujo de órdenes usando
 solo datos OHLCV diarios (sin ticks — Fortress usa `yfinance`, no hay acceso a datos de tick),
 adaptada de `ofi.py` de indicAgent.

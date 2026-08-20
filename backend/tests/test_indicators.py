@@ -1,6 +1,15 @@
 import numpy as np
 import pandas as pd
-from app.core.indicators import atr, calculate_all_indicators, ema, ofi_features, ofi_proxy, rsi
+from app.core.indicators import (
+    atr,
+    calculate_all_indicators,
+    cvd_features,
+    cvd_proxy,
+    ema,
+    ofi_features,
+    ofi_proxy,
+    rsi,
+)
 
 EXPECTED_COLUMNS = {
     "ema20", "ema50", "ema200", "rsi14", "macd", "macd_signal", "macd_hist",
@@ -9,6 +18,8 @@ EXPECTED_COLUMNS = {
     # T1.1 (PLAN_INTEGRACION_INDICAGENT.md) — proxy OFI desde OHLCV puro
     "ofi_raw", "ofi_ewma_fast", "ofi_ewma_slow", "ofi_spike_z",
     "ofi_price_ret_z", "ofi_divergence",
+    # T1.2 (PLAN_INTEGRACION_INDICAGENT.md) — proxy CVD desde OHLCV puro
+    "cvd_bar_delta", "cvd_rolling", "cvd_slope_5bar", "cvd_divergence",
 }
 
 
@@ -147,3 +158,70 @@ def test_ofi_no_breaks_warmup_with_short_panel(short_ohlcv_df):
     result = calculate_all_indicators(short_ohlcv_df)
     assert isinstance(result, pd.DataFrame)
     assert len(result) == 0  # 50 filas = dropna por momentum_12_1, sin crash
+
+
+# ============================================================
+# T1.2 — CVD proxy (PLAN_INTEGRACION_INDICAGENT.md)
+# ============================================================
+
+def test_cvd_proxy_matches_formula_manual():
+    """Unitario de la fórmula: (2*close-high-low)/(high-low+eps) * volumen."""
+    high = pd.Series([10.0, 20.0, 15.0])
+    low = pd.Series([5.0, 10.0, 10.0])
+    close = pd.Series([10.0, 15.0, 10.0])  # al high / al medio / al low
+    volume = pd.Series([100.0, 200.0, 300.0])
+    result = cvd_proxy(high, low, close, volume)
+    # barra 0: cierre exactamente al high -> delta ≈ +100 (todo comprador)
+    assert abs(result.iloc[0] - 100.0) < 1e-3
+    # barra 1: cierre al medio -> delta ≈ 0
+    assert abs(result.iloc[1]) < 1e-3
+    # barra 2: cierre exactamente al low -> delta ≈ -300 (todo vendedor)
+    assert abs(result.iloc[2] + 300.0) < 1e-3
+
+
+def test_cvd_proxy_zero_on_flat_close_at_mid():
+    """Cierre exactamente al medio del rango → delta cero aunque haya volumen."""
+    high = pd.Series([110.0, 120.0])
+    low = pd.Series([90.0, 100.0])
+    close = pd.Series([100.0, 110.0])  # medio exacto
+    volume = pd.Series([1_000_000.0, 2_000_000.0])
+    result = cvd_proxy(high, low, close, volume)
+    assert np.allclose(result.values, 0.0, atol=1e-3)
+
+
+def test_cvd_rolling_matches_manual_window():
+    """cvd_rolling(window) = suma de los últimos window deltas de barra."""
+    n = 30
+    rng = np.random.default_rng(3)
+    high = pd.Series(100 + rng.uniform(1, 3, n))
+    low = high - pd.Series(rng.uniform(2, 4, n))
+    close = (high + low) / 2 + rng.uniform(-0.5, 0.5, n)
+    volume = pd.Series(rng.uniform(1e5, 5e5, n))
+    window = 7
+    feats = cvd_features(high, low, close, volume, window=window)
+    deltas = feats["cvd_bar_delta"]
+    # Verifica la acumulacion rolling contra suma manual en un par de posiciones
+    for i in (window, window + 5, n - 1):
+        manual = deltas.iloc[i - window + 1:i + 1].sum()
+        assert abs(feats["cvd_rolling"].iloc[i] - manual) < 1e-6
+
+
+def test_cvd_divergence_direction():
+    """cvd_divergence = sign(slope_5) - sign(price_change_5); flujo sin precio → 1."""
+    n = 40
+    high = pd.Series(np.full(n, 104.0))
+    low = pd.Series(np.full(n, 100.0))
+    # Cierre al high (flujo neto comprador fuerte y creciente) pero precio plano
+    close = pd.Series(np.full(n, 103.9))
+    volume = pd.Series(np.linspace(1e6, 5e6, n))  # volumen subiendo
+    feats = cvd_features(high, low, close, volume, window=10)
+    # precio no se mueve -> sign(close.diff(5))=0; flujo subiendo -> slope>0 -> +1
+    tail = feats["cvd_divergence"].iloc[-5:]
+    assert (tail == 1.0).all()
+
+
+def test_calculate_all_indicators_includes_cvd_columns(ohlcv_df):
+    """Las 4 columnas CVD aparecen en el pipeline completo."""
+    result = calculate_all_indicators(ohlcv_df)
+    for col in ("cvd_bar_delta", "cvd_rolling", "cvd_slope_5bar", "cvd_divergence"):
+        assert col in result.columns

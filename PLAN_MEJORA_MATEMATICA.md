@@ -2868,3 +2868,66 @@ pero NO disparan veredicto — son informativas si la principal no cumple.
   integration, pre-registro aparte).
 
 **No se integra al motor.** Ningún cambio a `signal_engine.py::_factor_scores` en este ticket.
+
+**Resultado (2026-08-20, al cierre)**: NO_CUMPLE — `ofi_ewma_fast_z`: W1 t −2.30,
+W2 +0.10, W3 +0.19 (0/3 con signo +1 y |t|>3.023); TOTAL t −1.66 (NEGATIVO además:
+la dirección observada es la contraria a la hipótesis, sin ser significativa).
+Las otras features tampoco (máx |t| −2.32 ofi_raw_z). Veredicto registrado en el
+ledger (`trial_ofi_proxy`, signal_diagnosis 19→20). OFI desde OHLCV diario,
+tal como lo define indicAgent, no contiene información cross-sectional utilizable
+para el retorno a 20 ruedas en el universo 50. Línea cerrada sin integración.
+
+## 38. T1.2 — Proxy CVD (Cumulative Volume Delta desde OHLCV): diagnóstico de IC antes de cualquier integración
+
+**Naturaleza**: TRIAL pre-registrado, familia `signal_diagnosis`, consume **1** slot.
+**Estado**: PRE-REGISTRADO 2026-08-20 (ANTES de correr; veredicto se llena al cierre).
+Familia `signal_diagnosis` ya consumida: **20** (confirmado con `consumed_budget`)
+→ con este trial **n_trials = 21**.
+
+**Umbral Bonferroni de la familia (criterio |t|)**: con n_trials=21, dos colas,
+`ALPHA_PER = 0.05/(2·21) = 0.05/42` → **|t| > z(1−0.05/42) = 3.038**.
+
+**Origen / ticket**: PLAN_INTEGRACION_INDICAGENT.md **T1.2** (ejecutado 2026-08-20,
+Kilo Code). Mismo espíritu que §37: el ticket pide código + test + diagnóstico de IC;
+la promoción al score requiere que este trial lo gane.
+
+**Decisión de diseño registrada** (la que exige el ticket de forma explícita):
+el CVD original de indicAgent resetea el acumulador cada sesión intradía — en barras
+DIARIAS no hay sesión que resetear, así que se implementó acumulación ROLLING de
+`window=20` días hábiles (~1 mes, alineado al horizonte de calibración), sin
+acumulador infinito (evita drift histórico no comparable). El window es decisión de
+diseño NO medida; este trial evalúa esa elección.
+
+**Hipótesis**: la presión neta de flujo compradora/vendedora acumulada reciente
+(cierre al high ⇒ comprador; cierre al low ⇒ vendedor, ponderado por volumen)
+predice el retorno a 20 ruedas. Signo esperado **+1**: más delta acumulado positivo
+→ mayor retorno futuro.
+
+**Qué se mide** (features `cvd_*`, escritas en `calculate_all_indicators` tras T1.2):
+
+| Feature raw | Definición | z-rating usado |
+|---|---|---|
+| `cvd_rolling` | suma de deltas de las últimas 20 barras | z rodante 100d (feat principal) |
+| `cvd_slope_5bar` | aceleración del rolling (diff 5) | z rodante 100d (informativa) |
+
+(`cvd_divergence` es discreto −2..2 y patrón de divergencia, no una variable de IC
+cross-sectional; se excluye del protocolo IC por diseño de la medición, no por resultado.)
+
+Mismo z rodante ESTRICTAMENTE CAUSAL que §37 (ventana trailing 100d, min_periods=50,
+solo datos ≤ t) — la escala volumétrica difiere órdenes de magnitud entre símbolos,
+el z la hace comparable sin look-ahead.
+
+**Método**: protocolo estándar de la familia, idéntico a §37: panel universo 50,
+SIN máscara de elegibilidad, Spearman cross-sectional por fecha vs `fwd_return_20d`,
+SE Newey-West `L = min(12, n_dias//8)`, ventanas W1 2020-2021 / W2 2022-2023 /
+W3 2024→2026-07-06.
+
+**Criterio de veredicto (pre-registrado, un slot)**:
+CUMPLE si `cvd_rolling_z` alcanza **|t| > 3.038 con signo +1 en ≥ 2/3 ventanas**.
+`cvd_slope_5bar_z` se reporta con su t pero NO dispara veredicto. Horizonte único
+20d, sin re-medición a otros horizontes si no cumple.
+
+**Post-condición**: artefacto `data/cache/trial_cvd_proxy_*.txt`; registro en ledger
+`signal_diagnosis` n=1 (n_trials=21); PLAN_INTEGRACION T1.2, ROADMAP, SESSION_LOG.
+Si NO_CUMPLE: `cvd_*` quedan disponibles pero NO se integran al score. **No se
+integra al motor bajo ninguna rama de este ticket.**
