@@ -41,6 +41,7 @@ class BacktestEngine:
     def _build_calibration_dataset(
         self, indicators_cache: Dict[str, pd.DataFrame], train_end_date: datetime,
         update_bayesian: bool = True, train_start_date: datetime = None,
+        execution_lag_days: int = 1,
     ) -> Tuple[np.ndarray, np.ndarray]:
         """
         Replay histórico previo a train_end_date: por cada fecha (cadencia semanal)
@@ -74,7 +75,15 @@ class BacktestEngine:
                 sig = self.signal_engine.generate_signal(train_df.iloc[: i + 1], symbol, regime_state=0)
                 if sig is None:
                     continue
-                entry = train_df["close"].iloc[i]
+                # Precio de entrada con el MISMO lag de ejecución que el loop
+                # principal: con execution_lag_days>=1 la señal emitida con el
+                # cierre de 'i' se ejecuta en la apertura de 'i+1' (primera
+                # oportunidad real de operar). Con 0 se conserva el sesgo
+                # original (señal y ejecución en la misma barra, cierre de 'i').
+                if execution_lag_days >= 1:
+                    entry = train_df["open"].iloc[i + 1]
+                else:
+                    entry = train_df["close"].iloc[i]
                 future = train_df["close"].iloc[i + CALIBRATION_HORIZON_DAYS]
                 won = future > entry
                 scores.append(sig["score"])
@@ -241,7 +250,24 @@ class BacktestEngine:
         sentiment_data: Dict = None,
         fundamentals_by_symbol: Dict[str, pd.Series] = None,
         track_capital_usage: bool = False,
+        execution_lag_days: int = 1,
     ) -> Dict:
+        """Corre el backtest end-of-day.
+
+        execution_lag_days controla el timing de ejecución relativo a la barra
+        que genera la señal (T0.2, PLAN_INTEGRACION_INDICAGENT.md):
+          - execution_lag_days=0: comportamiento ANTERIOR (el bug). La señal se
+            calcula con el cierre de 'date' y la ejecución (compra/venta) ocurre
+            al cierre de ESA MISMA barra 'date' — imposible en trading real, el
+            cierre oficial no está disponible para operar hasta después de cerrar.
+          - execution_lag_days=1 (default NUEVO): la decisión se toma con el
+            cierre de 'date' pero la ejecución ocurre en la APERTURA de la barra
+            siguiente disponible ('date+1'): precio de entrada = open[date+1],
+            fecha de entrada = date+1; y un stop/target detectado con el cierre
+            de 'date' se ejecuta en open[date+1].
+        El criterio de selección (score/factores/ATR calculados con datos de
+        'date') NO cambia — solo el precio/fecha de ejecución.
+        """
         indicators_cache = {s: calculate_all_indicators(df) for s, df in price_data.items()}
         train_market = {s: df[df.index < start_date] for s, df in market_data.items()}
         self.regime_classifier.fit(train_market)
@@ -269,7 +295,9 @@ class BacktestEngine:
                     )
 
         calibrator = ProbabilityCalibrator(method="platt")
-        cal_scores, cal_outcomes = self._build_calibration_dataset(indicators_cache, start_date)
+        cal_scores, cal_outcomes = self._build_calibration_dataset(
+            indicators_cache, start_date, execution_lag_days=execution_lag_days
+        )
         calibrator.fit(cal_scores, cal_outcomes)
 
         risk_manager = self._make_risk_manager()
@@ -283,7 +311,11 @@ class BacktestEngine:
         last_regime_refit = start_date
         last_calibrator_refit = start_date
 
-        for date in dates:
+        for i, date in enumerate(dates):
+            # Día de ejecución de las decisiones tomadas con el cierre de 'date'
+            # (T0.2): la primera oportunidad real de operar con esa información es
+            # la apertura de la siguiente barra hábil. None = fin de la serie.
+            next_date = dates[i + 1] if i + 1 < len(dates) else None
             current_prices, atrs = {}, {}
             positions_value = 0
 
@@ -311,7 +343,17 @@ class BacktestEngine:
                 shares_to_sell = pos["shares"] // 2 if reason == "PARTIAL_TP" else pos["shares"]
                 if shares_to_sell <= 0:
                     continue
-                exit_price = current_prices.get(symbol, pos["entry_price"]) * (1 - slippage)
+                # T0.2: un stop detectado con el cierre de 'date' se ejecuta en la
+                # apertura de la barra siguiente (lag=1); con lag=0, al cierre de
+                # 'date' (comportamiento anterior).
+                if (execution_lag_days >= 1 and next_date is not None
+                        and symbol in indicators_cache
+                        and next_date in indicators_cache[symbol].index):
+                    exit_price = float(indicators_cache[symbol].loc[next_date, "open"]) * (1 - slippage)
+                    exit_date = next_date
+                else:
+                    exit_price = current_prices.get(symbol, pos["entry_price"]) * (1 - slippage)
+                    exit_date = date
                 cash += exit_price * shares_to_sell * (1 - commission)
                 pnl = (exit_price - pos["entry_price"]) * shares_to_sell
                 self._update_bayesian_weights(pos, pnl)
@@ -319,7 +361,7 @@ class BacktestEngine:
                 trades.append({
                     "symbol": symbol,
                     "entry_date": pos["entry_date"],
-                    "exit_date": date,
+                    "exit_date": exit_date,
                     "entry_price": pos["entry_price"],
                     "exit_price": exit_price,
                     "shares": shares_to_sell,
@@ -341,7 +383,16 @@ class BacktestEngine:
                     row = indicators_cache[symbol].loc[date]
                     if risk_manager.check_technical_exit(row.adx14, row.close, row.ema20, row.ema50):
                         pos = positions[symbol]
-                        exit_price = row.close * (1 - slippage)
+                        # T0.2: misma regla que los stops — salida técnica detectada
+                        # con el cierre de 'date' se ejecuta en la apertura de la
+                        # siguiente barra (lag=1); con lag=0, al cierre de 'date'.
+                        if (execution_lag_days >= 1 and next_date is not None
+                                and next_date in indicators_cache[symbol].index):
+                            exit_price = float(indicators_cache[symbol].loc[next_date, "open"]) * (1 - slippage)
+                            exit_date = next_date
+                        else:
+                            exit_price = row.close * (1 - slippage)
+                            exit_date = date
                         cash += exit_price * pos["shares"] * (1 - commission)
                         pnl = (exit_price - pos["entry_price"]) * pos["shares"]
                         self._update_bayesian_weights(pos, pnl)
@@ -349,7 +400,7 @@ class BacktestEngine:
                         trades.append({
                             "symbol": symbol,
                             "entry_date": pos["entry_date"],
-                            "exit_date": date,
+                            "exit_date": exit_date,
                             "entry_price": pos["entry_price"],
                             "exit_price": exit_price,
                             "shares": pos["shares"],
@@ -374,7 +425,8 @@ class BacktestEngine:
                     # temprana en el BayesianOnlineUpdater.
                     refit_start = date - pd.Timedelta(days=CALIBRATOR_ROLLING_WINDOW_DAYS)
                     new_scores, new_outcomes = self._build_calibration_dataset(
-                        indicators_cache, date, update_bayesian=False, train_start_date=refit_start
+                        indicators_cache, date, update_bayesian=False, train_start_date=refit_start,
+                        execution_lag_days=execution_lag_days,
                     )
                     if len(new_scores) >= 20:
                         calibrator.fit(new_scores, new_outcomes)
@@ -435,27 +487,45 @@ class BacktestEngine:
                     if sig["symbol"] in positions:
                         continue
 
+                    symbol = sig["symbol"]
+                    # T0.2: la señal se generó con el cierre de 'date'; con
+                    # execution_lag_days>=1 la ejecución ocurre en la apertura de
+                    # la siguiente barra hábil (real_entry = open[next_date]). El
+                    # score/factores/ATR de 'date' siguen siendo el INSUMO de la
+                    # decisión — solo cambia el precio/fecha de ejecución.
+                    use_lag = (
+                        execution_lag_days >= 1 and next_date is not None
+                        and symbol in indicators_cache
+                        and next_date in indicators_cache[symbol].index
+                    )
+                    if use_lag:
+                        real_entry = float(indicators_cache[symbol].loc[next_date, "open"])
+                        entry_date = next_date
+                    else:
+                        real_entry = sig["entry_price"]
+                        entry_date = date
+
                     win_prob = float(calibrator.predict(np.array([sig["score"]]))[0])
                     shares = risk_manager.compute_position_size(
-                        equity, sig["entry_price"], sig["atr"],
+                        equity, real_entry, sig["atr"],
                         win_prob=win_prob, payoff_ratio=sig["payoff_ratio"],
-                        symbol=sig["symbol"],
+                        symbol=symbol,
                     )
-                    cost = sig["entry_price"] * shares * (1 + slippage) * (1 + commission)
+                    cost = real_entry * shares * (1 + slippage) * (1 + commission)
 
                     if shares > 0 and cost < cash:
                         cash -= cost
-                        positions[sig["symbol"]] = {
+                        positions[symbol] = {
                             "shares": shares,
-                            "entry_price": sig["entry_price"],
-                            "entry_date": date,
+                            "entry_price": real_entry,
+                            "entry_date": entry_date,
                             "regime_state": sig["regime_state"],
                             "factors": sig["factors"],
                             "g2_score": sig.get("g2_score"),
                             "g3_score": sig.get("g3_score"),
                             "win_prob": win_prob,
                         }
-                        risk_manager.register_entry(sig["symbol"], sig["entry_price"], shares)
+                        risk_manager.register_entry(symbol, real_entry, shares)
 
         return {
             "equity_curve": equity_curve,
