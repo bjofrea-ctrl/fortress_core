@@ -52,6 +52,13 @@ class Settings(BaseSettings):
     # NO cambiarlo a mano: la medición manda.
     COST_PER_SIDE: float = 0.0005
 
+    # Lag de ejecución del backtest end-of-day (T0.2, PLAN_INTEGRACION_INDICAGENT.md).
+    # Default 1 = la señal calculada con el cierre de 'date' se ejecuta en la APERTURA
+    # de la barra siguiente ('date+1'), lo único realista en trading diario (el cierre
+    # oficial no está disponible hasta después de cerrar). 0 = comportamiento ANTERIOR
+    # (el bug): señal y ejecución comparten la misma barra (cierre de 'date').
+    EXECUTION_LAG_DAYS: int = 1
+
     # Alpaca PAPER TRADING — medición de costos reales (M4, app/core/execution_costs.py).
     # ÚNICO propósito: medir slippage/fill reales contra el precio de decisión. Jamás
     # una orden en cuenta live. Credenciales solo acá vía .env / variables de entorno,

@@ -1,0 +1,128 @@
+"""Tests de T0.2 — ejecución con lag (PLAN_INTEGRACION_INDICAGENT.md).
+
+El motor end-of-day calcula la señal con el cierre de 'date' pero, con
+execution_lag_days=1 (default nuevo), ejecuta en la APERTURA de la barra
+siguiente ('date+1'). execution_lag_days=0 conserva el comportamiento ANTERIOR
+(el bug): señal y ejecución comparten la misma barra (cierre de 'date').
+
+Estos tests arman un panel sintético determinístico que dispara UNA señal un
+lunes conocido, le inyectan un gap overnight grande y verificado en el martes,
+y comprueban que el precio de entrada registrado es la apertura del día
+siguiente y NO el cierre del día de la señal.
+"""
+import numpy as np
+import pandas as pd
+import pytest
+
+from app.core.backtest_engine import BacktestEngine
+from app.core.indicators import calculate_all_indicators
+
+SIGNAL_MONDAY = pd.Timestamp("2021-05-10")   # único lunes que dispara señal en el panel
+NEXT_DAY = pd.Timestamp("2021-05-11")        # martes, apertura de ejecución
+SLIPPAGE = 0.0005
+
+# Tickers que el GlobalRegimeClassifier usa como features — el backtest los
+# necesita para fittear/predict el régimen.
+_MARKET_TICKERS = ["SPY", "EFA", "QQQ", "GLD", "DBC", "TIP", "TLT", "AGG", "^VIX"]
+
+
+def _build_panel(n=1000, seed=1, base=100.0, slope=0.10, chop_amp=7.0, chop_freq=0.03):
+    """Panel sintético con tendencia sostenida + ondulaciones periódicas.
+
+    Determinístico (mismo seed + HMM random_state=42) y calibrado para que
+    generate_signal dispare exactamente un lunes (2021-05-10) a través del
+    MISMO camino que corre run() (indicadores ya calculados pasados a
+    generate_signal, que los recalcula internamente).
+    """
+    rng = np.random.default_rng(seed)
+    t = np.arange(n)
+    trend = base * (1 + slope * t / 252)
+    chop = chop_amp * np.sin(2 * np.pi * chop_freq * t)
+    noise = rng.normal(0, 0.4, n)
+    price = trend + chop + np.cumsum(noise)
+    price = np.maximum(price, 5.0)
+    dates = pd.bdate_range("2019-01-01", periods=n)
+    return pd.DataFrame(
+        {
+            "open": price * 0.9995,
+            "high": price * 1.003,
+            "low": price * 0.997,
+            "close": price,
+            "volume": np.full(n, 3_000_000.0),
+        },
+        index=dates,
+    )
+
+
+def _run(price_data, market_data, lag):
+    engine = BacktestEngine(initial_capital=25000)
+    return engine.run(
+        price_data,
+        market_data,
+        pd.Timestamp("2021-01-01"),
+        pd.Timestamp("2021-12-31"),
+        execution_lag_days=lag,
+    )
+
+
+def _gap_panel():
+    """Panel con un gap overnight conocido (+5% de apertura a apertura).
+
+    El lunes 2021-05-10 cierra en 'close'; el martes 2021-05-11 abre un 5%
+    por encima de ese cierre. Así el precio de entrada con lag=1 debe ser la
+    apertura del martes (con gap) y NO el cierre del lunes.
+    """
+    panel = _build_panel()
+    monday_close = float(panel.loc[SIGNAL_MONDAY, "close"])
+    panel.loc[NEXT_DAY, "open"] = monday_close * 1.05
+    return panel, monday_close
+
+
+def _market_data():
+    base = _build_panel()
+    return {t: base.copy() for t in _MARKET_TICKERS}
+
+
+def test_entrada_con_lag_1_se_ejecuta_en_apertura_del_dia_siguiente():
+    panel, monday_close = _gap_panel()
+    res = _run({"SYN": panel}, _market_data(), lag=1)
+
+    assert len(res["trades"]) == 1
+    trade = res["trades"][0]
+    # Se ejecuta el martes (día siguiente al lunes de señal)...
+    assert trade["entry_date"] == NEXT_DAY
+    # ... al PRECIO DE APERTURA del martes (que tiene el gap +5%), no al cierre
+    # del lunes que generó la señal.
+    assert trade["entry_price"] == pytest.approx(float(panel.loc[NEXT_DAY, "open"]), abs=1e-6)
+    assert trade["entry_price"] != pytest.approx(monday_close, abs=1e-6)
+
+
+def test_entrada_con_lag_0_conserva_ejecucion_en_cierre_de_la_senial():
+    panel, monday_close = _gap_panel()
+    res = _run({"SYN": panel}, _market_data(), lag=0)
+
+    assert len(res["trades"]) == 1
+    trade = res["trades"][0]
+    # Comportamiento ANTERIOR (el bug): señal y ejecución en la MISMA barra.
+    assert trade["entry_date"] == SIGNAL_MONDAY
+    assert trade["entry_price"] == pytest.approx(monday_close, abs=1e-6)
+
+
+def test_salida_con_lag_1_usa_apertura_del_dia_siguiente_no_cierre():
+    # Un stop/target detectado con el cierre de 'date' se ejecuta en la apertura
+    # de 'date+1'. Invariante: exit_price = open[exit_date]*(1-slippage) con
+    # lag=1, y = close[exit_date]*(1-slippage) con lag=0.
+    panel, _ = _gap_panel()
+    ind = calculate_all_indicators(panel)
+
+    res1 = _run({"SYN": panel}, _market_data(), lag=1)
+    trade1 = res1["trades"][0]
+    assert trade1["exit_price"] == pytest.approx(
+        float(ind.loc[trade1["exit_date"], "open"]) * (1 - SLIPPAGE), abs=1e-6
+    )
+
+    res0 = _run({"SYN": panel}, _market_data(), lag=0)
+    trade0 = res0["trades"][0]
+    assert trade0["exit_price"] == pytest.approx(
+        float(ind.loc[trade0["exit_date"], "close"]) * (1 - SLIPPAGE), abs=1e-6
+    )

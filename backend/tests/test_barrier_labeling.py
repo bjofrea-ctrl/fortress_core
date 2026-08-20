@@ -14,6 +14,7 @@ from app.core.barrier_labeling import (
     label_entry,
     label_symbol,
     summarize,
+    verify_fidelity,
 )
 
 
@@ -172,3 +173,11 @@ def test_summarize_reporta_peso_de_la_barrera_artificial():
 
 def test_summarize_con_dataframe_vacio():
     assert summarize(pd.DataFrame())["n"] == 0
+
+
+def test_verify_fidelity_verifica_espejo_con_adaptive_risk():
+    # El contrato de fidelidad del módulo (T0.2): las reglas de barrera deben
+    # espejar adaptive_risk.check_all_stops. verify_fidelity() lo comprueba.
+    result = verify_fidelity()
+    assert result["fidelity_ok"] is True
+    assert result["issues"] == []

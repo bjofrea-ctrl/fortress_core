@@ -16,7 +16,18 @@ FIDELIDAD (regla no negociable de ONBOARDING.md): las barreras acá replican
   3. PARTIAL_TP               (price-entry) >= 2.0*ATR, una vez -> vende la MITAD, sigue
   4. TRAILING_STOP            si (max-entry) > 1.5*ATR: sale si price <= max - 2.0*ATR
 Si `adaptive_risk.py` cambia, este módulo queda desactualizado y sus etiquetas dejan de
-ser fieles. `verify_fidelity()` existe para detectarlo.
+ser fieles. `verify_fidelity()` existe para detectarlo (ver abajo).
+
+TIMING DE EJECUCIÓN (T0.2, PLAN_INTEGRACION_INDICAGENT.md): el motor end-of-day ahora
+ejecuta con `execution_lag_days=1` — la señal se decide con el cierre de 'date' pero la
+compra/venda ocurre en la APERTURA de 'date+1' (primera oportunidad real de operar).
+Este módulo etiqueta sobre los cierres: `label_entry` abre al cierre de `entry_index` y
+cierra al cierre de la barra donde se detecta la barrera. Eso es una APROXIMACIÓN del
+nuevo timing (la barrera se DETECTA igual sobre cierres, que es la fidelidad que importa
+para las reglas de salida); el desfase residual —entrar en el cierre de decisión vs la
+apertura siguiente del motor, y salir en el cierre de detección vs la apertura siguiente—
+es una limitación declarada, no un cambio de reglas. Si se quiere replicar el precio de
+ejecución del motor con exactitud hay que pasar los precios 'open' a este módulo.
 
 LIMITACIONES DECLARADAS (antes de usar los resultados, no después):
   - Se etiqueta UNA posición hipotética aislada. Las barreras de cartera
@@ -28,7 +39,8 @@ LIMITACIONES DECLARADAS (antes de usar los resultados, no después):
     poder etiquetarla). Se reporta aparte para poder medir cuánto pesa.
   - El régimen afecta `position_stop`. Si no se provee serie de régimen se usa el estado
     0 (stop 5%, el más permisivo). Pasar la serie real cuando M3 la tenga.
-  - Se opera sobre cierres diarios, igual que el motor. Sin intradía (§13 lo cerró).
+  - Timing: ver sección TIMING DE EJECUCIÓN arriba. Se opera sobre cierres diarios (la
+    barrera se detecta igual que el motor); el motor ejecuta en la apertura siguiente.
 """
 from dataclasses import dataclass
 from typing import Dict, List, Optional, Sequence
@@ -233,3 +245,58 @@ def summarize(labels: pd.DataFrame) -> dict:
         "win_rate_neto": float((labels["label"] > 0).mean()),
         "ret_net_medio": float(labels["ret_net"].mean()),
     }
+
+
+def verify_fidelity() -> dict:
+    """Verifica que las reglas de barrera replican `adaptive_risk.check_all_stops`.
+
+    Es el contrato de fidelidad del módulo (ver docstring del módulo): las
+    constantes y la PRIORIDAD entre barreras deben espejar el RiskManager real.
+    Si `adaptive_risk.py` cambia cualquiera de estas reglas, verify_fidelity()
+    lo detecta y hay que actualizar este módulo en el mismo cambio.
+
+    Nota (T0.2): este chequeo cubre las REGLAS de salida (lo que importa para la
+    fidelidad de las etiquetas). El TIMING de ejecución del motor (entrar/salir
+    en la apertura de la barra siguiente) es una dimensión distinta, declarada en
+    la sección TIMING DE EJECUCIÓN del docstring.
+    """
+    from app.core import adaptive_risk
+    from app.config import settings as _cfg
+
+    issues = []
+
+    # 1. Constantes espejo vs adaptive_risk
+    ref_stops = {r: th["position_stop"] for r, th in adaptive_risk.REGIME_THRESHOLDS.items()}
+    if ref_stops != REGIME_POSITION_STOP:
+        issues.append(f"REGIME_POSITION_STOP no espeja REGIME_THRESHOLDS: {ref_stops}")
+
+    if abs(ABSOLUTE_CEILING - _cfg.ABSOLUTE_CEILING) > 1e-12:
+        issues.append(f"ABSOLUTE_CEILING ({ABSOLUTE_CEILING}) != settings.ABSOLUTE_CEILING ({_cfg.ABSOLUTE_CEILING})")
+
+    if abs(DEFAULT_COST_PER_SIDE - _cfg.COST_PER_SIDE) > 1e-12:
+        issues.append(f"DEFAULT_COST_PER_SIDE ({DEFAULT_COST_PER_SIDE}) != settings.COST_PER_SIDE ({_cfg.COST_PER_SIDE})")
+
+    # 2. Prioridad entre barreras (escenarios representativos)
+    atr = np.full(3, 50.0)
+    # 2a. Techo absoluto tiene prioridad sobre el stop de régimen en la misma barra.
+    bajo_techo = 100.0 * (1.0 - ABSOLUTE_CEILING - 0.03)
+    out = label_entry(np.array([100.0, bajo_techo]), atr, 0, position_stop=0.05)
+    if out is None or out.exit_reason != "ABSOLUTE_CEILING_BREACH":
+        issues.append(f"Techo absoluto no tiene prioridad: {out.exit_reason if out else 'None'}")
+
+    # 2b. Stop de régimen: -4% dispara el del régimen 3 (3%) pero no el del 0 (5%).
+    r3 = label_entry(np.array([100.0, 96.0]), atr, 0, position_stop=REGIME_POSITION_STOP[3])
+    r0 = label_entry(np.array([100.0, 96.0]), atr, 0, position_stop=REGIME_POSITION_STOP[0])
+    if r3 is None or r3.exit_reason != "REGIME_STOP_HIT":
+        issues.append(f"Stop régimen 3 no dispara a -4%: {r3.exit_reason if r3 else 'None'}")
+    if r0 is not None and r0.exit_reason == "REGIME_STOP_HIT":
+        issues.append("Stop régimen 0 dispara a -4% (debería NO disparar)")
+
+    # 2c. Trailing: se arma recién tras superar 1.5*ATR y dispara a max - 2*ATR.
+    t_out = label_entry(np.array([100.0, 102.0, 99.5]), np.full(3, 1.0), 0,
+                        position_stop=0.50)
+    if t_out is None or t_out.exit_reason != "TRAILING_STOP":
+        issues.append(f"Trailing no dispara correctamente: {t_out.exit_reason if t_out else 'None'}")
+
+    ok = len(issues) == 0
+    return {"fidelity_ok": ok, "issues": issues}
