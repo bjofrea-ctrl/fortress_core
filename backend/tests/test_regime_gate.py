@@ -46,7 +46,7 @@ def test_historia_insuficiente_falla_explicito():
 
 
 def test_walk_forward_recalibra_en_los_intervalos_declarados():
-    price_data = _synthetic_price_data(n_days=340, seed=1)
+    price_data = _synthetic_price_data(n_days=365, seed=1)
     gate = WalkForwardRegimeGate(favorable_states=frozenset({0}), min_history=255, recalib_every=20)
     _, diag = gate.label_series(price_data)
 

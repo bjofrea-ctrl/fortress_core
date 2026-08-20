@@ -7,6 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from starlette.concurrency import run_in_threadpool
 
 from app.api.rate_limit import RateLimitDependency
+from app.api.routes.opportunities_universe import SYMBOLS
 from app.core.data_ingestion import download_data
 from app.core.edgar_fundamentals import get_fundamentals
 from app.core.fundamentals_client import FinnhubClient
@@ -187,17 +188,13 @@ async def analyze_symbol(symbol: str, regime_state: int = Query(0, ge=0, le=3)):
 
 @router.get("/universe")
 async def analyze_universe(regime_state: int = Query(0, ge=0, le=3)):
-    """Analiza todos los símbolos disponibles y los rankea."""
-    if not os.path.exists(CACHE_DIR):
-        return {"symbols": [], "error": "No hay datos en cache"}
-
-    files = [f.replace(".parquet", "") for f in os.listdir(CACHE_DIR) if f.endswith(".parquet")]
+    """Analiza todos los símbolos del universo canónico y los rankea."""
     engine = PredictiveEngine()
     macro_data = _load_macro_data()
     sentiment_data = _load_sentiment_data()
     results = []
 
-    for symbol in sorted(files):
+    for symbol in sorted(SYMBOLS):
         try:
             df = download_data(symbol, "2015-01-01")
             if len(df) < 200:

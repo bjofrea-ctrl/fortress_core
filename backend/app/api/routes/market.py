@@ -5,6 +5,7 @@ from fastapi import APIRouter, HTTPException
 
 from app.core.data_ingestion import download_data
 from app.core.indicators import calculate_all_indicators
+from app.api.routes.opportunities_universe import SYMBOLS
 
 router = APIRouter(prefix="/api/market", tags=["market"])
 
@@ -13,12 +14,8 @@ CACHE_DIR = "data/cache"
 
 @router.get("/symbols")
 async def get_symbols():
-    """Lista los símbolos disponibles en el cache."""
-    if not os.path.exists(CACHE_DIR):
-        return {"symbols": []}
-
-    files = [f.replace(".parquet", "") for f in os.listdir(CACHE_DIR) if f.endswith(".parquet")]
-    return {"symbols": sorted(files)}
+    """Lista los símbolos del universo canónico (no artefactos de cache)."""
+    return {"symbols": sorted(SYMBOLS)}
 
 
 @router.get("/prices/{symbol}")
@@ -152,13 +149,9 @@ async def get_symbol_summary(symbol: str):
 @router.get("/overview")
 async def get_market_overview():
     """Retorna un resumen de todos los símbolos para el market overview."""
-    if not os.path.exists(CACHE_DIR):
-        return {"symbols": []}
-
-    files = [f.replace(".parquet", "") for f in os.listdir(CACHE_DIR) if f.endswith(".parquet")]
     overview = []
 
-    for symbol in sorted(files):
+    for symbol in sorted(SYMBOLS):
         try:
             df = download_data(symbol, "2015-01-01")
             if len(df) < 200:

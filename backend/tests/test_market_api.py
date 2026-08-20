@@ -33,6 +33,7 @@ def _patch_io(monkeypatch, cache_dir, ohlcv_df):
 
 def test_symbols_lista_cache(monkeypatch, cache_dir, ohlcv_df):
     _patch_io(monkeypatch, cache_dir, ohlcv_df)
+    monkeypatch.setattr(market, "SYMBOLS", ["TESTA", "TESTB"])
     body = asyncio.run(market.get_symbols())
     assert body == {"symbols": ["TESTA", "TESTB"]}
 
@@ -76,6 +77,7 @@ def test_summary_kpis(monkeypatch, cache_dir, ohlcv_df):
 
 def test_overview_ordena_por_return_y_skipea_series_cortas(monkeypatch, cache_dir, ohlcv_df):
     # TESTC existe en cache pero download_data le devuelve pocos días -> se saltea
+    monkeypatch.setattr(market, "SYMBOLS", ["TESTA", "TESTB", "TESTC"])
     monkeypatch.setattr(market, "CACHE_DIR", cache_dir)
 
     def fake_download(symbol, start="2015-01-01"):
@@ -93,3 +95,21 @@ def test_overview_ordena_por_return_y_skipea_series_cortas(monkeypatch, cache_di
     assert set(body["symbols"][0].keys()) >= {
         "symbol", "price", "total_return_pct", "return_30d_pct", "return_90d_pct",
         "volatility_pct", "high_52w", "low_52w", "range_position", "volume"}
+
+
+def test_overview_ignora_artefactos_de_cache(monkeypatch, cache_dir, ohlcv_df, tmp_path):
+    """Artefactos de trials (baseline_clean, factor_panel, etc.) no se tratan como símbolos."""
+    monkeypatch.setattr(market, "SYMBOLS", ["TESTA", "TESTB"])
+    monkeypatch.setattr(market, "download_data", lambda symbol, start="2015-01-01": ohlcv_df)
+
+    # Crear artefactos que NO son símbolos en el cache dir
+    for name in [
+        "baseline_clean_20260811_150643_events.parquet",
+        "factor_panel_20260811_092828.parquet",
+        "capital_usage_20260811_074928_trades.parquet",
+    ]:
+        (tmp_path / name).write_bytes(ohlcv_df.to_parquet())
+
+    body = asyncio.run(market.get_market_overview())
+    symbols_in_response = {s["symbol"] for s in body["symbols"]}
+    assert symbols_in_response == {"TESTA", "TESTB"}

@@ -85,31 +85,49 @@ def _causal_regime_pair(n_days=300):
 
     clf.model.predict = fake_predict
     clf.model.predict_proba = lambda scaled: np.tile([0.25, 0.25, 0.25, 0.25], (len(scaled), 1))
-    # align_states con < 50 estados no remapea; con >=50 y métricas iguales el
-    # max() por equity elegiría un solo estado; forzamos identidad simple: como
-    # todas las etiquetas son 0 y features solo tienen growth, _align_states
-    # con >=50 vería un solo estado presente -> metrics len < 4 -> devuelve tal cual.
-    clf._extract_features = lambda price_data: feats
+
+    def extract_features(price_data):
+        # Respeta el truncado: devuelve solo las filas de 'feats' cuyas fechas
+        # existen en el price_data pasado. predict_regime_series_causal trunca
+        # price_data a cada fecha, así que esto recorta feats a esa fecha.
+        if not price_data:
+            return feats
+        available = set(price_data["SPY"].index)
+        return feats[feats.index.isin(available)]
+
+    clf._extract_features = extract_features
     return clf, seen_last
+
+
+def _dates_aligned_price_data(clf, n_days=80):
+    """price_data con índice de fechas alineado a feats.index (los métodos
+    truncan por fecha: df.index <= date)."""
+    dates = clf._extract_features({}).index
+    return {"SPY": pd.DataFrame({"close": [1.0] * len(dates)}, index=dates)}
 
 
 def test_predict_regime_series_causal_no_usa_futuro():
     """La propiedad central de T0.1: el método causal nunca deja que una etiqueta
     vea datos posteriores a su propia fecha. `seen_last` registra el último índice
-    del array que cada llamada predict() recibe: para la etiqueta en el índice i,
-    causal debe ver como máximo i (nunca el futuro del bloque)."""
-    clf, seen_last = _causal_regime_pair(n_days=80)
+    del array que cada llamada predict() recibe.
 
-    price_data = {"SPY": pd.DataFrame({"close": [1.0] * 300})}
+    predict_current_regime solo invoca predict() cuando hay >= 60 features (cutoff
+    interno, devuelve default antes). Así que para n=80, predict() se llama para las
+    fechas con índice >= 60, y CADA una ve truncado hasta su propio índice (nunca el
+    futuro)."""
+    clf, seen_last = _causal_regime_pair(n_days=80)
+    price_data = _dates_aligned_price_data(clf)
+
     causal = clf.predict_regime_series_causal(price_data)
 
     assert len(causal) == 80
     assert list(causal.index) == list(clf._extract_features(price_data).index)
-    # cada etiqueta (posición i) se predijo con un predict() truncado a i:
-    # el último índice visto en la i-ésima llamada es i.
-    assert len(seen_last) == 80
-    for i, last in enumerate(seen_last):
-        assert last == i, f"etiqueta {i} vio hasta el índice {last} (futuro)"
+    # predict() se llamó una vez por fecha con >= 60 features (índices 59..79,
+    # cutoff de predict_current_regime: len<60 devuelve default sin llamar predict),
+    # y cada una vio truncado a su propio índice — NUNCA más allá.
+    assert len(seen_last) == 21  # 79 - 59 + 1
+    for expected_i, last in enumerate(seen_last, start=59):
+        assert last == expected_i, f"etiqueta {expected_i} vio hasta el índice {last} (futuro)"
 
 
 def test_predict_regime_series_bloque_si_usa_futuro():
@@ -117,8 +135,8 @@ def test_predict_regime_series_bloque_si_usa_futuro():
     futuro — predict() se llama una sola vez con el array completo. El test muestra
     la diferencia entre ambos métodos, no solo que el causal corre."""
     clf, seen_last = _causal_regime_pair(n_days=80)
+    price_data = _dates_aligned_price_data(clf)
 
-    price_data = {"SPY": pd.DataFrame({"close": [1.0] * 300})}
     clf.predict_regime_series(price_data)
 
     # una sola llamada, con el último índice = 79 (todo el futuro visible)

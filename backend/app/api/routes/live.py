@@ -5,6 +5,8 @@ import pandas as pd
 import yfinance as yf
 from fastapi import APIRouter, HTTPException
 
+from app.api.routes.opportunities_universe import SYMBOLS
+
 router = APIRouter(prefix="/api/market/live", tags=["live"])
 
 # Cache live data for 30 seconds to avoid hitting Yahoo Finance too often
@@ -28,19 +30,14 @@ def _set_cached(key: str, data):
 
 @router.get("/overview")
 async def get_live_overview():
-    """Retorna precios en tiempo real para todos los símbolos del cache."""
+    """Retorna precios en tiempo real para todos los símbolos del universo canónico."""
     cached = _get_cached("overview")
     if cached:
         return cached
 
-    cache_dir = "data/cache"
-    if not os.path.exists(cache_dir):
-        return {"symbols": [], "timestamp": None}
-
-    files = [f.replace(".parquet", "") for f in os.listdir(cache_dir) if f.endswith(".parquet")]
     results = []
 
-    for symbol in sorted(files):
+    for symbol in sorted(SYMBOLS):
         try:
             ticker = yf.Ticker(symbol)
             info = ticker.fast_info

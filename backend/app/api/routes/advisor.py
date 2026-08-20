@@ -49,6 +49,7 @@ from app.api.routes.decision import (
     _load_states_history,
     _transition,
 )
+from app.api.routes.opportunities_universe import SYMBOLS, MARKET_TICKERS
 from app.config import settings
 from app.core import trial_registry
 from app.core.edgar_fundamentals import get_edgar_fundamentals
@@ -99,12 +100,14 @@ def _projected_label(win_prob: Optional[float], calibrator_fitted: bool) -> Dict
 def _cache_date() -> Optional[pd.Timestamp]:
     """Fecha de la rueda más nueva presente en el cache OHLCV (max over files).
 
-    Evita leer 50 parquet completos: usa pandas solo metadata de índice.
+    Solo revisa los tickers del universo canónico (SYMBOLS + MARKET_TICKERS),
+    no todos los .parquet del cache — así no confunde artefactos de trials
+    (baseline_clean, factor_panel, capital_usage, etc.) con símbolos reales.
     """
     best = None
-    for path in glob.glob(os.path.join(_cache_dir(), "*.parquet")):
-        base = os.path.basename(path)[:-8]
-        if not base[:1].isupper() or base.startswith("factor_panel"):
+    for ticker in SYMBOLS + MARKET_TICKERS:
+        path = os.path.join(_cache_dir(), f"{ticker}.parquet")
+        if not os.path.exists(path):
             continue
         try:
             idx = pd.read_parquet(path, columns=["Close"]).index
