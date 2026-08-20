@@ -140,11 +140,11 @@ def test_detect_fvg_exact_3balas_bullish():
     """Criterio 1: 3 velas exactas que forman un gap conocido -> top/bottom correctos."""
     df = _fvg_df(fill=False)
     res = detect_fair_value_gaps(df)
-    H = 100.0 + 0.5 * (40 - 3) + 1.0  # high de la vela m-1
     assert res["fvg_detected"] is True
     assert res["fvg_type"] == 1
-    assert abs(res["fvg_bottom"] - H) < 1e-9
-    assert abs(res["fvg_top"] - (H + 5.0)) < 1e-9
+    # zona del fixture: (high[m-1]=111.0, low[m+1]=116.0)
+    assert abs(res["fvg_bottom"] - 111.0) < 1e-9
+    assert abs(res["fvg_top"] - 116.0) < 1e-9
     assert res["fvg_open_count"] >= 1
 
 
@@ -222,7 +222,8 @@ def test_bos_historial_insuficiente():
 def _sweep_df(reclaim: bool = True) -> pd.DataFrame:
     """70 barras planas (100), swing low en idx 20 (low=80), vela de sweep en
     idx 30 (mecha 79.5, cierre 81). Si reclaim=True, los 3 cierres siguientes
-    confirman por encima del nivel."""
+    confirman por encima del nivel; si reclaim=False, cierran DEBAJO (80) —
+    sin confirmación de recuperación."""
     n = 70
     open_ = np.full(n, 100.0)
     high = np.full(n, 101.0)
@@ -234,9 +235,11 @@ def _sweep_df(reclaim: bool = True) -> pd.DataFrame:
     high[20] = 101.0
     # sweep bullish: mecha perfora 80 pero cierra arriba
     open_[30], close[30], high[30], low[30] = 99.5, 81.0, 100.5, 79.5
-    if reclaim:
-        for k in (31, 32, 33):
+    for k in (31, 32, 33):
+        if reclaim:
             open_[k], close[k], high[k], low[k] = 82.0, 83.0, 83.5, 81.5
+        else:
+            open_[k], close[k], high[k], low[k] = 80.5, 79.5, 80.8, 79.0
     return _df_from_arrays(open_, high, low, close)
 
 
