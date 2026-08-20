@@ -116,7 +116,6 @@ class TestWalkForwardPurge:
         n = 2000
         logret = rng.normal(0, 0.01, n)
         prices = 100 * np.exp(np.cumsum(logret))
-        fwd = np.roll(logret, -20).cumsum() * 0 + pd.Series(logret).shift(-20).fillna(0).values
         # señal débilmente predictiva del forward return a 20d: retorna + ruido
         fwd_20 = np.array([logret[i:i + 20].sum() if i + 20 <= n else 0.0 for i in range(n)])
         signal = fwd_20 + rng.normal(0, 0.005, n)

@@ -1,0 +1,67 @@
+==============================================================================
+PLAN_MEJORA_MATEMATICA §36 — Tarea N: MACD (dirección) y Bollinger (régimen)
+Umbral familia signal_diagnosis (n=19, dos colas): |t| > 3.008
+Ventanas: W1 2020-01-01->2021-12-31, W2 2022-01-01->2023-12-31, W3 2024-01-01->2026-07-06
+==============================================================================
+
+Panel: 133450 filas | 2669 fechas | 50 símbolos
+Rango fechas: 2016-01-04 -> 2026-08-14
+
+--- Etiquetado de régimen HMM (fit <= 2024-12-31, causal) ---
+  régimen 0 (GOLDILOCKS): 9250 filas panel
+  régimen 1 (REFLATION): 40250 filas panel
+  régimen 2 (STAGFLATION): 66850 filas panel
+  régimen 3 (DEFLATION): 17100 filas panel
+
+==============================================================================
+2A — MACD: rank IC intra-día de macd_hist vs fwd_return_20d (signo esperado +1)
+ventana n_dias   mean_IC    SE_NW       t   L  |t|>3.008
+W1         505   +0.0012   0.0304   +0.04  12         no
+W2         501   -0.0179   0.0262   -0.68  12         no
+W3         628   +0.0005   0.0199   +0.03  12         no
+TOTAL     2649   -0.0119   0.0107   -1.12  12
+
+MACD: ventanas SIG+: 0/3 | criterio >=2/3 con signo +1 y |t|>3.01
+VEREDICTO MACD (2A): NO_CUMPLE
+
+==============================================================================
+2B(i) — Bollinger VALIDACIÓN: band_width vs volatilidad realizada futura (signo +1)
+target       n_dias   mean_IC    SE_NW       t  |t|>3.008
+real_vol_20    2649   +0.4282   0.0085  +50.26       SIG+
+real_vol_10    2659   +0.3926   0.0081  +48.28       SIG+
+
+Bollinger (i) VALIDACIÓN: CUMPLE (validez del instrumento — NO dispara el trial)
+
+==============================================================================
+2B(ii) — INTERACCIÓN: rank IC de mom_rsi split por tercil de band_width
+horizonte tercil      n_dias   mean_IC    SE_NW       t
+20d       tranquilo     2649   +0.0093   0.0147   +0.63
+20d       media         2649   -0.0155   0.0148   -1.05
+20d       expansión     2649   +0.0045   0.0167   +0.27
+10d       tranquilo     2659   +0.0080   0.0136   +0.59
+10d       media         2659   +0.0041   0.0132   +0.31
+10d       expansión     2659   +0.0043   0.0151   +0.29
+5d        tranquilo     2664   +0.0147   0.0111   +1.32
+5d        media         2664   +0.0053   0.0106   +0.50
+5d        expansión     2664   +0.0072   0.0120   +0.60
+
+Máx |ΔIC(expansión−tranquilo)|: 5d = +0.0074
+ΔIC>=0.05: False | tercil ganador IC significativo (|t|>3.01): False
+VEREDICTO Bollinger (ii) INTERACCIÓN: NO_CUMPLE
+
+==============================================================================
+2B(ii) — INTERACCIÓN: rank IC de mom_rsi split por régimen HMM (mom_rsi vs fwd_20d)
+régimen      n_dias   mean_IC    SE_NW       t
+GOLDILOCKS      185   +0.0236   0.0587   +0.40
+REFLATION       792   -0.0056   0.0268   -0.21
+STAGFLATION    1330   +0.0179   0.0178   +1.01
+DEFLATION       342   -0.0828   0.0355   -2.33
+
+==============================================================================
+VEREDICTO COMBINADO (familia signal_diagnosis, n=1 slot)
+  MACD (2A):           NO_CUMPLE
+  Bollinger (i) val:   CUMPLE (validación, no edge)
+  Bollinger (ii) inter:NO_CUMPLE
+  TRIAL CUMPLE = (MACD CUMPLE) OR (Bollinger-ii CUMPLE) -> NO_CUMPLE
+
+Out: data/cache/trial_macd_bollinger_20260820_174245.txt
