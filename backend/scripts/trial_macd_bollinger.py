@@ -30,12 +30,11 @@ import sys
 
 import numpy as np
 import pandas as pd
-from scipy import stats
-
 from app.api.routes.opportunities_universe import SYMBOLS
 from app.core.data_ingestion import load_universe
 from app.core.indicators import calculate_all_indicators
 from app.core.regime_classifier import GlobalRegimeClassifier
+from scipy import stats
 
 START = "2018-01-01"
 DATA_END = "2026-08-14"
@@ -163,7 +162,7 @@ def main() -> int:
     out("=" * 78)
     out("PLAN_MEJORA_MATEMATICA §36 — Tarea N: MACD (dirección) y Bollinger (régimen)")
     out(f"Umbral familia signal_diagnosis (n=19, dos colas): |t| > {THRESHOLD:.3f}")
-    out(f"Ventanas: " + ", ".join(f"{k} {v[0].date()}->{v[1].date()}" for k, v in WINDOWS.items()))
+    out("Ventanas: " + ", ".join(f"{k} {v[0].date()}->{v[1].date()}" for k, v in WINDOWS.items()))
     out("=" * 78)
 
     panel = build_panel()

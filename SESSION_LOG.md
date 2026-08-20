@@ -2199,3 +2199,27 @@ anterior) y `ORDENES_MODULOS.md` (M7 → hecho) actualizados.
 - **Auto-backup del repo** ya commiteó T0.2 (fffaadb 14:59 + aa5a52b 15:09) — con mensaje
   genérico. Sin commit descriptivo manual (regla de la ronda). El working tree quedó con
   `RESUMEN_IMPACTO_EXECUTION_LAG.md` + los fixes de ruff de imports sin commitear.
+
+## 2026-08-20 — Tarea N CERRADA: MACD (dirección) y Bollinger (régimen) §36 → NO CUMPLE (OpenCode)
+- **Origen**: PLAN_LARGO_PLAZO Tarea N (OpenCode). Corrección de Boris: MACD y Bollinger
+  son preguntas DISTINTAS — MACD mide DIRECCIÓN (mismo protocolo que Tarea M/§25); Bollinger
+  mide RÉGIMEN de volatilidad (protocolo distinto). Se leyó RESEARCH_PREDICTIVE_INDICATORS.md
+  antes de pre-registrar (MACD 0.05-0.08 a 2-8 sem; Bollinger 0.03-0.05 a 1-2 sem → se midió
+  también a 5-10d, no solo 20d).
+- **Pre-registro §36** (escrito ANTES de correr): familia signal_diagnosis, n=19 (18+1),
+  Bonferroni-19 bilateral → **|t| > 3.008** (confirmado: consumed_budget=18, threshold=0.99474).
+  Veredicto combinado = CUMPLE si MACD CUMPLE O Bollinger-(ii) CUMPLE; Bollinger-(i) es
+  VALIDACIÓN del instrumento (bandwidth→vol futura, garantizado por clustering, NO dispara trial).
+- **MACD (2A, dirección)**: rank IC intra-día macd_hist vs fwd_20d, Spearman por fecha + NW
+  (L=min(12,n/8)), W1/W2/W3 → **0/3** (t +0.04, −0.68, +0.03; TOTAL −1.12). Sin señal direccional.
+- **Bollinger (i) VALIDACIÓN**: band_width vs vol realizada futura → rank IC **+0.428/20d (t +50.3)**
+  y **+0.393/10d (t +48.3)** → validez confirmada: el ancho de banda mide régimen de vol por diseño.
+- **Bollinger (ii) INTERACCIÓN**: mom_rsi rank IC split por tercil de banda → máx |ΔIC(expansión−
+  tranquilo)| **0.0074** (5d) < umbral 0.05; split por régimen HMM (fit ≤2024, causal) débil:
+  máx |t| DEFLATION −2.33 (signo −). Momentum+RSI NO se condiciona por régimen de banda ni HMM.
+- **VEREDICTO COMBINADO: NO_CUMPLE.** Script `scripts/trial_macd_bollinger.py`; artefacto
+  `data/cache/trial_macd_bollinger_20260820_174735.txt`; §36 en PLAN_MEJORA_MATEMATICA.md.
+- **Ledger**: trial `trial_macd_bollinger` registrado (signal_diagnosis 18→19, umbral 0.995).
+  ROADMAP fila Tarea N actualizada. Nada se integra al motor. Sin commit/push (regla de la ronda).
+- **Nota**: no se tocó indicadores.py/signal_engine.py/trial_registry.py/market.py/live.py/predict.py.
+  Git status previo: `backend/tests/test_probabilistic_engine.py` sin trackear de OTRA sesión — NO se tocó.
