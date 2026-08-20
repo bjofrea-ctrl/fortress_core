@@ -29,7 +29,7 @@ Referencias:
 """
 import json
 import os
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
@@ -608,6 +608,25 @@ class WalkForwardValidator:
     """
     Valida el modelo con walk-forward: entrena en ventana,
     evalúa en ventana siguiente, avanza.
+
+    PURGE/EMBARGO (T2.1 — PLAN_INTEGRACION_INDICAGENT.md, Fase 2):
+    Hallazgo verificado contra este código: el corte train/test era CONTIGUO
+    sin purga, y `forward_returns = prices.shift(-horizon)/prices - 1` hace
+    que el retorno de una observación de TRAIN en el día train_end-h sea una
+    ventana que se solapa con las observaciones de TEST (h <= horizon). Sin
+    embargo, purge del LADO DEL TRAIN no corresponde acá: en este diseño no
+    hay modelo entrenado sobre train (cada ventana del walk-forward solo computa
+    correlaciones de test con si misma), y el IC de train jamás se reporta ni
+    decide nada — por lo tanto no existe ninguna estimación que se contamine.
+    El embargo que sí es necesario: excluir del fold de TEST las primeras
+    `purge_bars` observaciones posteriores al corte train/test, cuyo forward
+    return usa el bloque [t+1, t+horizon] que arranca dentro de la ventana de
+    train (momento de la señal inmediatamente previo al fold, contiguo a lo
+    que un hipotético estimador habría visto). Se implementó
+    `purge_bars: int | None = None` → default `horizon` (criterio de
+    indicAgent: "sizeado al horizonte de retorno más largo"), con `purge_bars=0`
+    disponible para reproducir el comportamiento pre-2026-08-20 si alguna vez
+    se necesita comparar contra resultados históricos.
     """
 
     def __init__(self, train_window: int = 504, test_window: int = 63):
@@ -615,7 +634,7 @@ class WalkForwardValidator:
         self.test_window = test_window
 
     def validate(self, df: pd.DataFrame, signal_col: str, return_col: str = "close",
-                 horizon: int = 5) -> Dict:
+                 horizon: int = 5, purge_bars: Optional[int] = None) -> Dict:
         """
         Walk-forward validation de una señal.
 
@@ -624,6 +643,10 @@ class WalkForwardValidator:
             signal_col: Columna de señal
             return_col: Columna de precios
             horizon: Horizonte de retorno
+            purge_bars: Barras de embargo excluidas del inicio del fold de test
+                (ver docstring de la clase, T2.1). None → default = horizon.
+                0 → leg contiguo al corte train/test (comportamiento pre-2026-08-20,
+                solo para reproducir resultados históricos).
 
         Returns:
             Dict con métricas out-of-sample
@@ -634,6 +657,8 @@ class WalkForwardValidator:
         prices = df[return_col]
         signal = df[signal_col]
         forward_returns = prices.shift(-horizon) / prices - 1
+
+        effective_purge = int(horizon) if purge_bars is None else max(0, int(purge_bars))
 
         # Walk-forward
         ic_scores = []
@@ -648,9 +673,14 @@ class WalkForwardValidator:
             _train_signal = signal.iloc[start:train_end]
             _train_returns = forward_returns.iloc[start:train_end]
 
-            # Test window
-            test_signal = signal.iloc[train_end:test_end]
-            test_returns = forward_returns.iloc[train_end:test_end]
+            # Test window — PURGE T2.1: embargo de `effective_purge` barras despues
+            # del corte train/test (forward return del bloque purgado usaba barras
+            # que arrancan dentro de la ventana de train)
+            test_start = train_end + effective_purge
+            if test_start >= test_end:
+                continue
+            test_signal = signal.iloc[test_start:test_end]
+            test_returns = forward_returns.iloc[test_start:test_end]
 
             # Calcular IC en test
             ic = SignalQualityMetrics.compute_ic(test_signal, test_returns)
@@ -675,5 +705,6 @@ class WalkForwardValidator:
             "positive_ic_pct": round(float(np.mean(ic_arr > 0)), 4),
             "train_window": self.train_window,
             "test_window": self.test_window,
+            "purge_bars": effective_purge,
         }
 
