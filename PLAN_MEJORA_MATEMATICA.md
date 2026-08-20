@@ -2793,3 +2793,78 @@ clustering de vol, no es edge transable). Bollinger-(ii) y MACD son las que pued
 puertas. **Post-condición**: artefacto `data/cache/trial_macd_bollinger_*.txt` con tablas
 y veredictos; registro en ledger `signal_diagnosis` n=1; ROADMAP (fila Tarea N) y
 SESSION_LOG actualizados; suite completa en verde. Nada se integra al motor.
+
+## 37. T1.1 — Proxy OFI (Order Flow Imbalance desde OHLCV): diagnóstico de IC antes de cualquier integración
+
+**Naturaleza**: TRIAL pre-registrado, familia `signal_diagnosis`, consume **1** slot.
+**Estado**: PRE-REGISTRADO 2026-08-20 (ANTES de correr; veredicto se llena al cierre).
+Familia `signal_diagnosis` ya consumida: **19** (confirmado con `consumed_budget`)
+→ con este trial **n_trials = 20**.
+
+**Umbral Bonferroni de la familia (criterio |t|)**: con n_trials=20, dos colas,
+`ALPHA_PER = 0.05/(2·20) = 0.05/40` → **|t| > z(1−0.05/40) = 3.023**.
+`current_threshold('signal_diagnosis') = 0.995` al momento de correr.
+
+**Origen / ticket**: PLAN_INTEGRACION_INDICAGENT.md **T1.1** (ejecutado 2026-08-20,
+Kilo Code). El ticket solo pide código + test + diagnóstico de IC — **NO** pide
+promover al score. Este protocolo evalúa el factor con la vara del proyecto;
+el criterio de "promover" es externo al trial.
+
+**Hipótesis**: el proxy OFI positivo (cierre pegado al high de la barra, volumen alto)
+predice retorno futuro positivo. Signo esperado: **+1** para `ofi_ewma_fast`.
+
+**Qué se mide** (4 features OFI, escritas en `calculate_all_indicators` tras T1.1).
+Para homogeneidad cross-sectional (los volúmenes absolutos difieren órdenes de magnitud
+entre símbolos, y eso dominaría cualquier rank IC sobre el valor crudo), cada feature
+se transforma a **z-score rodante por símbolo, ESTRICTAMENTE CAUSAL** (ventana trailing
+100 barras, `min_periods=50`): `z_t = (x_t − media_trailing) / std_trailing`, solo con
+datos ≤ t. Así "¿qué tan alto está el OFI de HOY respecto a la distribución RECIENTE de
+este mismo símbolo?" se vuelve comparable entre símbolos y sin look-ahead. Se reporta
+tanto el t sobre el z rodante (feature operativa) como referencia el signo del raw.
+
+| Feature raw | Definición | z-rating usado |
+|---|---|---|
+| `ofi_raw` | (close−low)/(high−low+eps) × volume | z rodante 100d |
+| `ofi_ewma_fast` | EWMA(span=5) de `ofi_raw` | z rodante 100d (feat principal) |
+| `ofi_ewma_slow` | EWMA(span=20) de `ofi_raw` | z rodante 100d |
+| `ofi_spike_z` | z inline de `ofi_raw` (ya es rodante 100d) | se usa tal cual |
+
+El target es `fwd_return_20d` (mismo horizonte que §25/§27/§28/§36 para comparabilidad).
+
+**Método**: idéntico a §25/§27/§28/§36 (protocolo estándar de la familia):
+rank IC daily (Spearman cross-sectional por fecha), SE Newey-West con
+`L = min(12, n_dias//8)`, ventanas W1/W2/W3 idénticas a §25/§36.
+
+**Criterio de veredicto (pre-registrado, un slot)**:
+CUMPLE si `ofi_ewma_fast_z` (feature principal declarada) alcanza
+**|t| > 3.023 con signo +1 en ≥ 2/3 ventanas** (W1, W2, W3).
+Las otras features (`ofi_ewma_slow`, `ofi_spike_z`, `ofi_raw`) se reportan con su t
+pero NO disparan veredicto — son informativas si la principal no cumple.
+
+**Decisiones de diseño registradas** (no parte del criterio):
+1. **Feat principal = `ofi_ewma_fast_z`** (z rodante 100d de la EWMA 5 del raw — el
+   pseudocódigo de indicAgent `ofi.py` usa EWMA 5 como "presión inmediata"). El z-rating
+   es imprescindible: el valor crudo tiene escala volumétrica que no es comparable
+   cross-sectionalmente entre símbolos de capitalización distinta.
+2. **z rodante ESTRICTAMENTE CAUSAL**: `z_t = (x_t − media[x_{t-99..t}]) / std[x_{t-99..t}]`,
+   `min_periods=50`. NO es look-ahead: cada fecha usa solo historia ≤ t. (Se descartó el
+   z por ventana completa porque usaría fechas futuras de la ventana para normalizar el
+   día actual — el código de la familia es sensible a estos detalles y este diseño
+   queda cerrado acá, antes de correr.)
+3. **Horizonte único 20d**: no se declaran horizontes secundarios pre-registrados
+   para no inflar la cuenta de tests. Si el t a 20d no cumple, se registra
+   NO_CUMPLE sin re-medir a otro horizonte.
+4. **Máscara de elegibilidad**: NO se usa el filtro duro de `generate_signal` para este
+   diagnóstico — se mide sobre TODAS las fechas con todas las columnas presentes.
+   (El patrón "eligible-IC" de `diagnose_factor_ic` es para comparar contra el score
+   del motor; acá el objetivo es el poder predictivo intrínseco del factor.)
+
+**Post-condición (post-execución)**:
+- Artefacto `data/cache/trial_ofi_proxy_*.txt` con tablas por feature y veredicto.
+- Registro en ledger `signal_diagnosis` con n=1 (n_trials=20, umbral 0.995).
+- ROADMAP fila T1.1 y SESSION_LOG actualizados.
+- Si NO_CUMPLE: `ofi_*` se mantendrán en `calculate_all_indicators` pero NO se integran
+  al score; si CUMPLE: se abre una entrada en el siguiente ciclo de trial (signal_engine
+  integration, pre-registro aparte).
+
+**No se integra al motor.** Ningún cambio a `signal_engine.py::_factor_scores` en este ticket.

@@ -1,0 +1,39 @@
+==============================================================================
+PLAN_MEJORA_MATEMATICA §37 — T1.1: diagnóstico de IC del proxy OFI
+Umbral familia signal_diagnosis (n=20, dos colas): |t| > 3.023
+Ventanas: W1 2020-01-01->2021-12-31, W2 2022-01-01->2023-12-31, W3 2024-01-01->2026-07-06
+Feats: z rodante causal 100d por símbolo (min_periods=50); target fwd_20
+==============================================================================
+
+Panel: 133450 filas | 2669 fechas | 50 símbolos
+Rango fechas: 2016-01-04 -> 2026-08-14
+
+Rank IC por ventana, por feature (signo esperado: +1)
+feature            ventana n_dias   mean_IC    SE_NW       t   L  sig+
+----------------------------------------------------------------------
+ofi_raw_z          W1         505   -0.0279   0.0104   -2.68  12    no
+ofi_raw_z          W2         501   -0.0006   0.0132   -0.04  12    no
+ofi_raw_z          W3         628   -0.0018   0.0094   -0.20  12    no
+ofi_ewma_fast_z    W1         505   -0.0425   0.0185   -2.30  12    no
+ofi_ewma_fast_z    W2         501   +0.0020   0.0200   +0.10  12    no
+ofi_ewma_fast_z    W3         628   +0.0031   0.0165   +0.19  12    no
+ofi_ewma_slow_z    W1         505   -0.0443   0.0211   -2.10  12    no
+ofi_ewma_slow_z    W2         501   -0.0035   0.0209   -0.17  12    no
+ofi_ewma_slow_z    W3         628   +0.0136   0.0181   +0.75  12    no
+ofi_spike_z        W1         505   -0.0279   0.0104   -2.68  12    no
+ofi_spike_z        W2         501   -0.0006   0.0132   -0.04  12    no
+ofi_spike_z        W3         628   -0.0018   0.0094   -0.20  12    no
+
+TOTAL por feature (solo informativo, NO pre-registrado)
+feature            n_dias   mean_IC    SE_NW       t
+ofi_raw_z            2600   -0.0106   0.0046   -2.32
+ofi_ewma_fast_z      2600   -0.0128   0.0077   -1.66
+ofi_ewma_slow_z      2600   -0.0117   0.0091   -1.29
+ofi_spike_z          2649   -0.0110   0.0046   -2.41
+
+==============================================================================
+CRITERIO §37: ofi_ewma_fast_z: |t| > 3.023 con signo +1 en >= 2/3 ventanas
+Ventanas SIG+ de ofi_ewma_fast_z: 0/3 -> NO_CUMPLE
+==============================================================================
+
+Out: data/cache/trial_ofi_proxy_20260820_184638.txt
