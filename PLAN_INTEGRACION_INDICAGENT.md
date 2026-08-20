@@ -367,6 +367,17 @@ def ofi_features(high, low, close, volume, span_fast=5, span_slow=20, z_window=1
 
 ### T1.2 — Proxy de Cumulative Volume Delta (CVD) desde OHLCV puro
 
+**ESTADO: ✅ CERRADO (2026-08-20, Kilo Code).** Implementado y diagnosticado:
+`cvd_proxy`/`cvd_features` en `indicators.py` + wiring en `calculate_all_indicators`
+(4 columnas `cvd_*`), 5 tests nuevos (suite del módulo 18 passed). Decisión de diseño
+documentada en el docstring y en DICCIONARIO_INDICADORES.md §4: el reset por sesión
+intradía NO aplica a barras diarias → acumulación rolling 20d en su lugar. El IC de
+diagnóstico se corrió como trial pre-registrado §38: `cvd_rolling_z` (z rodante causal
+100d) vs fwd_20d, universo 50, W1/W2/W3 → **0/3 ventanas con |t|>3.038 y signo +1
+(máx t +0.73 W1, W2 −0.84, W3 +0.38) → NO_CUMPLE**. Ledger signal_diagnosis 20→21.
+`cvd_*` queda disponible en los indicadores pero NO se promueve a `_factor_scores`.
+Artefacto: `backend/data/cache/trial_cvd_proxy_20260820_185959.txt`.
+
 **Objetivo:** igual que T1.1 pero para CVD, adaptado de `cvd.py` de indicAgent.
 
 **Adaptación necesaria — esta es la parte importante:** el `cvd.py` de indicAgent resetea el

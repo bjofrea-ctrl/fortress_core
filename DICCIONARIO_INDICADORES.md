@@ -158,6 +158,34 @@ volatilidad. Sin verificación académica en este proyecto.
 curiosidad técnica que estándar de la industria... requiere extrema cautela para no
 caer en numerología sin fundamento". Descartado — no entra en ninguna cola.
 
+### 4. Flujo de órdenes y volumen (proxies desde OHLCV puro)
+
+Sección agregada con los planes de integración (PLAN_INTEGRACION_INDICAGENT.md,
+2026-08-20, Kilo Code). Estos NO son reales de tick — son PROXIES que aproximan
+la dinámica de flujo de órdenes (OFI/CVD) usando solo OHLCV diario, que es lo que
+Fortress tiene (yfinance). Las fórmulas son las de indicAgent, adaptadas a barras
+diarias vectorizadas.
+
+**Order Flow Imbalance (OFI, proxy)** — Posición del cierre dentro del rango
+intradía ponderada por volumen: `(close−low)/(high−low+eps) × volumen`. Cierre
+pegado al high con volumen alto → presión compradora; pegado al low → vendedora.
+Implementado en `indicators.py::ofi_features` (T1.1): `ofi_raw`, `ofi_ewma_fast`,
+`ofi_ewma_slow`, `ofi_spike_z`, `ofi_price_ret_z`, `ofi_divergence`. **Medido
+(§37, 2026-08-20): NO_CUMPLE** — rank IC vs fwd_20d 0/3 ventanas
+(máx |t| 1.66 TOTAL, NEGATIVO). El proxy de OFI desde OHLCV diario no contiene
+información cross-sectional utilizable para retorno a 20 ruedas. Disponible
+en `calculate_all_indicators` pero NO integrado al score.
+
+**Cumulative Volume Delta (CVD, proxy)** — Delta de volumen por barra centrado en
+cero: `(2·close−high−low)/(high−low+eps) × volumen` (cierre al high → comprador;
+al low → vendedor), acumulado en ventana rolling de 20 días. Implementado en
+`indicators.py::cvd_features` (T1.2): `cvd_bar_delta`, `cvd_rolling`,
+`cvd_slope_5bar`, `cvd_divergence`. **Decisión de diseño documentada**: el original
+resetea por sesión intradía; en barras diarias no aplica, se usa acumulación rolling
+20d (alineada al horizonte de calibración). **Medido (§38, 2026-08-20): NO_CUMPLE** —
+rank IC vs fwd_20d 0/3 ventanas (máx |t| 0.73 TOTAL). Disponible en
+`calculate_all_indicators` pero NO integrado al score.
+
 ---
 
 ## PARTE II — Fundamentales (valoración, rentabilidad, crecimiento, solvencia)

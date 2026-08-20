@@ -21,3 +21,11 @@ cvd_slope_5bar_z     W3         628   -0.0110   0.0166   -0.66  12    no
 TOTAL por feature (solo informativo, NO pre-registrado)
 feature              n_dias   mean_IC    SE_NW       t
 cvd_rolling_z          2600   -0.0076   0.0104   -0.73
+cvd_slope_5bar_z       2600   -0.0110   0.0078   -1.40
+
+==============================================================================
+CRITERIO §38: cvd_rolling_z: |t| > 3.038 con signo +1 en >= 2/3 ventanas
+Ventanas SIG+ de cvd_rolling_z: 0/3 -> NO_CUMPLE
+==============================================================================
+
+Out: data/cache/trial_cvd_proxy_20260820_185959.txt

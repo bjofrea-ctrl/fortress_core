@@ -2931,3 +2931,10 @@ CUMPLE si `cvd_rolling_z` alcanza **|t| > 3.038 con signo +1 en ≥ 2/3 ventanas
 `signal_diagnosis` n=1 (n_trials=21); PLAN_INTEGRACION T1.2, ROADMAP, SESSION_LOG.
 Si NO_CUMPLE: `cvd_*` quedan disponibles pero NO se integran al score. **No se
 integra al motor bajo ninguna rama de este ticket.**
+
+**Resultado (2026-08-20, al cierre)**: NO_CUMPLE — `cvd_rolling_z`: W1 t +0.73,
+W2 −0.84, W3 +0.38 (0/3 con signo +1 y |t|>3.038; máx |t| 0.84, ruido puro); TOTAL
+t −0.73. `cvd_slope_5bar_z` tampoco (máx |t| 0.78). Veredicto registrado en el
+ledger (`trial_cvd_proxy`, signal_diagnosis 20→21). El CVD-acumulado-20d desde
+OHLCV diario no contiene información cross-sectional para el retorno a 20 ruedas.
+Línea cerrada sin integración.
