@@ -2325,3 +2325,43 @@ anterior) y `ORDENES_MODULOS.md` (M7 → hecho) actualizados.
 - **Docs**: PLAN_INTEGRACION (3 ESTADOS ✅), PLAN_MEJORA §37/§38 con resultados,
   ROADMAP fila nueva. Disciplina: nada se integró al motor; OFI/CVD quedan disponibles
   en los indicadores por si algún día otra teoría los necesita.
+
+## 2026-08-21 — T1.5 + T1.6 + T2.2 CERRADOS (OpenCode, reparto de los 5 tickets restantes)
+- **Origen**: reparto de Boris (2026-08-20) — OpenCode → T1.5, T1.6, T2.2; Kilo Code → T1.4,
+  T2.3. Sin colisión de archivos (OpenCode toca config_registry/adaptive_risk/barrier_labeling/
+  backtest_engine/probabilistic_engine; Kilo toca indicators/signal_engine/market_structure).
+- **T1.5 — Config Registry versionado point-in-time** ✅: `config_registry.py` (tabla
+  `config_history` append-only, `get_at()` reconstruye valor vigente en timestamp);
+  `adaptive_risk.py::get_regime_thresholds()` + `get_thresholds()` usan la fecha del backtest;
+  `REGIME_THRESHOLDS` queda como seed (`changed_by="initial_estimate"`). Test clave: backtest
+  2023 inalterado tras `set()` posterior; con valid_from=2020 sí altera (sharpe 1.5603→1.6261).
+  10 tests nuevos. **Fix extra**: cache en memoria de get_at/get (dentro de un backtest el
+  registro es inmutable) — sin él ~120k conexiones SQLite por backtest de 50 símbolos.
+- **T1.6 — Taxonomía fina de outcomes + ledger** ✅: `barrier_labeling.py` sub-clasifica el
+  "no tocó nada, expiró" en MAX_HORIZON_PROFIT/MAX_HORIZON_LOSS/NEVER_MOVED (verify_fidelity
+  intacto); nuevo `signal_ledger.py` (tabla signal_ledger, upsert idempotente);
+  `BayesianOnlineUpdater.update()` acepta `strength` (default 1.0 = binario); `_update_bayesian_
+  weights` usa pnl_r como fuerza (cap 10R). 26 tests en test_barrier_labeling + 3+3 nuevos.
+- **T2.2 — Bootstrap de bloques circulares** ✅: `circular_block_bootstrap_ci()` en
+  probabilistic_engine (vectorizado, seed inyectable); `calculate_metrics` devuelve
+  `sharpe_ci`/`cagr_ci`/`max_drawdown_ci` (seed=42 fijo → reproducible). Tests: coverage 0.942
+  del Sharpe verdadero en IID; CI de bloques ~2x más ancho que asintótico en AR(1) φ=0.6.
+- **HALLAZGO CRÍTICO — cuelgue de la suite completa resuelto**: tras T1.5/T1.6/T2.2, la suite
+  colgaba >14 min en el test 30 sin terminar (antes 335 tests en ~5 min). Stack trace
+  (faulthandler): `hurst_exponent` (indicators.py:207, de T2.3 de Kilo Code) usa
+  `logret.rolling(100).apply(_hs, raw=True)` con loop Python de lags por barra — O(n·window·
+  max_lag), enganchado a `calculate_all_indicators` que `backtest_engine.run()` llama por cada
+  uno de 50 símbolos → cientos de millones de ops numpy por backtest. **Autorización puntual
+  de Boris (2026-08-21)**: vectoricé `hurst_exponent` con `sliding_window_view` (mismo
+  algoritmo `_hs`: cumsum sin detrend, std ddof=1, máscara, polyfit, clip [0,1]; solo cambia
+  el mecanismo). Verificado: salida IDÉNTICA a la referencia (max |diff| 0.0, NaN coinciden),
+  **13.7x más rápido** en panel chico; test 30 pasa en 26s (antes colgaba). Suite completa:
+  **355 passed, 2 failed en 6:04** (antes no terminaba).
+- **Los 2 tests que fallan son PRE-EXISTENTES de la otra sesión (T2.3), NO míos** — demostrado
+  con evidencia corriéndolos contra el código ANTERIOR a mi cambio:
+  `test_hurst_exponent_ar1_persistente_mayor_que_antipersistente` (H_pers 0.499 vs H_anti
+  0.395, margen 0.10 < 0.2 esperado) y `test_realized_vol_regime_detecta_shock_de_volatilidad`
+  (shock no eleva ratio >1.2 en 2024-01-30; verificado con código previo: también False).
+  NO los toco (regla de coordinación) — son de Kilo Code T2.3.
+- **Suite**: `cd backend && .venv/bin/python -m pytest -q` → **355 passed, 2 failed** (los de
+  Kilo T2.3), 3 warnings. Ruff limpio.
