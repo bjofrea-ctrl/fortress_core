@@ -183,8 +183,9 @@ def hurst_exponent(close: pd.Series, window: int = 100,
     `min_periods=window//2`: 50 barras alcanzan para estimar y no quema 100
     filas extra de warmup. Ventanas con varianza degenerada (precio plano)
     devuelven NaN — el diagnóstico de IC decide cómo tratarlas. Costo
-    O(window·max_lag) por barra: precomputar UNA vez por símbolo, nunca
-    dentro del loop por fecha del backtest.
+    O(n·max_lag) TOTAL (vectorizado con sliding_window_view), no por barra:
+    seguro precomputar una vez por símbolo y también dentro del pipeline
+    común (calculate_all_indicators).
     """
     def _hs(rets: np.ndarray) -> float:
         if len(rets) < max_lag + 2 or not np.isfinite(rets).all():
@@ -194,7 +195,8 @@ def hurst_exponent(close: pd.Series, window: int = 100,
         sigs = []
         for lag in lags:
             d = z[lag:] - z[:-lag]
-            sigs.append(float(d.std(ddof=1)) if d.std(ddof=1) > 1e-12 else float("nan"))
+            std_d = d.std(ddof=1)
+            sigs.append(float(std_d) if std_d > 1e-12 else float("nan"))
         sigs = np.array(sigs)
         mask = np.isfinite(sigs) & (sigs > 0)
         if mask.sum() < max(3, len(lags) // 2):
@@ -203,8 +205,45 @@ def hurst_exponent(close: pd.Series, window: int = 100,
                            np.log(sigs[mask]), 1)[0]
         return float(np.clip(slope, 0.0, 1.0))
 
-    logret = np.log(close).diff()
-    return logret.rolling(window, min_periods=min_periods).apply(_hs, raw=True)
+    logret = np.log(close).diff().to_numpy()
+    n = len(logret)
+    out = np.full(n, np.nan)
+    if n >= min_periods:
+        # Vectorizado: en lugar de rolling().apply(_hs) por barra (loop Python
+        # por ventana), se materializan todas las ventanas y se calcula el
+        # estimador con operaciones numpy por bloque. Mismo algoritmo que _hs:
+        # cumsum SIN detrend, std por lag con ddof=1, máscara de finitos,
+        # polyfit de log(std) vs log(lag), clip [0,1]. Solo cambia el MECANISMO.
+        from numpy.lib.stride_tricks import sliding_window_view
+
+        # Ventanas completas (tamaño window) alineadas con el rolling() original:
+        # out[t] = _hs(logret[t-window+1 : t+1]) para t >= window-1
+        if n >= window:
+            windows = sliding_window_view(logret, window)  # (n-window+1, window)
+            z = np.cumsum(windows, axis=1)                 # trayectoria por ventana
+            lags = np.arange(2, max_lag + 1, dtype=np.float64)
+            # std por lag para TODAS las ventanas a la vez: (n-window+1, len(lags))
+            sigs_all = np.empty((windows.shape[0], len(lags)))
+            for j, lag in enumerate(lags):
+                d = z[:, int(lag):] - z[:, :-int(lag)]
+                sigs_all[:, j] = d.std(axis=1, ddof=1)
+            valid = np.isfinite(sigs_all) & (sigs_all > 0)
+            enough = valid.sum(axis=1) >= max(3, len(lags) // 2)
+            log_lags = np.log(lags)
+            for i in range(windows.shape[0]):
+                if not enough[i]:
+                    continue
+                m = valid[i]
+                slope = np.polyfit(log_lags[m], np.log(sigs_all[i, m]), 1)[0]
+                out[window - 1 + i] = float(np.clip(slope, 0.0, 1.0))
+
+        # Ventanas parciales (min_periods <= tamaño < window): replican el
+        # comportamiento del rolling con min_periods para los primeros índices:
+        # out[t] = _hs(logret[0 : t+1]) con longitud t+1 (>= min_periods).
+        for t in range(min_periods - 1, min(window - 1, n)):
+            out[t] = _hs(logret[: t + 1])
+
+    return pd.Series(out, index=close.index)
 
 
 def realized_vol_regime(returns: pd.Series, short_window: int = 20,
