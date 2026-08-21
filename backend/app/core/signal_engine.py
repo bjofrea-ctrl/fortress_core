@@ -7,6 +7,63 @@ from app.core.indicators import calculate_all_indicators
 from app.core.probabilistic_engine import BayesianOnlineUpdater
 from app.core.regime_classifier import GlobalRegimeClassifier
 
+# Puerta de riesgo/recompensa mínimo para una señal con resolución estructural
+# (T1.4, PLAN_INTEGRACION_INDICAGENT.md): el VALOR 1.5 es el default del ticket y
+# NO está validado empíricamente — la comparación A/B que lo valida/ajusta vive en
+# `scripts/compare_structural_stop.py` + `RESUMEN_STOP_ESTRUCTURAL.md`.
+# Con el fallback de ATR puro (market_structure=None) RR es siempre exactamente
+# 4/2 = 2.0 ≥ 1.5, así que la puerta es transparente sobre el baseline.
+MIN_RR = 1.5
+
+
+def _resolve_stop(entry: float, atr_v: float, market_structure: Optional[Dict]) -> float:
+    """Jerarquía de stop estructural, adaptada del trade_framer.py de indicAgent.
+
+    Primer match gana; fallback a 2×ATR si nada estructural aplica. Con
+    ``market_structure=None`` el resultado es OBLIGATORIAMENTE el fallback de
+    siempre (entry − 2·ATR) — regresión asegurada por tests.
+    """
+    if market_structure:
+        ob = market_structure.get("order_block") or {}
+        if (ob.get("ob_type") == 1
+                and not ob.get("ob_mitigated", True)
+                and np.isfinite(ob.get("ob_bottom", np.nan))
+                and ob["ob_bottom"] < entry):
+            return ob["ob_bottom"] - atr_v * 0.20
+
+        sweep = market_structure.get("liquidity_sweep") or {}
+        if (sweep.get("sweep_type") == 1
+                and sweep.get("sweep_detected")
+                and np.isfinite(sweep.get("sweep_level", np.nan))
+                and sweep["sweep_level"] < entry):
+            return sweep["sweep_level"] - atr_v * 0.30
+
+        swing_low = market_structure.get("nearest_swing_low")
+        if swing_low is not None and np.isfinite(swing_low) and swing_low < entry:
+            return swing_low - atr_v * 0.25
+
+    return entry - 2.0 * atr_v  # fallback del baseline, sin cambios
+
+
+def _resolve_target(entry: float, atr_v: float, market_structure: Optional[Dict]) -> float:
+    """Candidatos de target por encima de entry; gana el MÁS CERCANO (RR
+    mínimo realista, no el más optimista). Fallback 4×ATR. Con
+    ``market_structure=None`` devuelve obligatoriamente entry + 4·ATR."""
+    if market_structure:
+        candidates = []
+        fvg = market_structure.get("fair_value_gap") or {}
+        if (fvg.get("fvg_type") == 1
+                and np.isfinite(fvg.get("fvg_bottom", np.nan))
+                and fvg["fvg_bottom"] > entry):
+            candidates.append(fvg["fvg_bottom"])
+        resistance = market_structure.get("nearest_resistance")
+        if resistance is not None and np.isfinite(resistance) and resistance > entry:
+            candidates.append(resistance)
+        if candidates:
+            return min(candidates)
+
+    return entry + 4.0 * atr_v  # fallback del baseline, sin cambios
+
 
 class SignalEngine:
     def __init__(self, regime_classifier: GlobalRegimeClassifier,

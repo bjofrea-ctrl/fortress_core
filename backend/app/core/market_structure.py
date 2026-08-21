@@ -410,14 +410,15 @@ def detect_liquidity_sweeps(df: pd.DataFrame, neighbor: int = 5,
 def analyze_market_structure(df: pd.DataFrame,
                              atr: Optional[pd.Series] = None,
                              neighbor: int = 5) -> Dict:
-    """Run all four detectors on one symbol's full history (call ONCE per
-    symbol per backtest run, not per date), and also derive
-    ``nearest_swing_low`` / ``nearest_resistance`` relative to the last close.
+    """Corre los cuatro detectores sobre toda la historia de un símbolo
+    (llamar UNA vez por símbolo por corrida de backtest, no por fecha), y
+    además deriva ``nearest_swing_low`` / ``nearest_resistance`` relativos
+    al último close.
 
-    The dict shape is directly consumable by ``signal_engine::_resolve_stop`` /
-    ``_resolve_target`` (per T1.4 of the plan).
+    El dict shape es directamente consumible por
+    ``signal_engine::_resolve_stop`` / ``_resolve_target`` (T1.4 del plan).
     """
-    if len(df) < MIN_LOOKBACK_FVG:  # shortest lookback: shorter = don't run any
+    if len(df) < MIN_LOOKBACK_FVG:  # lookback mínimo: con menos no se corre nada
         return {"order_block": {"ob_detected": False},
                 "fair_value_gap": {"fvg_detected": False},
                 "bos_choch": {"bos_detected": False},
@@ -431,11 +432,11 @@ def analyze_market_structure(df: pd.DataFrame,
     swing_highs = find_swing_highs(high, neighbor)
     swing_lows = find_swing_lows(low, neighbor)
 
-    # nearest_swing_low: the highest swing low below the last close (overhead
-    # stops need the nearest support underneath, not the most recent in time)
+    # nearest_swing_low: el swing low MÁS ALTO por debajo del último close (para
+    # stops por encima se busca el soporte más cercano por debajo, no el más reciente)
     below = [low[j] for j in swing_lows if low[j] < last_close]
     nearest_swing_low = float(max(below)) if below else None
-    # nearest_resistance: the lowest swing high strictly above the last close
+    # nearest_resistance: el swing high MÁS BAJO estrictamente por encima
     above = [high[j] for j in swing_highs if high[j] > last_close]
     nearest_resistance = float(min(above)) if above else None
 
@@ -446,4 +447,310 @@ def analyze_market_structure(df: pd.DataFrame,
         "liquidity_sweep": detect_liquidity_sweeps(df, neighbor=neighbor),
         "nearest_swing_low": nearest_swing_low,
         "nearest_resistance": nearest_resistance,
+    }
+
+
+# ============================================================
+# Historia causal per-fecha (T1.4: wiring del backtest)
+# ============================================================
+
+def market_structure_history(df: pd.DataFrame,
+                             atr: Optional[pd.Series] = None,
+                             neighbor: int = 5,
+                             impulse_bars: int = 3,
+                             min_move_pct: float = 0.003,
+                             reclaim_bars: int = 3) -> pd.DataFrame:
+    """Serie per-fecha del ESTADO de estructura de mercado, ESTRICTAMENTE CAUSAL.
+
+    Para cada fecha t, cada columna usa SOLO datos ≤ t — misma disciplina que
+    `predict_regime_series_causal` (T0.1): `_resolve_stop`/`_resolve_target`
+    en un día t consumen únicamente estructura confirmada hasta t, nunca zonas
+    cuya formación/mitigación dependa de barras futuras.
+
+    Reglas de visibilidad causal:
+      - un swing en el índice j solo "existe" a partir de la barra j+neighbor
+        (confirmación completa a la derecha);
+      - un order block aparece en su impulse_end y se marca mitigado desde la
+        primera barra ≥ impulse_end que opera dentro de la zona;
+      - un FVG abre en la barra posterior a la vela media y cierra cuando una
+        barra ≥ (media+2) opera dentro de la zona;
+      - un liquidity sweep aparece en su barra; el reclaim se conoce recién en
+        la barra sweep+reclaim_bars (hasta entonces reclaimed=False).
+
+    El largo de la serie == largo de `df`; warmup (antes de MIN_LOOKBACK_FVG)
+    queda con columnas vacías/no-detectadas, igual que `analyze_market_structure`.
+    """
+    n = len(df)
+    idx = df.index
+    open_ = df["open"].to_numpy(dtype=float)
+    close_arr = df["close"].to_numpy(dtype=float)
+    high = df["high"].to_numpy(dtype=float)
+    low = df["low"].to_numpy(dtype=float)
+
+    def s_nan():
+        return np.full(n, np.nan)
+
+    # --- swings confirmados a cada fecha (lag de `neighbor` barras) ---
+    swing_highs = find_swing_highs(high, neighbor)
+    swing_lows = find_swing_lows(low, neighbor)
+    sh_idx_at = np.full(n, -1, dtype=int)
+    sh_prev_at = np.full(n, -1, dtype=int)
+    sl_idx_at = np.full(n, -1, dtype=int)
+    sl_prev_at = np.full(n, -1, dtype=int)
+    p_sh, p2_sh, p_sl, p2_sl = 0, 0, 0, 0
+    # posiciones de confirmación para avanzar punteros
+    for t in range(n):
+        while p_sh < len(swing_highs) and swing_highs[p_sh] + neighbor <= t:
+            p2_sh = p_sh
+            p_sh += 1
+        while p_sl < len(swing_lows) and swing_lows[p_sl] + neighbor <= t:
+            p2_sl = p_sl
+            p_sl += 1
+        if p_sh > 0:
+            sh_idx_at[t] = swing_highs[p_sh - 1]
+            sh_prev_at[t] = swing_highs[p_sh - 2] if p_sh >= 2 else -1
+        if p_sl > 0:
+            sl_idx_at[t] = swing_lows[p_sl - 1]
+            sl_prev_at[t] = swing_lows[p_sl - 2] if p_sl >= 2 else -1
+
+    # --- order blocks causales: eventos (impulse_end, tipo, zona) ---
+    up = close_arr >= open_
+    ob_events = []  # (impulse_end, direction, top, bottom, strength)
+    for i in range(impulse_bars + 1, n + 1):
+        run = up[i - impulse_bars:i]
+        if run.all():
+            direction = 1
+        elif not run.any():
+            direction = -1
+        else:
+            continue
+        move = abs(close_arr[i - 1] - close_arr[i - impulse_bars]) / max(
+            close_arr[i - impulse_bars], 1e-9)
+        if move < min_move_pct:
+            continue
+        ob_idx = i - impulse_bars - 1
+        if ob_idx < 0:
+            continue
+        if direction == 1 and up[ob_idx]:
+            continue
+        if direction == -1 and not up[ob_idx]:
+            continue
+        ob_top = float(max(open_[ob_idx], close_arr[ob_idx]))
+        ob_bottom = float(min(open_[ob_idx], close_arr[ob_idx]))
+        if ob_top <= ob_bottom:
+            ob_top = ob_bottom = float(close_arr[ob_idx])
+        strength = min(1.0, move / max(min_move_pct * 3.0, 1e-9))
+        ob_events.append((i - 1, direction, ob_top, ob_bottom, strength))
+
+    ob_type = np.zeros(n, dtype=int)
+    ob_top_s = s_nan()
+    ob_bottom_s = s_nan()
+    ob_strength_s = s_nan()
+    ob_mitigated = np.zeros(n, dtype=bool)
+    ev_pos, cur, cur_mitigated = 0, None, False
+    for t in range(n):
+        # nuevos OB cuyo impulso terminó en t
+        while ev_pos < len(ob_events) and ob_events[ev_pos][0] == t:
+            cur = ob_events[ev_pos]
+            cur_mitigated = False
+            ev_pos += 1
+        if cur is not None and not cur_mitigated:
+            _, _d, c_top, c_bottom, _ = cur
+            if np.any((low[t] <= c_top) & (high[t] >= c_bottom)) and cur[0] < t:
+                # la barra actual opera dentro de la zona: mitigación desde acá
+                cur_mitigated = True
+        if cur is not None:
+            ob_type[t] = cur[1]
+            ob_top_s[t] = cur[2]
+            ob_bottom_s[t] = cur[3]
+            ob_strength_s[t] = cur[4]
+            ob_mitigated[t] = cur_mitigated
+
+    # --- FVG causales: abren en media+1, cierran al tocarse ---
+    fvg_events = []  # (open_bar, top, bottom, type)
+    for i in range(1, n - 1):
+        if low[i + 1] > high[i - 1]:
+            fvg_events.append((i + 1, float(low[i + 1]), float(high[i - 1]), 1))
+        elif high[i + 1] < low[i - 1]:
+            fvg_events.append((i + 1, float(low[i - 1]), float(high[i + 1]), -1))
+    fvg_type_s = np.zeros(n, dtype=int)
+    fvg_top_s = s_nan()
+    fvg_bottom_s = s_nan()
+    fvg_open_count_s = np.zeros(n, dtype=int)
+    open_gaps = []  # (top, bottom, type) vigentes
+    fe_pos = 0
+    for t in range(n):
+        # relleno: la barra t opera dentro de zonas abiertas ANTES de t
+        still = []
+        for top, bottom, fvg_t in open_gaps:
+            if low[t] <= top and high[t] >= bottom:
+                continue  # rellenada
+            still.append((top, bottom, fvg_t))
+        open_gaps = still
+        # nuevas zonas que ABREN en t (la formación ya es visible completa en t)
+        while fe_pos < len(fvg_events) and fvg_events[fe_pos][0] == t:
+            _, top, bottom, fvg_t = fvg_events[fe_pos]
+            open_gaps.append((top, bottom, fvg_t))
+            fe_pos += 1
+        fvg_open_count_s[t] = len(open_gaps)
+        if open_gaps:
+            top, bottom, fvg_t = open_gaps[-1]
+            fvg_type_s[t] = fvg_t
+            fvg_top_s[t] = top
+            fvg_bottom_s[t] = bottom
+
+    # --- BOS/CHoCH per-fecha ---
+    atr_arr = None
+    if atr is not None:
+        atr_arr = pd.Series(atr).reindex(idx).to_numpy(dtype=float)
+    bos_dir_s = np.zeros(n, dtype=int)
+    bos_level_s = s_nan()
+    bos_strength_s = s_nan()
+    choch_s = np.zeros(n, dtype=bool)
+    trend_s = np.zeros(n, dtype=int)
+    for t in range(n):
+        sh_i, sl_i = sh_idx_at[t], sl_idx_at[t]
+        sh_p, sl_p = sh_prev_at[t], sl_prev_at[t]
+        trend = 0
+        if sh_i >= 0 and sl_i >= 0 and sh_p >= 0 and sl_p >= 0:
+            hh = high[sh_i] > high[sh_p]
+            hl = low[sl_i] > low[sl_p]
+            lh = high[sh_i] < high[sh_p]
+            ll = low[sl_i] < low[sl_p]
+            if hh and hl:
+                trend = 1
+            elif lh and ll:
+                trend = -1
+        trend_s[t] = trend
+        bos_dir, bos_level = 0, np.nan
+        if sh_i >= 0 and close_arr[t] > high[sh_i]:
+            bos_dir, bos_level = 1, float(high[sh_i])
+        elif sl_i >= 0 and close_arr[t] < low[sl_i]:
+            bos_dir, bos_level = -1, float(low[sl_i])
+        if bos_dir != 0:
+            bos_dir_s[t] = bos_dir
+            bos_level_s[t] = bos_level
+            if atr_arr is not None and np.isfinite(atr_arr[t]) and atr_arr[t] > 0:
+                bos_strength_s[t] = min(abs(close_arr[t] - bos_level) / atr_arr[t], 10.0)
+            if (bos_dir == -1 and trend == 1) or (bos_dir == 1 and trend == -1):
+                choch_s[t] = True
+
+    # --- liquidity sweeps causales: evento en barra t, reclaim visible en
+    # t+reclaim_bars (hasta entonces reclaimed=False, por causalidad) ---
+    sweep_type_s = np.zeros(n, dtype=int)
+    sweep_level_s = s_nan()
+    sweep_depth_s = s_nan()
+    sweep_reclaimed_s = np.zeros(n, dtype=bool)
+    sweep_strength_s = s_nan()
+    pending = None  # (resolve_bar, tipo, nivel, profundidad, reclaim_real)
+    cur_sweep = None  # (tipo, nivel, profundidad, reclaim) ya resuelto
+    for t in range(n):
+        if pending is not None and t >= pending[0]:
+            cur_sweep = (pending[1], pending[2], pending[3], pending[4])
+            pending = None
+        swept = False
+        if t > 0:
+            # último swing confirmado ANTES de la barra de sweep (causalidad)
+            sl_prev = sl_idx_at[t - 1]
+            sh_prev = sh_idx_at[t - 1]
+            if sl_prev >= 0:
+                level = low[sl_prev]
+                if low[t] < level < close_arr[t]:
+                    depth = (level - low[t]) / level if level else 0.0
+                    full = t + reclaim_bars < n
+                    reclaim_val = full and bool(
+                        np.all(close_arr[t + 1:t + 1 + reclaim_bars] > level))
+                    swept = True
+                    pending = (t + reclaim_bars, 1, float(level), float(depth), reclaim_val)
+            if not swept and sh_prev >= 0:
+                level = high[sh_prev]
+                if high[t] > level > close_arr[t]:
+                    depth = (high[t] - level) / level if level else 0.0
+                    full = t + reclaim_bars < n
+                    reclaim_val = full and bool(
+                        np.all(close_arr[t + 1:t + 1 + reclaim_bars] < level))
+                    swept = True
+                    pending = (t + reclaim_bars, -1, float(level), float(depth), reclaim_val)
+            if swept:
+                sweep_type_s[t] = pending[1]
+                sweep_level_s[t] = pending[2]
+                sweep_depth_s[t] = pending[3]
+                sweep_strength_s[t] = min(1.0, pending[3] / 0.01) if pending[3] else 0.0
+                # el reclaim se CONOCE recién en t+reclaim_bars
+                sweep_reclaimed_s[t] = False
+        if not swept and cur_sweep is not None and pending is None:
+            sweep_type_s[t] = cur_sweep[0]
+            sweep_level_s[t] = cur_sweep[1]
+            sweep_depth_s[t] = cur_sweep[2]
+            sweep_reclaimed_s[t] = cur_sweep[3]
+            sweep_strength_s[t] = min(1.0, cur_sweep[2] / 0.01) if cur_sweep[2] else 0.0
+
+    # --- nearest_swing_low / nearest_resistance relativos al close de t ---
+    ns_low = s_nan()
+    ns_res = s_nan()
+    for t in range(n):
+        c = close_arr[t]
+        lows_conf = [low[j] for j in swing_lows if j + neighbor <= t]
+        highs_conf = [high[j] for j in swing_highs if j + neighbor <= t]
+        below = [v for v in lows_conf if v < c]
+        above = [v for v in highs_conf if v > c]
+        if below:
+            ns_low[t] = max(below)
+        if above:
+            ns_res[t] = min(above)
+
+    return pd.DataFrame({
+        "ob_type": ob_type, "ob_top": ob_top_s, "ob_bottom": ob_bottom_s,
+        "ob_strength": ob_strength_s, "ob_mitigated": ob_mitigated,
+        "fvg_type": fvg_type_s, "fvg_top": fvg_top_s, "fvg_bottom": fvg_bottom_s,
+        "fvg_open_count": fvg_open_count_s,
+        "bos_direction": bos_dir_s, "bos_level": bos_level_s,
+        "bos_strength": bos_strength_s, "choch_detected": choch_s,
+        "smc_trend": trend_s,
+        "sweep_type": sweep_type_s, "sweep_level": sweep_level_s,
+        "sweep_depth_pct": sweep_depth_s, "sweep_reclaimed": sweep_reclaimed_s,
+        "sweep_strength": sweep_strength_s,
+        "nearest_swing_low": ns_low, "nearest_resistance": ns_res,
+    }, index=idx)
+
+
+def structure_row_to_dict(row) -> Dict:
+    """Convierte una fila de `market_structure_history` al dict que consume
+    `SignalEngine.generate_signal(market_structure=...)` / `_resolve_stop`
+    / `_resolve_target` (mismo shape que `analyze_market_structure`)."""
+    def _float(v):
+        return float(v) if pd.notna(v) else float("nan")
+
+    return {
+        "order_block": {
+            "ob_detected": bool(int(row["ob_type"]) != 0),
+            "ob_type": int(row["ob_type"]),
+            "ob_top": _float(row["ob_top"]),
+            "ob_bottom": _float(row["ob_bottom"]),
+            "ob_strength": _float(row["ob_strength"]),
+            "ob_mitigated": bool(row["ob_mitigated"]),
+        },
+        "fair_value_gap": {
+            "fvg_detected": bool(int(row["fvg_type"]) != 0),
+            "fvg_type": int(row["fvg_type"]),
+            "fvg_top": _float(row["fvg_top"]),
+            "fvg_bottom": _float(row["fvg_bottom"]),
+        },
+        "bos_choch": {
+            "bos_detected": bool(int(row["bos_direction"]) != 0),
+            "bos_direction": int(row["bos_direction"]),
+            "bos_level": _float(row["bos_level"]),
+            "choch_detected": bool(row["choch_detected"]),
+            "smc_trend_direction": int(row["smc_trend"]),
+        },
+        "liquidity_sweep": {
+            "sweep_detected": bool(int(row["sweep_type"]) != 0),
+            "sweep_type": int(row["sweep_type"]),
+            "sweep_level": _float(row["sweep_level"]),
+            "sweep_reclaimed": bool(row["sweep_reclaimed"]),
+        },
+        "nearest_swing_low": _float(row["nearest_swing_low"])
+        if pd.notna(row["nearest_swing_low"]) else None,
+        "nearest_resistance": _float(row["nearest_resistance"])
+        if pd.notna(row["nearest_resistance"]) else None,
     }

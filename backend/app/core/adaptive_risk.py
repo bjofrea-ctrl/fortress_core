@@ -1,15 +1,54 @@
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from typing import Dict, List, Optional, Tuple
 
 from app.config import settings
 
+# Valor semilla del registro de parámetros versionado (T1.5). NO eliminar:
+# se inserta en config_history la primera vez que corre _ensure_schema()
+# (changed_by="initial_estimate") y queda como fallback/default para
+# fechas anteriores al registro. Los call sites se migran a
+# get_regime_thresholds() uno por uno; mientras tanto, importar la
+# constante directo sigue funcionando.
 REGIME_THRESHOLDS = {
     0: {"position_stop": 0.05, "portfolio_stop": 0.05, "max_exposure": 1.00, "cooldown_days": 5},
     1: {"position_stop": 0.07, "portfolio_stop": 0.07, "max_exposure": 0.70, "cooldown_days": 5},
     2: {"position_stop": 0.08, "portfolio_stop": 0.10, "max_exposure": 0.40, "cooldown_days": 10},
     3: {"position_stop": 0.03, "portfolio_stop": 0.03, "max_exposure": 0.20, "cooldown_days": 15},
 }
+
+# Singleton lazy del ConfigRegistry (import adentro de la función para
+# evitar el ciclo de import con config_registry, que importa REGIME_THRESHOLDS).
+_REGISTRY = None
+
+
+def get_regime_thresholds(regime_state: int, at_date: Optional[datetime] = None) -> dict:
+    """Lee los umbrales de riesgo del ConfigRegistry con reconstrucción
+    point-in-time (T1.5): el valor devuelto es el vigente en 'at_date', no
+    el de hoy. REGIME_THRESHOLDS queda como seed del registro y como
+    fallback para fechas anteriores a la creación de la tabla."""
+    global _REGISTRY
+    if _REGISTRY is None:
+        from app.core.config_registry import ConfigRegistry
+
+        _REGISTRY = ConfigRegistry()
+
+    ts = at_date or datetime.now(timezone.utc)
+    fallback = REGIME_THRESHOLDS.get(regime_state, REGIME_THRESHOLDS[0])
+    return {
+        "position_stop": _REGISTRY.get_at(
+            f"risk.regime.{regime_state}.position_stop", ts, default=fallback["position_stop"]
+        ),
+        "portfolio_stop": _REGISTRY.get_at(
+            f"risk.regime.{regime_state}.portfolio_stop", ts, default=fallback["portfolio_stop"]
+        ),
+        "max_exposure": _REGISTRY.get_at(
+            f"risk.regime.{regime_state}.max_exposure", ts, default=fallback["max_exposure"]
+        ),
+        "cooldown_days": _REGISTRY.get_at(
+            f"risk.regime.{regime_state}.cooldown_days", ts, default=fallback["cooldown_days"]
+        ),
+    }
 
 
 @dataclass
@@ -22,6 +61,7 @@ class RiskState:
     cooldown_until: Optional[datetime] = None
     risk_events: List[Dict] = field(default_factory=list)
     current_regime: int = 0
+    current_date: Optional[datetime] = None
 
 
 class AdaptiveRiskManager:
@@ -32,8 +72,13 @@ class AdaptiveRiskManager:
         self.MAX_POSITION_PCT = settings.MAX_POSITION_PCT
         self.VIOLATION_WINDOW_DAYS = settings.VIOLATION_WINDOW_DAYS
 
-    def get_thresholds(self) -> dict:
-        return REGIME_THRESHOLDS.get(self.state.current_regime, REGIME_THRESHOLDS[0])
+    def get_thresholds(self, at_date: Optional[datetime] = None) -> dict:
+        """Umbrales del régimen vigente en 'at_date' (o en la fecha del
+        backtest en curso, si el manager ya la conoce). Point-in-time: un
+        ajuste posterior no altera lo que este manager ve para fechas
+        pasadas (T1.5)."""
+        date = at_date or self.state.current_date
+        return get_regime_thresholds(self.state.current_regime, at_date=date)
 
     def update_regime(self, regime_state: int) -> None:
         self.state.current_regime = regime_state
@@ -83,6 +128,7 @@ class AdaptiveRiskManager:
         date: datetime
     ) -> List[Tuple[str, str]]:
         to_close = []
+        self.state.current_date = date
         thresholds = self.get_thresholds()
 
         for symbol, shares in list(self.state.positions.items()):
@@ -168,12 +214,12 @@ class AdaptiveRiskManager:
         return True
 
     def trigger_cooldown(self, current_date: datetime) -> None:
-        thresholds = self.get_thresholds()
+        thresholds = self.get_thresholds(at_date=current_date)
         self.state.cooldown_until = current_date + timedelta(days=thresholds["cooldown_days"])
 
     def get_risk_report(self, equity: float, current_date: datetime) -> Dict:
         dd = self.drawdown_from_peak(equity)
-        thresholds = self.get_thresholds()
+        thresholds = self.get_thresholds(at_date=current_date)
         return {
             "current_equity": equity,
             "equity_peak": self.state.equity_peak,

@@ -3,6 +3,19 @@ import pandas as pd
 import pytest
 
 
+@pytest.fixture(autouse=True, scope="session")
+def _config_registry_tmp_db(tmp_path_factory):
+    """Aísla el ConfigRegistry (T1.5) de la DB de producción: durante TODA
+    la suite, el singleton de adaptive_risk apunta a una DB temporal en vez
+    de backend/fortress.db. Sin esto, cualquier test que corra un backtest
+    sembraría/leería config_history en la DB real."""
+    from app.core.config_registry import ConfigRegistry
+    from app.core import adaptive_risk
+
+    adaptive_risk._REGISTRY = ConfigRegistry(str(tmp_path_factory.mktemp("config_registry") / "history.db"))
+    return adaptive_risk._REGISTRY
+
+
 @pytest.fixture
 def ohlcv_df():
     """OHLCV sintético con tendencia alcista suave, suficiente para el
