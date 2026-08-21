@@ -7,7 +7,7 @@ usa precios que arrancan dentro de la ventana de train).
 """
 import numpy as np
 import pandas as pd
-from app.core.probabilistic_engine import SignalQualityMetrics, WalkForwardValidator
+from app.core.probabilistic_engine import BayesianOnlineUpdater, SignalQualityMetrics, WalkForwardValidator
 
 
 def _make_df(n: int = 400, seed: int = 42) -> pd.DataFrame:
@@ -128,3 +128,29 @@ class TestWalkForwardPurge:
         assert -1.0 <= result["mean_ic"] <= 1.0
         # la señal SÍ es predictiva por construcción → IC medio positivo alto
         assert result["mean_ic"] > 0.3
+
+
+def test_update_bayesiano_default_sigue_siendo_binario():
+    """T1.6: sin strength, update() conserva el comportamiento previo (alpha/beta +1)."""
+    updater = BayesianOnlineUpdater()
+    updater.update("0_x", correct=True, base_weight=0.1)
+    updater.update("0_x", correct=False, base_weight=0.1)
+    assert updater.get_posterior("0_x") == (2.0, 2.0)
+
+
+def test_update_bayesiano_strength_escala_la_evidencia():
+    """T1.6: un outcome de 5R pesa 5x la evidencia de uno binario."""
+    small = BayesianOnlineUpdater()
+    small.update("0_x", correct=True, base_weight=0.1, strength=1.0)
+    big = BayesianOnlineUpdater()
+    big.update("0_x", correct=True, base_weight=0.1, strength=5.0)
+    assert small.get_posterior("0_x") == (2.0, 1.0)
+    assert big.get_posterior("0_x") == (6.0, 1.0)
+    assert big.get_weight("0_x") > small.get_weight("0_x")
+
+
+def test_update_bayesiano_strength_negativo_se_trata_como_cero():
+    """Un strength inválido (<0) no puede "descontar" evidencia."""
+    updater = BayesianOnlineUpdater()
+    updater.update("0_x", correct=True, base_weight=0.1, strength=-3.0)
+    assert updater.get_posterior("0_x") == (1.0, 1.0)

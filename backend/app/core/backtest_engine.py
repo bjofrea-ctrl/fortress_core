@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 from scipy.stats import norm
 
-from app.core.adaptive_risk import AdaptiveRiskManager
+from app.core.adaptive_risk import REGIME_THRESHOLDS, AdaptiveRiskManager
 from app.core.indicators import calculate_all_indicators
 from app.core.market_structure import market_structure_history, structure_row_to_dict
 from app.core.probabilistic_engine import (
@@ -24,6 +24,10 @@ CALIBRATION_STRIDE_DAYS = 5    # semanal, misma cadencia que el rebalanceo real
 REGIME_REFIT_STRIDE_DAYS = 63  # ~trimestral: antes el HMM se fiteaba una sola vez y nunca más
 CALIBRATOR_REFIT_STRIDE_DAYS = 63    # misma cadencia trimestral, mismo motivo
 CALIBRATOR_ROLLING_WINDOW_DAYS = 730  # ~2 años calendario, similar al train_window de WalkForwardValidator
+
+# T1.6: techo de la fuerza de evidencia por outcome (en unidades de riesgo/R).
+# Un outcome de 0.2R pesa como 1 observación (piso); uno de 12R pesa 10 (cap).
+BAYES_EVIDENCE_STRENGTH_CAP = 10.0
 
 
 class BacktestEngine:
@@ -105,12 +109,25 @@ class BacktestEngine:
         regime = pos.get("regime_state", 0)
         won = pnl > 0
         priors = self.signal_engine.factor_weights.get(regime, self.signal_engine.factor_weights[0])
+
+        # T1.6: la señal de fuerza del outcome es pnl_r (retorno en unidades de
+        # riesgo), no solo el signo. Riesgo por unidad = entry * position_stop del
+        # régimen (el stop que habría cerrado la posición). strength = |pnl_r|
+        # acotado: un outcome de 0.2R pesa como 1 observación; uno de 5R pesa 5.
+        entry = float(pos.get("entry_price") or 0.0)
+        shares = float(pos.get("shares") or 0.0)
+        stop = REGIME_THRESHOLDS.get(regime, REGIME_THRESHOLDS[0])["position_stop"]
+        risk_dollars = entry * shares * stop
+        pnl_r = (pnl / risk_dollars) if risk_dollars > 0 else (1.0 if won else -1.0)
+        strength = min(max(abs(pnl_r), 1.0), BAYES_EVIDENCE_STRENGTH_CAP)
+
         for factor, score in factors.items():
             if factor not in priors:
                 continue  # p.ej. sentiment_v1: el blend es externo al BMA, sin prior propio
             predicted_up = score > 0.5
             self.bayesian_updater.update(
-                f"{regime}_{factor}", correct=(predicted_up == won), base_weight=priors[factor]
+                f"{regime}_{factor}", correct=(predicted_up == won), base_weight=priors[factor],
+                strength=strength,
             )
 
     def validate_signal_quality(

@@ -497,14 +497,12 @@ def market_structure_history(df: pd.DataFrame,
     sh_prev_at = np.full(n, -1, dtype=int)
     sl_idx_at = np.full(n, -1, dtype=int)
     sl_prev_at = np.full(n, -1, dtype=int)
-    p_sh, p2_sh, p_sl, p2_sl = 0, 0, 0, 0
+    p_sh, p_sl = 0, 0
     # posiciones de confirmación para avanzar punteros
     for t in range(n):
         while p_sh < len(swing_highs) and swing_highs[p_sh] + neighbor <= t:
-            p2_sh = p_sh
             p_sh += 1
         while p_sl < len(swing_lows) and swing_lows[p_sl] + neighbor <= t:
-            p2_sl = p_sl
             p_sl += 1
         if p_sh > 0:
             sh_idx_at[t] = swing_highs[p_sh - 1]

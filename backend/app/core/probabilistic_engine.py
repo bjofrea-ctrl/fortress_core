@@ -258,7 +258,8 @@ class BayesianOnlineUpdater:
         self.beta: Dict[str, float] = {}
         self.weights: Dict[str, float] = {}
 
-    def update(self, signal_name: str, correct: bool, base_weight: float = 0.1):
+    def update(self, signal_name: str, correct: bool, base_weight: float = 0.1,
+               strength: float = 1.0):
         """
         Actualiza el peso de una señal con nueva evidencia.
 
@@ -266,15 +267,19 @@ class BayesianOnlineUpdater:
             signal_name: Nombre de la señal
             correct: Si la señal fue correcta
             base_weight: Peso base de la señal
+            strength: Fuerza de la evidencia (>= 0). 1.0 = una observación binaria
+                (comportamiento previo); valores > 1.0 dan más peso a outcomes de
+                magnitud grande (p.ej. un pnl_r alto). Se permiten fracciones.
         """
         if signal_name not in self.alpha:
             self.alpha[signal_name] = self.prior_alpha
             self.beta[signal_name] = self.prior_beta
 
+        evidence = max(float(strength), 0.0)
         if correct:
-            self.alpha[signal_name] += 1
+            self.alpha[signal_name] += evidence
         else:
-            self.beta[signal_name] += 1
+            self.beta[signal_name] += evidence
 
         # Posterior mean: alpha / (alpha + beta)
         posterior_mean = self.alpha[signal_name] / (self.alpha[signal_name] + self.beta[signal_name])

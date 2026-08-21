@@ -125,3 +125,47 @@ def test_salida_con_lag_1_usa_apertura_del_dia_siguiente_no_cierre():
     assert trade0["exit_price"] == pytest.approx(
         float(ind.loc[trade0["exit_date"], "close"]) * (1 - SLIPPAGE), abs=1e-6
     )
+
+
+def test_update_bayesian_weights_usa_pnl_r_como_fuerza_de_evidencia():
+    # T1.6: _update_bayesian_weights pasa pnl_r (retorno en unidades de riesgo)
+    # como strength del update Bayesiano, no solo el signo binario.
+    # Posición de 10 acciones a 100 en régimen 0 (stop 5%): riesgo = 100*10*0.05 = 50.
+    # pnl = +250 = +5R -> strength = 5 -> alpha = prior(1) + 5 = 6.
+    engine = BacktestEngine()
+    pos = {
+        "factors": {"momentum": 0.9, "rsi": 0.9},
+        "regime_state": 0,
+        "entry_price": 100.0,
+        "shares": 10,
+    }
+    engine._update_bayesian_weights(pos, pnl=250.0)
+    alpha, beta = engine.bayesian_updater.get_posterior("0_momentum")
+    assert alpha == pytest.approx(6.0)
+    assert beta == pytest.approx(1.0)
+
+
+def test_update_bayesian_weights_pnl_r_pequeno_no_reduce_evidencia():
+    # Un outcome de 0.2R (positivo) sigue contando como 1 observación (piso 1.0),
+    # nunca menos que el comportamiento binario previo.
+    engine = BacktestEngine()
+    pos = {
+        "factors": {"momentum": 0.9},
+        "regime_state": 0,
+        "entry_price": 100.0,
+        "shares": 10,
+    }
+    engine._update_bayesian_weights(pos, pnl=10.0)  # 10/50 = 0.2R
+    alpha, beta = engine.bayesian_updater.get_posterior("0_momentum")
+    assert alpha == pytest.approx(2.0)
+    assert beta == pytest.approx(1.0)
+
+
+def test_update_bayesian_weights_sin_datos_de_riesgo_cae_a_signo():
+    # Sin entry_price/shares no hay riesgo en dólares -> fallback a signo binario.
+    engine = BacktestEngine()
+    pos = {"factors": {"momentum": 0.9}, "regime_state": 0}
+    engine._update_bayesian_weights(pos, pnl=5.0)
+    alpha, beta = engine.bayesian_updater.get_posterior("0_momentum")
+    assert alpha == pytest.approx(2.0)
+    assert beta == pytest.approx(1.0)

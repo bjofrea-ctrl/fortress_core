@@ -310,16 +310,15 @@ def test_min_lookbacks_constants_match_ticket():
 # T1.4 — market_structure_history: serie causal per-fecha (sin look-ahead)
 # ============================================================
 
-def test_history_causal_no_sabe_el_futuro(_ob_df=_ob_df):  # noqa: F841 (alias)
+def test_history_causal_no_sabe_el_futuro():
     """Invariante causal: la fila de la fecha t es idéntica si se computa sobre
-    la serie truncada a t o sobre la serie completa (aplicando el prefijo el
-    detector bowwow no puede mirar más allá de t)."""
+    la serie truncada a t o sobre la serie completa — la serie completa no
+    puede mirar más allá de t en ninguna columna."""
     from app.core.market_structure import market_structure_history
     df = _ob_df(mitigated=False)
     full = market_structure_history(df)
     t = df.index[len(df) // 2]
     truncated = market_structure_history(df.loc[:t])
-    # columnas numéricas clave coinciden en el prefijo [0..t]
     for col in ("ob_type", "ob_top", "ob_bottom", "fvg_type", "fvg_top",
                 "nearest_swing_low", "nearest_resistance", "sweep_type"):
         a = full.loc[:t, col]
@@ -329,16 +328,15 @@ def test_history_causal_no_sabe_el_futuro(_ob_df=_ob_df):  # noqa: F841 (alias)
         assert eq.all(), f"columna {col} difiere entre serie completa y truncada a {t}"
 
 
-def test_history_mitigation_appece_recien_en_la_barra_que_toca_la_zona(_ob_df=_ob_df):  # noqa: F841
+def test_history_mitigation_appece_recien_en_la_barra_que_toca_la_zona():
     """La mitigación de un OB es causal: False en las barras del impulso, True
     recién desde la barra que efectivamente opera dentro de la zona."""
     from app.core.market_structure import market_structure_history
     df = _ob_df(mitigated=True)
     hist = market_structure_history(df)
-    b = 30  # barra OB del fixture; impulso en 31..33; mitigación en 35
-    # antes y durante el impulso: no mitigado (la barra del OB aún "vive")
+    # barra 32 está dentro del impulso (31..33): aún no mitigado
     assert bool(hist["ob_mitigated"].iloc[32]) is False
-    # en la barra que toca la zona: ya mitigado
+    # barra 35 = la que opera dentro de la zona (99.6-100.2 vs zona 99.5-100.5)
     assert bool(hist["ob_type"].iloc[35] != 0)
     assert bool(hist["ob_mitigated"].iloc[35]) is True
 
@@ -359,7 +357,8 @@ def test_history_length_and_index_match_input():
 def test_structure_row_to_dict_roundtrip():
     """fila -> dict consumible por generate_signal con el shape exacto."""
     from app.core.market_structure import (
-        market_structure_history, structure_row_to_dict,
+        market_structure_history,
+        structure_row_to_dict,
     )
     df = _ob_df(mitigated=False)
     hist = market_structure_history(df)

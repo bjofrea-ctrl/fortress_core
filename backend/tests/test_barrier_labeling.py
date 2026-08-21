@@ -5,11 +5,16 @@ El objetivo de estos tests NO es cubrir líneas: es probar que las barreras repl
 Cada test construye una serie de precios donde se sabe de antemano qué barrera debe
 disparar y en qué barra.
 """
+import json
+
 import numpy as np
 import pandas as pd
 import pytest
 from app.core.barrier_labeling import (
     ABSOLUTE_CEILING,
+    MAX_HORIZON_LOSS,
+    MAX_HORIZON_PROFIT,
+    NEVER_MOVED,
     REGIME_POSITION_STOP,
     label_entry,
     label_symbol,
@@ -60,7 +65,7 @@ def test_toma_parcial_no_cierra_la_posicion():
     closes = np.array([100.0, 103.0, 103.5, 104.0])
     out = label_entry(closes, _flat_atr(4, 1.0), 0, position_stop=0.05, max_horizon=10)
     assert out.partial_tp_hit is True
-    assert out.exit_reason == "TIME_BARRIER"   # no salió por la parcial
+    assert out.exit_reason == MAX_HORIZON_PROFIT  # no salió por la parcial, horizonte en ganancia
     assert out.exit_index == 3
 
 
@@ -75,15 +80,16 @@ def test_trailing_stop_se_arma_recien_tras_superar_1_5_atr():
 
 def test_trailing_no_dispara_si_nunca_se_armo():
     # ATR=10 -> hace falta subir >15 para armar. Sube 1 y baja: nunca se arma.
+    # Excursión máx desde el entry = 1.5% (<= NEVER_MOVED_MAX_RET) -> NEVER_MOVED.
     closes = np.array([100.0, 101.0, 99.0, 98.5])
     out = label_entry(closes, _flat_atr(4, 10.0), 0, position_stop=0.50, max_horizon=10)
-    assert out.exit_reason == "TIME_BARRIER"
+    assert out.exit_reason == NEVER_MOVED
 
 
 def test_barrera_temporal_se_marca_como_artificial():
     closes = np.array([100.0, 100.1, 100.2, 100.3])
     out = label_entry(closes, _flat_atr(4, 50.0), 0, position_stop=0.50, max_horizon=2)
-    assert out.exit_reason == "TIME_BARRIER"
+    assert out.exit_reason == NEVER_MOVED
     assert out.hit_time_barrier is True
     assert out.bars_held == 2
 
@@ -181,3 +187,105 @@ def test_verify_fidelity_verifica_espejo_con_adaptive_risk():
     result = verify_fidelity()
     assert result["fidelity_ok"] is True
     assert result["issues"] == []
+
+
+def test_never_moved_cuando_el_precio_nunca_se_mueve():
+    # T1.6 (criterio 2): posición que nunca se mueve más de X% se etiqueta
+    # NEVER_MOVED, NO MAX_HORIZON_PROFIT/MAX_HORIZON_LOSS.
+    closes = np.array([100.0, 100.3, 99.9, 100.2, 100.1])
+    out = label_entry(closes, _flat_atr(5, 50.0), 0, position_stop=0.05, max_horizon=4)
+    assert out.exit_reason == NEVER_MOVED
+    assert out.exit_reason not in (MAX_HORIZON_PROFIT, MAX_HORIZON_LOSS)
+    assert out.hit_time_barrier is True
+
+
+def test_never_moved_es_por_movimiento_no_por_signo():
+    # Aunque el neto sea negativo por costos, si el precio nunca se movió
+    # significativamente la categoría es NEVER_MOVED, no MAX_HORIZON_LOSS.
+    closes = np.array([100.0, 100.05, 99.95, 100.0])
+    out = label_entry(closes, _flat_atr(4, 50.0), 0, position_stop=0.05, max_horizon=3)
+    assert out.exit_reason == NEVER_MOVED
+    assert out.ret_net < 0
+
+
+def test_max_horizon_profit_cuando_el_precio_se_movio_en_ganancia():
+    # Se movió +5% (más que el umbral de NEVER_MOVED) y cierra por horizonte
+    # en ganancia, sin tocar otra barrera (ATR=50: parcial/trailing lejanos).
+    closes = np.array([100.0, 102.0, 103.0, 105.0, 104.0])
+    out = label_entry(closes, _flat_atr(5, 50.0), 0, position_stop=0.05, max_horizon=4)
+    assert out.exit_reason == MAX_HORIZON_PROFIT
+    assert out.ret_net > 0
+    assert out.hit_time_barrier is True
+
+
+def test_max_horizon_loss_cuando_el_precio_se_movio_en_perdida():
+    closes = np.array([100.0, 98.0, 97.0, 96.5, 96.0])
+    out = label_entry(closes, _flat_atr(5, 50.0), 0, position_stop=0.05, max_horizon=4)
+    assert out.exit_reason == MAX_HORIZON_LOSS
+    assert out.ret_net < 0
+    assert out.hit_time_barrier is True
+
+
+def test_signal_ledger_persiste_una_fila_por_senal(tmp_path):
+    # T1.6 (criterio 3): correr el labeling con ledger persiste una fila por
+    # señal generada, con categoría de la taxonomía.
+    from app.core.signal_ledger import SignalLedger
+
+    ledger = SignalLedger(db_path=str(tmp_path / "ledger_test.db"))
+    n = 12
+    idx = pd.date_range("2020-01-01", periods=n, freq="B")
+    df = pd.DataFrame({
+        "close": np.linspace(100, 130, n),
+        "atr14": np.full(n, 1.0),
+    }, index=idx)
+    out = label_symbol(df, max_horizon=5, symbol="TEST.SYN", ledger=ledger)
+
+    rows = ledger.fetch()
+    assert len(rows) == len(out) == n - 1
+    taxonomia = {"ABSOLUTE_CEILING_BREACH", "REGIME_STOP_HIT", "PARTIAL_TP",
+                 "TRAILING_STOP", MAX_HORIZON_PROFIT, MAX_HORIZON_LOSS, NEVER_MOVED}
+    assert {r["exit_reason"] for r in rows} <= taxonomia
+    assert all(r["symbol"] == "TEST.SYN" for r in rows)
+
+    # Idempotente: re-etiquetar el mismo panel no duplica filas (upsert por signal_id).
+    label_symbol(df, max_horizon=5, symbol="TEST.SYN", ledger=ledger)
+    assert ledger.count() == n - 1
+
+
+def test_signal_ledger_registra_la_categoria_fina(tmp_path):
+    # Panel plano: TODAS las señales deben quedar como NEVER_MOVED (y ninguna
+    # como MAX_HORIZON_PROFIT/MAX_HORIZON_LOSS) en la tabla persistida.
+    from app.core.signal_ledger import SignalLedger
+
+    ledger = SignalLedger(db_path=str(tmp_path / "ledger_cat.db"))
+    n = 6
+    idx = pd.date_range("2020-01-01", periods=n, freq="B")
+    df = pd.DataFrame({"close": np.full(n, 100.0), "atr14": np.full(n, 50.0)}, index=idx)
+    label_symbol(df, max_horizon=3, symbol="FLAT", ledger=ledger)
+    rows = ledger.fetch()
+    assert len(rows) == n - 1
+    assert all(r["exit_reason"] == NEVER_MOVED for r in rows)
+    assert all(r["exit_reason"] not in (MAX_HORIZON_PROFIT, MAX_HORIZON_LOSS) for r in rows)
+
+
+def test_signal_ledger_roundtrip_factors(tmp_path):
+    from app.core.signal_ledger import SignalLedger
+
+    ledger = SignalLedger(db_path=str(tmp_path / "ledger_rt.db"))
+    ledger.record("SIG1", "AAPL", "2020-01-01", "2020-01-15", MAX_HORIZON_PROFIT, 2.5,
+                  factors={"momentum": 0.8, "rsi": 0.6}, regime_state=1)
+    rows = ledger.fetch(symbol="AAPL")
+    assert len(rows) == 1
+    assert rows[0]["exit_reason"] == MAX_HORIZON_PROFIT
+    assert rows[0]["pnl_r"] == pytest.approx(2.5)
+    assert json.loads(rows[0]["factors_json"]) == {"momentum": 0.8, "rsi": 0.6}
+    assert rows[0]["regime_state"] == 1
+
+
+def test_signal_ledger_exige_symbol_para_persistir(tmp_path):
+    from app.core.signal_ledger import SignalLedger
+
+    ledger = SignalLedger(db_path=str(tmp_path / "ledger_need.db"))
+    df = pd.DataFrame({"close": [100.0, 101.0], "atr14": [1.0, 1.0]})
+    with pytest.raises(ValueError, match="symbol es requerido"):
+        label_symbol(df, ledger=ledger)

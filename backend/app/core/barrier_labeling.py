@@ -18,6 +18,13 @@ FIDELIDAD (regla no negociable de ONBOARDING.md): las barreras acá replican
 Si `adaptive_risk.py` cambia, este módulo queda desactualizado y sus etiquetas dejan de
 ser fieles. `verify_fidelity()` existe para detectarlo (ver abajo).
 
+TAXONOMÍA DE SALIDA (T1.6, PLAN_INTEGRACION_INDICAGENT.md): la salida por barrera
+temporal (artificial, el motor no tiene time stop) se sub-clasifica en
+MAX_HORIZON_PROFIT / MAX_HORIZON_LOSS / NEVER_MOVED. El ORDEN de evaluación de las
+barreras del motor NO cambia; la sub-clasificación solo se aplica al outcome temporal,
+para que BayesianOnlineUpdater aprenda de outcomes más granulares que el binario
+won = pnl > 0.
+
 TIMING DE EJECUCIÓN (T0.2, PLAN_INTEGRACION_INDICAGENT.md): el motor end-of-day ahora
 ejecuta con `execution_lag_days=1` — la señal se decide con el cierre de 'date' pero la
 compra/venda ocurre en la APERTURA de 'date+1' (primera oportunidad real de operar).
@@ -61,10 +68,21 @@ TRAILING_GAP_ATR_MULT = 2.0
 # (settings.COST_PER_SIDE); M4 lo va a reemplazar por el costo MEDIDO — se actualiza
 # en un solo lugar. Este alias se mantiene para no cambiar firmas ni callers.
 from app.config import settings as _settings  # noqa: E402  (import tras constantes espejo)
+from app.core.signal_ledger import SignalLedger  # noqa: E402  (solo para tipado/ledger opcional)
 
 DEFAULT_COST_PER_SIDE = _settings.COST_PER_SIDE
 
 DEFAULT_MAX_HORIZON = 60
+
+# --- Taxonomía de salida temporal (T1.6) ----------------------------------
+# Sub-categorías de lo que antes era un solo "no tocó nada, expiró" (TIME_BARRIER).
+# NEVER_MOVED_MAX_RET: umbral de "nunca se alejó significativamente del entry" —
+# si la excursión máxima absoluta desde el entry no supera este retorno, la señal
+# se etiqueta NEVER_MOVED (ruido), sin importar el signo del retorno neto.
+MAX_HORIZON_PROFIT = "MAX_HORIZON_PROFIT"
+MAX_HORIZON_LOSS = "MAX_HORIZON_LOSS"
+NEVER_MOVED = "NEVER_MOVED"
+NEVER_MOVED_MAX_RET = 0.02
 
 
 @dataclass(frozen=True)
@@ -73,7 +91,8 @@ class BarrierOutcome:
     entry_index: int
     exit_index: int
     bars_held: int
-    exit_reason: str          # ABSOLUTE_CEILING_BREACH | REGIME_STOP_HIT | TRAILING_STOP | TIME_BARRIER
+    exit_reason: str          # ABSOLUTE_CEILING_BREACH | REGIME_STOP_HIT | TRAILING_STOP |
+                              # MAX_HORIZON_PROFIT | MAX_HORIZON_LOSS | NEVER_MOVED
     ret_gross: float          # retorno sin costos
     ret_net: float            # retorno con costos por lado
     label: int                # +1 si ret_net > 0, -1 si < 0, 0 si exactamente 0
@@ -86,6 +105,44 @@ def _leg_return(entry: float, exit_price: float, cost_per_side: float) -> float:
     buy = entry * (1.0 + cost_per_side)
     sell = exit_price * (1.0 - cost_per_side)
     return sell / buy - 1.0
+
+
+def _two_leg_return(entry: float, exit_price: float, partial_price: Optional[float],
+                    cost_per_side: float) -> float:
+    """Retorno de la posición completa (una o dos patas según la toma parcial).
+
+    Si hubo toma parcial la posición son dos patas de media unidad cada una (la
+    vendida en `partial_price` y el remanente en `exit_price`); si no, es una
+    sola pata completa. Bruto = _two_leg_return(..., 0.0).
+    """
+    partial_done = partial_price is not None
+    remaining = 0.5 if partial_done else 1.0
+    ret = remaining * _leg_return(entry, exit_price, cost_per_side)
+    if partial_done:
+        ret += 0.5 * _leg_return(entry, partial_price, cost_per_side)
+    return ret
+
+
+def _classify_time_exit(entry: float, closes: Sequence[float], entry_index: int,
+                        exit_index: int, ret_net: float) -> str:
+    """Sub-clasificación del outcome temporal (T1.6).
+
+    Solo se llama cuando NINGUNA barrera del motor disparó. El orden de
+    evaluación de las barreras no cambia; acá solo se etiqueta más fino el
+    resultado de la barrera temporal:
+      - NEVER_MOVED: la excursión máxima absoluta desde el entry nunca superó
+        NEVER_MOVED_MAX_RET (el precio no se alejó del entry: ruido).
+      - MAX_HORIZON_PROFIT / MAX_HORIZON_LOSS: el precio sí se movió y la
+        posición llegó al horizonte en ganancia o en pérdida (según ret_net).
+    """
+    max_abs_ret = 0.0
+    for t in range(entry_index, exit_index + 1):
+        price = float(closes[t])
+        if np.isfinite(price) and price > 0:
+            max_abs_ret = max(max_abs_ret, abs(price - entry) / entry)
+    if max_abs_ret <= NEVER_MOVED_MAX_RET:
+        return NEVER_MOVED
+    return MAX_HORIZON_PROFIT if ret_net > 0 else MAX_HORIZON_LOSS
 
 
 def label_entry(
@@ -146,9 +203,13 @@ def label_entry(
                 return _close(entry, price, t, entry_index, "TRAILING_STOP",
                               partial_price, cost_per_side, False)
 
-    # Ninguna barrera del motor disparó: cierra por la barrera temporal (artificial)
-    return _close(entry, float(closes[last_index]), last_index, entry_index,
-                  "TIME_BARRIER", partial_price, cost_per_side, True)
+    # Ninguna barrera del motor disparó: cierra por la barrera temporal (artificial).
+    # T1.6: el outcome temporal se sub-clasifica (NEVER_MOVED vs MAX_HORIZON_*).
+    exit_price = float(closes[last_index])
+    net = _two_leg_return(entry, exit_price, partial_price, cost_per_side)
+    reason = _classify_time_exit(entry, closes, entry_index, last_index, net)
+    return _close(entry, exit_price, last_index, entry_index, reason,
+                  partial_price, cost_per_side, True)
 
 
 def _close(entry: float, exit_price: float, exit_index: int, entry_index: int,
@@ -160,18 +221,10 @@ def _close(entry: float, exit_price: float, exit_index: int, entry_index: int,
     en `partial_price` y el remanente vendido en `exit_price`. Bruto y neto se calculan
     sobre las MISMAS patas — la única diferencia es el costo.
     """
+    ret_net = _two_leg_return(entry, exit_price, partial_price, cost_per_side)
+    gross = _two_leg_return(entry, exit_price, partial_price, 0.0)
+
     partial_done = partial_price is not None
-    remaining = 0.5 if partial_done else 1.0
-
-    def total(cost: float) -> float:
-        ret = remaining * _leg_return(entry, exit_price, cost)
-        if partial_done:
-            ret += 0.5 * _leg_return(entry, partial_price, cost)
-        return ret
-
-    ret_net = total(cost_per_side)
-    gross = total(0.0)
-
     label = 1 if ret_net > 0 else (-1 if ret_net < 0 else 0)
     return BarrierOutcome(
         entry_index=entry_index,
@@ -186,6 +239,14 @@ def _close(entry: float, exit_price: float, exit_index: int, entry_index: int,
     )
 
 
+def _ts_key(ts) -> str:
+    """Clave de fecha para el ledger: ISO si es convertible, str si no."""
+    try:
+        return pd.Timestamp(ts).isoformat()
+    except (TypeError, ValueError):
+        return str(ts)
+
+
 def label_symbol(
     df: pd.DataFrame,
     regimes: Optional[Sequence[int]] = None,
@@ -193,14 +254,21 @@ def label_symbol(
     cost_per_side: float = DEFAULT_COST_PER_SIDE,
     close_col: str = "close",
     atr_col: str = "atr14",
+    symbol: Optional[str] = None,
+    ledger: Optional["SignalLedger"] = None,
 ) -> pd.DataFrame:
     """Etiqueta CADA fecha de un símbolo como si se hubiera abierto posición ahí.
 
     `regimes` es la serie de estado HMM por fecha (0-3). Si es None se usa 0 para todo
     (stop 5%) — limitación declarada en el docstring del módulo.
+
+    T1.6: si se pasa `ledger` (SignalLedger) se persiste una fila por señal generada
+    en `fortress.db` — `symbol` es obligatorio en ese caso para armar el signal_id.
     """
     if close_col not in df.columns or atr_col not in df.columns:
         raise ValueError(f"Faltan columnas requeridas: {close_col}, {atr_col}")
+    if ledger is not None and symbol is None:
+        raise ValueError("symbol es requerido cuando se persiste en el ledger")
 
     closes = df[close_col].to_numpy(dtype=float)
     atrs = df[atr_col].to_numpy(dtype=float)
@@ -218,6 +286,17 @@ def label_symbol(
                               max_horizon=max_horizon, cost_per_side=cost_per_side)
         if outcome is None:
             continue
+        if ledger is not None:
+            entry_ts = df.index[i]
+            ledger.record(
+                signal_id=f"{symbol}__{_ts_key(entry_ts)}",
+                symbol=symbol,
+                entry_date=_ts_key(entry_ts),
+                exit_date=_ts_key(df.index[outcome.exit_index]),
+                exit_reason=outcome.exit_reason,
+                pnl_r=(outcome.ret_net / stops[i]) if stops[i] > 0 else outcome.ret_net,
+                regime_state=int(regimes[i]) if regimes is not None else 0,
+            )
         rows.append({
             "date": df.index[i],
             "exit_date": df.index[outcome.exit_index],
