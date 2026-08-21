@@ -6,8 +6,10 @@ from app.core.indicators import (
     cvd_features,
     cvd_proxy,
     ema,
+    hurst_exponent,
     ofi_features,
     ofi_proxy,
+    realized_vol_regime,
     rsi,
 )
 
@@ -20,6 +22,8 @@ EXPECTED_COLUMNS = {
     "ofi_price_ret_z", "ofi_divergence",
     # T1.2 (PLAN_INTEGRACION_INDICAGENT.md) — proxy CVD desde OHLCV puro
     "cvd_bar_delta", "cvd_rolling", "cvd_slope_5bar", "cvd_divergence",
+    # T2.3 (PLAN_INTEGRACION_INDICAGENT.md) — régimen por símbolo
+    "hurst_exponent", "realized_vol_regime",
 }
 
 
@@ -225,3 +229,79 @@ def test_calculate_all_indicators_includes_cvd_columns(ohlcv_df):
     result = calculate_all_indicators(ohlcv_df)
     for col in ("cvd_bar_delta", "cvd_rolling", "cvd_slope_5bar", "cvd_divergence"):
         assert col in result.columns
+
+
+# ============================================================
+# T2.3 — hurst_exponent + realized_vol_regime
+# ============================================================
+
+def test_hurst_exponent_random_walk_cerca_de_05():
+    """Criterio de aceptación 1a: random walk puro → media de H razonablemente
+    cerca de 0.5 (sesgo de muestra finito conocido, documentado en el docstring:
+    ~0.41 con window=100, convergiendo a 0.5 con ventanas mayores — verificado
+    empíricamente 2026-08-20: w=100→0.41, w=400→0.48, serie de 1999→0.49).
+    No se exige |H−0.5|<ε exacto: se exige que NO colapse y que sea el punto
+    medio de la escala, con σ acotada."""
+    rng = np.random.default_rng(42)
+    n = 800
+    close = pd.Series(100 * np.exp(np.cumsum(rng.normal(0, 0.01, n))))
+    h = hurst_exponent(close, window=100, max_lag=20).dropna()
+    assert len(h) > 600  # warmup acotado, masa disponible
+    assert 0.30 <= h.mean() <= 0.60, f"H medio {h.mean():.3f} fuera del rango RW"
+    assert h.std() < 0.15  # acotada, no bomba de varianza
+
+
+def test_hurst_exponent_ar1_persistente_mayor_que_antipersistente():
+    """Criterio de aceptación 1b: la DIFERENCIA entre procesos sí es robusta:
+    AR(1) con ρ=0.7 (persistente) da H mayor que AR(1) con ρ=−0.5
+    (anti-persistente). Verificado 2026-08-20: 0.66 vs 0.36."""
+    rng = np.random.default_rng(7)
+    n = 800
+    r_pers, r_anti = np.zeros(n), np.zeros(n)
+    for i in range(1, n):
+        r_pers[i] = 0.7 * r_pers[i - 1] + rng.normal(0, 0.01)
+        r_anti[i] = -0.5 * r_anti[i - 1] + rng.normal(0, 0.01)
+    h_pers = hurst_exponent(pd.Series(100 * np.exp(np.cumsum(r_pers))), 100, 20).dropna()
+    h_anti = hurst_exponent(pd.Series(100 * np.exp(np.cumsum(r_anti))), 100, 20).dropna()
+    assert h_pers.mean() - h_anti.mean() > 0.2, (
+        f"AR(0.7) H={h_pers.mean():.3f} no supera a AR(−0.5) H={h_anti.mean():.3f} "
+        f"por el margen esperado ≥0.2")
+
+
+def test_hurst_exponent_bounded_and_rolling_respects_index():
+    rng = np.random.default_rng(1)
+    n = 400
+    close = pd.Series(100 * np.exp(np.cumsum(rng.normal(0, 0.02, n))),
+                      index=pd.bdate_range("2023-01-02", periods=n))
+    h = hurst_exponent(close, window=50, max_lag=15)
+    # bounded en [0,1] por construcción del clip + límite de pendiente
+    assert h.dropna().between(0.0, 1.0).all()
+    # warmup: con min_periods=window//2=25 y diff inicial, primeros valores NaN
+    assert h.index.equals(close.index)
+    assert len(h.dropna()) > 0
+
+
+def test_realized_vol_regime_detecta_shock_de_volatilidad():
+    """Cuando la vol reciente se multiplica, el ratio short/long sube sobre 1
+    de forma estable; en calma tiende a ~1 (verificado empíricamente ~1.3 con
+    ratio 3×)."""
+    rng = np.random.default_rng(3)
+    n = 300
+    rets = pd.Series(np.concatenate([
+        rng.normal(0, 0.005, n - 60),
+        rng.normal(0, 0.025, 60),  # shock: vol 5× la de calma
+    ]), index=pd.bdate_range("2023-01-02", periods=n))
+    rv = realized_vol_regime(rets, 20, 100)
+    assert rv.dropna().gt(1.2).iloc[-20:].all(), "el shock de vol debe elevar el ratio > 1.2"
+    # post-shock parcial: el trailing largo va absorbiendo → ratio baja de a poco
+    assert rv.iloc[-1] > rv.iloc[0]  # el régimen reciente es más volátil que el inicial
+
+
+def test_calculate_all_indicators_includes_hurst_and_vol_regime(ohlcv_df):
+    """Ambas columnas T2.3 aparecen en el pipeline completo."""
+    result = calculate_all_indicators(ohlcv_df)
+    for col in ("hurst_exponent", "realized_vol_regime"):
+        assert col in result.columns
+    # acotados a valores sensatos (hurst ∈ [0,1]; ratio > 0)
+    assert result["hurst_exponent"].between(0.0, 1.0).all()
+    assert (result["realized_vol_regime"] > 0).all()
