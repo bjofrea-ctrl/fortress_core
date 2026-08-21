@@ -1,5 +1,21 @@
 # Fortress Core — Memoria de Sesiones (Última sesión resumida)
 
+## 2026-08-20 (noche) — RONDA indicAgent: T2.1 + T1.1 + T1.2 + T1.3 CERRADOS (Kilo Code)
+
+**Autor**: Kilo Code. **Detalle completo**: entradas más abajo (T2.1 junto a Tarea N,
+T1.1/T1.2/T1.3 al final del archivo). Resumen de la ronda:
+
+| Ticket | Resultado | Ledger/verificación |
+|---|---|---|
+| T2.1 — purge/embargo WalkForwardValidator | corte era contiguo SIN purga → `purge_bars` (default=horizon, =0 reproduce pre-fix), con nota en docstring de por qué el embargo post-test es el que corresponde en este diseño | 7 tests (`test_probabilistic_engine.py`), suite 286→315 passed |
+| T1.1 — proxy OFI | `ofi_*` implementado + wired; trial §37 | **NO_CUMPLE** 0/3 (t −2.30/+0.10/+0.19, TOTAL −1.66); signal_diagnosis 19→20 |
+| T1.2 — proxy CVD | `cvd_*` implementado + wired; decisión rolling-20d documentada (reset intradía no aplica a barras diarias); trial §38 | **NO_CUMPLE** 0/3 (t +0.73/−0.84/+0.38); signal_diagnosis 20→21 |
+| T1.3 — market_structure.py (SMC) | módulo nuevo: order blocks, FVG, BOS/CHoCH, liquidity sweeps, `analyze_market_structure` (dict listo para T1.4) | 18 tests + smoke AAPL 2921 barras en 0.17 s; **descriptivo disponible, NO es señal** (requiere trial propio para promoción) |
+
+**Suites**: 315 passed, ruff limpio en los 8 archivos tocados. Ninguna integración al
+motor. OFI/CVD quedan disponibles en `calculate_all_indicators` — la disponibilidad no
+compromete al uso. **Pendientes del plan**: T1.4 (T1.3 ya disponible), T1.5, T1.6, T2.2, T2.3.
+
 ## 2026-08-20 (tarde) — DEPLOY PERMANENTE DEL DASHBOARD (Kilo Code)
 
 **Fecha**: 2026-08-20

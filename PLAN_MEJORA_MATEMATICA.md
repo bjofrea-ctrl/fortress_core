@@ -2797,7 +2797,8 @@ SESSION_LOG actualizados; suite completa en verde. Nada se integra al motor.
 ## 37. T1.1 — Proxy OFI (Order Flow Imbalance desde OHLCV): diagnóstico de IC antes de cualquier integración
 
 **Naturaleza**: TRIAL pre-registrado, familia `signal_diagnosis`, consume **1** slot.
-**Estado**: PRE-REGISTRADO 2026-08-20 (ANTES de correr; veredicto se llena al cierre).
+**Estado**: CERRADO 2026-08-20 — **NO_CUMPLE** (había sido pre-registrado ANTES de
+correr; ver resultado al final de esta sección).
 Familia `signal_diagnosis` ya consumida: **19** (confirmado con `consumed_budget`)
 → con este trial **n_trials = 20**.
 
@@ -2880,7 +2881,8 @@ para el retorno a 20 ruedas en el universo 50. Línea cerrada sin integración.
 ## 38. T1.2 — Proxy CVD (Cumulative Volume Delta desde OHLCV): diagnóstico de IC antes de cualquier integración
 
 **Naturaleza**: TRIAL pre-registrado, familia `signal_diagnosis`, consume **1** slot.
-**Estado**: PRE-REGISTRADO 2026-08-20 (ANTES de correr; veredicto se llena al cierre).
+**Estado**: CERRADO 2026-08-20 — **NO_CUMPLE** (había sido pre-registrado ANTES de
+correr; ver resultado al final de esta sección).
 Familia `signal_diagnosis` ya consumida: **20** (confirmado con `consumed_budget`)
 → con este trial **n_trials = 21**.
 
