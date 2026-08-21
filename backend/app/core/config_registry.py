@@ -55,6 +55,12 @@ def _ts_to_iso(ts: datetime) -> str:
 class ConfigRegistry:
     def __init__(self, db_path: str = "fortress.db"):
         self.db_path = db_path
+        # Cache en memoria de get_at/get: dentro de un backtest el registro es
+        # inmutable (set() es append-only y no se llama durante la corrida), así
+        # que (key, timestamp) -> valor es estable y cacheable. Sin esto, cada
+        # get_at abriría una conexión SQLite nueva — ~120k conexiones en un
+        # backtest de 50 símbolos, que hunden el rendimiento (T1.5).
+        self._cache = {}
         self._ensure_schema()
 
     def _ensure_schema(self) -> None:
@@ -94,6 +100,7 @@ class ConfigRegistry:
         """Inserta una nueva versión de 'key'. NUNCA hace UPDATE: solo INSERT
         (append-only, igual que config_history de indicAgent). La versión es
         MAX(version)+1; valid_from por defecto = ahora (UTC)."""
+        self._cache.clear()
         ts = _ts_to_iso(valid_from) if valid_from is not None else _ts_to_iso(_utc_now())
         with sqlite3.connect(self.db_path) as conn:
             max_version = conn.execute(
@@ -111,12 +118,17 @@ class ConfigRegistry:
 
     def get(self, key: str, default: Any = None) -> Any:
         """Valor vigente HOY (última versión)."""
+        ck = ("get", key)
+        if ck in self._cache:
+            return self._cache[ck]
         with sqlite3.connect(self.db_path) as conn:
             row = conn.execute(
                 "SELECT value FROM config_history WHERE key = ? ORDER BY version DESC LIMIT 1",
                 (key,),
             ).fetchone()
-        return default if row is None else json.loads(row[0])
+        val = default if row is None else json.loads(row[0])
+        self._cache[ck] = val
+        return val
 
     def get_at(self, key: str, timestamp: datetime, default: Any = None) -> Any:
         """Valor vigente en 'timestamp' — última versión con valid_from <= timestamp.
@@ -125,6 +137,9 @@ class ConfigRegistry:
         histórico real de un parámetro: un ajuste hecho HOY no puede contaminar
         un backtest de fechas pasadas."""
         ts = _ts_to_iso(timestamp)
+        ck = ("at", key, ts)
+        if ck in self._cache:
+            return self._cache[ck]
         with sqlite3.connect(self.db_path) as conn:
             row = conn.execute(
                 """
@@ -134,4 +149,6 @@ class ConfigRegistry:
                 """,
                 (key, ts),
             ).fetchone()
-        return default if row is None else json.loads(row[0])
+        val = default if row is None else json.loads(row[0])
+        self._cache[ck] = val
+        return val
