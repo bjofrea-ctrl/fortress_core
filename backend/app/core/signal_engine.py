@@ -174,7 +174,26 @@ class SignalEngine:
             "eligible": eligible.fillna(False), "close": df["close"],
         }, index=df.index)
 
-    def generate_signal(self, stock_data: pd.DataFrame, symbol: str, regime_state: int) -> Optional[Dict]:
+    def generate_signal(self, stock_data: pd.DataFrame, symbol: str, regime_state: int,
+                        market_structure: Optional[Dict] = None) -> Optional[Dict]:
+        """Genera señal BUY para la última barra.
+
+        T1.4 (PLAN_INTEGRACION_INDICAGENT.md): con ``market_structure=None`` el
+        comportamiento es IDÉNTICO al anterior (stop = entry − 2·ATR, target =
+        entry + 4·ATR, puerta RR transparente porque RR=2.0 ≥ MIN_RR exacto).
+        Con dict de estructura (vía ``market_structure_history`` — causal, solo
+        datos ≤ fecha de decisión): jerarquía estructural para stop/target
+        (order block → sweep → último swing low; FVG/resistencia para target)
+        y puerta de RR mínimo: si el mejor target estructural deja RR < MIN_RR,
+        NO se genera la señal (devuelve None).
+
+        Alcance declarado: los niveles estructurales resuelven el stop/target
+        REPORTADO de la señal (y el payoff que alimenta el sizing Kelly);
+        la ejecución de salidas sigue siendo la mecánica de régimen de
+        ``adaptive_risk.check_all_stops`` (orden de prioridad intacto →
+        ``barrier_labeling.verify_fidelity`` no se ve afectada; ver
+        RESUMEN_STOP_ESTRUCTURAL.md).
+        """
         if len(stock_data) < 200 or regime_state == 3:
             return None
 
@@ -199,10 +218,15 @@ class SignalEngine:
 
         atr_v = latest.atr14
         entry = latest.close
-        stop_loss = entry - 2.0 * atr_v
-        take_profit = entry + 4.0 * atr_v
+        stop_loss = _resolve_stop(entry, atr_v, market_structure)
+        take_profit = _resolve_target(entry, atr_v, market_structure)
         risk = entry - stop_loss
-        payoff_ratio = (take_profit - entry) / risk if risk > 0 else 0.0
+        if risk <= 0:
+            return None  # nivel estructural por encima del entry: no viable
+        reward = take_profit - entry
+        if reward <= 0 or reward / risk < MIN_RR:
+            return None  # puerta RR mínima (trade_framer de indicAgent)
+        payoff_ratio = reward / risk
         return {
             "symbol": symbol,
             "date": stock_data.index[-1],
@@ -212,6 +236,7 @@ class SignalEngine:
             "stop_loss": float(stop_loss),
             "take_profit": float(take_profit),
             "payoff_ratio": float(payoff_ratio),
+            "structural_resolution": market_structure is not None,
             "regime_state": regime_state,
             "factors": scores,
             "atr": float(atr_v),

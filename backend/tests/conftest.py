@@ -9,8 +9,8 @@ def _config_registry_tmp_db(tmp_path_factory):
     la suite, el singleton de adaptive_risk apunta a una DB temporal en vez
     de backend/fortress.db. Sin esto, cualquier test que corra un backtest
     sembraría/leería config_history en la DB real."""
-    from app.core.config_registry import ConfigRegistry
     from app.core import adaptive_risk
+    from app.core.config_registry import ConfigRegistry
 
     adaptive_risk._REGISTRY = ConfigRegistry(str(tmp_path_factory.mktemp("config_registry") / "history.db"))
     return adaptive_risk._REGISTRY

@@ -304,3 +304,82 @@ def test_min_lookbacks_constants_match_ticket():
     assert MIN_LOOKBACK_SWEEPS == 60
     from app.core.market_structure import MIN_LOOKBACK_ORDER_BLOCKS
     assert MIN_LOOKBACK_ORDER_BLOCKS == 50
+
+
+# ============================================================
+# T1.4 — market_structure_history: serie causal per-fecha (sin look-ahead)
+# ============================================================
+
+def test_history_causal_no_sabe_el_futuro(_ob_df=_ob_df):  # noqa: F841 (alias)
+    """Invariante causal: la fila de la fecha t es idéntica si se computa sobre
+    la serie truncada a t o sobre la serie completa (aplicando el prefijo el
+    detector bowwow no puede mirar más allá de t)."""
+    from app.core.market_structure import market_structure_history
+    df = _ob_df(mitigated=False)
+    full = market_structure_history(df)
+    t = df.index[len(df) // 2]
+    truncated = market_structure_history(df.loc[:t])
+    # columnas numéricas clave coinciden en el prefijo [0..t]
+    for col in ("ob_type", "ob_top", "ob_bottom", "fvg_type", "fvg_top",
+                "nearest_swing_low", "nearest_resistance", "sweep_type"):
+        a = full.loc[:t, col]
+        b = truncated.loc[:t, col]
+        eq = ((a.values == b.values)
+              | (np.isnan(a.values.astype(float)) & np.isnan(b.values.astype(float))))
+        assert eq.all(), f"columna {col} difiere entre serie completa y truncada a {t}"
+
+
+def test_history_mitigation_appece_recien_en_la_barra_que_toca_la_zona(_ob_df=_ob_df):  # noqa: F841
+    """La mitigación de un OB es causal: False en las barras del impulso, True
+    recién desde la barra que efectivamente opera dentro de la zona."""
+    from app.core.market_structure import market_structure_history
+    df = _ob_df(mitigated=True)
+    hist = market_structure_history(df)
+    b = 30  # barra OB del fixture; impulso en 31..33; mitigación en 35
+    # antes y durante el impulso: no mitigado (la barra del OB aún "vive")
+    assert bool(hist["ob_mitigated"].iloc[32]) is False
+    # en la barra que toca la zona: ya mitigado
+    assert bool(hist["ob_type"].iloc[35] != 0)
+    assert bool(hist["ob_mitigated"].iloc[35]) is True
+
+
+def test_history_length_and_index_match_input():
+    from app.core.market_structure import market_structure_history
+    n = 80
+    idx = pd.bdate_range("2023-01-02", periods=n)
+    df = pd.DataFrame({
+        "open": np.full(n, 100.0), "high": np.full(n, 101.0),
+        "low": np.full(n, 99.0), "close": np.full(n, 100.0),
+    }, index=idx)
+    hist = market_structure_history(df)
+    assert len(hist) == n
+    assert hist.index.equals(idx)
+
+
+def test_structure_row_to_dict_roundtrip():
+    """fila -> dict consumible por generate_signal con el shape exacto."""
+    from app.core.market_structure import (
+        market_structure_history, structure_row_to_dict,
+    )
+    df = _ob_df(mitigated=False)
+    hist = market_structure_history(df)
+    d = structure_row_to_dict(hist.iloc[-1])
+    for key in ("order_block", "fair_value_gap", "bos_choch", "liquidity_sweep",
+                "nearest_swing_low", "nearest_resistance"):
+        assert key in d
+    assert isinstance(d["order_block"]["ob_detected"], bool)
+    assert "ob_bottom" in d["order_block"]
+    assert "fvg_bottom" in d["fair_value_gap"]
+
+
+_ob_df_fixture = _ob_df  # deja accesible el helper para los tests de arriba
+
+
+def test_market_structure_history_real_symbol_lenghtiado(ohlcv_df):
+    """Humo real: 400 barras sintéticas → serie completa sin excepciones."""
+    from app.core.market_structure import market_structure_history
+    hist = market_structure_history(
+        ohlcv_df, atr=ohlcv_df["close"].rolling(14).std())
+    assert len(hist) == len(ohlcv_df)
+    # las columnas numéricas son finitas o NaN, nunca excepciones
+    assert np.isfinite(hist["fvg_open_count"]).all()

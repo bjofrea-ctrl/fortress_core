@@ -7,6 +7,7 @@ from scipy.stats import norm
 
 from app.core.adaptive_risk import AdaptiveRiskManager
 from app.core.indicators import calculate_all_indicators
+from app.core.market_structure import market_structure_history, structure_row_to_dict
 from app.core.probabilistic_engine import (
     BayesianOnlineUpdater,
     CopulaRiskAnalyzer,
@@ -251,6 +252,7 @@ class BacktestEngine:
         fundamentals_by_symbol: Dict[str, pd.Series] = None,
         track_capital_usage: bool = False,
         execution_lag_days: int = 1,
+        use_market_structure: bool = False,
     ) -> Dict:
         """Corre el backtest end-of-day.
 
@@ -267,8 +269,24 @@ class BacktestEngine:
             de 'date' se ejecuta en open[date+1].
         El criterio de selección (score/factores/ATR calculados con datos de
         'date') NO cambia — solo el precio/fecha de ejecución.
+
+        use_market_structure (T1.4, PLAN_INTEGRACION_INDICAGENT.md): si True,
+        precomputa la historia CAUSAL de estructura de mercado por símbolo
+        (``market_structure_history`` — swings confirmados con lag de
+        `neighbor` barras, mitigación/relleno/reclaim visibles recién al
+        completarse) y le pasa a ``generate_signal`` la fila correspondiente a
+        'date'. Activa la resolución estructural de stop/target y la puerta
+        RR ≥ MIN_RR. Con False (default) el camino es BIT-IDÉNTICO al anterior.
         """
         indicators_cache = {s: calculate_all_indicators(df) for s, df in price_data.items()}
+        # T1.4: historia causal de estructura precomputada UNA vez por símbolo
+        # (nunca por fecha dentro del loop — nota de performance del ticket).
+        structure_history = {}
+        if use_market_structure:
+            for s, df in price_data.items():
+                structure_history[s] = market_structure_history(
+                    df, atr=indicators_cache[s]["atr14"].reindex(df.index)
+                    if s in indicators_cache else None)
         train_market = {s: df[df.index < start_date] for s, df in market_data.items()}
         self.regime_classifier.fit(train_market)
 
@@ -450,7 +468,15 @@ class BacktestEngine:
                 signals = []
                 for symbol, df in indicators_cache.items():
                     if date in df.index:
-                        sig = self.signal_engine.generate_signal(df.loc[:date], symbol, regime_info["state"])
+                        ms_row = None
+                        if use_market_structure and symbol in structure_history:
+                            sh = structure_history[symbol]
+                            if date in sh.index:
+                                # historia causal: la fila de 'date' usa solo datos ≤ date
+                                ms_row = structure_row_to_dict(sh.loc[date])
+                        sig = self.signal_engine.generate_signal(
+                            df.loc[:date], symbol, regime_info["state"],
+                            market_structure=ms_row)
                         if sig:
                             if g2_by_symbol:
                                 g2 = g2_by_symbol[symbol].loc[date]
