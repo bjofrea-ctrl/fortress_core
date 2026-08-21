@@ -125,7 +125,8 @@ def cvd_proxy(high: pd.Series, low: pd.Series, close: pd.Series,
 
 
 def cvd_features(high: pd.Series, low: pd.Series, close: pd.Series,
-                 volume: pd.Series, window: int = 20) -> pd.DataFrame:    """Features derivados del CVD — acumulación rolling, pendiente y divergencia.
+                 volume: pd.Series, window: int = 20) -> pd.DataFrame:
+    """Features derivados del CVD — acumulación rolling, pendiente y divergencia.
 
     DECISIÓN DE DISEÑO (documentada según exige T1.2): el original de indicAgent
     resetea el acumulador de CVD cada sesión intradía (09:30 ET). Fortress opera
@@ -164,48 +165,43 @@ def cvd_features(high: pd.Series, low: pd.Series, close: pd.Series,
 
 def hurst_exponent(close: pd.Series, window: int = 100,
                    max_lag: int = 20, min_periods: int = 50) -> pd.Series:
-    """Exponente de Hurst ajustado vía R/S. >0.5 = persistencia/tendencia,
-    <0.5 = reversión a la media, ~0.5 = camino aleatorio. Se usa como feature
-    de régimen POR SÍMBOLO que complementa al HMM macro — NO es su reemplazo.
+    """Exponente de Hurst por ventana — feature de régimen POR SÍMBOLO
+    (T2.3, PLAN_INTEGRACION_INDICAGENT.md), complementaria al HMM macro
+    (cross-asset), NO su reemplazo.
 
-    Rolling sobre la serie de retornos logarítmicos dentro de cada ventana
-    (precios de nivel conducen a H≈1.0 por construcción; el log-return
-    des-tendea y produce el H real). Estimador rescaled-range clásico:
-    para cada lag tau en [2, max_lag), acumula la desviación promedio y el
-    std por lag, log-log reg. Genera un valor por ventana (window='rolling',
-    no expanding). Complejidad: O(window × max_lag) por barra → se precalcula
-    UNA vez por símbolo por corrida (NO usar dentro del loop por fecha).
+    Estimador de escalamiento de varianza sobre la TRAYECTORIA (cumsum de
+    retornos log) de cada ventana: para un proceso fraccional
+    Var(Z[t+τ] − Z[t]) ~ τ^(2H), por lo que la pendiente de log(std(Δτ Z))
+    contra log(τ) es H. Random walk puro → H≈0.5; persistencia de tendencia
+    (regímenes alcistas/bajistas o AR(1) con ρ>0) → H>0.5; reversión a la
+    media → H<0.5. NO se quita la media/detrend dentro de la ventana: hacerlo
+    convierte la trayectoria en puente browniano y sesga H hacia abajo en
+    muestras finitas (medido: 0.39 vs 0.5 esperado para RW puro). Se hace
+    sobre retornos (no sobre precios nivel) porque el nivel puro da H≈1.0
+    por construcción.
 
-    Uso de min_periods=window//2: 50 barras dan estimaciones robustas y evita
-    quemar 100 filas extra de warmup (el pipeline ya descarta 252 por
-    momentum_12_1). Si la varianza estándar de la ventana es ~0 (precio plano)
-    el resultado es NaN — luego fillna(0.5) para el CI diagnóstico.
+    `min_periods=window//2`: 50 barras alcanzan para estimar y no quema 100
+    filas extra de warmup. Ventanas con varianza degenerada (precio plano)
+    devuelven NaN — el diagnóstico de IC decide cómo tratarlas. Costo
+    O(window·max_lag) por barra: precomputar UNA vez por símbolo, nunca
+    dentro del loop por fecha del backtest.
     """
-    def _hs(sig: np.ndarray) -> float:
-        if len(sig) < max_lag * 2:
-            return 0.5
+    def _hs(rets: np.ndarray) -> float:
+        if len(rets) < max_lag + 2 or not np.isfinite(rets).all():
+            return float("nan")
+        z = np.cumsum(rets)  # trayectoria SIN detrend: el quita-media sesga
         lags = list(range(2, max_lag + 1))
-        tau_list = []
+        sigs = []
         for lag in lags:
-            diffs = sig[lag:] - sig[:-lag]
-            mean_diff = diffs.mean()
-            demeaned = np.cumsum(diffs - mean_diff)
-            R = demeaned.max() - demeaned.min()
-            S = diffs.std(ddof=1)
-            if S > 1e-12:
-                tau_list.append(R / S)
-            else:
-                tau_list.append(np.nan)
-        if sum(np.isfinite(tau_list)) < max_lag // 2:
-            return 0.5
-        log_lags = np.log(lags)
-        log_tau = np.log(tau_list)
-        mask = np.isfinite(log_tau) & np.isfinite(log_lags)
-        if mask.sum() < 2:
-            return 0.5
-        # pendiente del log-log / 2 = H; clamp a [0,1]
-        m = np.polyfit(log_lags[mask], log_tau[mask], 1)[0]
-        return float(np.clip(0.5 * m, 0.0, 1.0))
+            d = z[lag:] - z[:-lag]
+            sigs.append(float(d.std(ddof=1)) if d.std(ddof=1) > 1e-12 else float("nan"))
+        sigs = np.array(sigs)
+        mask = np.isfinite(sigs) & (sigs > 0)
+        if mask.sum() < max(3, len(lags) // 2):
+            return float("nan")
+        slope = np.polyfit(np.log(np.array(lags, dtype=float)[mask]),
+                           np.log(sigs[mask]), 1)[0]
+        return float(np.clip(slope, 0.0, 1.0))
 
     logret = np.log(close).diff()
     return logret.rolling(window, min_periods=min_periods).apply(_hs, raw=True)
@@ -255,4 +251,9 @@ def calculate_all_indicators(df: pd.DataFrame) -> pd.DataFrame:
     # CVD proxy (T1.2 — PLAN_INTEGRACION_INDICAGENT.md): misma condición.
     for col, series in cvd_features(df.high, df.low, df.close, df.volume).items():
         df[col] = series
+    # T2.3 (PLAN_INTEGRACION_INDICAGENT.md): features de régimen por símbolo.
+    # Disponibles para diagnóstico de IC; NO wired a signal_engine sin medir.
+    logret = np.log(df.close).diff()
+    df["hurst_exponent"] = hurst_exponent(df.close, 100, 20)
+    df["realized_vol_regime"] = realized_vol_regime(logret, 20, 100)
     return df.ffill().dropna()

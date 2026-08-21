@@ -15,6 +15,7 @@ from app.core.probabilistic_engine import (
     ProbabilityCalibrator,
     SignalQualityMetrics,
     WalkForwardValidator,
+    circular_block_bootstrap_ci,
 )
 from app.core.regime_classifier import GlobalRegimeClassifier
 from app.core.signal_engine import SignalEngine
@@ -638,9 +639,38 @@ class BacktestEngine:
         else:
             deflated_sharpe = 0.0
 
+        # T2.2 — Intervalos de confianza por bootstrap de bloques circulares
+        # (PLAN_INTEGRACION_INDICAGENT.md). La serie de retornos real de un
+        # backtest está autocorrelacionada: un CI asintótico ingenuo la
+        # subestima. El bloque circular preserva esa dependencia dentro de
+        # cada bloque. Complementa al Deflated Sharpe (punto ajustado por
+        # n_trials) con un intervalo, no solo un punto. Seed fijo → CI
+        # reproducible entre corridas; la función usa un Generator local,
+        # no estado global de numpy.
+        returns_arr = returns.values
+
+        def _sharpe_stat(r: np.ndarray) -> float:
+            return float(r.mean() / r.std(ddof=1) * np.sqrt(252)) if r.std(ddof=1) > 0 else 0.0
+
+        def _cagr_stat(r: np.ndarray) -> float:
+            return float(np.expm1(252.0 * np.mean(np.log1p(r)))) if len(r) else 0.0
+
+        def _max_dd_stat(r: np.ndarray) -> float:
+            eq = np.cumprod(1 + r)
+            peak = np.maximum.accumulate(eq)
+            # * 100: mismas unidades que el max_drawdown puntual (drawdown_pct)
+            return float((eq / peak - 1).min() * 100)
+
+        sharpe_ci = circular_block_bootstrap_ci(returns_arr, _sharpe_stat, seed=42)
+        cagr_ci = circular_block_bootstrap_ci(returns_arr, _cagr_stat, seed=42)
+        max_dd_ci = circular_block_bootstrap_ci(returns_arr, _max_dd_stat, seed=42)
+
         return {
             "cagr": float(cagr),
             "sharpe_ratio": float(sharpe),
+            "sharpe_ci": sharpe_ci,
+            "cagr_ci": cagr_ci,
+            "max_drawdown_ci": max_dd_ci,
             "sortino_ratio": float(sortino),
             "max_drawdown": float(max_dd),
             "calmar_ratio": float(calmar),

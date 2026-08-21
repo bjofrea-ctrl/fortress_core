@@ -713,3 +713,74 @@ class WalkForwardValidator:
             "purge_bars": effective_purge,
         }
 
+
+# ============================================================
+# 7. Circular block bootstrap — CI de métricas de backtest (T2.2)
+# ============================================================
+
+def circular_block_bootstrap_ci(returns: np.ndarray, statistic_fn,
+                                block_size: int = 20, n_bootstrap: int = 1000,
+                                confidence: float = 0.95,
+                                seed: Optional[int] = None) -> Tuple[float, float]:
+    """
+    Bootstrap de bloques circulares (T2.2 — PLAN_INTEGRACION_INDICAGENT.md)
+    para el intervalo de confianza de una métrica agregada de backtest
+    (Sharpe, CAGR, max drawdown) sobre una serie de retornos que PUEDE estar
+    autocorrelacionada.
+
+    A diferencia de un CI asintótico ingenuo (que asume IID), el bloque
+    circular preserva la dependencia temporal dentro de cada bloque de
+    `block_size` observaciones — la serie real de un backtest está
+    autocorrelacionada y un CI asintótico la subestima.
+
+    NO reemplaza a `conformal.py` (M2): ese da cobertura exacta en muestra
+    finita por señal individual; este da un CI de bootstrap para las
+    métricas agregadas. Complementa al Deflated Sharpe (que ajusta el punto
+    por n_trials) con un intervalo, no solo un punto.
+
+    Adaptado de la metodología de indicAgent (docs/architecture/
+    architecture-v3-alphaengine-pipeline.md, sección IC Measurement) — NO
+    existe un archivo de código fuente confirmado para copiar, esto es una
+    reimplementación desde la metodología descripta, no una adaptación de
+    un archivo real.
+
+    Args:
+        returns: Serie de retornos (np.ndarray o Series.values).
+        statistic_fn: Callable (np.ndarray) -> float, métrica a bootstrapear.
+        block_size: Longitud de cada bloque circular (default 20 ≈ mes hábil).
+        n_bootstrap: Número de réplicas bootstrap.
+        confidence: Nivel de confianza del intervalo (default 0.95).
+        seed: Semilla del RNG local (np.random.default_rng). Con seed fijo
+            la función es determinista (requisito de reproducibilidad en
+            tests). None → no determinista.
+
+    Returns:
+        (lo, hi): percentiles del bootstrap al (1-confidence)/2 y
+        (1+confidence)/2. (nan, nan) si `returns` está vacía.
+    """
+    returns = np.asarray(returns, dtype=float)
+    n = len(returns)
+    if n == 0:
+        return float("nan"), float("nan")
+
+    block_size = max(1, int(block_size))
+    rng = np.random.default_rng(seed)
+    n_blocks = int(np.ceil(n / block_size))
+
+    # Índices de muestra por réplica, vectorizados: la observación k de la
+    # réplica b es returns[(starts[b, k // block_size] + (k % block_size)) % n],
+    # que equivale a concatenar los bloques circulares (wrap) y truncar a n.
+    k = np.arange(n)
+    block_idx = k // block_size
+    within = k % block_size
+    starts = rng.integers(0, n, size=(n_bootstrap, n_blocks))
+    sample_idx = (starts[:, block_idx] + within) % n
+
+    boot_stats = np.empty(n_bootstrap, dtype=float)
+    for b in range(n_bootstrap):
+        boot_stats[b] = statistic_fn(returns[sample_idx[b]])
+
+    lo = float(np.percentile(boot_stats, (1 - confidence) / 2 * 100))
+    hi = float(np.percentile(boot_stats, (1 + confidence) / 2 * 100))
+    return lo, hi
+
