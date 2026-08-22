@@ -1,5 +1,27 @@
 # Fortress Core — Memoria de Sesiones (Última sesión resumida)
 
+## 2026-08-22 (tarde-3) — TAREA O: Frog-in-the-Pan (ID × momentum_12_1) — NO_CUMPLE 0/3 (Kilo Code)
+
+**Autor**: Kilo Code. Asignación de Boris ("Kilo → Tarea O, cálculo barato sobre
+retornos cacheados"). Pre-registro §41 ANTES de correr; ledger `signal_diagnosis`
+id `trial_frog_in_the_pan`, veredicto **NO_CUMPLE**.
+
+- Fórmula EXACTA del paper (Da-Gurun-Warachka 2014 RFS) sobre la MISMA ventana que
+  `momentum_12_1` (`close.pct_change(252)`): ID = sign(PRET) × (%neg − %pos), días
+  r=0 excluidos, causal ≤ t. Terciles de ID por fecha; IC diario Spearman intra-bucket
+  vs fwd_20; ΔIC pareada t1−t3 con NW L=min(12,n//8); W1/W2/W3 canónicas.
+- Umbral ex-ante: consumido=22 → n=23 → Bonferroni-46 bilateral |t|>3.065.
+- **Resultado**: W1 t −0.51 / W2 +2.16 / W3 −0.07 → **0/3 sig → NO_CUMPLE**.
+  Dirección promedio a favor (t1 +0.28 vs t3 −0.41 TOTAL) pero ruido (Δ TOTAL +0.65)
+  e inestable por ventana. El efecto del paper no traslada a N=50 diario/12m.
+- Artefacto `backend/data/cache/trial_frog_in_the_pan_20260822_175302.txt`;
+  script `backend/scripts/trial_frog_in_the_pan.py`; §41+RESULTADO en
+  PLAN_MEJORA_MATEMATICA.md; fila nueva en ROADMAP. **Nada integrado al motor**
+  — momentum queda sin condición ID.
+- Nota de coordinación: durante mi corrida OpenCode registró en paralelo
+  `validacion_oos_fresca_mom_rsi` y `regime_gating_p` (familia ahora 25 consumidos);
+  mi umbral quedó fijado ex-ante y no se vio afectado.
+
 ## 2026-08-22 (tarde-2) — VALIDACIÓN OOS FRESCA momentum+RSI (definición EXACTA congelada): NO_CUMPLE mecánico (Sharpe_OOS +1.33 >0, DSR 0.6077 <0.95) + bug updater de precios detectado y fixeado
 
 **Autor**: OpenCode (ox-alpha). Origen: tarea directa de Boris post-PBO — "lo sólido,
