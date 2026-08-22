@@ -3116,3 +3116,97 @@ TOTAL pooled no pre-registrado; distribución de ID (p10/p50/p90) como sanity ch
 **No toca**: indicators.py, signal_engine.py, trial_registry.py en runtime
 (registro manual al cierre), nada del motor. Artefacto:
 `backend/data/cache/trial_frog_in_the_pan_<ts>.txt`.
+
+## 42. Tarea P — Regime gating de momentum: UN trial coordinado con 3 sub-hipótesis (2026-08-22, PRE-REGISTRO ANTES de correr, consume ledger)
+
+Fuente: `PLAN_LARGO_PLAZO.md` Tarea P (líneas 768-792). Contexto: PBO/CSCV N=21 = 0.4688
+NO_CUMPLE sustancial (§40) y validación OOS fresca Sharpe_OOS +1.33 con DSR 0.6077 < 0.95
+NO_CUMPLE (ledger signal_diagnosis ahora n=23). El baseline momentum+RSI queda
+no-promovible; esta tarea es DIAGNÓSTICO que puede explicar CUÁNDO sí funciona el
+momentum. Es además el primer uso REAL de `regime_gate.py::WalkForwardRegimeGate`
+(M3, construido 2026-08-15, 8 tests, jamás usado para condicionar un factor).
+
+**DECISIÓN DOCUMENTADA** (el plan ofrece dos opciones en líneas 789-792): **UN SOLO
+TRIAL COORDINADO** con 3 sub-hipótesis pre-registradas, `n_trials_consumidos=1`.
+Corrección intra-trial: Bonferroni sobre las 3 sub-hipótesis × 3 ventanas = m=9 tests.
+
+**Umbral (leído del ledger EN runtime al redactar este pre-registro)**: familia
+signal_diagnosis con 23 consumidos → este trial es n=24 →
+`trial_registry.current_threshold("signal_diagnosis")` = **0.9958333333333333**
+(= 1 − 0.10/24). Masa de error del trial α_trial = 0.00416667; repartida Bonferroni
+sobre las m=9 celdas → α_por_test bilateral = 0.00416667/9 = 0.00046296 →
+**|t| > z(1 − 0.00046296/2) = z(0.99976852) = 3.5013**. Referencia: la convención
+previa de la familia sin split intra-trial daría z(1 − 0.05/(2·24)) = 3.078; la
+corrección m=9 la endurece a 3.501 — declarado acá, antes de correr. Si otro trial de
+la familia registra antes de esta corrida (O está en paralelo), el umbral se recalcula
+con la misma fórmula sobre el ledger vigente y el artefacto cita el número efectivo.
+
+**Factor y protocolo CONGELADOS** (fidelidad §0.5a, copia de §41/§37): 
+momentum_12_1 = close.pct_change(252)\*100 sin skip (`indicators.py:277`);
+fwd_20 = close.shift(-20)/close − 1; IC diario = Spearman(momentum_12_1, fwd_20)
+por fecha sobre ≥5 símbolos; SE Newey-West L=min(12, n//8), copia fiel; SIN máscara
+de elegibilidad. Ventanas canónicas: W1 2020-2021, W2 2022-2023, W3 2024→2026-07-06.
+START=2015-01-02 — extendido vs el 2018 de trials previos ÚNICAMENTE para que
+min_history=756 del gate cubra W1 completa; el factor solo necesita 252d de warmup y
+las ventanas de análisis no cambian. DATA_END=2026-08-21 (cache termina 08-14/17;
+diferencia ≤7 días → cero descargas, mismo criterio §41).
+
+**Los 3 condicionantes (fórmulas fijadas ANTES de codear)**:
+
+- **(a) Estado HMM rezagado un mes** — vía `WalkForwardRegimeGate.label_series`
+  con `favorable_states=frozenset({0})` (GOLDILOCKS según el remapeo canónico
+  `_align_states`: estado con growth_SPY máximo), defaults del módulo
+  (recalib_every=63, min_history=756), price_data macro = tickers que usa
+  `_extract_features` (SPY EFA QQQ GLD DBC TIP TLT AGG ^VIX, cache). La etiqueta
+  usada en la fecha t es la de t−21 días hábiles (mes anterior); fechas sin etiqueta
+  rezagada quedan fuera. Split: ΔIC(a) = IC(días GOLDILOCKS-lag) − IC(resto).
+  Signo esperado + (Cooper-Gutierrez-Hameed 2004: momentum rinde más tras estados
+  alcistas; coherente con macro IC +0.198 GOLDILOCKS / −0.173 DEFLATION medido aquí).
+- **(b) Vol realizada de la cartera momentum** — cada cierre de mes (último hábil
+  con ≥40 símbolos con momentum válido): top-quintil (10 de 50) por momentum_12_1;
+  retorno diario del portafolio el mes siguiente = media equal-weight de los ret_1d
+  de esos 10 (rebalanceo diario implícito, declarado). vol_t = std(ddof=1) rolling
+  63 ruedas de esa serie (datos ≤ t). Tercil ESTRICTAMENTE causal: percentil
+  expanding de vol_t contra vol_{≤t−1}, burn-in 126 ruedas; tercil 1 = baja vol.
+  ΔIC(b) = IC(tercil1) − IC(tercil3). Signo esperado + (Barroso-Santa-Clara 2015:
+  los crashes del momentum ocurren en alta vol realizada).
+- **(c) Iliquidez Amihud agregada** — illiq_sym_t = |ret_1d|/(close×volume) por
+  símbolo (volume>0); agregado diario = media sobre los símbolos disponibles ese día
+  (≥25 requeridos); amihud_t = media rolling 21 ruedas. Tercil expanding causal
+  idéntico a (b); tercil 1 = baja iliquidez. ΔIC(c) = IC(tercil1) − IC(tercil3).
+  Signo esperado + (Avramov-Cheng-Hameed 2016: momentum más débil cuando la
+  iliquidez agregada está alta).
+
+**Estadística**: los buckets son DISJUNTOS por fecha (cada día cae en un bucket), a
+diferencia del pareo de §41 → ΔIC = mean(IC_A) − mean(IC_B);
+SE_diff = sqrt(SE_NW_A² + SE_NW_B²), L=min(12,n//8) por serie; supuesto de
+independencia entre buckets declarado como riesgo. Celda computable requiere
+≥30 días con IC en AMBOS buckets de la ventana.
+
+**CRITERIO DE ÉXITO POR CONDICIONANTE (pre-registrado)**: ΔIC > 0 (signo declarado
+arriba) con t_NW > **+3.5013** en **≥2/3 ventanas** → CUMPLE. Ventana no computable
+cuenta como no-signal para ese condicionante. Si no hay ≥2 ventanas computables →
+NO_CUMPLE mecánico. **Veredicto global**: CUMPLE si ≥1 de los 3 CUMPLE (regla OR,
+protegida por Bonferroni m=9). Los 3 son diagnósticos INDEPENDIENTES: ninguno integra
+motor sin trial de MOTOR aparte (esto no toca signal_engine.py ni el score vivo).
+
+**Riesgos declarados**: estados HMM desbalanceados (GOLDILOCKS puede dominar el
+calendario → bucket resto heterogéneo; distribución reportada); Amihud sensible a
+microcaps/outliers de volumen dentro del universo 50; terciles de vol con fuerte
+autocorrelación (rachas → efectivo muestral menor); SE_diff bajo independencia puede
+subestimar (fwd_20 solapa 20 ruedas entre buckets vecinos); cobertura W1 del gate
+depende del START extendido; HMM sin convergencia → label_series lanza excepción →
+corrida abortada documentada como FALLO, no se fuerza resultado.
+
+**Checks de fidelidad (estilo §39/validacion OOS)**: F1 universo 50 cargadas; F2
+cobertura de meses por ventana; F3 edge TOTAL pooled de momentum_12_1 > 0
+(informativo); F4 determinismo seed 42 (random_state del HMM verificado en runtime,
+qcut/expanding deterministas); F5 asserts anti-lookahead del gate pasaron y
+n_recalibraciones>0.
+
+**Script**: `backend/scripts/trial_regime_gating_p.py` (nuevo, plantilla
+`trial_frog_in_the_pan.py`). Python 3.9 real, lee SOLO cache parquet, sin descargas.
+**No toca**: indicators.py, signal_engine.py, regime_gate.py/regime_classifier.py,
+trial_registry.py en runtime (registro manual al cierre), PRE_REGISTRO_PBO_CSCV ni
+validación OOS (otros agentes). Artefacto:
+`backend/data/cache/trial_regime_gating_p_<ts>.txt` (+`.json`).
