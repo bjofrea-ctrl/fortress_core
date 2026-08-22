@@ -73,12 +73,16 @@ def main() -> int:
         engine = BacktestEngine(initial_capital=25000)
         # RR medio: captura no invasiva del payoff_ratio teórico de las señales
         # emitidas en el loop principal (date >= start). La recalibración previa
-        # (< start) no contamina el conteo.
+        # (< start) y los refits walk-forward durante el loop re-emiten señales
+        # SIN el kwarg market_structure (payoff 2.0) que NO son decisiones reales;
+        # el loop principal SIEMPRE pasa market_structure= (aunque sea None en la
+        # armada baseline) -> la presencia del kwarg aísla las decisiones reales.
         logged = []
         _orig = engine.signal_engine.generate_signal
         def _wrapped(*args, **kwargs):
             sig = _orig(*args, **kwargs)
-            if sig is not None and sig["date"] >= pd.Timestamp(START):
+            if (sig is not None and sig["date"] >= pd.Timestamp(START)
+                    and "market_structure" in kwargs):
                 logged.append((sig["date"], sig["structural_resolution"],
                                sig["payoff_ratio"], sig["score"]))
             return sig

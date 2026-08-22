@@ -29,3 +29,17 @@ TOTAL     2649   +0.0046   0.0101   +0.45  12
 C) VALIDACIÓN: rank IC intra-día: realized_vol_regime vs real_vol_20 futura (clustering, signo esperado +1)
 ventana n_dias   mean_IC    SE_NW       t   L
 W1         505   +0.0952   0.0293   +3.25  12 SIG+
+W2         501   +0.0082   0.0291   +0.28  12 
+W3         637   +0.0018   0.0182   +0.10  12 
+TOTAL     2649   +0.0328   0.0116   +2.84  12
+
+Interpretación:
+- A y B miden poder PREDICTIVO DIRECCIONAL de las features de régimen
+  sobre retornos futuros (edge de retorno). Sin prior: signo y significancia
+  se reportan sin afirmar edge.
+- C valida que realized_vol_regime captura persistencia de vol real (no edge).
+- Un hallazgo nulo en A/B NO refuta el valor de condicionamiento por régimen:
+  indica que no hay edge direccional directo; el rol de régimen es condicionar
+  (distinto de gate/filtro binario — ver PLAN T2.3).
+
+Out: data/cache/diagnose_hurst_vol_ic_20260821_210750.txt

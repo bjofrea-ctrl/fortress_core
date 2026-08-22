@@ -124,7 +124,7 @@ def main() -> int:
     out("T2.3 — Diagnóstico EXPLORATORIO de IC: hurst_exponent + realized_vol_regime")
     out(f"Universo: {len(SYMBOLS)} símbolos | {START} -> {DATA_END} | horizonte fwd {HORIZON}d")
     out(f"Umbral referencia familia signal_diagnosis (n=19, dos colas): |t| > {THRESHOLD:.3f}")
-    out(f"Ventanas: " + ", ".join(f"{k} {v[0].date()}->{v[1].date()}" for k, v in WINDOWS.items()))
+    out("Ventanas: " + ", ".join(f"{k} {v[0].date()}->{v[1].date()}" for k, v in WINDOWS.items()))
     out("NOTA: exploratorio — NO consume ledger. Sin promoción a señal/gate.")
     out("=" * 78)
 

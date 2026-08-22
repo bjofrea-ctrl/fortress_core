@@ -261,6 +261,31 @@ producción (momentum_12_1 en `signal_engine.py`) — Jegadeesh & Titman (1993).
 
 ---
 
+## PARTE II — Features de régimen por símbolo (T2.3, `PLAN_INTEGRACION_INDICAGENT.md`)
+
+Implementadas en `backend/app/core/indicators.py` y disponibles en
+`calculate_all_indicators` (columnas `hurst_exponent`, `realized_vol_regime`).
+Rol declarado: régimen idiosincrático del símbolo, complementario al
+`GlobalRegimeClassifier` (que es cross-asset). Diagnóstico de IC exploratorio
+(2026-08-21) en `RESUMEN_HURST_VOL_REGIME.md`: **sin edge direccional robusto vs
+retornos futuros → NO se promueven a señal/gate**. Uso diagnóstico únicamente.
+
+**Hurst exponent** — Estimador de escalamiento de varianza sobre la trayectoria
+(cumsum de retornos log) de cada ventana: `Var(Z[t+τ]−Z[t]) ~ τ^(2H)`, pendiente de
+`log(std(Δτ Z))` vs `log(τ)`. Random walk → H≈0.5; persistencia → H>0.5; reversión a
+la media → H<0.5. Implementación vectorizada (`sliding_window_view`, O(n·max_lag)),
+`window=100`, `max_lag=20`, `min_periods=50`, clip [0,1], sin detrend dentro de la
+ventana (quitar la media sesga H hacia abajo en muestras finitas).
+
+**realized_vol_regime** — Proxy simple de régimen de volatilidad (NO un GARCH(1,1);
+decisión explícita del plan: solo si el diagnóstico muestra poder predictivo se evalúa
+la dependencia `arch`). Ratio `vol(20d) / vol(100d)` (std rolling): >1 vol subiendo,
+<1 bajando. Validación de clustering (2026-08-21): captura persistencia de vol en W1
+(t=+3.25) pero no en W2/W3 — indicador de CAMBIO de vol, predice el NIVEL de vol futura
+solo débilmente.
+
+---
+
 ## Cómo usar este documento
 
 No dispara ninguna tarea nueva por sí solo. Cuando se decida evaluar un indicador
