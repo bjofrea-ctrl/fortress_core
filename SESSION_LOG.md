@@ -1,5 +1,41 @@
 # Fortress Core — Memoria de Sesiones (Última sesión resumida)
 
+## 2026-08-22 — PLAN INTEGRACION_INDICAGENT 11/11 CERRADO: T1.4 A/B completado + T2.3 verificado (Cline, coordinado con sesión OpenCode en vivo)
+
+**Autor**: Cline (verificación + sincronización documental). **Implementación T1.4 y
+artefactos A/B**: sesión OpenCode corriendo en paralelo sobre el mismo repo (detectado
+por `ps` — sin colisión de escrituras; auto-backups 07:54/08:04 integraron todo).
+
+- **Estado de partida**: ROADMAP/SESSION_LOG decían "abiertos: T1.4 y T2.3", pero el
+  código ya estaba (T1.4 completo en `signal_engine.py`, hurst/vol_regime en
+  `indicators.py`). La documentación estaba atrás del código — lección repetida del repo:
+  verificar contra el artefacto real antes de actuar.
+- **Suite completa re-verificada en vivo**: `cd backend && .venv/bin/python -m pytest -q`
+  → **358 passed, 0 failed** (306s). Los 2 tests que estaban rojos el 21/08 (T2.3,
+  recalibrados con evidencia) quedaron confirmados en verde. Único gate de calidad
+  objetivo del repo: OK.
+- **T1.4 — cierre verificado**: los artefactos A/B existen y son consistentes entre sí
+  (`compare_structural_stop_20260821_211537.txt` estructural 7291s / 31 trades;
+  `*_20260822_013350.txt` baseline 4640s / 91 trades; síntesis `*_AB_combined.txt`).
+  Resultado: la variante estructural filtra ~66% vía gate RR≥1.5 — sube win rate
+  (57→71%), PF (1.37→1.73), Sharpe (0.28→0.38), baja DD — pero CAGR cae (0.74→0.47%) y
+  PnL total cae (+895→+468): menos exposición, no más alpha. DSR 0.29 ≪ vara de
+  promoción (≥0.90 walk-forward). **No promovido a default**
+  (`use_market_structure=False`), disponible para trial pre-registrado futuro.
+  Documentación completa en `RESUMEN_STOP_ESTRUCTURAL.md` + ESTADO en el plan.
+- **T2.3 — cierre verificado**: tests recalibrados OK (panel n=3000, min H=0.230 sobre
+  umbral 0.2 — no se bajó la vara) e IC sin edge direccional (hurst |t|≤2.70 signo
+  inestable; vol_regime |t|≤0.52; clustering solo W1 t=+3.25). NO promoción a
+  `_factor_scores`. Detalle en `RESUMEN_HURST_VOL_REGIME.md`.
+- **Sincronización documental**: PLAN_INTEGRACION_INDICAGENT.md Status → 11/11 cerrados;
+  ROADMAP filas nuevas T1.4/T2.3 + fecha 2026-08-22; esta entrada.
+- **Nota operativa**: un proceso A/B duplicado lanzado por esta sesión fue detenido
+  (`pkill compare_structural_stop`) tras descubrir los artefactos ya existentes — cada
+  armada toma 77-120 min a plena CPU; no relanzar sin chequear
+  `data/cache/compare_structural_stop_*.txt` primero.
+- Sin commit/push manual (regla de la ronda — el cron de auto-backup ya registró todo;
+  push pendiente autorización de Boris).
+
 ## 2026-08-20 (noche) — RONDA indicAgent: T2.1 + T1.1 + T1.2 + T1.3 CERRADOS (Kilo Code)
 
 **Autor**: Kilo Code. **Detalle completo**: entradas más abajo (T2.1 junto a Tarea N,
@@ -2399,3 +2435,28 @@ anterior) y `ORDENES_MODULOS.md` (M7 → hecho) actualizados.
 - **Limpieza**: `import glob` muerto removido de advisor.py.
 - Sin commit/push (regla de la ronda — pendiente autorización de Boris).
 
+## 2026-08-22 — Auditoría T1.4/T2.2/T2.3 + cierre documental PLAN/ROADMAP (OpenCode)
+
+**Hallazgo**: T1.4 (stop/target estructural), T2.2 (bootstrap) y T2.3 (Hurst/vol) YA implementados en código pero PLAN y ROADMAP desfasados; RESUMEN_STOP_ESTRUCTURAL.md incompleto (tabla con —).
+
+**Verificación contra artefacto real**:
+- `signal_engine.py:19-66` (`_resolve_stop`, `_resolve_target`, `MIN_RR=1.5`) y `generate_signal(..., market_structure=None)` con fallback idéntico — verificado; jerarquía OB→sweep→swing_low→2ATR, target FVG/resistance→min→4ATR, gate RR<1.5→None — idéntica al pseudocódigo del plan T1.4.
+- `backtest_engine.py:273-307` (`use_market_structure`, `market_structure_history` causal precomputada 1× por símbolo, `structure_row_to_dict` por fecha, `execution_lag_days=1`) — causal, sin lookahead.
+- `indicators.py:166-263` (`hurst_exponent` vectorizado `sliding_window_view`, `realized_vol_regime` proxy 20/100) + `calculate_all_indicators` wiring 6+4+2 columnas.
+- `probabilistic_engine.py:721-785` (`circular_block_bootstrap_ci` block 20, seed, fancy-indexing) + `backtest_engine.py:642-667` (`calculate_metrics` sharpe_ci/cagr_ci/maxdd_ci seed=42).
+- Tests: `tests/test_signal_engine.py` 4 T1.4, `tests/test_market_structure.py` 4 history causal, `tests/test_indicators.py` 5 T2.3 (2 recalibrados con evidencia n=3000 50 semillas), `tests/test_circular_bootstrap.py` 3 (coverage 0.942, AR ancho 2×), `tests/test_probabilistic_engine.py` 7 purge + 3 strength — **114 passed** en la suite cruzada (signal+indicators+probabilistic+circular+market_structure+config_registry+barrier_labeling), ruff limpio.
+
+**A/B T1.4 — artefactos existentes sintetizados**:
+- `compare_structural_stop_20260821_211537.txt` (estructural: 31 trades Sharpe 0.3818 CAGR 0.47% win 70.9% PF 1.73 RR 2.33 n=38) y `compare_structural_stop_20260822_013350.txt` (baseline: 91 trades Sharpe 0.2841 CAGR 0.74% win 57.1% PF 1.37 RR 2.0 n=333) — mismo período 2021-2023 universo 50. Síntesis combinada nueva `compare_structural_stop_20260822_AB_combined.txt` (2.4K) con tabla Δ completa para el resumen. Veredicto: estructural filtra 66% por RR gate, sube win/PF/Sharpe, baja CAGR/total PnL — **no promovido a default** (requiere trial W1/W2/W3 DSR≥0.90).
+
+**T2.3 — verificado**: `RESUMEN_HURST_VOL_REGIME.md` completo + `diagnose_hurst_vol_ic_20260821_210750.txt` (hur·st max |t| 2.70 signo inestable, vol_regime max 0.52, clustering vol solo W1 t=+3.25 — sin edge direccional, no promoción), tests 5/5 verdes.
+
+**Correcciones documentales**:
+- `PLAN_INTEGRACION_INDICAGENT.md`: header Status 9/11→11/11; agregado **ESTADO ✅ CERRADO (2026-08-21)** para T1.4, T1.5, T1.6, T2.2 con formato idéntico a los otros (fecha 2026-08-21, autor OpenCode, resumen + artefactos + suite + ruff). T2.3 ya tenía ESTADO, conservado.
+- `RESUMEN_STOP_ESTRUCTURAL.md`: completada tabla Resultados con valores reales de ambos artefactos + Veredicto informativo + Archivos detallados + Criterios 1-5 checkados.
+- `ROADMAP.md`: fila "Abiertos del plan" corregida (solo T1.4→Plan completo T1.1-T2.3); agregada fila nueva **T1.4 — Stop/target estructural** 🟢 cerrado (2026-08-21, A/B 2026-08-22) con detalle idéntico a T1.5/T2.2; fecha última actualización 2026-08-21→2026-08-22.
+- `backend/data/cache/compare_structural_stop_20260822_AB_combined.txt` nuevo (síntesis verificada).
+
+**Suite y lint**: `pytest tests/test_signal_engine tests/test_indicators tests/test_probabilistic_engine tests/test_circular_bootstrap` 55 passed (8.65s); suite extendida 114 passed (111s), ruff limpio en signal_engine/indicators/probabilistic_engine/backtest_engine/market_structure.
+
+**Estado final**: PLAN 11/11 cerrados, ROADMAP sin contradicciones (T1.4+T2.2+T2.3 cerrados), ambos resúmenes completos, tests verdes, sin promoción a default (todas quedan disponibles/no promovidas salvo T0.x).

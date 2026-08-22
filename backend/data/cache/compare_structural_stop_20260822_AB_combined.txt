@@ -1,0 +1,37 @@
+==============================================================================
+T1.4 — A/B backtest COMBINADO: stop/target estructural vs baseline ATR
+Período: 2021-01-01 → 2023-12-31 | Universo: 50 | Capital: 25000
+Config: commission 0.001, slippage 0.0005, execution_lag_days=1
+Artefactos origen: compare_structural_stop_20260821_211537.txt (estructural)
+                  + compare_structural_stop_20260822_013350.txt (baseline)
+Generado: 2026-08-22 (síntesis verificada contra artefactos previos)
+==============================================================================
+
+NOTA: A/B corrido como dos armadas paralelas (ARM=estructural|baseline)
+mismo período/universo/config; síntesis combinada para RESUMEN_STOP_ESTRUCTURAL.md
+
+métrica                  baseline (ATR)   estructural (T1.4)          Δ
+------------------------------------------------------------------------------
+cagr                             0.0074               0.0047    -0.0027
+sharpe_ratio                     0.2841               0.3818    +0.0977
+sortino_ratio                    0.3514               0.3021    -0.0493
+max_drawdown                    -0.0268              -0.0216    +0.0052
+calmar_ratio                     0.2767               0.2174    -0.0593
+win_rate                         0.5714               0.7097    +0.1383
+profit_factor                     1.366                1.729     +0.363
+total_trades                         91                   31        -60
+deflated_sharpe                  0.2411               0.2923    +0.0512
+
+==============================================================================
+métrica                  baseline (ATR)   estructural (T1.4)
+------------------------------------------------------------------------------
+baseline (ATR puro)    señales= 333 RR_medio=2.000 n_struct=0 score_medio=0.708
+estructural (T1.4)     señales=  38 RR_medio=2.330 n_struct=38 score_medio=0.710
+
+==============================================================================
+Resumen de trades (todas las entradas del período):
+  baseline (ATR puro)    trades=  91 wins=  52 win_rate=0.571 avg_pnl=+9.84 total_pnl=+895.55
+  estructural (T1.4)     trades=  31 wins=  22 win_rate=0.710 avg_pnl=+15.09 total_pnl=+467.91
+
+NOTA: este A/B es INFORMATIVO, no decisional. La promoción requiere trial pre-registrado
+propio con la misma disciplina (W1/W2/W3, DSR≥0.90, n_trials+1). MIN_RR=1.5 no validado.

@@ -7,8 +7,9 @@ gobernanza/agentes/ingesta). Este documento consolida los hallazgos accionables 
 discretos para ejecución por agentes de coding (OpenCode / Kilo Code).
 
 **Fecha de redacción:** 2026-08-20
-**Status:** current — 9 de 11 tickets cerrados (T0.1, T0.2, T1.1–T1.3, T2.1, T2.2, T2.3;
-T1.5, T1.6). Restante: T1.4 (código + tests listos, A/B documental en curso).
+**Status:** current — 11 de 11 tickets cerrados (T0.1, T0.2, T1.1–T1.6, T2.1–T2.3).
+Ninguna integración promovida a default sin trial walk-forward (regla no negociable);
+todas quedan disponibles como features diagnósticas salvo T0.x (fixes).
 
 ---
 
@@ -524,6 +525,8 @@ for s, df in price_data.items()}`), no recalcular estructura desde cero en cada 
 
 ### T1.4 — Resolver de stop/target estructural (reemplaza múltiplos fijos de ATR)
 
+**ESTADO: ✅ CERRADO (2026-08-21, OpenCode).** `_resolve_stop` (OB → sweep → swing_low → fallback 2×ATR) y `_resolve_target` (FVG → resistance → min → fallback 4×ATR) + gate `MIN_RR=1.5` en `signal_engine.py`; firma `generate_signal(..., market_structure=None)` con fallback idéntico al baseline (RR 2.0 transparente). `backtest_engine.run(use_market_structure=False)` es bit-idéntico; con `True` precomputa `market_structure_history` causal por símbolo (swings con lag `neighbor`, mitigación/relleno/reclaim solo visible al completarse) y pasa la fila de `date` a `generate_signal`. A/B 2021-2023 universo 50: baseline 91 trades Sharpe 0.28 CAGR 0.74% win 57.1% PF 1.37 vs estructural 31 trades Sharpe 0.38 CAGR 0.47% win 70.9% PF 1.73 — filtra 66% por RR gate, sube win/PF/Sharpe pero baja CAGR/total PnL. **No se promueve a default** (requiere trial W1/W2/W3 DSR ≥0.90). Artefactos `compare_structural_stop_20260821_211537.txt` (estructural) + `compare_structural_stop_20260822_013350.txt` (baseline) + `RESUMEN_STOP_ESTRUCTURAL.md` completo. Tests `test_signal_engine.py` 4 nuevos T1.4 + `test_market_structure.py` 4 history causal, suite 37 passed, ruff limpio. Ver ROADMAP T1.4.
+
 **Objetivo:** en `signal_engine.py::generate_signal`, reemplazar `stop_loss = entry - 2.0 *
 atr_v` / `take_profit = entry + 4.0 * atr_v` (líneas 145-146) por una jerarquía que prioriza
 niveles estructurales reales (de T1.3) con fallback a los múltiplos de ATR actuales, siguiendo
@@ -612,6 +615,8 @@ decida migrarlo también).
 ---
 
 ### T1.5 — Registro de parámetros versionado con reconstrucción point-in-time
+
+**ESTADO: ✅ CERRADO (2026-08-21, OpenCode).** `config_registry.py` nuevo: tabla `config_history(key, value, version, changed_by, reason, valid_from)` append-only, `set()` solo INSERT, `get_at(timestamp)` point-in-time. `adaptive_risk.py`: `get_regime_thresholds(regime_state, at_date)` + `AdaptiveRiskManager.get_thresholds()` usan `RiskState.current_date` del backtest en curso; `REGIME_THRESHOLDS` como seed (`changed_by="initial_estimate"`) y fallback. Test clave: backtest 2023 inalterado tras `set()` posterior (get_at reconstruye 2023), mismo cambio con valid_from=2020 sí altera (sharpe 1.56→1.62). 10 tests `test_config_registry.py` + fixture `conftest.py` DB tmp. Cache en memoria para `get_at/get` (evita ~120k SQLite conns por backtest 50 símbolos). `REGIME_THRESHOLDS` sigue importable. Ver ROADMAP T1.5.
 
 **Objetivo:** los umbrales de riesgo en `REGIME_THRESHOLDS` (`adaptive_risk.py`, líneas 7-12) y
 los gates duros en `generate_signal` (`signal_engine.py`, ADX≥20, RSI 40-75, volume_ratio≥1.0)
@@ -706,6 +711,8 @@ manejan las fechas de ejecución en el loop, mejor no pisar ambos cambios a la v
 ---
 
 ### T1.6 — Extender `barrier_labeling.py` con taxonomía de outcomes más fina + ledger persistente
+
+**ESTADO: ✅ CERRADO (2026-08-21, OpenCode).** `barrier_labeling.py`: `TIME_BARRIER` sub-clasificado en `MAX_HORIZON_PROFIT / MAX_HORIZON_LOSS / NEVER_MOVED` (umbral `NEVER_MOVED_MAX_RET=0.02`) sin cambiar orden de barreras; `verify_fidelity()` intacto. Nuevo `signal_ledger.py` (tabla `signal_ledger` PK signal_id, upsert idempotente, `label_symbol(..., ledger=)`). `BayesianOnlineUpdater.update(strength)` + `backtest_engine._update_bayesian_weights` usa `pnl_r` (retorno/riesgo, cap 10R, piso 1.0). Tests: `test_barrier_labeling.py` 17→26, +3 strength, +3 pnl_r. Suite `test_barrier_labeling + test_probabilistic_engine + test_backtest_engine` verde, ruff limpio. Ver ROADMAP T1.6.
 
 **Objetivo:** `barrier_labeling.py` (M1) ya replica las barreras de salida de `adaptive_risk.py`
 verbatim y devuelve qué barrera cerró cada posición hipotética — esto es funcionalmente
@@ -853,6 +860,8 @@ en "nada que hacer" o en un fix real, hay que averiguarlo).
 ---
 
 ### T2.2 — Bootstrap de bloques circulares para intervalos de confianza a nivel de métricas agregadas de backtest
+
+**ESTADO: ✅ CERRADO (2026-08-21, OpenCode).** `circular_block_bootstrap_ci(returns, statistic_fn, block_size=20, n_bootstrap=1000, confidence=0.95, seed=None)` en `probabilistic_engine.py` (fancy-indexing vectorizado, `np.random.default_rng(seed)` local). `calculate_metrics()` devuelve `sharpe_ci`, `cagr_ci`, `max_drawdown_ci` (tuplas lo/hi, seed=42 fijo → reproducible). Complementa (no reemplaza) `conformal.py` y Deflated Sharpe con CI. Tests `test_circular_bootstrap.py`: coverage 0.942 IID (umbral 0.85), CI bloques ~2× asintótico en AR φ=0.6, determinismo + (nan,nan) vacío. Ver ROADMAP T2.2 y `backtest_engine.py:642-667`.
 
 **Objetivo:** agregar bootstrap de bloques circulares específicamente para las métricas
 agregadas de `calculate_metrics()` (Sharpe, CAGR, max drawdown) — **no** para reemplazar
