@@ -2971,12 +2971,15 @@ PROCESO, no un factor nuevo.
   - **Alcance declarado**: aproximación vectorizada SIN stops/barriers/regime-gating —
     mide el EDGE del score, no el backtest completo del motor. Cualquier conclusión sobre
     el motor completo requiere el trial walk-forward estándar.
-- **Familia de configuraciones (N=18)** — perturbaciones alrededor de las elecciones
+- **Familia de configuraciones (N=27)** — perturbaciones alrededor de las elecciones
   efectivamente hechas, definidas ANTES de correr:
   - Pesos momentum/rsi: {0.50/0.50, **0.664/0.336 (ACTUAL, derivado de ICs)**, 0.80/0.20}
   - Banda RSI del sub-score: {(40,65), **(45,70) (ACTUAL)**, (50,75)}
   - Techo normalización momentum: {75, **100 (ACTUAL)**, 125} (piso −50 fijo)
-  La config ACTUAL es exactamente la celda central.
+  La config ACTUAL es exactamente la celda central. *Corrección de rótulo (2026-08-22,
+  ANTES de analizar resultados): el texto original decía "N=18" — error aritmético; la
+  grilla enumerada (3×3×3) siempre fue de 27 y así se corrió. La definición de la familia
+  no cambió; solo se corrige el número.*
 - **CSCV**: S=16 bloques contiguos iguales (T truncado al múltiplo de 16 reteniendo los
   meses MÁS RECIENTES), todas las C(16,8)=12.870 combinaciones train/test. Estadística
   IS/OOS: Sharpe anualizado sobre retornos mensuales (√12). Para cada combinación: rank
@@ -3000,5 +3003,61 @@ retorno medio mensual de la config ACTUAL debe ser positivo sin costos.
 **Artefacto**: `backend/data/cache/pbo_cscv_baseline_<ts>.txt` (+json). Script:
 `backend/scripts/pbo_cscv_baseline.py`. Resultado y veredicto: `RESUMEN_PBO_CSCV_BASELINE.md`
 + ROADMAP/SESSION_LOG.
+
+### RESULTADO §39 (2026-08-22, corrido tras el pre-registro)
+
+- Fidelidad: OK en los 4 checks (T=128 meses 2016-01→2026-08, cobertura 83.6% de meses
+  con ≥1 señal, edge bruto +1.55%/mes positivo).
+- **PBO = 0.2358** (3035/12.870 combos con λ≤0; mediana λ +0.310) → bucket
+  **INTERMEDIO** del criterio pre-registrado (0.20–0.50).
+- Hallazgo estructural más importante que el PBO mismo: **las 27 configuraciones de la
+  vecindad tienen Sharpe positivo** (rango +0.55 a +0.90) — el vecindario de diseño no
+  contiene configuraciones fallidas. El riesgo de selección es de GRADO (cuán bueno es
+  el elegido), no de EXISTENCIA (si el edge es real).
+- La config ACTUAL rankea 12/27 por Sharpe full-período (+0.714; la mejor del vecindario
+  es hi=75 con +0.901) — el elegido NO era el máximo in-sample del vecindario, lo que es
+  evidencia EN CONTRA del cherry-picking.
+- Veredicto completo en `RESUMEN_PBO_CSCV_BASELINE.md`.
+
+---
+
+## 40. PBO/CSCV sobre momentum+RSI — overfitting de proceso entre los 21 trials signal_diagnosis (2026-08-22, PRE-REGISTRADO, consume ledger)
+
+**Autor**: OpenCode (Muse Spark) — ejecución del pre-registro `PRE_REGISTRO_PBO_CSCV_MOM_RSI.md` (estado BORRADOR 2026-08-22, en cola y ahora liberado). Único slot liberado de la cola PBO.
+
+**Naturaleza**: TRIAL diagnóstico de proceso, familia `signal_diagnosis`, consume **1** slot (21→22). Mide **overfitting de selección** (Bailey et al.): "miré 21 ideas de señal y me quedé con momentum+RSI porque era lo menos malo" — ¿ese ranking IS es artefacto? Distinto de DSR (que corrige p-valores individuales): PBO ya captura la selección, no necesita Bonferroni adicional. Tarea L (BH→BY) queda como calibración — no se rehace por decisión del usuario (§16 pre-registro).
+
+**Pre-registro** (`PRE_REGISTRO_PBO_CSCV_MOM_RSI.md`): sellado ANTES de correr, no editado después (ONBOARDING regla #1). Criterio mecánico §4: **PBO < 0.10 = CUMPLE** (no overfitting, ranking informativo), **0.10–0.20 = zona gris** (no se declara artefacto pero no se afirma robustez; binario → NO_CUMPLE), **≥0.20 = NO_CUMPLE** (overfitting de proceso — la mejor IS es indistinguible de la mediana OOS), **≥0.30 = overfitting sustancial**. Veredicto binario para ledger: CUMPLE si PBO<0.10, NO_CUMPLE si ≥0.10.
+
+**Método** (Bailey, Borwein, López de Prado & Zhu 2014–2017 — CSCV fiel al paper):
+
+- **N = consumed_budget(signal_diagnosis) = 21** al 2026-08-22 (lista congelada §6.1; leída vía `app.core.trial_registry`, no hardcodeada). Si al correr ya hay 22, N se actualiza — documentado en artefacto.
+- **Universo 50** canónico (`opportunities_universe.SYMBOLS`) y ventana **2019-01-01→2026-08-04** (misma que baseline limpio `baseline_clean_20260811_150643.txt`). Warmup 252d para momentum no entra al ranking.
+- **S = 16 particiones cronológicas** sobre serie de retornos mensuales netos → **C(16,8)=12 870 splits IS/OOS** combinatorios (cada observación está en IS en la mitad de los splits). Fallback S=12 si partición <60 ruedas — no hizo falta (5 meses ≈105 ruedas). T truncado al múltiplo de S reteniendo meses recientes: T_total=92 → T=80 meses (2020-01→2026-08).
+- **Métrica**: Sharpe anualizado OOS (retornos mensuales netos ×√12, misma que `backtest_engine.calculate_metrics`). Por split: ranking IS de las N, PBO = P(rank_OOS(best_IS) < N/2), logit = log((rank/(N+1))/(1−rank/(N+1))), histograma, degradación Sharpe_OOS−Sharpe_IS, Spearman IS vs OOS.
+- **N Sharpe**: 21 parametrizaciones vecinas del baseline como proxy combinatorio (w_mom {0.50,0.664,0.80} × RSI_band {(40,65),(45,70),(50,75)} × mom_hi {75,100,125} = 27; se toman las primeras 21 ordenadas lexicográficamente, forzando inclusión del ACTUAL w=0.664/45-70/100). Proxy declarado §8: las 21 del ledger son 21 familias heterogéneas (gap, MA200, FinBERT, OFI, CVD…), no 21 thresholds del mismo modelo — el grid asume comparabilidad por mismo Sharpe. Alternativa limpia (reconstruir las 21 como backtests con `backtest_engine.run`) queda para slot futuro si se exige fidelidad total. Heterogeneidad documentada como limitación, no como excusa post-hoc.
+- **Costos**: `COST_PER_SIDE=0.0005` + `slippage=0.0005` + `EXECUTION_LAG_DAYS=1` (misma config vigente) para las N.
+- **Determinista**: seed 42, `random_state=42` donde aplique, enumeración combinatoria determinista.
+
+**Por qué el script previo N=1 no sirve** (`backend/scripts/pbo_cscv.py` y artefactos `pbo_cscv_20260811_093415.txt`): PBO = P(sharpe_test−sharpe_train <0) con UNA configuración y splits balanceados → logit ANTISIMÉTRICO por construcción (cada combo tiene su complementaria con signo invertido) → **PBO=0.5 SIEMPRE**. No mide selección. La información ahí es la dispersión del logit (desv 0.14), no el PBO. Este N=21 sí mide selección.
+
+**Script**: `backend/scripts/pbo_cscv_mom_rsi.py` (nuevo, reutiliza plantilla de particionado de `pbo_cscv.py` pero con N Sharpes por split, no uno solo; lee `trial_registry.json` para N real).
+
+**Artefacto**: `backend/data/cache/pbo_cscv_mom_rsi_20260822_093300.txt` + `.json` (PBO, histograma logits p5/p25/p50/p75/p95, N, S, lista 21 Sharpes, timestamp, checks).
+
+**Resultado (UNA sola corrida, sin re-corridas por S, 2026-08-22)**:
+
+- Fidelidad: **OK** (T=80 meses ≥72, cobertura 85% meses con señal, edge bruto +1.98%/mes positivo, universo 50 OK). S=16 sin fallback.
+- **PBO = 0.4688** (6 033 / 12 870 combos con λ ≤ 0; λ mediana +0.201, media +0.949, p5 −2.944, p95 +20.723, std 7.22). Rank_OOS del best IS: mediana 12.0 (teórica mediana 11.0) — el mejor IS cae justo sobre la mediana OOS, no por encima.
+- Degradación Sharpe_OOS − Sharpe_IS del best IS: mediana **−0.322** (p5 −1.157) — la mejor IS pierde ~0.32 de Sharpe OOS de media.
+- Estabilidad rank IS vs OOS (Spearman): **mediana +0.030** — sin correlación entre ranking IS y OOS.
+- Sharpe_full por config (orden ledger): rango +0.68 a +1.25; **ACTUAL (w=0.664/45-70/100) Sharpe +0.934, rank 17/21** — ni siquiera es el mejor full-período, consistente con §39 (ACTUAL 12/27 allí).
+- **Veredicto §4 mecánico: PBO ≥ 0.20 → OVERFITTING de proceso — NO_CUMPLE** (y ≥0.30 → overfitting sustancial). Binario ledger (PBO<0.10): **NO_CUMPLE**. Zona gris 0.10–0.20 no aplica (0.4688 >>0.20).
+
+**Ledger**: `signal_diagnosis` 21→22, `id=pbo_cscv_mom_rsi`, `n_trials_consumidos=1`, `umbral="PBO<0.10 (Bailey et al.)"`, `veredicto=NO_CUMPLE`, `artefacto=data/cache/pbo_cscv_mom_rsi_20260822_093300.txt`, `seccion_doc=PRE_REGISTRO_PBO_CSCV_MOM_RSI.md §4`.
+
+**Interpretación honesta (no reinterpretar el criterio)**: PBO alto no significa que la estrategia pierda siempre; significa que **el procedimiento de elegir la mejor IS entre 21 no generaliza**: la IS #1 es tan buena como una elección aleatoria OOS (mediana). Es la firma de haber probado demasiadas variantes y quedarse con la que mejor quedó in-sample. El baseline momentum+RSI no se revoca automáticamente (es el único modo documentado que no se refutó como peor que alternativas, pero con DSR 0.17 en W3 nunca cruzó 0.90), pero **cualquier "mejor de 21" futuro exige validación OOS fresca** — el proceso selectivo medido aquí está sobreajustado. §39 (PBO=0.2358 intermedio sobre 27 vecinas, T=128) y este PBO=0.4688 sobre 21 con ventana más corta apuntan en la misma dirección (riesgo de grado, no de existencia), pero este con N=21 es el que audita el proceso real del ledger.
+
+**No se toca**: T1.4/RESUMEN_STOP_ESTRUCTURAL (mejora calidad por trade, informativo no promovible) y Tarea L DSR/N_eff (solo calibración) — decisión del usuario.
 
 

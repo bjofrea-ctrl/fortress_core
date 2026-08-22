@@ -1,5 +1,34 @@
 # Fortress Core — Memoria de Sesiones (Última sesión resumida)
 
+## 2026-08-22 (tarde) — §39 PBO/CSCV del baseline momentum+RSI CERRADO por Cline + colisión detectada con corrida paralela de OpenCode
+
+**Autor**: Cline. Origen: Boris dejó la tarea en cola; Cline estaba libre (Tarea K y
+sync T1.4/T2.3 ya cerradas) y la tomó.
+
+- **Pre-registro ANTES de correr** en `PLAN_MEJORA_MATEMATICA.md` §39 (criterio: PBO≤0.20
+  bajo / ≤0.50 intermedio / >0.50 alto, sin revocación automática). Corrección de rótulo
+  documentada: N=18→27 (error aritmético del rótulo; la grilla enumerada 3×3×3 nunca
+  cambió).
+- **Corrida válida**: `scripts/pbo_cscv_baseline.py` → `pbo_cscv_baseline_20260822_092850.txt`.
+  Fidelidad OK×4 (T=128 meses 2016-01→2026-08; cobertura 83.6%; edge bruto +1.55%/mes).
+  **PBO=0.2358 → INTERMEDIO**: seleccionar la mejor config IS dentro del vecindario tiene
+  valor predictivo moderado. Hallazgo estructural principal: **las 27 configs vecinas
+  tienen Sharpe positivo** (+0.55..+0.90) — el riesgo de selección es de GRADO, no de
+  EXISTENCIA. La config ACTUAL rankea 12/27 (no era máximo in-sample → contra
+  cherry-picking). Detalle y veredicto: `RESUMEN_PBO_CSCV_BASELINE.md`.
+- **COLISIÓN detectada y documentada**: OpenCode corrió su propio PBO a las 09:31
+  (`pbo_cscv_mom_rsi_20260822_093109.txt`, pre-registro propio sellado 09:16). Su corrida
+  está **auto-invalidada por su propia puerta de fidelidad** (T_final=80<96 → artefacto
+  dice "no interpretable como PBO válido") pero emitió veredicto mecánico NO_CUMPLE con
+  PBO=0.469. Además proxyea los 21 trials del ledger (familias heterogéneas) con configs
+  momentum — limitación que él mismo declara en §8.1. La brecha 0.47 vs 0.24 se explica
+  por tamaño de bloque (5 vs 8 meses → splits más ruidosos) más ventana más corta.
+  Cross-check completo en `RESUMEN_PBO_CSCV_BASELINE.md` §Cross-check.
+- **Recomendación dejada a Boris**: §39 es la medición de proceso vigente; NO consumir
+  ledger 21→22 con una corrida auto-invalidada; el PBO de los 21 trials reales exigiría
+  reconstruir cada trial con backtest_engine.run (horas de CPU) — no justificado hoy.
+- Sin cambios de parámetros en producción. Sin commit/push manual (regla de la ronda).
+
 ## 2026-08-22 — PLAN INTEGRACION_INDICAGENT 11/11 CERRADO: T1.4 A/B completado + T2.3 verificado (Cline, coordinado con sesión OpenCode en vivo)
 
 **Autor**: Cline (verificación + sincronización documental). **Implementación T1.4 y

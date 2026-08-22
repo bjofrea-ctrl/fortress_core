@@ -1,0 +1,95 @@
+==============================================================================
+PRE-REGISTRO PBO/CSCV §3.3 — momentum+RSI sobre N configs (Bailey et al.)
+Generado: 2026-08-22 09:32:18 → 2026-08-22 09:33:00 | Duración: 42.6s
+Universo: 50 símbolos (esperado 50) | Ventana: 2019-01-01→2026-08-04 | Costos: 0.0005+0.0005 por lado
+N (ledger signal_diagnosis): 21 (consumed_budget=21) | S=16 bloques de 5 meses (~105 ruedas) | Combinaciones: 12870
+Meses: 80 (2020-01 → 2026-08) | T_total=92 | Costo rebalance: 0.002
+==============================================================================
+
+--- N configs (grid vecino del baseline, §6.1 proxy — limitación §8 heterogeneidad) ---
+  01. fase05a_rr2_intraday | w=0.500 band=(40,65) hi=75       Sharpe_full=+1.253
+  02. fase05b_rmt | w=0.500 band=(40,65) hi=100               Sharpe_full=+1.089
+  03. fase05c_ridge_macro_crudo | w=0.500 band=(40,65) hi=125 Sharpe_full=+0.946
+  04. sectorial_endogeno | w=0.500 band=(45,70) hi=75         Sharpe_full=+1.187
+  05. reeval_trial14 | w=0.500 band=(45,70) hi=100            Sharpe_full=+0.969
+  06. gap_reversion_diag | w=0.500 band=(45,70) hi=125        Sharpe_full=+0.683
+  07. rr2_subperiodos | w=0.500 band=(50,75) hi=75            Sharpe_full=+1.091
+  08. ma200_clusters | w=0.500 band=(50,75) hi=100            Sharpe_full=+1.023
+  09. donchian | w=0.500 band=(50,75) hi=125                  Sharpe_full=+0.851
+  10. ma200_beta_control | w=0.664 band=(40,65) hi=75         Sharpe_full=+1.094
+  11. horizon_audit_5d_10d | w=0.664 band=(40,65) hi=100      Sharpe_full=+1.076
+  12. horizon_largo_60d_125d | w=0.664 band=(40,65) hi=125    Sharpe_full=+1.048
+  13. lead_lag_diag | w=0.664 band=(45,70) hi=75              Sharpe_full=+1.136
+  14. triple_barrier_retest | w=0.664 band=(45,70) hi=100     Sharpe_full=+0.934  <== ACTUAL (w=0.664 band 45-70 hi=100)
+  15. adx_walkforward | w=0.664 band=(45,70) hi=125           Sharpe_full=+0.826
+  16. weekly_indicators_2026 | w=0.664 band=(50,75) hi=75     Sharpe_full=+0.980
+  17. finbert_sentiment_eventstudy | w=0.664 band=(50,75) hi=100 Sharpe_full=+0.892
+  18. xsec_relative_and_aaii_timing | w=0.664 band=(50,75) hi=125 Sharpe_full=+1.034
+  19. trial_macd_bollinger | w=0.800 band=(40,65) hi=75       Sharpe_full=+0.950
+  20. trial_ofi_proxy | w=0.800 band=(40,65) hi=100           Sharpe_full=+1.071
+  21. trial_cvd_proxy | w=0.800 band=(40,65) hi=125           Sharpe_full=+0.966
+  Rank ACTUAL entre 21 (full period): 17 (1=mejor)
+
+--- Checks de fidelidad (pre-registrados §39; fallar alguno invalida) ---
+  T_total: 92
+  T_final: 80
+  S_elegido: 16
+  T_ge_96: True
+  fallback_usado: False
+  n_symbols_loaded: 50
+  universo_esperado: 50
+  universo_ok: True
+  cobertura_actual: {'meses_con_senal': 68, 'ratio': 0.85, 'ge_30pct': True}
+  edge_positivo_sin_costos: {'mean_mensual_ex_costos': 0.019891, 'positivo': True}
+  costos: {'per_side': 0.0005, 'slippage': 0.0005, 'per_rebalance': 0.002}
+  ventana: 2019-01-01→2026-08-04
+  FIDELIDAD GLOBAL: OK
+
+--- Resultado primario (§4) ---
+  PBO = 0.4688  (6033/12870 combos con λ≤0)
+  λ (logit rank_OOS): media=+0.949 mediana=+0.201 p5=-2.944 p25=-1.099 p75=+1.735 p95=+20.723 std=7.223
+  Degradación Sharpe_OOS - Sharpe_IS (del best IS): mediana=-0.322 p5=-1.157
+  Estabilidad rank IS vs OOS (Spearman): mediana rho=+0.030
+  Buckets §4: <0.10 CUMPLE | 0.10-0.20 gris (binario NO_CUMPLE) | ≥0.20 NO_CUMPLE | ≥0.30 sustancial
+  VEREDICTO (§4 mecánico): OVERFITTING de proceso — NO_CUMPLE (PBO≥0.20, selección no mejor que azar) | OVERFITTING sustancial (≥0.30)
+  VEREDICTO BINARIO ledger (PBO<0.10): NO_CUMPLE
+  Bucket: overfitting
+
+--- Por qué N=1 PBO=0.5 no mide selección (advertencia metodológica) ---
+  backend/scripts/pbo_cscv.py con UNA config y splits balanceados tiene logit
+  ANTISIMÉTRICO por construcción (cada combo tiene su complementaria con signo
+  invertido) → PBO=0.5 SIEMPRE. No es '50% overfitting', es el NULO de
+  selección. Este N=21 SÍ mide selección: el logit ya no es antisimétrico,
+  PBO informa P(rank_OOS < mediana) del mejor IS entre 21.
+
+--- Secundarios ---
+  Histograma logits (λ):
+    p5: -2.9444
+    p25: -1.0986
+    p50: +0.2007
+    p75: +1.7346
+    p95: +20.7233
+    media: +0.9492 | desv: 7.2230
+  Rank_OOS del best IS: mediana=12.0 (mediana teórica N/2=11.0)
+  P(rank_OOS < mediana N/2): 0.4688  [=PBO]
+
+--- Limitaciones declaradas ANTES de correr (§8) ---
+  1. Heterogeneidad: las 21 del ledger son 21 familias distintas (gap, MA200,
+     FinBERT, OFI, CVD...), no 21 parametrizaciones del mismo modelo. Este
+     proxy de 21 parametrizaciones vecinas del baseline (w_mom×RSI×mom_hi)
+     asume estrategias comparables rankeadas por mismo Sharpe. Es aproximación
+     declarada; la alternativa limpia (reconstruir las 21 como backtests con
+     backtest_engine.run) queda para slot futuro si se exige fidelidad total.
+  2. Autocorrelación y tamaño IS/OOS: cada split IS/OOS ≈ T/2 meses (~45 meses)
+     → Sharpe por split con SE ≈0.15 (mensual). Suficiente pero ruidoso.
+  3. Costos y ejecución: 0.002 por rebalanceo mensual, lag 1 ya incorporado vía
+     signal.shift(1). Todas las N con mismos costos — PBO mide selección, no
+     sensibilidad a costos.
+  4. Lookahead del baseline: el baseline se calibró con datos 2019-2026; las
+     particiones reutilizan esos datos. PBO mide selección entre 21 tal como
+     existen hoy, no pureza del baseline aislado.
+
+--- Reproducción ---
+  Seed: 42 | S=16 | N=21 | n_combos=12870 | random_state=42 (donde aplique)
+  Ledger ids: fase05a_rr2_intraday, fase05b_rmt, fase05c_ridge_macro_crudo, sectorial_endogeno, reeval_trial14, gap_reversion_diag, rr2_subperiodos, ma200_clusters, donchian, ma200_beta_control, horizon_audit_5d_10d, horizon_largo_60d_125d, lead_lag_diag, triple_barrier_retest, adx_walkforward, weekly_indicators_2026, finbert_sentiment_eventstudy, xsec_relative_and_aaii_timing, trial_macd_bollinger, trial_ofi_proxy, trial_cvd_proxy
+  Out: data/cache/pbo_cscv_mom_rsi_<ts>.txt/.json

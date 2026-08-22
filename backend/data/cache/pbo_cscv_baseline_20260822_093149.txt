@@ -1,0 +1,49 @@
+==============================================================================
+§39 — PBO/CSCV del baseline momentum+RSI (auditoría de proceso, NO trial)
+Generado: 2026-08-22 09:31:22 | Duración: 27.2s
+Universo: 50 símbolos | Meses: 128 (2016-01 → 2026-08) | Configs: 27
+Bloques S=16 de 8 meses | Combinaciones: 12870
+==============================================================================
+
+--- Checks de fidelidad (pre-registrados; fallar alguno invalida) ---
+  T_final: 128
+  T_ge_96: True
+  cobertura_actual: {'meses_con_senal': 107, 'ratio': 0.8359, 'ge_30pct': True}
+  edge_positivo_sin_costos: {'mean_mensual_ex_costos': 0.015514, 'positivo': True}
+  FIDELIDAD GLOBAL: OK
+
+--- Resultado ---
+  PBO = 0.2358  (3035/12870 combos con λ≤0)
+  λ: media=+0.182 mediana=+0.310 p5=-0.154 p95=+0.310
+  VEREDICTO (intermedio): INTERMEDIO — documentado; Tarea O/P deben citarlo al evaluarse
+
+--- Sharpe full-período por configuración (orden descendente) ---
+  w=0.664 band=(45,70) hi=75         Sharpe=+0.901
+  w=0.500 band=(40,65) hi=75         Sharpe=+0.891
+  w=0.500 band=(45,70) hi=75         Sharpe=+0.880
+  w=0.664 band=(40,65) hi=75         Sharpe=+0.838
+  w=0.500 band=(40,65) hi=100        Sharpe=+0.831
+  w=0.500 band=(50,75) hi=75         Sharpe=+0.820
+  w=0.500 band=(45,70) hi=100        Sharpe=+0.790
+  w=0.664 band=(50,75) hi=75         Sharpe=+0.783
+  w=0.500 band=(50,75) hi=100        Sharpe=+0.766
+  w=0.664 band=(40,65) hi=100        Sharpe=+0.749
+  w=0.800 band=(40,65) hi=100        Sharpe=+0.740
+  w=0.664 band=(45,70) hi=100        Sharpe=+0.714  <== ACTUAL
+  w=0.800 band=(45,70) hi=75         Sharpe=+0.711
+  w=0.800 band=(45,70) hi=100        Sharpe=+0.701
+  w=0.664 band=(40,65) hi=125        Sharpe=+0.697
+  w=0.500 band=(40,65) hi=125        Sharpe=+0.693
+  w=0.800 band=(40,65) hi=75         Sharpe=+0.668
+  w=0.800 band=(50,75) hi=100        Sharpe=+0.656
+  w=0.800 band=(50,75) hi=125        Sharpe=+0.646
+  w=0.664 band=(50,75) hi=125        Sharpe=+0.634
+  w=0.664 band=(50,75) hi=100        Sharpe=+0.618
+  w=0.500 band=(50,75) hi=125        Sharpe=+0.609
+  w=0.800 band=(40,65) hi=125        Sharpe=+0.593
+  w=0.800 band=(50,75) hi=75         Sharpe=+0.588
+  w=0.664 band=(45,70) hi=125        Sharpe=+0.562
+  w=0.500 band=(45,70) hi=125        Sharpe=+0.555
+  w=0.800 band=(45,70) hi=125        Sharpe=+0.550
+
+  Rank de la config ACTUAL entre 27: 12
