@@ -3061,3 +3061,58 @@ retorno medio mensual de la config ACTUAL debe ser positivo sin costos.
 **No se toca**: T1.4/RESUMEN_STOP_ESTRUCTURAL (mejora calidad por trade, informativo no promovible) y Tarea L DSR/N_eff (solo calibración) — decisión del usuario.
 
 
+
+---
+
+## 41. Tarea O — Frog-in-the-Pan: ID condicionando momentum_12_1 (2026-08-22, PRE-REGISTRO antes de correr, consume ledger)
+
+**Fuente**: Da, Gurun & Warachka (2014, RFS) "Frog in the Pan". Un grado de libertad
+sobre momentum_12_1 ya validado (no un factor nuevo compitiendo solo). Asignada a
+Kilo Code por Boris 2026-08-22 (`PLAN_LARGO_PLAZO.md` ronda en cola).
+
+**Definición EXACTA de Information Discreteness** (fórmula del paper, verificada):
+sobre la MISMA ventana de formación que `momentum_12_1` (= `close.pct_change(252)*100`,
+`indicators.py:277`) — los últimos **252 retornos diarios** hasta t inclusive:
+
+- `%neg` = fracción de días con retorno < 0 en la ventana; `%pos` = fracción > 0.
+  Días con retorno exactamente 0 se excluyen de AMBAS (convención declarada).
+- `PRET = momentum_12_1_t` (retorno acumulado de la ventana).
+- **ID = sign(PRET) × (%neg − %pos)** ∈ [−1, +1].
+  Equivalente al enunciado de PLAN_LARGO_PLAZO: sign(ret)×%contrarios − %iguales.
+  ID muy negativo = información CONTINUA (muchos días pequeños a favor del signo);
+  ID positivo / cercano a 0 = información DISCRETA (saltos con días contrarios).
+
+Todo causal: usa solo retornos ≤ t. Sin datos nuevos (panel cacheado).
+
+**Hipótesis**: el rank IC cross-sectional de `momentum_12_1` vs `fwd_20` es MAYOR en
+el tercil de MENOR ID (información continua) que en el de MAYOR ID (discreta).
+
+**Método** (protocolo familia signal_diagnosis §25/§37/§38):
+
+- Panel universo 50 canónico (`opportunities_universe.SYMBOLS`), cache parquet,
+  START=2018-01-01 (warmup 252d), DATA_END=2026-08-21 (cache vigente; ventanas fijas,
+  días extra solo amplían W3 — declarado aquí, no post-hoc).
+- SIN máscara de elegibilidad (población completa, igual que §37/§38).
+- Terciles de ID POR FECHA (`qcut` cross-sectional, ranks method='first'): tercil 1 =
+  menor ID (continua), tercil 3 = mayor ID (discreta). Mínimo 5 símbolos/bucket/día.
+- IC diario = Spearman(momentum_12_1, fwd_20) intra-bucket por fecha.
+- **ΔIC_t = IC_tercil1_t − IC_tercil3_t** (solo fechas con AMBOS buckets computables:
+  serie pareada). t_NW = mean/SE Newey-West, L = min(12, n//8), copia fiel §0.5a.
+- Ventanas: W1 2020-2021, W2 2022-2023, W3 2024→2026-07-06 (idénticas a §37/§38).
+
+**Umbral**: familia `signal_diagnosis` con 22 consumidos → este trial es n=23 →
+Bonferroni bilateral |t| > z(1 − 0.05/(2·23)) = **3.065** (46 comparaciones).
+
+**CRITERIO DE ÉXITO (pre-registrado)**: ΔIC > 0 con t_NW > +3.065 en **≥2/3 ventanas**
+→ CUMPLE. Si NO: línea cerrada como refutada, nada se integra. Si CUMPLE: la
+integración (condicionar el score por ID) sería trial de MOTOR aparte — este
+diagnóstico NO integra ni promueve nada.
+
+**Reportes informativos (no disparan veredicto)**: IC por tercil y ventana;
+TOTAL pooled no pre-registrado; distribución de ID (p10/p50/p90) como sanity check.
+
+**Script**: `backend/scripts/trial_frog_in_the_pan.py` (nuevo, plantilla
+`trial_cvd_proxy.py`). Python 3.9 real, lee cache, no descarga.
+**No toca**: indicators.py, signal_engine.py, trial_registry.py en runtime
+(registro manual al cierre), nada del motor. Artefacto:
+`backend/data/cache/trial_frog_in_the_pan_<ts>.txt`.

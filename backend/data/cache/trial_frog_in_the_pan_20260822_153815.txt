@@ -1,0 +1,7 @@
+==============================================================================
+PLAN_MEJORA_MATEMATICA §41 — Tarea O: Frog-in-the-Pan (ID × momentum_12_1)
+Umbral familia signal_diagnosis (n=23, dos colas): |t| > 3.065
+Ventanas: W1 2020-01-01->2021-12-31, W2 2022-01-01->2023-12-31, W3 2024-01-01->2026-07-06
+ID = sign(mom_12_1) x (%neg-%pos), ventana formacion 252d; terciles por fecha
+CRITERIO: deltaIC(t1-t3) > 0 con t_NW > +3.065 en >= 2/3 ventanas
+==============================================================================
