@@ -1,0 +1,31 @@
+==============================================================================
+T2.3 — Diagnóstico EXPLORATORIO de IC: hurst_exponent + realized_vol_regime
+Universo: 50 símbolos | 2018-01-01 -> 2026-07-31 | horizonte fwd 20d
+Umbral referencia familia signal_diagnosis (n=19, dos colas): |t| > 3.008
+Ventanas: W1 2020-01-01->2021-12-31, W2 2022-01-01->2023-12-31, W3 2024-01-01->2026-07-31
+NOTA: exploratorio — NO consume ledger. Sin promoción a señal/gate.
+==============================================================================
+
+Panel: 133450 filas | 2669 fechas | 50 símbolos
+Rango fechas: 2016-01-04 -> 2026-08-14
+
+==============================================================================
+A) rank IC intra-día: hurst_exponent vs fwd_return_20d (sin prior direccional)
+ventana n_dias   mean_IC    SE_NW       t   L
+W1         505   +0.0282   0.0278   +1.01  12 
+W2         501   +0.0001   0.0241   +0.00  12 
+W3         637   -0.0492   0.0182   -2.70  12 
+TOTAL     2649   -0.0127   0.0102   -1.24  12
+
+==============================================================================
+B) rank IC intra-día: realized_vol_regime vs fwd_return_20d (sin prior direccional)
+ventana n_dias   mean_IC    SE_NW       t   L
+W1         505   -0.0311   0.0260   -1.20  12 
+W2         501   +0.0052   0.0262   +0.20  12 
+W3         637   +0.0104   0.0200   +0.52  12 
+TOTAL     2649   +0.0046   0.0101   +0.45  12
+
+==============================================================================
+C) VALIDACIÓN: rank IC intra-día: realized_vol_regime vs real_vol_20 futura (clustering, signo esperado +1)
+ventana n_dias   mean_IC    SE_NW       t   L
+W1         505   +0.0952   0.0293   +3.25  12 SIG+
