@@ -1,0 +1,13 @@
+==============================================================================
+PLAN_MEJORA_MATEMATICA §42 — Tarea P: regime gating de momentum_12_1
+UN trial coordinado, 3 sub-hipótesis x 3 ventanas = m=9 tests
+Ledger runtime: signal_diagnosis consumido=23 -> n=24 | current_threshold=0.9958333333333333
+alpha_trial=0.00416667 / m=9 -> alpha_per_test=0.00046296 bilateral | |t| > z = 3.5013
+Ventanas: W1 2020-01-01->2021-12-31, W2 2022-01-01->2023-12-31, W3 2024-01-01->2026-07-06
+==============================================================================
+
+Fidelidad F1 universo: 50/50 cargadas | F4 seed HMM: 42
+Panel: 133450 filas | 2669 fechas | 50 símbolos | 2016-01-04 -> 2026-08-14
+F3 edge pooled TOTAL momentum_12_1 vs fwd_20: IC=+0.0079 (t=+0.47, n=2649) [OK informativo]
+
+--- (a) Estado HMM rezagado 21 hábiles vía regime_gate.py (WalkForwardRegimeGate, primer uso real) ---

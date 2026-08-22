@@ -142,7 +142,7 @@ def expanding_tercile(series: pd.Series, burn_in: int = BURN_IN) -> pd.Series:
         if len(hist) == 0:
             continue
         pct = (float((hist < v).sum()) + 0.5 * float((hist == v).sum())) / len(hist)
-        out[i] = float(np.floor(pct * 3.0)) + 1.0
+        out[i] = min(3.0, float(np.floor(pct * 3.0)) + 1.0)
     return pd.Series(out, index=series.index)
 
 
