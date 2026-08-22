@@ -3210,3 +3210,37 @@ n_recalibraciones>0.
 trial_registry.py en runtime (registro manual al cierre), PRE_REGISTRO_PBO_CSCV ni
 validación OOS (otros agentes). Artefacto:
 `backend/data/cache/trial_regime_gating_p_<ts>.txt` (+`.json`).
+
+### 42.1 RESULTADO (apéndice post-corrida, 2026-08-22) — corrida ÚNICA 16:26
+
+Artefacto: `backend/data/cache/regime_gating_p_20260822_162628.txt` (+`.json`).
+Umbral efectivo: ledger consumido=23 → n=24 → current_threshold()=0.9958333333333333
+→ α_trial/9 → **|t| > +3.5013** bilateral (idéntico al pre-registrado; ningún otro
+trial de la familia registró entre pre-registro y corrida).
+
+**Fidelidad**: F1 universo 50/50 · F2 meses con datos W1=24/W2=24/W3=31 (jul-26
+parcial) · F3 edge pooled TOTAL IC=+0.0079 (t+0.47, n=2649; positivo, débil — el
+momentum diario promedia casi cero, consistente con la familia) · F4 seed HMM 42 ·
+F5 gate walk-forward OK: 34 recalibraciones, asserts anti-lookahead pasados,
+distribución de estados no degenerada (GOLDILOCKS 528 / REFLATION 446 /
+STAGFLATION 821 / DEFLATION 312 días).
+
+| Condicionante | W1 ΔIC (t) | W2 ΔIC (t) | W3 ΔIC (t) | SIG | Veredicto |
+|---|---|---|---|---|---|
+| (a) HMM rezagado GOLDILOCKS−resto | **+0.1774 (+3.14)** | +0.0121 (+0.17) | −0.0678 (−1.12) | 0/3 | **NO_CUMPLE** |
+| (b) Vol cartera t1−t3 | +0.0663 (+0.94) | +0.0352 (+0.31) | +0.0148 (+0.15) | 0/3 | **NO_CUMPLE** |
+| (c) Amihud t1−t3 | −0.1864 (−1.56) | no computable (n_B=6) | no computable (n_B=0) | 0/3 | **NO_CUMPLE** |
+
+**VEREDICTO GLOBAL: NO_CUMPLE** (regla OR). Ledger signal_diagnosis 23→24, id
+`regime_gating_p`, n=1.
+
+Lectura honesta SIN reinterpretar el veredicto: (a) W1 fue sugerente (t +3.14, signo
+correcto, coherente con Cooper-Gutierrez-Hameed) pero NO cruza la vara m=9 (3.5013)
+y NO se repite en W2/W3 — la hipótesis del estado rezagado como compuerta queda sin
+evidencia suficiente bajo esta disciplina. (c) materializó el riesgo declarado: la
+Amihud agregada es tan persistente que su percentil expanding colapsa los terciles
+altos (1911/490/141 días; tercil alto casi desaparece en W2/W3) — el split es
+inaplicable así como se definió; además el signo en W1 fue el OPUESTO al paper
+(IC mayor en alta iliquidez). (b) plano en las tres ventanas.
+Ninguna compuerta se integra al motor; regime_gate.py sigue siendo infraestructura
+disponible (ahora CON un primer uso real documentado).

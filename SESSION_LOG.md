@@ -2579,3 +2579,36 @@ anterior) y `ORDENES_MODULOS.md` (M7 → hecho) actualizados.
 **Suite y lint**: `pytest tests/test_signal_engine tests/test_indicators tests/test_probabilistic_engine tests/test_circular_bootstrap` 55 passed (8.65s); suite extendida 114 passed (111s), ruff limpio en signal_engine/indicators/probabilistic_engine/backtest_engine/market_structure.
 
 **Estado final**: PLAN 11/11 cerrados, ROADMAP sin contradicciones (T1.4+T2.2+T2.3 cerrados), ambos resúmenes completos, tests verdes, sin promoción a default (todas quedan disponibles/no promovidas salvo T0.x).
+
+## 2026-08-22 — Tarea P: regime gating de momentum, trial coordinado §42 (OpenCode)
+
+**Pre-registro ANTES de correr** (`PLAN_MEJORA_MATEMATICA.md` §42): UN trial coordinado
+con 3 sub-hipótesis (opción del plan líneas 789-792), Bonferroni intra-trial m=9 sobre el
+ledger leído en runtime (`current_threshold("signal_diagnosis")=0.9958333333333333`,
+consumido=23 → n=24) → **|t| > 3.5013 bilateral**. momentum_12_1 congelado
+(close.pct_change(252)*100, indicators.py:277), Spearman intra-día vs fwd_20, NW
+L=min(12,n//8), W1/W2/W3 canónicas.
+
+**Corrida ÚNICA**: `backend/scripts/trial_regime_gating_p.py` (nuevo; lee SOLO cache,
+sin descargas: START=2015-01-02 extendido para que min_history=756 del gate cubra W1,
+DATA_END=2026-08-21 diff≤7d como §41). Artefacto
+`backend/data/cache/regime_gating_p_20260822_162628.txt`(+json).
+
+**Veredictos mecánicos**:
+- (a) Estado HMM rezagado vía `regime_gate.py::WalkForwardRegimeGate.label_series`
+  (**PRIMER USO REAL de M3**, favorable={0}=GOLDILOCKS, defaults 63/756, macro canónico):
+  ΔIC(GOLDILOCKS−resto) W1 **+0.1774 (t+3.14)** / W2 +0.0121 / W3 −0.0678 → 0/3 sig →
+  **NO_CUMPLE**. Pista débil no confirmada.
+- (b) Vol realizada 63d cartera momentum top-quintil: ΔIC +0.07/+0.04/+0.01 (t≤0.94) →
+  **NO_CUMPLE** plano.
+- (c) Amihud agregada rolling 21d: percentil expanding colapsó el tercil alto
+  (1911/490/141 días; celdas W2/W3 no computables con n_B=6/0) y signo W1 opuesto al
+  paper (−0.1864) → **NO_CUMPLE** (riesgo declarado en §42 materializado).
+- **GLOBAL NO_CUMPLE** (OR). Nada se integra al motor; signal_engine.py intacto.
+
+**Ledger**: signal_diagnosis 23→24, id `regime_gating_p`, n=1,
+umbral `current_threshold=0.9958333 / m=9 → |t|>3.5013`, veredicto NO_CUMPLE.
+
+**Fidelidad OK×5**: universo 50/50 · meses 24/24/31 · edge pooled IC +0.0079 positivo ·
+seed HMM 42 · gate walk-forward 34 recalibraciones con asserts anti-lookahead pasados y
+estados no degenerados (GOLDILOCKS 528 / REFLATION 446 / STAGFLATION 821 / DEFLATION 312).

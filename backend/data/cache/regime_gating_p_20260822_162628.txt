@@ -11,3 +11,52 @@ Panel: 133450 filas | 2669 fechas | 50 símbolos | 2016-01-04 -> 2026-08-14
 F3 edge pooled TOTAL momentum_12_1 vs fwd_20: IC=+0.0079 (t=+0.47, n=2649) [OK informativo]
 
 --- (a) Estado HMM rezagado 21 hábiles vía regime_gate.py (WalkForwardRegimeGate, primer uso real) ---
+recalibraciones=34 | fechas etiquetadas=2107 | distribución estados={'0': 528, '1': 446, '2': 821, '3': 312}
+Fracción días GOLDILOCKS-rezagado (sobre etiquetados+lago): 0.251
+
+--- (b) Vol realizada 63d de la cartera momentum top-quintil ---
+Días con vol+tercil: 2524 | distribución terciles={3.0: 1086, 2.0: 925, 1.0: 513}
+
+--- (c) Iliquidez Amihud agregada (rolling 21d) ---
+Días con amihud+tercil: 2542 | distribución terciles={1.0: 1911, 2.0: 490, 3.0: 141}
+
+F2 cobertura meses con datos: {'W1': 24, 'W2': 24, 'W3': 31}
+
+==============================================================================
+CONDICIONANTE (a): ΔIC = IC(GOLDILOCKS-lag) − IC(resto) | signo esperado +1
+ventana bucket                  n   mean_IC    SE_NW       t      L                         n   mean_IC    SE_NW       t
+W1      GOLDILOCKS-lag         43   +0.1473   0.0355   +4.15      5 resto                 462   -0.0301   0.0440   -0.69
+        ΔIC=+0.1774 t=+3.14 computable=True sig(t>+3.50 y Δ>0)=False
+W2      GOLDILOCKS-lag        161   +0.0463   0.0489   +0.95     12 resto                 340   +0.0342   0.0547   +0.63
+        ΔIC=+0.0121 t=+0.17 computable=True sig(t>+3.50 y Δ>0)=False
+W3      GOLDILOCKS-lag        257   +0.0038   0.0437   +0.09     12 resto                 371   +0.0717   0.0419   +1.71
+        ΔIC=-0.0678 t=-1.12 computable=True sig(t>+3.50 y Δ>0)=False
+
+==============================================================================
+CONDICIONANTE (b): ΔIC = IC(vol baja (t1)) − IC(vol alta (t3)) | signo esperado +1
+ventana bucket                  n   mean_IC    SE_NW       t      L                         n   mean_IC    SE_NW       t
+W1      vol baja (t1)         105   +0.0729   0.0466   +1.57     12 vol alta (t3)         294   +0.0066   0.0534   +0.12
+        ΔIC=+0.0663 t=+0.94 computable=True sig(t>+3.50 y Δ>0)=False
+W2      vol baja (t1)         155   -0.0394   0.0772   -0.51     12 vol alta (t3)          77   -0.0746   0.0853   -0.87
+        ΔIC=+0.0352 t=+0.31 computable=True sig(t>+3.50 y Δ>0)=False
+W3      vol baja (t1)          49   +0.0458   0.0875   +0.52      6 vol alta (t3)         259   +0.0311   0.0388   +0.80
+        ΔIC=+0.0148 t=+0.15 computable=True sig(t>+3.50 y Δ>0)=False
+
+==============================================================================
+CONDICIONANTE (c): ΔIC = IC(iliquidez baja (t1)) − IC(iliquidez alta (t3)) | signo esperado +1
+ventana bucket                  n   mean_IC    SE_NW       t      L                         n   mean_IC    SE_NW       t
+W1      iliquidez baja (t1)    321   -0.0618   0.0463   -1.33     12 iliquidez alta (t3)     70   +0.1246   0.1098   +1.14
+        ΔIC=-0.1864 t=-1.56 computable=True sig(t>+3.50 y Δ>0)=False
+W2      iliquidez baja (t1)    381   +0.0377   0.0453   +0.83     12 iliquidez alta (t3)      6   +0.0435   0.0365   +1.19
+        ΔIC=-0.0059 t=-0.10 computable=False sig(t>+3.50 y Δ>0)=False
+W3      iliquidez baja (t1)    627   +0.0437   0.0307   +1.42     12 iliquidez alta (t3)      0      +nan      nan    +nan
+        ΔIC=+nan t=+nan computable=False sig(t>+3.50 y Δ>0)=False
+
+==============================================================================
+VEREDICTOS MECÁNICOS (criterio §42: ΔIC>0 con t_NW>+3.5013 en ≥2/3 ventanas)
+  (a): ventanas SIG [] de computables ['W1', 'W2', 'W3'] -> NO_CUMPLE
+  (b): ventanas SIG [] de computables ['W1', 'W2', 'W3'] -> NO_CUMPLE
+  (c): ventanas SIG [] de computables ['W1'] -> NO_CUMPLE
+GLOBAL (OR declarada): NO_CUMPLE
+==============================================================================
+Artefacto: data/cache/regime_gating_p_20260822_162628.txt

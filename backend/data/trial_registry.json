@@ -471,5 +471,16 @@
     "veredicto": "NO_CUMPLE",
     "artefacto": "data/cache/validacion_oos_fresca_mom_rsi_20260822_155520.txt",
     "seccion_doc": "PRE_REGISTRO_VALIDACION_OOS_FRESCA_MOM_RSI.md §5"
+  },
+  {
+    "id": "regime_gating_p",
+    "fecha": "2026-08-22",
+    "familia": "signal_diagnosis",
+    "hipotesis": "Regime gating de momentum_12_1: ΔIC(favorable−desfavorable)>0 con t_NW>+3.5013 en >=2/3 ventanas para al menos UNO de 3 condicionantes pre-registrados: (a) estado HMM rezagado 21h vía regime_gate.py (GOLDILOCKS vs resto), (b) vol realizada 63d cartera momentum top-quintil (t1 baja vs t3 alta), (c) Amihud agregada rolling 21d (t1 baja vs t3 alta). Trial único coordinado, Bonferroni m=9.",
+    "n_trials_consumidos": 1,
+    "umbral_aplicado": "current_threshold(signal_diagnosis)=0.9958333333333333 (n=24) / m=9 -> |t|>z(0.99976852)=3.5013 bilateral",
+    "veredicto": "NO_CUMPLE",
+    "artefacto": "backend/data/cache/regime_gating_p_20260822_162628.txt",
+    "seccion_doc": "PLAN_MEJORA_MATEMATICA.md §42"
   }
 ]
