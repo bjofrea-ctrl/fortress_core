@@ -2940,3 +2940,65 @@ t −0.73. `cvd_slope_5bar_z` tampoco (máx |t| 0.78). Veredicto registrado en e
 ledger (`trial_cvd_proxy`, signal_diagnosis 20→21). El CVD-acumulado-20d desde
 OHLCV diario no contiene información cross-sectional para el retorno a 20 ruedas.
 Línea cerrada sin integración.
+
+---
+
+## 39. PBO vía CSCV del baseline momentum+RSI — auditoría de proceso, NO es un trial (2026-08-22, PRE-REGISTRADO antes de correr)
+
+**Autor**: Cline, tomado de la cola de Boris (2026-08-22). Motivación: momentum+RSI es el
+ÚNICO factor que sobrevivió todo el proceso selectivo (38 trials en ledger), y nunca se le
+aplicó la pregunta inversa: ¿el propio baseline es un artefacto de selección entre las
+configuraciones vecinas que se pudieron haber elegido? El PBO=0.5 de §11 Fase 3 (2026-08-11)
+fue sobre la familia ridge ANTES de que el baseline quedara lockeado; no aplica al vigente.
+
+**Naturaleza**: igual que §35 — auditoría estadística retroactiva. NO consume slot del
+ledger (`motor_signal` ni `signal_diagnosis`), NO promueve ni refuta señal alguna. Mide el
+PROCESO, no un factor nuevo.
+
+**Método** (Bailey, Borwein, López de Prado, Zhu 2017 — CSCV):
+
+- **Matriz M** (T meses × N configuraciones): retorno mensual neto de un portafolio
+  equal-weight reconstruido VECTORIALMENTE a partir del mismo motor de reglas:
+  - Universo: los 50 símbolos canónicos del cache (`data/cache/*.parquet`, OHLCV local,
+    sin descargas).
+  - Snapshot en el ÚLTIMO día de trading de cada mes. Elegibilidad = gates EXACTOS del
+    motor: `close>ema50>ema200`, `adx14≥20`, `rsi14∈(40,75)`, `volume_ratio≥1.0`.
+  - Señal si `score ≥ 0.6` (umbral real de `generate_signal`). Score = pesos·(momentum_score,
+    rsi_score) con las definiciones exactas de `signal_engine.py`.
+  - Retorno del mes siguiente = media simple de close-to-close de los símbolos señalados;
+    si no hay señales → 0 (cash). Costo: 2 lados × (0.001 comisión + 0.0005 slippage)
+    descontado por rebalance completo (conservador).
+  - **Alcance declarado**: aproximación vectorizada SIN stops/barriers/regime-gating —
+    mide el EDGE del score, no el backtest completo del motor. Cualquier conclusión sobre
+    el motor completo requiere el trial walk-forward estándar.
+- **Familia de configuraciones (N=18)** — perturbaciones alrededor de las elecciones
+  efectivamente hechas, definidas ANTES de correr:
+  - Pesos momentum/rsi: {0.50/0.50, **0.664/0.336 (ACTUAL, derivado de ICs)**, 0.80/0.20}
+  - Banda RSI del sub-score: {(40,65), **(45,70) (ACTUAL)**, (50,75)}
+  - Techo normalización momentum: {75, **100 (ACTUAL)**, 125} (piso −50 fijo)
+  La config ACTUAL es exactamente la celda central.
+- **CSCV**: S=16 bloques contiguos iguales (T truncado al múltiplo de 16 reteniendo los
+  meses MÁS RECIENTES), todas las C(16,8)=12.870 combinaciones train/test. Estadística
+  IS/OOS: Sharpe anualizado sobre retornos mensuales (√12). Para cada combinación: rank
+  de la config mejor-IS dentro del OOS → ω̄ relativo → logit λ=ln(ω̄/(1−ω̄)).
+- **PBO** = fracción de combinaciones con λ≤0 (la mejor in-sample queda debajo de la
+  mediana out-of-sample).
+
+**Criterio pre-registrado (ANTES de correr)**:
+
+| PBO | Lectura | Acción |
+|---|---|---|
+| ≤ 0.20 | Riesgo de sobreajuste de proceso BAJO | El baseline queda parado con evidencia propia; nada cambia |
+| 0.20–0.50 | INTERMEDIO | Se documenta; ninguna acción automática; Tarea O y P deben citarlo al evaluar sus resultados |
+| > 0.50 | ALTO | El veredicto del baseline queda marcado "no fiable por sí solo ante el proceso selectivo". NO se revoca nada automáticamente — eso es decisión de producto de Boris — pero ROADMAP lo registra |
+
+**Checks de fidelidad** (fallar cualquiera invalida la corrida): (1) la config ACTUAL debe
+estar presente como fila y su Sharpe full-período reportado; (2) T final ≥ 96 meses;
+(3) cobertura: ≥30% de meses con ≥1 señal en la config actual; (4) signo del edge: el
+retorno medio mensual de la config ACTUAL debe ser positivo sin costos.
+
+**Artefacto**: `backend/data/cache/pbo_cscv_baseline_<ts>.txt` (+json). Script:
+`backend/scripts/pbo_cscv_baseline.py`. Resultado y veredicto: `RESUMEN_PBO_CSCV_BASELINE.md`
++ ROADMAP/SESSION_LOG.
+
+
