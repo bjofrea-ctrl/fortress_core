@@ -7,7 +7,8 @@ gobernanza/agentes/ingesta). Este documento consolida los hallazgos accionables 
 discretos para ejecución por agentes de coding (OpenCode / Kilo Code).
 
 **Fecha de redacción:** 2026-08-20
-**Status:** current — pendiente de ejecución, ningún ticket implementado todavía.
+**Status:** current — 9 de 11 tickets cerrados (T0.1, T0.2, T1.1–T1.3, T2.1, T2.2, T2.3;
+T1.5, T1.6). Restante: T1.4 (código + tests listos, A/B documental en curso).
 
 ---
 
@@ -918,6 +919,18 @@ propio a revisar, no como "port" de algo ya probado.
 ---
 
 ### T2.3 — Features de régimen por símbolo: Hurst exponent y GARCH simple
+
+**ESTADO: ✅ CERRADO (2026-08-21, Kilo Code + cierre de medición).** Código implementado
+(`hurst_exponent` vectorizado + `realized_vol_regime` en `indicators.py`, integrados a
+`calculate_all_indicators` como columnas diagnósticas). Tests recalibrados con evidencia
+estadística (panel n=3000, 50 semillas: min H=0.230 sobre umbral 0.2 — el umbral NO se
+bajó; aserciones robustas multi-semilla para el shock de vol). Diagnóstico IC transversal
+(Spearman por fecha, NW L=min(12,n//8), W1/W2/W3, ref Bonferroni-19 |t|>3.008):
+**sin edge direccional** en ninguna ventana (hurst máx |t|=2.70 con signo inestable;
+vol_regime máx |t|=0.52); validación de clustering parcial solo en W1 (t=+3.25, W2/W3
+nulos). **Veredicto: NO se promueven a `_factor_scores`** — quedan como features
+diagnósticas. Detalle completo y artefacto (`diagnose_hurst_vol_ic_20260821_210750.txt`)
+en `RESUMEN_HURST_VOL_REGIME.md`. Suite 358 passed (verificada 2026-08-22).
 
 **Objetivo:** agregar 1-2 features de régimen calculadas por símbolo individual (no macro,
 complementarias al `GlobalRegimeClassifier` existente que es cross-asset), siguiendo la idea de
