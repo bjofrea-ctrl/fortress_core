@@ -2365,3 +2365,37 @@ anterior) y `ORDENES_MODULOS.md` (M7 → hecho) actualizados.
   NO los toco (regla de coordinación) — son de Kilo Code T2.3.
 - **Suite**: `cd backend && .venv/bin/python -m pytest -q` → **355 passed, 2 failed** (los de
   Kilo T2.3), 3 warnings. Ruff limpio.
+
+## 2026-08-21 — Tarea K CERRADA: símbolos fantasma en /api/advisor/{symbol} (Cline)
+- **Traza completa (punto 1)**: la ruta cache→Yahoo era el glob de `_cache_date()`
+  (advisor.py) que listaba TODOS los .parquet de `data/cache/` con filtro insuficiente
+  ("empieza con mayúscula"), dejando pasar artefactos de trials
+  (`BASELINE_CLEAN_..._EVENTS`, `COT_2019`, `CAPITAL_USAGE_...`) como si fueran símbolos.
+  La cadena que golpea Yahoo para el detalle es:
+  `advisor_symbol` → `_get_context` → `_load_context_sync` → `_load_market_data` /
+  `_load_price_data` (decision.py, re-exportadas de opportunities.py) → `load_universe`
+  (data_ingestion.py) → `download_data` → `yf.download`. Hoy TODOS los eslabones usan
+  listas canónicas (`SYMBOLS` / `MARKET_TICKERS` de `opportunities_universe.py`, fuente
+  única de la Tarea F) — ningún glob llega a Yahoo.
+- **Estado real del fix (punto 2)**: el cambio de `_cache_date()` a iterar solo
+  `SYMBOLS + MARKET_TICKERS` ya estaba en HEAD (entró en el commit `d2819ab`, auto-backup
+  2026-08-20, junto al mismo barrido en live.py/market.py/predict.py). Lo faltante era
+  verificación, medición, test y documentación — todo hecho acá.
+- **Verificación**: `data/cache/` actual = 60 parquet, todos tickers reales (0 artefactos);
+  grep de glob/listdir en routes/core: solo costs.py (lectura de artefactos por diseño).
+- **Medición antes/después (punto 3, frío real con contexto vacío, Python 3.9)**:
+  `_cache_date()` 0.37s; AAPL frío 276s ≈ MSFT frío 252s — **la asimetría del bug
+  desapareció**: ambos pagan lo mismo y el costo restante es el refit de calibradores
+  (~4 min, compute local, idéntico para cualquier símbolo — NO red). Con el cache TTL
+  5min de `_get_context` (commit `2f6fbeb`) ese costo se paga una sola vez por proceso:
+  AAPL caliente **1.36s**, mismo orden que el MSFT 2.8s histórico (medido caliente).
+  Los ~70s extra de AAPL sobre MSFT eran los timeouts de Yahoo (~1s × ~80 archivos
+  fantasma) y ya no existen en ninguna ruta.
+- **Test nuevo (punto 4)**: `test_cache_date_ignora_artefactos`
+  (tests/test_advisor_api.py): parquet `BASELINE_CLEAN_20260811_150643_EVENTS` /
+  `COT_2019` / `CAPITAL_USAGE_20260811` con fecha 2030 en el cache dir de test → spy de
+  `yf.download` confirma cero llamadas a Yahoo Y la fecha del cache sale solo del ticker
+  real (el artefacto más nuevo no contamina). Suite advisor: **22 passed**.
+- **Limpieza**: `import glob` muerto removido de advisor.py.
+- Sin commit/push (regla de la ronda — pendiente autorización de Boris).
+

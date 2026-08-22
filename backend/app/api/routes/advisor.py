@@ -48,7 +48,7 @@ from app.api.routes.decision import (
     _load_states_history,
     _transition,
 )
-from app.api.routes.opportunities_universe import SYMBOLS, MARKET_TICKERS
+from app.api.routes.opportunities_universe import MARKET_TICKERS, SYMBOLS
 from app.config import settings
 from app.core import trial_registry
 from app.core.edgar_fundamentals import get_edgar_fundamentals
