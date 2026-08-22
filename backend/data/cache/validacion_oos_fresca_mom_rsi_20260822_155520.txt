@@ -1,0 +1,85 @@
+==============================================================================
+VALIDACION OOS FRESCA momentum+RSI — definicion EXACTA congelada (sin re-optimizacion)
+Pre-registro: PRE_REGISTRO_VALIDACION_OOS_FRESCA_MOM_RSI.md — criterio §5 sellado ANTES de correr
+Generado: 2026-08-22 15:55:01 -> 15:55:20 | duracion 19.3s
+==============================================================================
+
+--- Definicion congelada (leida del motor, no hardcodeada) ---
+  pesos motor: w_mom=0.6642 w_rsi=0.3358 (SignalEngine.factor_weights[0])
+  score >= 0.60 | rsi_score 0.8 si 45<rsi<70 sino 0.4 | gates: close>ema50>ema200,
+  adx14>=20, 40<rsi14<75, volume_ratio>=1.0 — SIN regime-gate/BMA/stops (limitacion §7)
+  costos: 0.0005/lado + 0.0005 slippage = 0.0020 ida-y-vuelta/mes con posiciones (conv. §39/§40)
+  ejecucion: senal cierre ultimo habil mes m -> OPEN primer habil m+1 -> CLOSE ultimo habil m+1
+
+--- Ventana ---
+  cache: 50 simbolos, ultima fecha 2026-08-14 (sin descargas; updater de precios caido desde ~2026-08-15)
+  corte IS/OOS: 2023-12-31 | OOS nominal desde 2024-01 | embargo ['2024-01'] descartado(s) (20 ruedas)
+  mes parcial final descartado: ['2026-08']
+  OOS efectivo: T=30 meses (2024-02 -> 2026-07)
+
+--- Checks de fidelidad (pre-registrados §2; fallar alguno -> NO_INTERPRETABLE) ---
+  F1 universo 50/50: OK
+  F2/F3 SPY   max|d_score|=0.00e+00 mism_eligible=0 rows=2669 -> OK
+  F2/F3 AAPL  max|d_score|=0.00e+00 mism_eligible=0 rows=2669 -> OK
+  F2/F3 NVDA  max|d_score|=0.00e+00 mism_eligible=0 rows=2669 -> OK
+  F4 cobertura: 26/30 meses con senal (86.7%, min 30%) -> OK
+  F5 edge bruto ex-costos (meses con senal): +0.0237/mes -> OK
+  F6 T minimo (24): 30 -> OK
+  FIDELIDAD GLOBAL: OK
+
+--- Resultado primario (criterio §5 binario, sin zona gris) ---
+  Sharpe_OOS anualizado NETO (mensual x sqrt(12), incl. meses cash): +1.3296
+  Sharpe mensual (frecuencia nativa): +0.383816
+  CI 95% bootstrap bloques circulares (bloque=3m, 1000 reps, seed 42): [+0.3736, +2.3237]
+  Retorno acumulado neto OOS: +69.37%
+  DSR Bailey&LdP2014: 0.6077 (N_eff=consumed_budget signal_diagnosis=22, T=30)
+     skew=0.8075 kurt_pearson=5.8946 E_max=1.9423 SR0=0.336485 V[SR_n]=3.001e-02 (proxy estimador denom^2/(T-1) (repo Fase 0b, conservador))
+  Criterio: CUMPLE si Sharpe_OOS>0 Y DSR>=0.95 | cualquier otra cosa NO_CUMPLE
+
+  >>> VEREDICTO MECANICO: NO_CUMPLE <<<
+  Criterio §5 no alcanzado (se requiere Sharpe_OOS>0 Y DSR>=0.95) -> NO_CUMPLE mecanico; nada se promueve.
+
+--- Serie mensual neta OOS (mes: n_pos, bruto, neto) ---
+  2024-02: n=11 bruto=+0.0666 neto=+0.0646
+  2024-03: n=10 bruto=+0.0207 neto=+0.0187
+  2024-04: n= 6 bruto=-0.0325 neto=-0.0345
+  2024-05: n= 1 bruto=+0.0499 neto=+0.0479
+  2024-06: n=11 bruto=+0.0238 neto=+0.0218
+  2024-07: n=10 bruto=-0.0019 neto=-0.0039
+  2024-08: n= 4 bruto=+0.0260 neto=+0.0240
+  2024-09: n= 2 bruto=+0.0339 neto=+0.0319
+  2024-10: n= 3 bruto=+0.0054 neto=+0.0034
+  2024-11: n= 7 bruto=+0.0403 neto=+0.0383
+  2024-12: n= 0 bruto=+0.0000 neto=+0.0000
+  2025-01: n= 0 bruto=+0.0000 neto=+0.0000
+  2025-02: n= 1 bruto=+0.0190 neto=+0.0170
+  2025-03: n= 9 bruto=-0.0443 neto=-0.0463
+  2025-04: n= 4 bruto=+0.0059 neto=+0.0039
+  2025-05: n= 1 bruto=+0.0585 neto=+0.0565
+  2025-06: n= 8 bruto=+0.0369 neto=+0.0349
+  2025-07: n= 3 bruto=+0.0655 neto=+0.0635
+  2025-08: n= 5 bruto=+0.0086 neto=+0.0066
+  2025-09: n= 2 bruto=+0.1783 neto=+0.1763
+  2025-10: n= 1 bruto=+0.0931 neto=+0.0911
+  2025-11: n= 3 bruto=-0.0902 neto=-0.0922
+  2025-12: n= 0 bruto=+0.0000 neto=+0.0000
+  2026-01: n= 0 bruto=+0.0000 neto=+0.0000
+  2026-02: n= 3 bruto=-0.0026 neto=-0.0046
+  2026-03: n= 7 bruto=-0.0259 neto=-0.0279
+  2026-04: n= 3 bruto=+0.0680 neto=+0.0660
+  2026-05: n= 4 bruto=-0.0192 neto=-0.0212
+  2026-06: n= 6 bruto=+0.0621 neto=+0.0601
+  2026-07: n= 2 bruto=-0.0287 neto=-0.0307
+
+--- Limitaciones declaradas ANTES de correr (§7 pre-registro) ---
+  1. T=30 corto -> IC ancho del Sharpe (~sqrt(12/T)); CI bootstrap obligatorio en lectura.
+  2. Equal-weight mensual vectorizado vs motor completo: sin stops/barriers/regime-gate/
+     sizing Kelly/caps ni BMA online — mide el EDGE de la senal congelada, no el P&L del motor.
+     Un CUMPLE HABILITA un trial formal W1/W2/W3 del motor; no lo reemplaza.
+  3. Costo full-rebalance conservador (0.002/mes con posiciones).
+  4. Cache estancado a 2026-08-14 (bug updater detectado 2026-08-22); ventana termina ahi.
+  5. V[SR_n] proxy conservador repo Fase 0b (comparable con todos los DSR historicos).
+  6. Prohibido editar criterios post-corrida; correccion metodologica = nuevo pre-registro.
+
+--- Reproduccion ---
+  seed=42 | N_eff=22 | T=30 | trial_id=validacion_oos_fresca_mom_rsi

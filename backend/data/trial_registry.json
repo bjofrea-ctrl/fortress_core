@@ -460,5 +460,16 @@
     "veredicto": "NO_CUMPLE",
     "artefacto": "data/cache/pbo_cscv_mom_rsi_20260822_093300.txt",
     "seccion_doc": "PRE_REGISTRO_PBO_CSCV_MOM_RSI.md §4"
+  },
+  {
+    "id": "validacion_oos_fresca_mom_rsi",
+    "fecha": "2026-08-22",
+    "familia": "signal_diagnosis",
+    "hipotesis": "Baseline momentum+RSI con definicion EXACTA congelada tiene edge neto OOS fresco (2024-02..2026-07, embargo 20 ruedas): Sharpe_OOS>0 Y DSR>=0.95",
+    "n_trials_consumidos": 1,
+    "umbral_aplicado": "Sharpe_OOS>0 Y DSR>=0.95 (Bailey&LdP2014, N=ledger signal_diagnosis)",
+    "veredicto": "NO_CUMPLE",
+    "artefacto": "data/cache/validacion_oos_fresca_mom_rsi_20260822_155520.txt",
+    "seccion_doc": "PRE_REGISTRO_VALIDACION_OOS_FRESCA_MOM_RSI.md §5"
   }
 ]
