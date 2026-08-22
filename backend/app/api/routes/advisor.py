@@ -25,7 +25,6 @@ GET /api/advisor/evidence — footer de confianza: ledger de trials.
 """
 
 import asyncio
-import glob
 import json
 import os
 import time

@@ -329,3 +329,50 @@ def test_evidence_reads_ledger(monkeypatch, ctx):
     fams = {f["familia"]: f for f in body["families"]}
     assert fams["signal_diagnosis"]["n_consumidos"] == 2
     assert body["recent"][0]["id"] == "t2"  # más reciente primero
+
+
+# --- Tarea K: artefactos en data/cache NO son símbolos (símbolos fantasma) ---
+
+def test_cache_date_ignora_artefactos(tmp_path, monkeypatch):
+    """Un .parquet de artefacto (BASELINE_CLEAN/COT/CAPITAL_USAGE) en el cache
+    NO se trata como símbolo (Tarea K, fix símbolos fantasma ~80s en frío).
+
+    _cache_date() itera SOLO SYMBOLS + MARKET_TICKERS (universo canónico de
+    opportunities_universe.py), nunca un glob del directorio. Se verifica:
+      1. Cero llamadas a yfinance (el bug original: artefactos -> Yahoo -> ~1s
+         de timeout c/u x ~80 archivos).
+      2. La fecha del cache sale solo de tickers reales: aunque el artefacto
+         tenga fechas MÁS NUEVAS (2030), no contamina el resultado.
+    """
+    import app.core.data_ingestion as ingestion
+
+    llamadas_yahoo = []
+
+    def _spy_download(*args, **kwargs):
+        llamadas_yahoo.append(args[0] if args else kwargs.get("ticker"))
+        return pd.DataFrame()
+
+    monkeypatch.setattr(ingestion.yf, "download", _spy_download)
+    monkeypatch.setattr(advisor, "_cache_dir", lambda: str(tmp_path))
+
+    # Ticker real del universo: última rueda 2026-08-14.
+    idx = pd.bdate_range("2026-08-10", periods=5)
+    pd.DataFrame({"Close": np.linspace(100.0, 110.0, 5)}, index=idx).to_parquet(
+        tmp_path / "AAPL.parquet"
+    )
+
+    # Artefactos de trials con fecha MÁS NUEVA que cualquier ticker real:
+    # con el filtro viejo ("empieza con mayúscula") pasaban como símbolos.
+    for nombre in [
+        "BASELINE_CLEAN_20260811_150643_EVENTS",
+        "COT_2019",
+        "CAPITAL_USAGE_20260811",
+    ]:
+        pd.DataFrame({"Close": [1.0]}, index=pd.DatetimeIndex(["2030-01-01"])).to_parquet(
+            tmp_path / f"{nombre}.parquet"
+        )
+
+    resultado = advisor._cache_date()
+
+    assert llamadas_yahoo == [], f"no debe golpear Yahoo, llamó con {llamadas_yahoo}"
+    assert resultado == pd.Timestamp("2026-08-14")  # solo el universo cuenta
