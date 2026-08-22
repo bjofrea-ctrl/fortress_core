@@ -722,6 +722,90 @@ commitear/pushear sin autorización de Boris.
 
 ---
 
+## Ronda en cola — literatura post-refutación (Perplexity/Kimi, 2026-08-20)
+
+Boris investigó con Perplexity/Kimi (contexto largo) qué dice la literatura fuera
+del "cementerio" de resultados ya refutados de este proyecto. Respuesta con cites
+verificables (Gu-Kelly-Xiu 2020 RFS, Da-Gurun-Warachka 2014 RFS "Frog in the Pan",
+Barroso-Santa-Clara 2015 JFE, Harvey-Liu-Zhu 2016 RFS, Jensen-Kelly-Pedersen 2023
+JF, Lo 2002 — todos papers reales y conocidos, chequeados contra conocimiento
+propio, no WebFetch exhaustivo por créditos). **Hallazgo estructural más
+importante, no accionable pero sí explicativo**: con N=50 y correlación
+cross-sectional realista (ρ̄≈0.07), el breadth efectivo es N_eff≈11 — solo
+factores con IC≳0.08 son detectables en una década con umbrales disciplinados
+(Bonferroni/FDR t≈3-4). Esto EXPLICA por qué solo momentum/RSI sobrevivieron —
+no es que el proyecto midió mal, es que la potencia estadística a este tamaño de
+universo es baja para casi todo lo demás.
+
+**Dos candidatos priorizados** — ambos son UN grado de libertad sobre momentum ya
+validado (no factores nuevos compitiendo solos), coherentes con la disciplina de
+n_trials del proyecto. Familia `signal_diagnosis`, verificado: 21 consumidos,
+próximo umbral 0.9955.
+
+### Tarea O — Frog-in-the-Pan: condicionar momentum 12-1 por Information Discreteness
+
+**Fuente**: Da, Gurun & Warachka (2014, RFS) — momentum de 6 meses es 5.94% para
+acciones de "información continua" vs −2.07% para "discreta"; ID se calcula solo
+con el signo de los retornos diarios, sin dato nuevo.
+
+```
+TAREA:
+1. Pre-registrar en PLAN_MEJORA_MATEMATICA.md (próxima sección libre): ID =
+   sign(retorno_12m) × %días_signo_contrario − %días_signo_igual (fórmula exacta
+   del paper, verificar antes de codear). Hipótesis: momentum_12_1 tiene rank IC
+   más fuerte en el tercil de menor ID (más "continuo") que en el de mayor ID.
+2. Calcular ID sobre el panel existente (usa retornos diarios ya cacheados, no
+   requiere datos nuevos). Split momentum's rank IC por tercil de ID, W1/W2/W3,
+   mismo protocolo que Tarea M/N (Newey-West, Bonferroni/BH vigente).
+3. Criterio de éxito fijado antes de correr: ΔIC(tercil bajo ID − tercil alto ID)
+   con significancia bajo el umbral vigente en ≥2/3 ventanas.
+4. Correr, documentar con artefacto real, actualizar ROADMAP.md.
+
+REGLAS: no tocar signal_engine.py ni el score en vivo — esto es diagnóstico. Si
+CUMPLE, la integración (condicionar el score por ID) es un trial de motor aparte.
+```
+
+### Tarea P — Regime gating de momentum vía `regime_gate.py` (M3, construido y sin usar)
+
+**Fuente**: tres condicionantes documentados con evidencia primaria — estado de
+mercado rezagado (Cooper-Gutierrez-Hameed 2004), volatilidad realizada del propio
+momentum (Barroso-Santa-Clara 2015), iliquidez agregada Amihud (Avramov-Cheng-
+Hameed 2016). Los tres son UN escalar cada uno, pre-registrables por separado.
+
+```
+TAREA:
+1. Pre-registrar en PLAN_MEJORA_MATEMATICA.md: para cada uno de los 3
+   condicionantes (estado de mercado rezagado 3 años, volatilidad realizada de la
+   cartera momentum, iliquidez Amihud agregada del universo 50), split del rank
+   IC de momentum_12_1 por régimen/tercil, W1/W2/W3.
+2. Reusar `regime_gate.py` (M3, ya construido, nunca usado para condicionar un
+   factor — ver Precepto 6/9, `REPOSITORIO_CONOCIMIENTO_MERCADO.md`) para el
+   split por estado de mercado; los otros 2 son cálculos directos sobre datos ya
+   cacheados.
+3. Criterio de éxito por condicionante, fijado antes de correr: ΔIC significativo
+   entre regímenes en ≥2/3 ventanas.
+4. Correr los 3, documentar, actualizar ROADMAP.md.
+
+REGLAS: no tocar signal_engine.py ni el score en vivo — diagnóstico. Consume 1
+slot de n_trials por condicionante que se corra completo (o coordinar como un solo
+trial con 3 sub-hipótesis pre-registradas, decisión del implementador, documentar
+cuál se eligió).
+```
+
+**Deliberadamente NO se agrega ahora** (mayor costo/lift, o el propio paper
+recomienda cautela a N=50): GBDT/LambdaMART (Gu-Kelly-Xiu es evidencia A FAVOR de
+grandes secciones cruzadas, no de árboles sobre 50 nombres — solo como transfer
+learning desde un universo más amplio, tema aparte), BMA sobre especificaciones
+(requiere integrar el paquete `BayesianFactorZoo`, R/Julia, mayor lift), target de
+retorno overnight-vs-intraday y residual-return (interesantes pero redefinen el
+target de TODO el pipeline — evaluar después de O/P, no en paralelo).
+
+**Asignación**: en cola detrás de lo que Kilo Code/OpenCode tienen ahora (T1.4,
+reparo de T2.3). No colisiona en archivos — son diagnósticos de solo lectura sobre
+paneles ya cacheados, ningún archivo de indicAgent en curso.
+
+---
+
 ## Verificación al cerrar cualquier tarea
 
 `cd backend && .venv/bin/python -m pytest -q` debe seguir en verde (242+ passed)
