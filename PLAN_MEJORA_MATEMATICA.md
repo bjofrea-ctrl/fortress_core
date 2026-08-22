@@ -3266,3 +3266,175 @@ corrida OpenCode registró en paralelo `validacion_oos_fresca_mom_rsi` y
 `regime_gating_p` (familia ahora en 25) — no afectan este veredicto (umbral propio).
 
 **No se integra nada al motor** — momentum_12_1 queda como estaba (sin condición ID).
+
+---
+
+## 43. PBO/CSCV de FIDELIDAD COMPLETA — candidatos reconstruidos como configuraciones REALES del motor (2026-08-22, PRE-REGISTRO ANTES de correr, consume ledger)
+
+**Autor**: OpenCode. Cierra la limitación declarada en §40: los 21 del PBO proxy eran
+vecinos de parámetros (grid w×banda×techo), NO las configuraciones que el proceso pudo
+haber elegido realmente. Aquí cada candidato corre `backtest_engine.run()` COMPLETO
+(stops, regime-gating, calibrador walk-forward, execution_lag_days=1, costos vigentes)
+y el PBO mide selección entre esas configuraciones ejecutables reales.
+
+**Naturaleza**: trial diagnóstico de proceso, familia `signal_diagnosis`,
+`n_trials_consumidos=1`. Ledger al momento del pre-registro: **consumido=25**
+(`current_threshold=0.99615`) — este es el slot 26. Umbral aplicable a ESTE trial:
+**PBO<0.10 (Bailey et al.)**, no Bonferroni-t (PBO ya captura la selección; §4 del
+pre-registro original).
+
+### 43.1 PASO 1 — MAPEO HONESTO de los 21 ids congelados de §6.1 (tabla CONGELADA, no se edita después)
+
+Criterio: ¿el id corresponde a una configuración EJECUTABLE por
+`backtest_engine.run()` como variante del score/gates que el motor pudo haber adoptado?
+Los diagnósticos de factores nunca wireados (OFI, CVD, FinBERT, gap-reversion,
+lead-lag…) no tienen config de motor → EXCLUIDOS con justificación. Los diagnósticos
+que ALIMENTARON una decisión real sobre score/gates/horizonte aportan el eje ejecutable
+correspondiente.
+
+| # | id §6.1 | ¿Ejecutable por run()? | Justificación / eje que alimenta |
+|---|---|---|---|
+| 1 | fase05a_rr2_intraday | NO directo | IC intra-día diagnóstico. ALIMENTA ejes pesos/banda y la alternativa ADX-in-blend (decisión §0.5a documentada en signal_engine.py) |
+| 2 | fase05b_rmt | NO | Factores residuales RMT jamás wireados al motor |
+| 3 | fase05c_ridge_macro_crudo | NO | Ridge macro crudo refutado antes de integrar (delta −0.0046); su primo wireado fue trial_13 (familia motor_signal, fuera de los 21) |
+| 4 | sectorial_endogeno | NO | Diagnóstico de clusters; sin config de motor |
+| 5 | reeval_trial14 | NO | Basket timing ADX = otra clase de estrategia (no selección de acciones del motor) |
+| 6 | gap_reversion_diag | NO | Microestructura intra-día; motor EOD; refutado con costos (§13.1) |
+| 7 | rr2_subperiodos | NO | Auditoría de estabilidad temporal del IC; sin config |
+| 8 | ma200_clusters | NO | Niveles MA200 por cluster; C6 backtesteado aparte y refutado (§18.1/18.2); nunca variante del score/gates |
+| 9 | donchian | NO | Factor canal refutado (t −0.81); sin config |
+| 10 | ma200_beta_control | NO | Control estadístico de beta; sin config |
+| 11 | horizon_audit_5d_10d | ALIMENTA EJE | `CALIBRATION_HORIZON_DAYS` es knob REAL del motor (constante de módulo usada en labels de calibración) → candidato HORIZON10 (10d auditado en M1) |
+| 12 | horizon_largo_60d_125d | NO | 60d/125d fuera de la ventana producto declarada (short-term 1–30d) → excluido con justificación |
+| 13 | lead_lag_diag | NO | Lead-lag cross-symbol; sin config EOD del motor |
+| 14 | triple_barrier_retest | NO | Re-etiquetado para diagnóstico; label interno del motor intacto |
+| 15 | adx_walkforward | ALIMENTA EJE | Confirmó ADX marginal-no-robusto; la alternativa "ADX al blend" era opción VIVA rechazada en §0.5a → candidato ADX_BLEND |
+| 16 | weekly_indicators_2026 | NO | Velas semanales; motor opera diario EOD; sin config |
+| 17 | finbert_sentiment_eventstudy | NO | Panel 8-K point-in-time nunca disponible para run(); refutado |
+| 18 | xsec_relative_and_aaii_timing | NO directo | El timing AAII SÍ es parámetro real de run() (`sentiment_data`→G2), pero fue probado/refutado como trials motor_signal #8/fase06 (familia distinta, fuera de los 21 y fuera del scope score/gates del baseline) |
+| 19 | trial_macd_bollinger | NO | MACD/Bollinger diagnósticos sin config (refutados §36) |
+| 20 | trial_ofi_proxy | NO | OFI nunca wireado (refutado §37) |
+| 21 | trial_cvd_proxy | NO | CVD nunca wireado (refutado §38) |
+
+**Resultado del mapeo: N=9 ≠ 21.** De los 21 ids, 0 son corridas directas del motor;
+3 alimentan ejes ejecutables (pesos/banda/adx desde fase05a+§0.5a+adx_walkforward;
+horizonte desde M1); 18 carecen de configuración de motor posible. Los 4 ids
+posteriores a §6.1 (`pbo_cscv_mom_rsi`, `validacion_oos_fresca_mom_rsi`,
+`regime_gating_p`, `trial_frog_in_the_pan`) tampoco tienen config de motor
+(auditorías/diagnósticos IC) → misma exclusión. La fidelidad es al PROCESO de
+selección real, no al número 21.
+
+**Nota histórica**: el estado PRE-IC del motor (commit pre-02e419d, pesos
+{momentum .35/technical .65}) usa una fórmula de score distinta (composite técnico
+retirado) — excluido: el proceso auditado opera sobre la estructura momentum+RSI
+post-lockeo del baseline.
+
+### 43.2 Conjunto de candidatos EJECUTABLES (N=9, congelado)
+
+Variaciones UN-EJE-A-LA-VEZ alrededor del ACTUAL (el proceso real perturbó un eje por
+vez, nunca movimientos conjuntos):
+
+| id candidato | w_mom/w_rsi | banda RSI sub-score | techo mom | CALIBRATION_HORIZON_DAYS | Origen documentado |
+|---|---|---|---|---|---|
+| ACTUAL (baseline) | .664/.336 | (45,70) | 100 | 20 | signal_engine.py vigente |
+| W_EQUAL | .500/.500 | (45,70) | 100 | 20 | alternativa sin re-weighting IC (midpoint medido en §39 y §40) |
+| W_MOM80 | .800/.200 | (45,70) | 100 | 20 | vecino momentum-heavy MEDIDO en artefactos §39 y §40 |
+| BAND_WIDE | .664/.336 | (40,65) | 100 | 20 | banda medida en §39/§40 |
+| BAND_NARROW | .664/.336 | (50,75) | 100 | 20 | banda medida en §39/§40 |
+| CAP_LOW | .664/.336 | (45,70) | 75 | 20 | techo medido en §39/§40 |
+| CAP_HIGH | .664/.336 | (45,70) | 125 | 20 | techo medido en §39/§40 |
+| HORIZON10 | .664/.336 | (45,70) | 100 | 10 | horizonte 10d auditado en M1 (horizon_audit artifact) |
+| ADX_BLEND | IC-proporcional 3 factores (.3889/.1966/.4145 sobre ICs pooled .0637/.0322/.0679) | (45,70) | 100 | 20 | opción viva RECHAZADA explícitamente en §0.5a (adx_score = 0.9 si adx>25 else 0.3, definición compute_factor_frame) |
+
+EXCLUIDOS con justificación (nunca disponibles para el motor o fuera de scope):
+sentimiento AAII/G2 y fundamentales/G3 (trials motor_signal #8/#9 ya refutados, familia
+distinta), stops estructurales T1.4 (`use_market_structure=True`: mecanismo de SALIDAS,
+no variante de score/gate de entrada; su evaluación vive en RESUMEN_STOP_ESTRUCTURAL
+como informativo no promovido), stops EVT (familia risk/motor_signal refutada), ridge_3f
+(motor_signal #13 refutado), basket ADX, C6/MA200, gap-reversion, lead-lag, OFI, CVD,
+FinBERT, weekly, ID/frog, regime gating, hurst/vol_regime (diagnósticos sin config).
+
+### 43.3 Implementación SIN tocar archivos del motor
+
+- `SignalEngine` se SUBCLASIFICA (no se edita): override de `_factor_scores` +
+  `factor_weights` parametrizando w_mom/banda/techo (+ adx para ADX_BLEND).
+  `BacktestEngine` también se subclasifica solo para inyectar la señal custom tras
+  `super().__init__()` (patrón `_make_risk_manager`, aditivo, previsto en el código).
+- HORIZON10: patch de la constante de módulo `app.core.backtest_engine.CALIBRATION_HORIZON_DAYS`
+  SOLO durante esa corrida (restore inmediato). Limitación declarada: el default-arg de
+  `validate_signal_quality(horizon=…)` se liga en definición y queda en 20 — afecta solo
+  al diagnóstico colateral, NO al path de trading (labels de calibración sí quedan en 10).
+- Datos: cache parquet local SIN descargas (offline determinista), columnas lowercase,
+  universo 50 canónico `opportunities_universe.SYMBOLS`. price_data y market_data se
+  cargan desde 2015-01-02 (cache completo) → `_build_calibration_dataset` tiene replay
+  real 2016–2018 y el HMM fittea con historia. Ventana evaluada:
+  **2019-01-01 → 2026-08-14** (fin del cache real; "hoy" no tiene datos aún).
+- Costos/lag: `commission=settings.COST_PER_SIDE=0.0005`, `slippage=0.0005`,
+  `execution_lag_days=1`, `use_market_structure=False`, capital 25 000 — idéntico para
+  las 9.
+- Serie mensual neta: equity curve diaria de run() → equity último hábil de mes →
+  `pct_change` mensual (los meses sin trades rinden 0 = cash; riesgo declarado).
+- CSCV: S=16 bloques contiguos → C(16,8)=12 870 splits (fallback S=12 si bloque <60
+  ruedas; T truncado a múltiplo de S reteniendo meses recientes, igual que §40).
+  Sharpe anualizado OOS mensual ×√12. Por split: rank IS de las 9 → rank_OOS del best-IS
+  → logit λ=log((r/(N+1))/(1−r/(N+1))). **PBO = P(λ≤0)**. Secundarios: degradación
+  Sharpe_OOS−IS del best IS, Spearman IS vs OOS, Sharpe_full por config + rank del ACTUAL.
+- Determinista: seed 42 (np.random.seed antes de CADA run() — el bootstrap MC de
+  calculate_metrics usa np.random global; bootstrap CI usa Generator local seed 42;
+  HMM random_state=42 ya en regime_classifier).
+
+### 43.4 CRITERIO CONGELADO (mismos buckets de §40 / §4 del pre-registro original)
+
+| PBO | Veredicto |
+|---|---|
+| <0.10 | **CUMPLE** — ranking IS informativo, no overfitting de proceso |
+| 0.10–0.20 | zona gris — binario **NO_CUMPLE** |
+| ≥0.20 | **NO_CUMPLE** — overfitting de proceso |
+| ≥0.30 | NO_CUMPLE **sustancial** |
+
+### 43.5 Checks de fidelidad pre-registrados (fallar alguno → FALLO HONESTO, corrida no interpretable)
+
+1. Universo: ≥45/50 símbolos con datos cargados.
+2. T mínimo: T_final ≥ 72 meses tras truncado a múltiplo de S.
+3. Cobertura baseline: ≥30% de meses con ≥1 trade cerrado.
+4. Edge positivo ex-costos del baseline: mean retorno mensual NETO > 0 Y total_trades ≥ 100
+   (comparabilidad con baseline_clean 286 trades) Y Sharpe_full(ACTUAL) > 0.
+5. **NUEVO — fidelidad de ejecución**: cada corrida registra y el artefacto lista
+   `execution_lag_days=1`, `commission=0.0005` (settings.COST_PER_SIDE),
+   `slippage=0.0005`, `use_market_structure=False`; aserción runtime por config.
+
+### 43.6 Presupuesto de cómputo (obligatorio ANTES de lanzar)
+
+Correr UNA config (baseline ACTUAL) midiendo wall-clock → forecast total 9×.
+Paralelización con multiprocessing Pool workers=cpu_count()-2 (6), cada worker su propio
+BacktestEngine (sin estado compartido: engine/calibrador/HMM son instancia-local; el
+ledger JSON se lee solo en el proceso padre; config_registry cachea por proceso y aquí ni
+se consulta en el hot path). **Si el forecast total >4h aun paralelo → PARAR y consultar
+a Boris antes de lanzar.**
+
+### 43.7 Riesgos declarados ANTES de correr
+
+1. Correlación altísima entre vecinos un-eje (esperable N_eff bajo inflado) — declarado;
+   PBO no lo corrige, lo expone.
+2. Meses sin trades → retorno 0 (cash) comprime varianza diferencial entre configs.
+3. Monkeypatch del horizonte: único camino sin editar archivos; default-arg diagnóstico
+   queda en 20 (limitación cosmética, no afecta trades).
+4. Costo computacional alto por corrida completa (calibración replay + copulas +
+   Monte Carlo de run() completo son parte del contrato "run() tal cual").
+5. Comparabilidad con §40: cambia N (9 vs 21), ventana fin (08-14 vs 08-04), frecuencia
+   idéntica (mensual neta ×√12) y ahora SÍ hay stops/regime/calibrador — la comparación
+   de PBOs es OBSERVACIÓN, nunca cambio de veredicto.
+
+### 43.8 Artefacto, script y ledger
+
+- Script: `backend/scripts/pbo_cscv_fidelidad_completa.py` (nuevo).
+- Artefacto: `backend/data/cache/pbo_cscv_fidelidad_<ts>.txt` + `.json`.
+- Ledger: `register_trial(id="pbo_cscv_fidelidad_completa", familia="signal_diagnosis",
+  n_trials_consumidos=1, umbral_aplicado="PBO<0.10 (Bailey et al.)", veredicto=mecánico §43.4)`.
+  Veredicto NO se interpreta ni ajusta post-hoc.
+- Corrida ÚNICA: sin re-corridas para "probar otro S/N". Si aborta por fidelidad →
+  NO INTERPRETABLE, no NO_CUMPLE.
+
+---
+
+
