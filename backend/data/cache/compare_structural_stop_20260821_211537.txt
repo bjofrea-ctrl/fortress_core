@@ -1,0 +1,34 @@
+==============================================================================
+T1.4 — A/B backtest: stop/target estructural vs baseline ATR (mismo período)
+Período: 2021-01-01 → 2023-12-31 | Universo: 50 | Capital: 25000
+==============================================================================
+
+Corriendo: estructural (T1.4) ...
+  terminado en 7291.4s | trades=31
+
+==============================================================================
+métrica                                  estructural (T1.4)
+------------------------------------------------------------------------------
+cagr                                                 0.0047
+sharpe_ratio                                         0.3818
+sortino_ratio                                        0.3021
+max_drawdown                                        -0.0216
+calmar_ratio                                         0.2174
+win_rate                                             0.7097
+profit_factor                                        1.7288
+total_trades                                             31
+deflated_sharpe                                      0.2923
+
+==============================================================================
+métrica                  baseline (ATR)   estructural (T1.4)
+------------------------------------------------------------------------------
+estructural (T1.4)     señales=  38 RR_medio=2.330 n_struct=38 score_medio=0.710
+
+==============================================================================
+Resumen de trades (todas las entradas del período):
+  estructural (T1.4)     trades=  31 wins=  22 win_rate=0.710 avg_pnl=+15.09 total_pnl=+467.91
+
+NOTA: este A/B es INFORMATIVO, no decisional. La promoción o no de
+stop estructural a default requiere trial pre-registrado propio con la
+misma disciplina que el resto del proyecto. MIN_RR=1.5 es default del
+ticket, no validado empíricamente.
