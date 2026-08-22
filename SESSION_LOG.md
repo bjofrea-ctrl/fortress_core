@@ -1,5 +1,61 @@
 # Fortress Core — Memoria de Sesiones (Última sesión resumida)
 
+## 2026-08-22 (tarde-2) — VALIDACIÓN OOS FRESCA momentum+RSI (definición EXACTA congelada): NO_CUMPLE mecánico (Sharpe_OOS +1.33 >0, DSR 0.6077 <0.95) + bug updater de precios detectado y fixeado
+
+**Autor**: OpenCode (ox-alpha). Origen: tarea directa de Boris post-PBO — "lo sólido,
+nunca lo más fácil": la validación que §40 exigió después del PBO=0.4688, SIN el atajo
+prohibido (ajustar pesos al mejor Sharpe / mover banda RSI / rebajar umbrales).
+
+- **Pre-registro sellado ANTES de correr**: `PRE_REGISTRO_VALIDACION_OOS_FRESCA_MOM_RSI.md`
+  (BORRADOR → apéndice de resultados como única edición posterior; criterios intactos).
+  Criterio binario SIN zona gris: **CUMPLE solo si Sharpe_OOS>0 Y DSR≥0.95** (Bailey &
+  López de Prado 2014); cualquier otra cosa NO_CUMPLE; fidelidad fallida = NO_INTERPRETABLE.
+- **Definición congelada verificada contra el código** (no contra resúmenes): pesos leídos
+  de `SignalEngine.factor_weights[0]` = **0.6642/0.3358** (no 0.664/0.336 — el motor
+  redondea a 4 decimales), score ≥0.60, rsi_score 0.8 en (45,70), gates ADX≥20 /
+  vol_ratio≥1 / close>ema50>ema200 / rsi (40,75). Sin regime-gate/BMA/stops (limitación
+  declarada §7, igual que §39/§40). Fidelidad mecánica F2/F3: score y gates del script
+  IDÉNTICOS a `compute_score_series`/`compute_factor_frame` (max|Δ|=0.000e+00, SPY/AAPL/NVDA).
+- **Método**: portafolio equal-weight mensual vectorizado sobre cache parquet (SIN
+  descargas); señal al cierre último hábil mes m → entrada **OPEN primer hábil m+1**
+  (execution_lag_days=1 fiel) → CLOSE último hábil m+1; costos config 0.0005+0.0005/lado
+  → 0.002/mes con posiciones (convención conservadora full-rebalance §39/§40); sin
+  señales → cash. Corte IS/OOS 2023-12-31; **embargo CALIBRATION_HORIZON_DAYS=20 ruedas**
+  implementado descartando el retorno mensual de enero-2024 (~21 ruedas); **mes parcial
+  final excluido** (ago-2026 cortado a 08-14) → **T=30 meses efectivos 2024-02→2026-07**.
+  DSR en frecuencia nativa con N_eff=consumed_budget("signal_diagnosis") AL CORRER (=22,
+  conservador) y V[SR_n]=proxy estimador denom²/(T−1) — reduce EXACTAMENTE a la
+  implementación auditada del repo (`backtest_engine.calculate_metrics`, Fase 0b),
+  comparable con todos los DSR W1/W2/W3 históricos.
+- **Corrida ÚNICA** (19.3s): `cd backend && .venv/bin/python -m scripts.validacion_oos_fresca_mom_rsi`.
+  Checks de fidelidad OK×6: universo 50/50, score/gates idénticos al motor, cobertura
+  26/30 meses con señal (86.7% ≥30%), edge bruto +0.0237/mes positivo, T=30 ≥24.
+- **Resultado**: Sharpe_OOS anualizado NETO **+1.3296** (CI95 bootstrap bloques circulares
+  [+0.3736, +2.3237], no incluye 0; acumulado neto +69.37%/30 meses). **DSR = 0.6077**
+  (skew 0.8075, kurt Pearson 5.8946, E_max(N=22)=1.9423, SR0=0.3365, T=30).
+  **VEREDICTO MECÁNICO: NO_CUMPLE** (DSR<0.95). Nada se promueve; el baseline sigue NO
+  promovible y esta validación NO habilita trial formal del motor bajo el criterio sellado.
+- **Lectura honesta (sin tocar veredicto)**: consistente con §39 — riesgo de GRADO no de
+  EXISTENCIA. La definición congelada muestra su mejor desempeño histórico justo en los
+  datos frescos post-lockeo (+1.33 OOS vs ~+0.93 Sharpe_full medido en §40 sobre 2019-2026).
+  Lo que faltó para CUMPLE fue potencia estadística: T=30 + colas gruesas + 22 trials de
+  presupuesto → el DSR escala con √T; repetir con NUEVO pre-registro cuando el updater
+  acumule más meses (no editando este doc ni re-corriendo este trial).
+- **Ledger**: `signal_diagnosis` **22→23**, `id=validacion_oos_fresca_mom_rsi`, n=1,
+  umbral `Sharpe_OOS>0 Y DSR>=0.95 (Bailey&LdP2014, N=ledger signal_diagnosis)`,
+  veredicto **NO_CUMPLE**, artefacto `data/cache/validacion_oos_fresca_mom_rsi_20260822_155520.txt`+`.json`,
+  seccion_doc `PRE_REGISTRO_VALIDACION_OOS_FRESCA_MOM_RSI.md §5`. Registrado in-script vía
+  `register_trial` (id duplicado fallaría ruidosamente → protege la disciplina una-corrida).
+- **BUG OPERATIVO detectado y arreglado (informe a Boris)**: `scripts/data_updater.sh`
+  paso de PRECIOS caído desde ~2026-08-15 — `ModuleNotFoundError: No module named 'scripts'`
+  (launchd corre desde `$REPO` raíz pero `scripts.fetch_universe_data` exige cwd backend;
+  la acumulación FinBERT usa rutas absolutas y por eso seguía OK). Cache estancado a
+  2026-08-14 (verificado 50/50 símbolos). Fix mínimo: `cd "$REPO/backend"` antes del paso
+  OHLCV y regreso al root; `bash -n` OK. La corrida 22:00 de hoy cura el cache sola
+  (incremental desde 08-14, sin intervención manual). La validación de hoy corrió
+  DELIBERADAMENTE sobre cache existente (sin descargas) — cero window-shopping.
+- No se toca: T1.4/RESUMEN_STOP_ESTRUCTURAL, Tarea L, señal_engine/backtest_engine/config.
+
 ## 2026-08-22 (cierre) — Fix cosmético asignado por Boris: `T_ge_96` → `T_ge_min` en ambos scripts PBO
 
 - Renombrada la clave del check de fidelidad en `pbo_cscv_mom_rsi.py` (asignación

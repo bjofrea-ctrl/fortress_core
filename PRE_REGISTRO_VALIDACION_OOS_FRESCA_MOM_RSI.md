@@ -1,7 +1,7 @@
 # PRE-REGISTRO — Validación OOS fresca del baseline momentum+RSI (definición EXACTA congelada)
 
 **Fecha de pre-registro**: 2026-08-22
-**Estado**: 🟡 BORRADOR — NO EJECUTADO
+**Estado**: 🟢 EJECUTADO 2026-08-22 (corrida única) — veredicto mecánico **NO_CUMPLE** (apéndice al final; criterios §5 intactos)
 **Autor**: OpenCode (ox-alpha) — tarea asignada por Boris 2026-08-22 tras PBO/CSCV N=21 = 0.4688 (NO_CUMPLE sustancial, `PRE_REGISTRO_PBO_CSCV_MOM_RSI.md` §4 / PLAN_MEJORA_MATEMATICA.md §40)
 **Referencias**: ONBOARDING.md reglas #1–#3 · PLAN_MEJORA_MATEMATICA.md §39/§40 · RESUMEN_STOP_ESTRUCTURAL.md (T1.4, no se toca) · Tarea L BH→BY (no se rehace, solo calibración)
 **Regla de oro**: este documento se escribe ANTES de correr y NO se edita después de ver el número. La única edición posterior permitida es agregar el artefacto y el veredicto mecánico (§9).
@@ -132,3 +132,42 @@ Fuente única: `backend/app/core/signal_engine.py` + `backend/app/core/indicator
 ---
 
 *Fin del pre-registro — borrador sellado 2026-08-22 antes de cualquier corrida.*
+
+---
+
+## APÉNDICE DE RESULTADOS — corrida única 2026-08-22 15:55 (única edición permitida por §9; criterios de §5 intactos)
+
+**Ejecución**: `cd backend && .venv/bin/python -m scripts.validacion_oos_fresca_mom_rsi` — UNA sola corrida, 19.3s, sin re-corridas ni ajustes.
+**Artefacto**: `backend/data/cache/validacion_oos_fresca_mom_rsi_20260822_155520.txt` + `.json`.
+
+### Checks de fidelidad §2 — TODOS OK
+
+| Check | Resultado |
+|---|---|
+| F1 universo | **50/50 símbolos** cargados del cache (sin descargas) |
+| F2 score vs motor | max\|Δscore\| = **0.000e+00** vs `SignalEngine.compute_score_series` (SPY, AAPL, NVDA; 2669 filas c/u) — idéntico |
+| F3 gates vs motor | **0 mismatches** vs `SignalEngine.compute_factor_frame['eligible']` en las mismas muestras |
+| F4 cobertura | 26/30 meses con ≥1 señal = **86.7%** (min 30%) |
+| F5 edge bruto ex-costos | **+0.0237/mes** sobre meses con señal (positivo) |
+| F6 T mínimo | T=30 meses efectivos ≥ 24 → se corrió |
+
+Ventana efectiva: **2024-02 → 2026-07, T=30 meses** (embargo descartó retorno mensual 2024-01; mes parcial 2026-08 excluido; cache termina 2026-08-14).
+
+### Resultado primario §5
+
+| Métrica | Valor |
+|---|---|
+| **Sharpe_OOS anualizado NETO** | **+1.3296** (> 0 ✓) |
+| Sharpe mensual nativo | +0.383816 |
+| CI 95% bootstrap bloques circulares (bloque 3m, seed 42) | [+0.3736, +2.3237] — no incluye 0 |
+| Retorno acumulado neto OOS | +69.37% en 30 meses |
+| **DSR Bailey & LdP 2014** (N_eff=22 ledger, T=30) | **0.6077** (< 0.95 ✗) |
+| Insumos DSR | skew 0.8075 · kurt Pearson 5.8946 · E_max 1.9423 · SR0 0.3365 · V[SR_n]=3.001e−02 (proxy conservador repo) |
+
+### VEREDICTO MECÁNICO §5: **NO_CUMPLE**
+
+Sharpe_OOS > 0 pero DSR 0.6077 < 0.95 → NO_CUMPLE. Sin reinterpretación: el edge bruto observado es positivo y su IC no incluye cero, PERO tras descontar el presupuesto de selección ya consumido (22 trials de la familia) y con solo T=30 meses y colas gruesas (kurtosis 5.9), la evidencia no alcanza la barra pre-registrada para afirmar "edge fresco confirmado". **Nada se promueve.** El baseline sigue NO promovible; un eventual trial formal W1/W2/W3 del motor completo seguiría siendo la única vía de promoción, y esta validación NO lo habilita bajo el criterio sellado.
+
+**Ledger**: `signal_diagnosis` 22→23 — `id=validacion_oos_fresca_mom_rsi`, n=1, umbral `Sharpe_OOS>0 Y DSR>=0.95 (Bailey&LdP2014, N=ledger signal_diagnosis)`, veredicto **NO_CUMPLE**, artefacto arriba, sección §5 de este doc.
+
+**Lectura honesta (sin tocar el veredicto)**: el contraste con el PBO 0.4688 es informativo — el proceso de selección estaba sobreajustado, pero la definición congelada muestra su mejor desempeño histórico precisamente en los datos frescos post-lockeo (+1.33 vs Sharpe_full ~+0.93 medido en §40). Es consistente con §39: riesgo de GRADO (cuán bueno), no de EXISTENCIA (si hay algo). Con más meses de datos acumulándose por el updater, este mismo pre-registro puede repetirse con nuevo documento (no editando este) cuando T crezca — el DSR escala con √T y hoy fue el factor limitante junto a las colas gruesas.

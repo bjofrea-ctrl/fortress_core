@@ -24,6 +24,11 @@ echo "=====================================================" >> "$LOG"
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] data_updater: inicio" >> "$LOG"
 
 # 1) Precios OHLCV del universo 50 (incremental: descarga solo desde el último día en cache)
+# cwd=backend es OBLIGATORIO acá: `scripts.fetch_universe_data` y el CACHE_DIR relativo
+# ("data/cache" en app/core/data_ingestion.py) resuelven contra backend/. Sin este cd,
+# launchd (cwd fuera del repo) rompe el import con ModuleNotFoundError — bug que dejó
+# el cache de precios estancado entre 2026-08-15 y 2026-08-22 (detectado y fixeado).
+cd "$REPO/backend" || exit 1
 "$VENV" -c "
 from scripts.fetch_universe_data import NEW_UNIVERSE
 from app.core.data_ingestion import download_data
