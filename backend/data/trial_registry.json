@@ -482,5 +482,16 @@
     "veredicto": "NO_CUMPLE",
     "artefacto": "backend/data/cache/regime_gating_p_20260822_162628.txt",
     "seccion_doc": "PLAN_MEJORA_MATEMATICA.md §42"
+  },
+  {
+    "id": "trial_frog_in_the_pan",
+    "fecha": "2026-08-22",
+    "familia": "signal_diagnosis",
+    "hipotesis": "Frog-in-the-Pan (Da-Gurun-Warachka 2014): rank IC de momentum_12_1 vs fwd_20 mayor en tercil de MENOR ID (informacion continua); ID=sign(PRET)x(%neg-%pos) ventana 252d, terciles por fecha (§41)",
+    "n_trials_consumidos": 1,
+    "umbral_aplicado": "Bonferroni-46 bilateral deltaIC>0 |t|>3.065 (n_trials=23 familia), >=2/3 ventanas",
+    "veredicto": "NO_CUMPLE",
+    "artefacto": "backend/data/cache/trial_frog_in_the_pan_20260822_175302.txt",
+    "seccion_doc": "PLAN_MEJORA_MATEMATICA.md §41"
   }
 ]

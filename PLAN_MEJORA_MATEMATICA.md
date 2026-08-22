@@ -3244,3 +3244,25 @@ inaplicable así como se definió; además el signo en W1 fue el OPUESTO al pape
 (IC mayor en alta iliquidez). (b) plano en las tres ventanas.
 Ninguna compuerta se integra al motor; regime_gate.py sigue siendo infraestructura
 disponible (ahora CON un primer uso real documentado).
+
+### RESULTADO §41 (2026-08-22, corrido tras el pre-registro)
+
+- Fidelidad: panel 119900 filas × 50 símbolos × 2398 fechas (2016-12-30→2026-07-17);
+  ID sanity p10 −0.151 / p50 −0.068 / p90 +0.024 (rango [−1,+1] respetado, masa en
+  negativo = mayoría de símbolos con información continua, esperable).
+- **ΔIC(t1−t3): W1 −0.51, W2 +2.16, W3 −0.07 → 0/3 ventanas con t_NW > +3.065 →
+  NO_CUMPLE.** Ni siquiera W2 (la más favorable) llega al umbral.
+- ICs por tercil (informativo): tercil1 continuo +0.28 TOTAL (t), tercil3 discreto
+  −0.41; la dirección promedio va a favor de la hipótesis pero el efecto es ruido
+  (TOTAL ΔIC t +0.65) e INESTABLE por ventana (W1 y W3 con signo contrario).
+- Lectura honesta: el condicionamiento Frog-in-the-Pan NO rescatable a este tamaño
+  de universo/horizonte con la vara de la familia. La asimetría del paper (6m,
+  cross-section grande US) no se traslada a momentum_12_1 sobre N=50 diario.
+
+**Ledger**: `signal_diagnosis` → `id=trial_frog_in_the_pan`, veredicto NO_CUMPLE,
+artefacto `backend/data/cache/trial_frog_in_the_pan_20260822_175302.txt`. Al momento
+de correr: 22 consumidos (este era n=23, umbral fijado ex-ante). Nota: durante la
+corrida OpenCode registró en paralelo `validacion_oos_fresca_mom_rsi` y
+`regime_gating_p` (familia ahora en 25) — no afectan este veredicto (umbral propio).
+
+**No se integra nada al motor** — momentum_12_1 queda como estaba (sin condición ID).

@@ -1,0 +1,43 @@
+==============================================================================
+PLAN_MEJORA_MATEMATICA §41 — Tarea O: Frog-in-the-Pan (ID × momentum_12_1)
+Umbral familia signal_diagnosis (n=23, dos colas): |t| > 3.065
+Ventanas: W1 2020-01-01->2021-12-31, W2 2022-01-01->2023-12-31, W3 2024-01-01->2026-07-06
+ID = sign(mom_12_1) x (%neg-%pos), ventana formacion 252d; terciles por fecha
+CRITERIO: deltaIC(t1-t3) > 0 con t_NW > +3.065 en >= 2/3 ventanas
+==============================================================================
+
+Panel: 119900 filas | 2398 fechas | 50 símbolos
+Rango fechas: 2016-12-30 -> 2026-07-17
+
+Distribución ID (sanity): p10=-0.1508 p50=-0.0677 p90=+0.0238
+
+Rank IC por tercil de ID y ventana (signo esperado del factor: +1)
+métrica          ventana n_dias   mean_IC    SE_NW       t   L
+--------------------------------------------------------------
+tercil1 (cont)   W1         505   -0.0430   0.0441   -0.98  12
+tercil2          W1         505   -0.0071   0.0380   -0.19  12
+tercil3 (disc)   W1         505   -0.0245   0.0464   -0.53  12
+DELTA t1-t3      W1         505   -0.0185   0.0363   -0.51  12
+  (dias pareados) W1         505
+tercil1 (cont)   W2         501   +0.0621   0.0408   +1.52  12
+tercil2          W2         501   +0.0425   0.0453   +0.94  12
+tercil3 (disc)   W2         501   -0.0187   0.0459   -0.41  12
+DELTA t1-t3      W2         501   +0.0808   0.0375   +2.16  12
+  (dias pareados) W2         501
+tercil1 (cont)   W3         628   +0.0021   0.0339   +0.06  12
+tercil2          W3         628   +0.0747   0.0371   +2.01  12
+tercil3 (disc)   W3         628   +0.0054   0.0327   +0.17  12
+DELTA t1-t3      W3         628   -0.0034   0.0451   -0.07  12
+  (dias pareados) W3         628
+
+TOTAL pooled (solo informativo, NO pre-registrado)
+tercil1 (cont)   TOTAL     2398   +0.0052   0.0183   +0.28  12
+tercil3 (disc)   TOTAL     2398   -0.0080   0.0195   -0.41  12
+DELTA t1-t3      TOTAL     2398   +0.0132   0.0204   +0.65  12
+
+==============================================================================
+CRITERIO §41: ΔIC(t1−t3) > 0 con t_NW > +3.065 en ≥2/3 ventanas
+Ventanas SIG+ de DELTA: 0/3 [] -> NO_CUMPLE
+==============================================================================
+
+Out: data/cache/trial_frog_in_the_pan_20260822_175302.txt
