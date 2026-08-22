@@ -257,7 +257,7 @@ def main():
         "T_total": int(T_total),
         "T_final": int(T),
         "S_elegido": int(S),
-        "T_ge_96": bool(T >= MIN_T_MONTHS),
+        "T_ge_min": bool(T >= MIN_T_MONTHS),
         "fallback_usado": bool(S == S_FALLBACK),
         "n_symbols_loaded": int(n_symbols_loaded),
         "universo_esperado": 50,
@@ -274,7 +274,7 @@ def main():
         "costos": {"per_side": COST_PER_SIDE, "slippage": SLIPPAGE, "per_rebalance": COST_PER_REBALANCE},
         "ventana": f"{START_DATE}→{END_DATE}",
     }
-    fidelity_ok = bool(checks["T_ge_96"] and checks["cobertura_actual"]["ge_30pct"] and checks["edge_positivo_sin_costos"]["positivo"] and checks["universo_ok"])
+    fidelity_ok = bool(checks["T_ge_min"] and checks["cobertura_actual"]["ge_30pct"] and checks["edge_positivo_sin_costos"]["positivo"] and checks["universo_ok"])
     if not fidelity_ok:
         print("[warn] checks de fidelidad no pasaron — la corrida sigue pero artefacto marca FIDELIDAD FALLIDA", file=sys.stderr)
 
@@ -422,7 +422,7 @@ def main():
         f"p5={hist['p5']:+.3f} p25={hist['p25']:+.3f} p75={hist['p75']:+.3f} p95={hist['p95']:+.3f} std={hist['std']:.3f}")
     out(f"  Degradación Sharpe_OOS - Sharpe_IS (del best IS): mediana={perf_deg_median:+.3f} p5={perf_deg_p5:+.3f}")
     out(f"  Estabilidad rank IS vs OOS (Spearman): mediana rho={spearman_median:+.3f}")
-    out(f"  Buckets §4: <0.10 CUMPLE | 0.10-0.20 gris (binario NO_CUMPLE) | ≥0.20 NO_CUMPLE | ≥0.30 sustancial")
+    out("  Buckets §4: <0.10 CUMPLE | 0.10-0.20 gris (binario NO_CUMPLE) | ≥0.20 NO_CUMPLE | ≥0.30 sustancial")
     out(f"  VEREDICTO (§4 mecánico): {verdict}")
     out(f"  VEREDICTO BINARIO ledger (PBO<0.10): {verdict_bin}")
     out(f"  Bucket: {bucket}")
@@ -435,7 +435,7 @@ def main():
     out("  PBO informa P(rank_OOS < mediana) del mejor IS entre 21.")
     out("")
     out("--- Secundarios ---")
-    out(f"  Histograma logits (λ):")
+    out("  Histograma logits (λ):")
     for q in [5, 25, 50, 75, 95]:
         out(f"    p{q}: {np.percentile(lam, q):+.4f}")
     out(f"    media: {np.mean(lam):+.4f} | desv: {np.std(lam, ddof=1):.4f}")
@@ -461,7 +461,7 @@ def main():
     out("--- Reproducción ---")
     out(f"  Seed: 42 | S={S} | N={N} | n_combos={n_combos} | random_state=42 (donde aplique)")
     out(f"  Ledger ids: {', '.join(ledger_ids)}")
-    out(f"  Out: data/cache/pbo_cscv_mom_rsi_<ts>.txt/.json")
+    out("  Out: data/cache/pbo_cscv_mom_rsi_<ts>.txt/.json")
 
     txt = "\n".join(lines) + "\n"
     os.makedirs(OUT_DIR, exist_ok=True)

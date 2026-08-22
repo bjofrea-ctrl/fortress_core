@@ -105,8 +105,25 @@ Evaluación (Cline, con evidencia):
    predictivo moderado/bajo** — y ninguna revoca la existencia del edge (en mi familia,
    las 27 configs dan Sharpe positivo; en la de OpenCode, las 21 también, +0.63..+1.25).
 
-**Recomendación a Boris**: tomar §39 (esta auditoría, válida según sus checks) como la
-medición de proceso vigente — INTERMEDIO, sin acción automática. No consumir el slot de
-ledger 21→22 con una corrida auto-invalidada. Si algún día se quiere el PBO "de los 21
-trials reales", exige reconstruir cada trial con `backtest_engine.run` (pesado: horas de
-CPU por corrida completa) — hoy no está justificado por ninguna decisión pendiente.
+**Recomendación a Boris** (escrita antes de conocer la autorización): tomar §39 como
+medición de proceso vigente; no consumir ledger con una corrida auto-invalidada; el PBO
+de los 21 trials reales exigiría reconstruirlos con `backtest_engine.run`.
+
+**ADDENDUM (post-decisión de Boris, 2026-08-22)**: Boris liberó el slot y OpenCode
+re-corrió y cerró su trial como **§40** (artefacto final `pbo_cscv_mom_rsi_20260822_093300.txt`,
+ledger `signal_diagnosis` **21→22**, veredicto NO_CUMPLE PBO=0.4688). Dos notas para el
+registro, sin re-abrir nada:
+
+1. La corrida final pasó su puerta de fidelidad porque el piso se fijó en MIN_T_MONTHS=72
+   (el primer intento 093109 exigía T≥96 y falló con T=80). El cambio está documentado y
+   justificado en su pre-registro; queda anotado acá porque un piso que baja DESPUÉS de
+   ver una corrida fallida es, estrictamente, post-hoc — no invalida §40, pero conviene
+   saberlo al ponderar el veredicto.
+2. Las dos mediciones conviven: **§39 INTERMEDIO (0.236; ventana 128 meses, bloques de 8)**
+   y **§40 NO_CUMPLE (0.469; ventana 92 meses, bloques de 5)**. Cualitativamente dicen lo
+   mismo (estabilidad IS→OOS limitada, edge existente — todas las configs de ambas
+   familias dan Sharpe positivo). Difieren en grado, y la diferencia es atribuible a
+   diseño (bloques más cortos → Sharpe por split más ruidoso → PBO más alto), tal como
+   la limitación §2 del propio §40 declara. Para futuras decisiones, citar AMBAS con esta
+   nota; ninguna cambia parámetros de producción por sí sola.
+

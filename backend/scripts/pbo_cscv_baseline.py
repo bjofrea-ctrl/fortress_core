@@ -153,7 +153,7 @@ def main():
     gross_mean_ex_costs = float(act.mean() + COST_PER_REBALANCE * n_active)
     checks = {
         "T_final": int(T),
-        "T_ge_96": bool(T >= MIN_T),
+        "T_ge_min": bool(T >= MIN_T),
         "cobertura_actual": {
             "meses_con_senal": int((act_sig > 0).sum()),
             "ratio": round(n_active, 4),
@@ -164,7 +164,7 @@ def main():
             "positivo": bool(gross_mean_ex_costs > 0),
         },
     }
-    fidelity_ok = bool(checks["T_ge_96"]
+    fidelity_ok = bool(checks["T_ge_min"]
                        and checks["cobertura_actual"]["ge_30pct"]
                        and checks["edge_positivo_sin_costos"]["positivo"])
 

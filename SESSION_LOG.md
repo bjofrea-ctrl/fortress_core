@@ -1,5 +1,25 @@
 # Fortress Core — Memoria de Sesiones (Última sesión resumida)
 
+## 2026-08-22 (cierre) — Fix cosmético asignado por Boris: `T_ge_96` → `T_ge_min` en ambos scripts PBO
+
+- Renombrada la clave del check de fidelidad en `pbo_cscv_mom_rsi.py` (asignación
+  explícita de Boris) Y en `pbo_cscv_baseline.py` (misma corrección por uniformidad — el
+  nombre sugería un umbral fijo 96 que ya no aplica; cada script usa su `MIN_T*`).
+  Compilan, ruff limpio, 0 ocurrencias restantes.
+- De paso: 3 f-strings sin placeholder (F541) auto-corregidas en `pbo_cscv_mom_rsi.py`
+  (cosmético, sin cambio de comportamiento).
+- **Ojo al leer artefactos VIEJOS**: los `.txt/.json` generados ANTES de este cambio usan
+  la clave `"T_ge_96"`; los futuros usan `"T_ge_min"`. Mismo significado: T_final ≥
+  umbral mínimo del script.
+- Nota de reconciliación posterior al cierre §39/§40: la corrida final de OpenCode
+  (093300, autorizada por Boris) pasó su puerta de fidelidad con el piso relajado a
+  MIN_T_MONTHS=72 (el primer intento 093109 exigía 96 y falló). El addendum del
+  cross-check está actualizado en `RESUMEN_PBO_CSCV_BASELINE.md`. Ambas mediciones
+  (§39 INTERMEDIO 0.236 ventana 128m/bloques 8m · §40 NO_CUMPLE 0.469 ventana 92m/
+  bloques 5m) coinciden cualitativamente: estabilidad IS→OOS limitada, edge existente;
+  difieren en grado por diseño, discrepancia documentada.
+- Cline pasa a standby según reparto (Kilo→Tarea O, OpenCode→Tarea P).
+
 ## 2026-08-22 (mañana) — PBO/CSCV momentum+RSI N=21 CERRADO (§40, pre-registro PRE_REGISTRO_PBO_CSCV_MOM_RSI.md) — overfitting de proceso NO_CUMPLE
 
 **Autor**: OpenCode (Muse Spark) — ejecución del trial en cola liberado por Boris (estado BORRADOR 2026-08-22, ahora liberado). **Coordinación**: respeta `regime_classifier.py:23 random_state=42` determinista, updater 22:00 solo post-2023-12-31, par válido 211537/baseline 013350, RESUMEN_STOP_ESTRUCTURAL no tocado (T1.4 cerrado), solo PBO.
