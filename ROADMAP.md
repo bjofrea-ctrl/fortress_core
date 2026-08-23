@@ -10,7 +10,25 @@ Code, Cline, OpenCode), leer este documento primero. Al cerrar, actualizarlo ant
 — marcar lo que se cerró, agregar lo que apareció nuevo. Ningún ítem se da por cerrado sin
 marcarlo acá, aunque se haya resuelto "de pasada" en otra conversación.
 
-Última actualización: 2026-08-22.
+Última actualización: 2026-08-23.
+
+## PENDIENTE AHORA — chequear primero, antes de leer el resto
+
+Dos tareas dispatchadas por Claude Code vía Orca el 2026-08-23, sin cerrar todavía.
+Verificar contra `git log --oneline -10` y `backend/data/cache/` antes de asumir estado:
+
+1. **Tarea M** (KAMA, HMA, Supertrend — familia de tendencia adaptativa, ver
+   `PLAN_LARGO_PLAZO.md` sección Tarea M) — Kilo Code, corriendo en terminal Orca
+   (worktree `orca/workspaces/fortress_core/test-kilo-orca`).
+2. **PBO/CSCV de fidelidad completa** — reconstruir los 21 trials reales de
+   `signal_diagnosis` con `backend_engine.run()` (no vecinos de parámetros, esa versión
+   ya cerró en §40) y correr CSCV sobre esos retornos reales — OpenCode, terminal Orca
+   (worktree `orca/workspaces/fortress_core/test-opencode-orca`). Sin pre-registro
+   propio todavía — escribirlo antes de aceptar cualquier resultado que ya haya
+   corrido, por si no se pre-registró antes de correr.
+
+Si estas dos ya tienen commit/artefacto cuando leas esto, actualizá esta sección
+(borrala o marcá cerrado) — no la dejes desactualizada.
 
 ---
 

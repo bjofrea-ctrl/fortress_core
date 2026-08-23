@@ -5,7 +5,30 @@ en `fortress_core`: este archivo existe para que puedas ponerte a trabajar sin r
 investigación ya hecha, sin re-litigar decisiones ya tomadas, y sin romper la disciplina que
 costó semanas construir. Leelo completo antes de tocar código.
 
-Última actualización: 2026-08-12.
+Última actualización: 2026-08-23.
+
+**Coordinación vía Orca (nuevo, 2026-08-22/23)**: el trabajo entre Claude Code, OpenCode y
+Kilo Code se coordina ahora con [Orca](https://www.onorca.dev) (app instalada, CLI
+`orca`) — cada agente corre en su propia terminal/worktree, Claude Code puede crear
+tareas y leer resultados directo (`orca terminal create/send/wait/read`) sin que Boris
+relaye texto entre sesiones. Detalle completo (comandos, gotchas, symlink de `kilo`
+roto, telemetría bloqueada por firewall) en la memoria persistente de Claude Code
+(`reference_orca_orchestrator.md`) — si sos otro agente sin acceso a esa memoria,
+pedile a Boris el resumen o mirá `PLAN_LARGO_PLAZO.md` para el estado de tareas en
+curso. Cline y OpenCode dentro de Orca usan comandos genéricos de terminal (no la
+capa de orquestación "de primera clase", que solo cubre Claude Code/Codex/Cursor/
+OpenCode oficialmente).
+
+**Dos tareas en curso ahora mismo, dispatchadas por Claude Code vía Orca, sin cerrar
+todavía** (verificar contra `git log` y `data/cache/` antes de asumir que siguen
+corriendo o que ya terminaron):
+- **Tarea M** (KAMA/HMA/Supertrend, `PLAN_LARGO_PLAZO.md`) — Kilo Code, terminal Orca
+  creada 2026-08-23 en worktree `test-kilo-orca`.
+- **PBO/CSCV de fidelidad completa** (reconstruir los 21 trials reales de
+  `signal_diagnosis` con `backtest_engine.run`, no vecinos de parámetros) — OpenCode,
+  terminal Orca en worktree `test-opencode-orca`. Motivo: el PBO de hoy (§40) usó un
+  proxy de parámetros vecinos, declarado como limitación — esta es la versión de
+  fidelidad total que quedó pendiente ahí mismo.
 
 ---
 
@@ -18,12 +41,24 @@ pre-registro de criterios antes de correr cualquier trial).
 
 ## Lo primero que tenés que saber, sin excepción
 
-**Hoy no hay señal comercial verificada.** Tres líneas de investigación independientes
-(selección de 50 símbolos, rotación sectorial, timing sobre un basket único) se probaron con
-evidencia rigurosa y las tres se descartaron. El motor funciona mecánicamente bien, pero no
-tiene un edge de producción confirmado. Si alguien te pide "conectemos esto a un broker" o
-"pongamos esta señal en vivo" — la respuesta correcta es "todavía no, no hay evidencia de que
-haya algo que operar" a menos que haya una investigación nueva, pre-registrada, que lo cambie.
+**Hoy no hay señal comercial verificada — y hay más evidencia de esto que nunca.** Tres
+líneas de investigación independientes (selección de 50 símbolos, rotación sectorial,
+timing sobre un basket único) se probaron con evidencia rigurosa y las tres se descartaron.
+Encima, en 2026-08-22 se sometió al ÚNICO factor no refutado (momentum+RSI) a controles que
+nunca se le habían hecho: PBO/CSCV (dos veces, 0.24 y 0.47 — riesgo de sobreajuste de
+selección de parámetros) y **validación OOS fresca con definición congelada del motor**
+(Sharpe +1.33, pero DSR 0.6077 — no cruza el 0.95 requerido). Ni el condicionamiento por
+régimen (Tarea P) ni por Information Discreteness (Tarea O) lo rescataron. Si alguien te
+pide "conectemos esto a un broker" o "pongamos esta señal en vivo" — la respuesta correcta
+sigue siendo "todavía no", ahora con más capas de evidencia respaldándola, no menos.
+
+**Hallazgo de mayor impacto de toda la investigación (2026-08-20, T0.2)**: se encontró y
+arregló un bug real de look-ahead en `backtest_engine.py` — la señal se decidía y ejecutaba
+al cierre de la MISMA barra (imposible en trading real). Fix: `execution_lag_days=1`
+(default nuevo), ejecución en la apertura del día siguiente. Impacto medido: Sharpe
+0.57→0.38, CAGR 0.95%→0.70% (universo 7 símbolos, `RESUMEN_IMPACTO_EXECUTION_LAG.md`) — el
+número viejo estaba inflado por lookahead. Cualquier backtest de PnL corrido ANTES de este
+fix con `backtest_engine.run()` (no los tests de rank-IC puro) debe leerse con esa reserva.
 
 **No confíes en ningún resumen sin verificarlo contra el artefacto real.** Esta es la regla
 más importante del proyecto y la que más veces evitó un error real: números pegados en un
@@ -83,22 +118,25 @@ en `PLAN_MEJORA_MATEMATICA.md`. No son sugerencias de estilo.
 
 ## Estado actual del proyecto (resumen ejecutivo)
 
-- **Investigación**: rama de selección/timing sobre 50 símbolos cerrada, sin señal comercial.
-  Pivot activo hacia gestión de riesgo (régimen-vs-volatilidad — pista sin confirmar, no
-  sobrevive corrección estadística; `TARGET_VOLATILITY` en `config.py` sigue sin conectar,
-  correctamente, porque la evidencia que lo justificaría no cerró). Gap-reversion intra-día es
-  el hallazgo estadístico más fuerte de todo el proyecto, pero no es operable sin motor de
-  ejecución intradía — no existe y no se está construyendo (ver "Decisiones de producto").
-- **Código**: auditoría técnica completa hecha. Los 3 ítems críticos (P0: contrato roto entre
-  frontend y backend de gobernanza, errores HTTP mal manejados, autenticación mínima) ya están
-  cerrados y verificados. El primer P1 (fechas hardcodeadas del dashboard de mercado) también.
-  Quedan 2 P1 más y todo P2 — ver `ROADMAP.md` para la lista completa y actualizada.
-- **Tests**: 80/80 pasan (backend). Cero tests de frontend. Cobertura despareja — el sistema
-  de agentes/gobernanza y la mayoría de los routers FastAPI no tienen test automatizado.
-- **Seguridad**: repo público en GitHub (`bjofrea-ctrl/fortress_core`). La mayoría de
-  endpoints siguen sin autenticación por decisión (UI pública), salvo escritura. Pendiente:
-  la base de datos local (`fortress.db`) nunca se respalda — riesgo de pérdida real de datos
-  runtime si falla el disco.
+- **Investigación**: rama de selección/timing sobre 50 símbolos cerrada, sin señal comercial
+  (ver arriba, ahora con PBO + OOS fresca reforzando la conclusión). Plan de integración de
+  indicAgent (`PLAN_INTEGRACION_INDICAGENT.md`, 11 tickets T0.1-T2.3) **100% completo y
+  verificado** (2026-08-20/22): incluye el fix de T0.2 (lookahead de ejecución), stop/target
+  estructural (T1.4, no promovido), OFI/CVD/Hurst/vol-regime como diagnósticos sin edge,
+  bootstrap CI para métricas. Nada de esto se promovió al motor por defecto — todo quedó
+  disponible pero sin trial que lo valide como para reemplazar momentum+RSI.
+- **Código**: auditoría técnica completa hecha. Los 3 ítems críticos (P0) y todo P1 cerrados.
+  Dashboard institucional + API de costos + universo 50 correcto (ex-bug de 44 símbolos)
+  desplegados permanentemente vía launchd (`com.fortresscore.api`/`.dashboard`).
+- **Tests**: 358 passed (backend), ruff limpio. Cero tests de frontend.
+- **Seguridad**: repo público en GitHub. Backup de `fortress.db` y espejo en disco externo
+  automatizados. Orca (orquestador de agentes) tiene 2 IP de red no identificadas bloqueadas
+  por firewall (`pfctl`, anchor `orca_block`) — **ojo**: ese firewall también bloqueó por un
+  rato la conexión de Claude Code corriendo dentro de Orca (falso positivo, no confirmado el
+  culpable exacto); si Claude Code dentro de Orca da "Connection refused", revisar primero
+  si `ANTHROPIC_BASE_URL`/`ANTHROPIC_API_KEY` apuntan al router local (`9router`,
+  `localhost:20128`, seteados en `.zshrc` global) antes de sospechar del firewall — hacer
+  `unset ANTHROPIC_BASE_URL ANTHROPIC_API_KEY` antes de lanzar `claude` en esas terminales.
 
 ## Decisiones de producto ya tomadas — no re-litigar sin evidencia nueva
 
