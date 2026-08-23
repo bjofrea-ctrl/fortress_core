@@ -493,5 +493,16 @@
     "veredicto": "NO_CUMPLE",
     "artefacto": "backend/data/cache/trial_frog_in_the_pan_20260822_175302.txt",
     "seccion_doc": "PLAN_MEJORA_MATEMATICA.md §41"
+  },
+  {
+    "id": "trial_kama_hma_supertrend",
+    "fecha": "2026-08-23",
+    "familia": "signal_diagnosis",
+    "hipotesis": "KAMA/HMA/Supertrend (dist normalizada y lado binario) predicen fwd_return_20d cross-sectional (Tarea M, tendencia adaptativa)",
+    "n_trials_consumidos": 1,
+    "umbral_aplicado": "Bonferroni m=9 |t|>3.5226 sobre current_threshold 0.9961538461538462 (consumido=25)",
+    "veredicto": "NO_CUMPLE",
+    "artefacto": "data/cache/trial_kama_hma_supertrend_20260823_152846.txt",
+    "seccion_doc": "§44"
   }
 ]
