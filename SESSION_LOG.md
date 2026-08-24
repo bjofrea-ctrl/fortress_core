@@ -1,5 +1,32 @@
 # Fortress Core — Memoria de Sesiones (Última sesión resumida)
 
+## 2026-08-23 — TAREA M: KAMA/HMA/Supertrend (tendencia adaptativa) — NO_CUMPLE 0/9 (Kilo Code, worktree test-kilo-orca)
+
+**Autor**: Kilo Code. Asignación de Claude Code coordinando por Orca para Boris
+("Kilo → Tarea M en su worktree; pre-registro primero"). Pre-registro §44 ANTES
+de correr; ledger `signal_diagnosis` id `trial_kama_hma_supertrend`, veredicto
+**NO_CUMPLE**.
+
+- UN trial coordinado con 3 sub-hipótesis direccionales (los 3 miden DIRECCIÓN,
+  verificación de origen en PLAN_LARGO_PLAZO.md Tarea M): kama_dist=(close−KAMA)/close
+  (ER reusado de predictive_indicators), hma_dist=(close−HMA16)/close, y
+  supertrend_side∈{±1} ATR10×3.0. m=9 Bonferroni (3 indicadores × W1/W2/W3).
+- Umbral ex-ante LEÍDO del registry (no asumido): consumido=25 → n=26 →
+  th=0.9961538461538462 → |t|>3.5226 bilateral.
+- **Resultado**: 0/9 celdas significativas; IC pooled TOTAL NEGATIVO en los tres
+  (kama t−1.01, hma t−0.24, st t−1.24) — ni señal nominal, signo contrario a la
+  continuación y sin consistencia entre ventanas. Desglose GOLDILOCKS-lag
+  EXPLORATORIO no-gating: máx |t|=+2.58 (st W1) sin repetición → sin pistas.
+- Implementación previa con tests sintéticos de tendencia conocida:
+  `wma()/kama()/hma()/supertrend()` nuevas en indicators.py como columnas
+  diagnósticas NO wired al motor (patrón T1.x/T2.x). Suite completa **367 passed**
+  ANTES de la corrida (F6); ruff limpio.
+- Artefacto `backend/data/cache/trial_kama_hma_supertrend_20260823_152846.txt`(+json);
+  script `backend/scripts/trial_kama_hma_supertrend.py`; §44+§44.1 en
+  PLAN_MEJORA_MATEMATICA.md; fila nueva en ROADMAP. **Nada integrado al motor**
+  — signal_engine.py intacto. Ledger signal_diagnosis ahora 26 consumidos
+  (próximo umbral 0.99630).
+
 ## 2026-08-22 (tarde-3) — TAREA O: Frog-in-the-Pan (ID × momentum_12_1) — NO_CUMPLE 0/3 (Kilo Code)
 
 **Autor**: Kilo Code. Asignación de Boris ("Kilo → Tarea O, cálculo barato sobre

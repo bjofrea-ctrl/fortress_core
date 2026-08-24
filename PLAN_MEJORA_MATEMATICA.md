@@ -3437,4 +3437,151 @@ a Boris antes de lanzar.**
 
 ---
 
+## 44. Tarea M — KAMA / HMA / Supertrend: familia de tendencia adaptativa, UN trial coordinado con 3 sub-hipótesis (2026-08-23, PRE-REGISTRO ANTES de correr, consume ledger)
+
+Fuente: `PLAN_LARGO_PLAZO.md` Tarea M (líneas 585-640) + regla añadida 2026-08-19
+(líneas 574-583): los 3 indicadores miden DIRECCIÓN (verificado contra origen por la
+spec — KAMA Kaufman 1972/1995; HMA Hull 2005; Supertrend Seban ~2009, sin respaldo
+académico, caveat registrado), por eso comparten protocolo con momentum/RSI: rank IC
+intra-día contra fwd_return_20d. No es el error de Bollinger (régimen) repetido.
+Contexto: Tarea N (§36) cerró MACD NO_CUMPLE 0/3 con este mismo protocolo.
+
+**DECISIÓN DOCUMENTADA**: UN SOLO TRIAL COORDINADO con las 3 sub-hipótesis
+(KAMA, HMA, Supertrend), `n_trials_consumidos=1`. Corrección intra-trial:
+Bonferroni sobre 3 indicadores × 3 ventanas = **m=9 tests primarios**.
+
+**Umbral (leído del ledger EN runtime al redactar este pre-registro, 2026-08-23)**:
+familia signal_diagnosis con **25 consumidos** → este trial es n=26 →
+`trial_registry.current_threshold("signal_diagnosis")` = **0.9961538461538462**
+(= 1 − 0.10/26). Masa de error del trial α_trial = 0.00384615; repartida Bonferroni
+sobre m=9 celdas → α_por_test = 0.00384615/9 = 0.00042735 bilateral →
+**|t| > z(1 − 0.00042735/2) = z(0.99978633) = 3.5226**. El script lee el ledger en
+runtime y recalcula con la MISMA fórmula si otro trial de la familia registra antes
+de esta corrida (patrón §42); el artefacto cita el número efectivo usado.
+
+**Los 3 factores (fórmulas fijadas ANTES de codear)** — todos normalizados por
+precio para ser comparables cross-sectional (el IC es Spearman intra-día entre
+símbolos):
+
+- **kama_dist** = (close − KAMA)/close. KAMA estándar de Kaufman:
+  ER = `predictive_indicators.compute_efficiency_ratio(close, period=10)` (reusado,
+  no reinventado — orden expreso de la spec); sc_t = (ER_t×(2/(2+1) − 2/(30+1)) +
+  2/(30+1))²; recursión causal kama_t = kama_{t−1} + sc_t×(close_t − kama_{t−1})
+  sembrada en el primer close válido del ER. Parámetros canónicos er=10/fast=2/slow=30.
+- **hma_dist** = (close − HMA)/close con HMA(16): WMA ponderada lineal (pesos
+  1..n), HMA_n = WMA(2×WMA(n/2) − WMA(n), √n) con n=16 (√n→4). Fórmula literal de
+  Alan Hull (2005).
+- **supertrend_side** ∈ {+1, −1}: Supertrend(ATR period=10, multiplicador=3.0),
+  parámetros canónicos de comunidad. basic_ub/lb = hl2 ± 3×ATR10 (atr() ya existente);
+  bandas finales con ratchet causal estándar (final_ub solo baja si basic_ub baja o
+  close_{t−1} > final_ub_{t−1}; simétrico abajo); dirección flip a +1 cuando close
+  cruza por encima de final_ub previo, a −1 cuando cruza por debajo de final_lb
+  previo, sino arrastra. NaN hasta el primer ATR válido.
+
+**Signo esperado (declarado antes de correr)**: +1 para los tres — proxy de
+tendencia alcista en t → mayor retorno futuro (misma hipótesis de continuación que
+momentum_12_1/RSI; ADX ya mostró señal nominal positiva en esta familia).
+
+**Protocolo CONGELADO** (fidelidad §0.5a, copia §41/§42): fwd_20 =
+close.shift(−20)/close − 1; IC diario = Spearman(factor, fwd_20) por fecha sobre
+≥5 símbolos; SE Newey-West L=min(12, n//8), copia fiel; SIN máscara de elegibilidad;
+los factores entran a `calculate_all_indicators` como columnas nuevas (patrón
+T1.1/T1.2/T2.3: disponibles para diagnóstico, NO wired a signal_engine ni al score).
+Ventanas canónicas: W1 2020-2021, W2 2022-2023, W3 2024-01-01→2026-07-06 (idénticas
+a §41/§42 para comparabilidad). START=2015-01-02 (warmup máximo necesario ≈60 ruedas,
+cubierto de sobra); DATA_END=2026-08-21 (cache termina 08-14/17+, diff ≤7 días →
+cero descargas, mismo criterio §41).
+
+**CRITERIO DE ÉXITO POR INDICADOR (pre-registrado)**: IC > 0 (signo declarado) con
+t_NW > **+ZC** en **≥2/3 ventanas computables** → CUMPLE ese indicador. Ventana no
+computable (<30 días con IC o <5 símbolos) cuenta como no-signal. **Veredicto
+global**: CUMPLE si ≥1 de los 3 CUMPLE (regla OR, protegida por Bonferroni m=9).
+Ninguno integra motor sin trial de MOTOR aparte (esto no toca signal_engine.py ni
+el score vivo — regla explícita de la spec).
+
+**Desglose por régimen (SECUNDARIO, NO gating — declarado antes de correr)**:
+requisito de la spec ("reportar también el IC condicionado por régimen… usar
+regime_gate.py para clasificar cada fecha ANTES de correr — no post-hoc"). Estado
+HMM rezagado 21 hábiles vía `WalkForwardRegimeGate(favorable_states={0})`
+(GOLDILOCKS, defaults recalib_every=63/min_history=756, macro SPY EFA QQQ GLD DBC
+TIP TLT AGG ^VIX — idéntico a §42a, segundo uso real de M3). Para cada indicador ×
+ventana se REPORTA ΔIC(GOLDILOCKS-lag − resto) con su t_NW y n por bucket. Este
+desglose es EXPLORATORIO: ningún veredicto CUMPLE/NO_CUMPLE sale de acá; una pista
+fuerte (t>ZC sostenido) se documenta como candidata a trial propio, nunca como
+resultado positivo del trial M. Los 9 tests primarios son los únicos que gatean.
+
+**Riesgos declarados**: los 3 factores comparten la misma señal latente (tendencia)
+→ ICs correlacionados entre sub-hipótesis; el OR con Bonferroni m=9 asume celdas
+contables, un único CUMPLE aislado tiene menor informatividad (declarado). Supertrend
+es binario → varianza cross-sectional mínima, ties masivos en ranks, |IC| diarios
+chicos por construcción. hma_dist/kama_dist correlacionan con momentum de corto
+pelo (misma familia, no invalida la medición). Warmup nuevo (<60 ruedas) ≪ 252 de
+momentum_12_1 → el dropna de `calculate_all_indicators` sigue dominado por momentum,
+sin cambio de comportamiento en columnas existentes (tests existentes lo verifican).
+Cobertura W1 del gate depende del START extendido (mismo riesgo aceptado en §42).
+HMM sin convergencia → label_series lanza → corrida abortada documentada como FALLO
+honesto, no NO_CUMPLE.
+
+**Checks de fidelidad (estilo §39/§41/§42)**: F1 universo 50 cargadas; F2 cobertura
+de meses por ventana (~24/24/30); F3 edge pooled TOTAL por factor (informativo);
+F4 determinismo seed 42 del HMM verificado en runtime; F5 asserts anti-lookahead del
+gate pasaron y n_recalibraciones>0; F6 tests unitarios sintéticos de tendencia
+conocida de los 3 indicadores en verde ANTES de correr (la corrida exige suite de
+indicators pasada — caso sintético de tendencia conocida por función, orden de la
+spec punto 4).
+
+**Script**: `backend/scripts/trial_kama_hma_supertrend.py` (nuevo, plantilla
+`trial_regime_gating_p.py`). Python 3.9 real (backend/.venv), lee SOLO cache parquet,
+sin descargas. **No toca**: signal_engine.py, regime_gate.py/regime_classifier.py,
+trial_registry.py en runtime (registro manual al cierre), predictivo_engine/triad
+(peso de score intacto). Implementación nueva SOLO en indicators.py (funciones +
+columnas diagnósticas) y tests/test_indicators.py. Artefacto:
+`backend/data/cache/trial_kama_hma_supertrend_<ts>.txt` (+`.json`). Ledger:
+`register_trial(id="trial_kama_hma_supertrend", familia="signal_diagnosis",
+n_trials_consumidos=1, umbral_aplicado="Bonferroni m=9 |t|>ZC sobre th vigente",
+veredicto=mecánico, seccion_doc="§44")`. Corrida ÚNICA: si aborta por fidelidad →
+NO INTERPRETABLE, no NO_CUMPLE (mismo contrato §43.8).
+
+### 44.1 RESULTADO (apéndice post-corrida, 2026-08-23) — corrida ÚNICA 15:28
+
+Corrida única (`scripts/trial_kama_hma_supertrend.py`, artefacto
+`data/cache/trial_kama_hma_supertrend_20260823_152846.txt`+`.json`). Umbral
+efectivo = el del pre-registro: ledger consumido=25 → n=26 → th=0.9961538461538462,
+m=9 → **|t|>3.5226** (sin recalculo: ningún otro trial registró en el medio).
+
+**Fidelidad OK×5**: F1 universo 50/50; F2 cobertura 24/24/31 meses; F4 seed HMM 42;
+F5 gate walk-forward 34 recalibraciones, asserts anti-lookahead OK, estados no
+degenerados {0:548, 1:446, 2:831, 3:285}; panel 133650 filas × 2673 fechas
+(2016-01-04→2026-08-20), cero descargas. Nota técnica declarada: días con
+supertrend_side constante cross-sectional (todos +1 o todos −1) no producen IC
+(Spearman indefinido) y quedan fuera — n st = 2651 vs 2653 días de los otros.
+
+**TESTS PRIMARIOS — 0/9 celdas significativas → GLOBAL NO_CUMPLE**:
+
+| factor | W1 | W2 | W3 | pooled TOTAL (informativo) |
+|---|---|---|---|---|
+| kama_dist | −0.0219 (t−0.98) | −0.0026 (t−0.10) | +0.0061 (t+0.27) | IC −0.0103 (t−1.01) |
+| hma_dist | −0.0044 (t−0.26) | +0.0059 (t+0.31) | −0.0090 (t−0.67) | IC −0.0016 (t−0.24) |
+| supertrend_side | −0.0361 (t−1.40) | +0.0127 (t+0.55) | +0.0195 (t+0.91) | IC −0.0126 (t−1.24) |
+
+Veredictos por indicador: kama_dist NO_CUMPLE, hma_dist NO_CUMPLE,
+supertrend_side NO_CUMPLE. Ni siquiera señal nominal: los tres con IC TOTAL
+ligeramente NEGATIVO (signo contrario al esperado de continuación) y |t| máximos
+por ventana ≤1.40 — lejos del umbral 3.5226 y sin consistencia de signo entre
+ventanas. La familia de tendencia adaptativa sobre N=50 diario NO predice
+retorno a 20 ruedas cross-sectional.
+
+**Desglose por régimen (EXPLORATORIO, pre-declarado no-gating)**: ΔIC(GOLDILOCKS-lag
+− resto) máximo |t|=+2.58 (supertrend_side W1) — mismo patrón débil-no-confirmado
+de Tarea P(a): sugerente solo en W1 (n gold=43), sin repetición en W2/W3, muy por
+debajo de ZC=3.52. Sin pistas sobre el umbral; nada candidatiza trial propio.
+
+**Ledger**: `signal_diagnosis` 25→26 consumidos, id=`trial_kama_hma_supertrend`,
+veredicto=NO_CUMPLE, próximo threshold 0.99630. **Nada se integra al motor**
+(indicadores quedan disponibles como columnas diagnósticas, patrón T1.x/T2.x;
+signal_engine.py intacto). Implementación: `kama()`/`hma()`/`wma()`/
+`supertrend()` en indicators.py + 10 tests sintéticos (suite 367 passed).
+
+---
+
 

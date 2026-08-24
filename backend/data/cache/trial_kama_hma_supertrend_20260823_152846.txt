@@ -1,0 +1,60 @@
+==============================================================================
+PLAN_MEJORA_MATEMATICA §44 — Tarea M: KAMA/HMA/Supertrend (tendencia adaptativa)
+UN trial coordinado, 3 indicadores x 3 ventanas = m=9 tests primarios
+Ledger runtime: signal_diagnosis consumido=25 -> n=26 | current_threshold=0.9961538461538462
+alpha_trial=0.00384615 / m=9 -> alpha_per_test=0.00042735 bilateral | |t| > z = 3.5226
+Ventanas: W1 2020-01-01->2021-12-31, W2 2022-01-01->2023-12-31, W3 2024-01-01->2026-07-06
+==============================================================================
+
+Fidelidad F1 universo: 50/50 cargadas | F4 seed HMM: 42
+Panel: 133650 filas | 2673 fechas | 50 símbolos | 2016-01-04 -> 2026-08-20
+Sanidad kama_dist: cobertura=1.000 | media=+0.001719 p50=+0.005208
+Sanidad hma_dist: cobertura=1.000 | media=+0.000287 p50=+0.000501
+Sanidad supertrend_side: cobertura=1.000 | media=+0.143240 p50=+1.000000
+
+F2 cobertura meses con datos: {'W1': 24, 'W2': 24, 'W3': 31}
+
+--- F3 edge pooled TOTAL (informativo, no gatea) ---
+  kama_dist        IC=-0.0103 (t=-1.01, n=2653 días)
+  hma_dist         IC=-0.0016 (t=-0.24, n=2653 días)
+  supertrend_side  IC=-0.0126 (t=-1.24, n=2651 días)
+
+==============================================================================
+TESTS PRIMARIOS (gatean): rank IC intra-día vs fwd_20, criterio IC>0 y t_NW>+3.5226 en >=2/3 ventanas
+
+factor           win   n_días    mean_IC     SE_NW        t     L
+kama_dist        W1       505    -0.0219    0.0224    -0.98    12 -> computable=True sig=False
+kama_dist        W2       501    -0.0026    0.0274    -0.10    12 -> computable=True sig=False
+kama_dist        W3       628    +0.0061    0.0227    +0.27    12 -> computable=True sig=False
+
+factor           win   n_días    mean_IC     SE_NW        t     L
+hma_dist         W1       505    -0.0044    0.0172    -0.26    12 -> computable=True sig=False
+hma_dist         W2       501    +0.0059    0.0188    +0.31    12 -> computable=True sig=False
+hma_dist         W3       628    -0.0090    0.0133    -0.67    12 -> computable=True sig=False
+
+factor           win   n_días    mean_IC     SE_NW        t     L
+supertrend_side  W1       503    -0.0361    0.0258    -1.40    12 -> computable=True sig=False
+supertrend_side  W2       501    +0.0127    0.0230    +0.55    12 -> computable=True sig=False
+supertrend_side  W3       628    +0.0195    0.0215    +0.91    12 -> computable=True sig=False
+
+==============================================================================
+VEREDICTOS MECÁNICOS (criterio §44)
+  kama_dist        SIG [] de computables ['W1', 'W2', 'W3'] -> NO_CUMPLE
+  hma_dist         SIG [] de computables ['W1', 'W2', 'W3'] -> NO_CUMPLE
+  supertrend_side  SIG [] de computables ['W1', 'W2', 'W3'] -> NO_CUMPLE
+GLOBAL (OR declarada): NO_CUMPLE
+
+==============================================================================
+DESGLOSE POR RÉGIMEN (EXPLORATORIO — requisito de reporte de la spec, NINGÚN veredicto sale de acá)
+recalibraciones=34 | fechas etiquetadas=2110 | distribución estados={'0': 548, '1': 446, '2': 831, '3': 285}
+  kama_dist        W1   ΔIC(gold−resto)=+0.1418 t=+2.21 | n gold=43 resto=462 | EXPLORATORIO
+  kama_dist        W2   ΔIC(gold−resto)=+0.0272 t=+0.49 | n gold=161 resto=340 | EXPLORATORIO
+  kama_dist        W3   ΔIC(gold−resto)=-0.0591 t=-1.38 | n gold=309 resto=319 | EXPLORATORIO
+  hma_dist         W1   ΔIC(gold−resto)=+0.0298 t=+0.61 | n gold=43 resto=462 | EXPLORATORIO
+  hma_dist         W2   ΔIC(gold−resto)=-0.0188 t=-0.51 | n gold=161 resto=340 | EXPLORATORIO
+  hma_dist         W3   ΔIC(gold−resto)=-0.0024 t=-0.09 | n gold=309 resto=319 | EXPLORATORIO
+  supertrend_side  W1   ΔIC(gold−resto)=+0.1316 t=+2.58 | n gold=43 resto=460 | EXPLORATORIO
+  supertrend_side  W2   ΔIC(gold−resto)=+0.0076 t=+0.17 | n gold=161 resto=340 | EXPLORATORIO
+  supertrend_side  W3   ΔIC(gold−resto)=-0.0634 t=-1.53 | n gold=309 resto=319 | EXPLORATORIO
+Sin pistas exploratorias sobre el umbral.
+Artefacto: data/cache/trial_kama_hma_supertrend_20260823_152846.txt

@@ -10,24 +10,29 @@ Code, Cline, OpenCode), leer este documento primero. Al cerrar, actualizarlo ant
 — marcar lo que se cerró, agregar lo que apareció nuevo. Ningún ítem se da por cerrado sin
 marcarlo acá, aunque se haya resuelto "de pasada" en otra conversación.
 
-Última actualización: 2026-08-23.
+Última actualización: 2026-08-24.
 
 ## PENDIENTE AHORA — chequear primero, antes de leer el resto
 
-Dos tareas dispatchadas por Claude Code vía Orca el 2026-08-23, sin cerrar todavía.
-Verificar contra `git log --oneline -10` y `backend/data/cache/` antes de asumir estado:
+Coordinación multi-agente vía Orca (Claude Code como coordinador; Kilo Code, OpenCode,
+Cline como implementadores), 2026-08-23/24. Verificar contra `git log --oneline -10` y
+`backend/data/cache/` antes de asumir estado:
 
-1. **Tarea M** (KAMA, HMA, Supertrend — familia de tendencia adaptativa, ver
-   `PLAN_LARGO_PLAZO.md` sección Tarea M) — Kilo Code, corriendo en terminal Orca
-   (worktree `orca/workspaces/fortress_core/test-kilo-orca`).
-2. **PBO/CSCV de fidelidad completa** — reconstruir los 21 trials reales de
-   `signal_diagnosis` con `backend_engine.run()` (no vecinos de parámetros, esa versión
-   ya cerró en §40) y correr CSCV sobre esos retornos reales — OpenCode, terminal Orca
-   (worktree `orca/workspaces/fortress_core/test-opencode-orca`). Sin pre-registro
-   propio todavía — escribirlo antes de aceptar cualquier resultado que ya haya
-   corrido, por si no se pre-registró antes de correr.
+1. **Tarea M** (KAMA/HMA/Supertrend, §44) — 🟢 CERRADA (Kilo Code, 2026-08-23,
+   commit `1721a1e`): NO_CUMPLE 0/9. Ver fila propia en la tabla maestra.
+2. **PBO/CSCV de fidelidad completa** (§43) — 🟡 EN CURSO (OpenCode, worktree
+   `orca/workspaces/fortress_core/test-opencode-orca`). Pre-registro completo ya
+   escrito en `PLAN_MEJORA_MATEMATICA.md §43` (9 configs ejecutables reales vía
+   `backend_engine.run()`, no vecinos de parámetros — reemplaza el proxy de §40).
+   Corrida completa lanzada bajo mandato explícito de autonomía de Boris (Claude
+   Code coordinador estuvo temporalmente sin crédito) — el paso formal `--timing`/
+   forecast de §43.6 no se completó antes de lanzar, documentado como tal. Al
+   cerrar: verificar los 5 checks de fidelidad de §43.5 y aplicar el criterio de
+   §43.4 mecánicamente antes de aceptar el veredicto.
+3. **Auditoría técnica sincronizada** (Cline, 2026-08-23, commit `5edfe6e`) — 🟢
+   CERRADA, `AUDITORIA_TECNICA.md` puesto al día contra el código real.
 
-Si estas dos ya tienen commit/artefacto cuando leas esto, actualizá esta sección
+Si alguna de estas cambió de estado cuando leas esto, actualizá esta sección
 (borrala o marcá cerrado) — no la dejes desactualizada.
 
 ---
@@ -365,6 +370,7 @@ gantt
 | Investigación | §39 — PBO vía CSCV del baseline momentum+RSI: auditoría de proceso (Cline, de la cola de Boris 2026-08-22) | 🟢 cerrado — INTERMEDIO, sin acción automática (2026-08-22) | — | La prueba que faltaba al ÚNICO factor sobreviviente: ¿es el baseline un artefacto de selección? Bailey et al. 2017 CSCV sobre familia de 27 configs vecinas (pesos × banda RSI × techo momentum; ACTUAL=celda central), matriz 128 meses × 27, portafolio equal-weight mensual vectorizado con gates EXACTOS del motor (aproximación declarada sin stops/regime-gating), S=16 bloques, 12.870 combos. **PBO=0.2358 → bucket INTERMEDIO** del criterio pre-registrado (≤0.20 bajo / ≤0.50 intermedio / >0.50 alto); checks de fidelidad OK×4. Hallazgo clave: **las 27 configs tienen Sharpe positivo** (+0.55..+0.90) — riesgo de selección de GRADO, no de EXISTENCIA; y la config ACTUAL rankea 12/27 (no era el máximo in-sample → contra cherry-picking). NO se cambia ningún parámetro (mover al techo 75 sería cherry-picking post-hoc prohibido sin trial). Tarea O/P deben citar §39. Pre-registro ANTES de correr en PLAN_MEJORA_MATEMATICA §39 (con corrección de rótulo N documentada); script `backend/scripts/pbo_cscv_baseline.py`; artefacto `pbo_cscv_baseline_20260822_092850.txt`; detalle en `RESUMEN_PBO_CSCV_BASELINE.md`. No consume ledger |
 | Investigación | **Tarea P — Regime gating de momentum: 3 condicionantes, trial coordinado §42** (PLAN_LARGO_PLAZO, OpenCode) | 🟢 **cerrado — NO_CUMPLE (0/3 condicionantes)** (2026-08-22) | — | Pre-registro §42 ANTES de correr: UN trial coordinado con 3 sub-hipótesis (`n_trials_consumidos=1`), Bonferroni intra-trial m=9 sobre ledger vigente `current_threshold()=0.9958333333333333` (consumido=23 → n=24) → α_trial/m=9 → **\|t\|>3.5013 bilateral**. momentum_12_1 CONGELADO (`indicators.py:277`), IC diario Spearman vs fwd_20, NW L=min(12,n//8), W1/W2/W3 canónicas, START extendido a 2015 solo para que min_history=756 del gate cubra W1. **(a) Estado HMM rezagado vía `regime_gate.py::WalkForwardRegimeGate.label_series` — PRIMER USO REAL de M3** (favorable={0}=GOLDILOCKS, defaults 63d/756d, macro SPY EFA QQQ GLD DBC TIP TLT AGG ^VIX): ΔIC(GOLDILOCKS−resto) **+0.1774 (t+3.14) W1** / +0.01 W2 / −0.07 W3 → 0/3 sig → NO_CUMPLE (W1 sugerente pero bajo la vara y sin repetición). **(b) Vol realizada 63d cartera momentum top-quintil**: ΔIC +0.07/+0.04/+0.01, t≤0.94 → NO_CUMPLE plano. **(c) Amihud agregada rolling 21d**: riesgo declarado MATERIALIZADO — percentil expanding colapsa tercil alto (1911/490/141 días; n_B=6 en W2, 0 en W3), signo W1 OPUESTO al paper (−0.1864) → NO_CUMPLE. Fidelidad OK×5 (universo 50/50, meses 24/24/31, edge pooled +0.0079 positivo, seed 42, gate 34 recalibraciones asserts OK, estados no degenerados 528/446/821/312). **GLOBAL NO_CUMPLE** — ninguna compuerta se integra al motor; línea (a) queda abierta como pista débil no confirmada. Script `backend/scripts/trial_regime_gating_p.py`; artefacto `backend/data/cache/regime_gating_p_20260822_162628.txt`(+json); §42+§42.1 PLAN_MEJORA_MATEMATICA.md. Ledger signal_diagnosis 23→24 id `regime_gating_p`. No se toca signal_engine.py ni archivos del fix cosmético |
 | Investigación | **Tarea O — Frog-in-the-Pan: ID condicionando momentum_12_1, §41** (PLAN_LARGO_PLAZO, Kilo Code) | 🟢 **cerrado — NO_CUMPLE (0/3 ventanas)** (2026-08-22) | — | Pre-registro §41 ANTES de correr (familia signal_diagnosis, consumido=22 → n=23 → Bonferroni-46 bilateral ΔIC>0 **\|t\|>3.065**). Fórmula EXACTA del paper Da-Gurun-Warachka 2014 RFS sobre la MISMA ventana de formación que momentum_12_1 (`close.pct_change(252)`): ID = sign(PRET) × (%neg − %pos), días r=0 excluidos de ambas fracciones, todo causal ≤ t. Terciles de ID POR FECHA (qcut cross-sectional, tercil 1=continua / 3=discreta, mín 5 símbolos/bucket), IC diario Spearman(momentum_12_1, fwd_20) intra-bucket, ΔIC_t pareada t1−t3 con SE Newey-West L=min(12,n//8), W1/W2/W3 canónicas, universo 50 cacheado SIN descargas. Resultado: panel 119900 filas × 2398 fechas; ID sanity p10 −0.151/p50 −0.068/p90 +0.024 (masa en continuo, esperable). **ΔIC(t1−t3): W1 −0.51, W2 +2.16, W3 −0.07 → 0/3 sig → NO_CUMPLE** — la dirección promedio va a favor de la hipótesis (tercil1 +0.28 vs tercil3 −0.41 TOTAL) pero es ruido (Δ TOTAL t +0.65) e inestable por ventana. El efecto del paper (6m, cross-section grande US) no se traslada a momentum_12_1 sobre N=50 diario. Script `backend/scripts/trial_frog_in_the_pan.py`; artefacto `backend/data/cache/trial_frog_in_the_pan_20260822_175302.txt`; §41+RESULTADO en PLAN_MEJORA_MATEMATICA.md. Ledger id `trial_frog_in_the_pan` (entrada #25 física; durante la corrida OpenCode registró en paralelo validacion_oos_fresca/regime_gating_p — umbral propio ex-ante no afectado). **Nada se integra al motor** — momentum queda sin condición ID. |
+| Investigación | **Tarea M — KAMA/HMA/Supertrend: familia de tendencia adaptativa, §44** (PLAN_LARGO_PLAZO, Kilo Code) | 🟢 **cerrado — NO_CUMPLE (0/9 celdas primarias)** (2026-08-23) | — | Pre-registro §44 ANTES de correr: UN trial coordinado con 3 sub-hipótesis direccionales (`n_trials_consumidos=1`), Bonferroni intra-trial m=9 sobre ledger vigente (consumido=25 → th=0.9961538461538462) → **\|t\|>3.5226 bilateral**. Factores CONGELADOS: kama_dist=(close−KAMA(er10,f2,s30))/close con ER reusado de `predictive_indicators.compute_efficiency_ratio`; hma_dist=(close−HMA(16))/close fórmula literal Hull 2005; supertrend_side∈{±1} ATR10×3.0 flip estándar. IC diario Spearman vs fwd_20d ≥5 símbolos, NW L=min(12,n//8), W1/W2/W3 canónicas, cache-only sin descargas. Resultado: kama t −0.98/−0.10/+0.27; hma −0.26/+0.31/−0.67; st −1.40/+0.55/+0.91 → **0/9 sig**; IC pooled TOTAL NEGATIVO en los tres (kama −0.0103 t−1.01; hma −0.0016 t−0.24; st −0.0126 t−1.24) — ni señal nominal, signo contrario al esperado y sin consistencia entre ventanas. Desglose por régimen GOLDILOCKS-lag EXPLORATORIO pre-declarado no-gating (2º uso real de regime_gate.py): máx \|t\|=+2.58 (st W1, n gold=43) sin repetición W2/W3 → sin pistas sobre el umbral (mismo patrón débil de Tarea P(a)). Fidelidad OK×5 (50/50 símbolos, panel 133650×2673 fechas, gate 34 recalibraciones, estados no degenerados). Script `backend/scripts/trial_kama_hma_supertrend.py`; artefacto `backend/data/cache/trial_kama_hma_supertrend_20260823_152846.txt`(+json); §44+§44.1 PLAN_MEJORA_MATEMATICA.md. Ledger signal_diagnosis 25→26 id `trial_kama_hma_supertrend`, próximo umbral 0.99630. Implementación: `wma()/kama()/hma()/supertrend()` nuevas en indicators.py como columnas diagnósticas NO wired al motor + 10 tests sintéticos de tendencia conocida; suite **367 passed**. |
 
 **Leyenda**: 🔴 crítico/sin empezar · 🟡 en curso/parcial · ⚪ parqueado, sin decisión de producto · 🟢 cerrado
 

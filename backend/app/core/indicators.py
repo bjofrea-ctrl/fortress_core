@@ -3,6 +3,8 @@ from typing import Tuple
 import numpy as np
 import pandas as pd
 
+from app.core.predictive_indicators import compute_efficiency_ratio
+
 
 def ema(prices: pd.Series, period: int) -> pd.Series:
     return prices.ewm(span=period, adjust=False).mean()
@@ -10,6 +12,14 @@ def ema(prices: pd.Series, period: int) -> pd.Series:
 
 def sma(prices: pd.Series, period: int) -> pd.Series:
     return prices.rolling(window=period).mean()
+
+
+def wma(prices: pd.Series, period: int) -> pd.Series:
+    """Media móvil ponderada lineal (pesos 1..period, el más reciente pesa más)."""
+    weights = np.arange(1, period + 1, dtype=float)
+    return prices.rolling(window=period).apply(
+        lambda x: float(np.dot(x, weights) / weights.sum()), raw=True
+    )
 
 
 def rsi(prices: pd.Series, period: int = 14) -> pd.Series:
@@ -263,6 +273,100 @@ def realized_vol_regime(returns: pd.Series, short_window: int = 20,
     return short_vol / (long_vol + 1e-12)
 
 
+def kama(prices: pd.Series, er_period: int = 10, fast: int = 2,
+         slow: int = 30) -> pd.Series:
+    """KAMA de Kaufman (Tarea M — PLAN_MEJORA_MATEMATICA §44): media móvil que
+    ajusta su velocidad con el Efficiency Ratio (ER reusado de
+    predictive_indicators.compute_efficiency_ratio — no reinventado, orden de la
+    spec). ER→1 (movimiento direccional) acelera hacia fast_sc; ER→0 (choppy) se
+    aplana hacia slow_sc.
+
+    sc_t = (ER_t×(2/(fast+1) − 2/(slow+1)) + 2/(slow+1))²;
+    recursión causal kama_t = kama_{t−1} + sc_t×(close_t − kama_{t−1}),
+    sembrada en el primer close con ER válido. NaN antes del warmup y sobre
+    series planas (volatility=0 → ER indefinido).
+    """
+    er = compute_efficiency_ratio(prices, er_period)
+    fast_sc = 2.0 / (fast + 1.0)
+    slow_sc = 2.0 / (slow + 1.0)
+    sc = ((er * (fast_sc - slow_sc) + slow_sc) ** 2)
+    vals = prices.values.astype(float)
+    sc_vals = sc.values
+    out = np.full(len(vals), np.nan)
+    finite = np.flatnonzero(np.isfinite(sc_vals))
+    if len(finite) == 0:
+        return pd.Series(out, index=prices.index)
+    start = int(finite[0])
+    prev = vals[start]
+    out[start] = prev
+    for i in range(start + 1, len(vals)):
+        prev += sc_vals[i] * (vals[i] - prev)
+        out[i] = prev
+    return pd.Series(out, index=prices.index)
+
+
+def hma(prices: pd.Series, period: int = 16) -> pd.Series:
+    """Hull Moving Average (Tarea M — PLAN_MEJORA_MATEMATICA §44), fórmula
+    literal de Alan Hull (2005): WMA(2×WMA(n/2) − WMA(n), √n). Cancela parte
+    del lag estructural de las medias móviles manteniendo el suavizado.
+    NaN durante el warmup (~period + √period ruedas)."""
+    half = wma(prices, max(1, period // 2))
+    full = wma(prices, period)
+    sqrt_p = max(1, int(round(float(np.sqrt(period)))))
+    return wma(2.0 * half - full, sqrt_p)
+
+
+def supertrend(high: pd.Series, low: pd.Series, close: pd.Series,
+               period: int = 10, multiplier: float = 3.0) -> Tuple[pd.Series, pd.Series]:
+    """Supertrend (Tarea M — PLAN_MEJORA_MATEMATICA §44; Olivier Seban ~2009,
+    sin origen académico — caveat registrado en PLAN_LARGO_PLAZO.md Tarea M).
+
+    basic_ub/lb = hl2 ± multiplier×ATR(period); bandas finales con ratchet
+    causal estándar (final_ub solo baja si basic_ub baja o close_{t−1} quedó
+    por encima; simétrico para final_lb). Dirección binaria: flip a +1 cuando
+    close cruza por encima de final_ub (venía bajista), a −1 cuando cruza por
+    debajo de final_lb (venía alcista); sino arrastra el estado previo.
+    Devuelve (linea, direccion): linea = banda final activa; direccion ∈
+    {+1 alcista, −1 bajista}, NaN hasta el primer ATR válido.
+    """
+    atr_ = atr(high, low, close, period)
+    hl2 = (high + low) / 2.0
+    basic_ub = hl2 + multiplier * atr_
+    basic_lb = hl2 - multiplier * atr_
+    c = close.values.astype(float)
+    bub = basic_ub.values.astype(float)
+    blb = basic_lb.values.astype(float)
+    n = len(c)
+    line = np.full(n, np.nan)
+    direction = np.full(n, np.nan)
+    finite = np.flatnonzero(np.isfinite(bub))
+    if len(finite) == 0:
+        return pd.Series(line, index=close.index), pd.Series(direction, index=close.index)
+    start = int(finite[0])
+    ub_prev, lb_prev = bub[start], blb[start]
+    d_prev = 1.0 if c[start] > hl2.values[start] else -1.0
+    line[start] = lb_prev if d_prev == 1.0 else ub_prev
+    direction[start] = d_prev
+    for i in range(start + 1, n):
+        if bub[i] < ub_prev or c[i - 1] > ub_prev:
+            ub = bub[i]
+        else:
+            ub = ub_prev
+        if blb[i] > lb_prev or c[i - 1] < lb_prev:
+            lb = blb[i]
+        else:
+            lb = lb_prev
+        if d_prev == -1.0:
+            d = 1.0 if c[i] > ub else -1.0
+        else:
+            d = -1.0 if c[i] < lb else 1.0
+        line[i] = lb if d == 1.0 else ub
+        direction[i] = d
+        ub_prev, lb_prev, d_prev = ub, lb, d
+    return (pd.Series(line, index=close.index),
+            pd.Series(direction, index=close.index))
+
+
 def calculate_all_indicators(df: pd.DataFrame) -> pd.DataFrame:
     df = df.copy()
     df["ema20"] = ema(df.close, 20)
@@ -295,4 +399,13 @@ def calculate_all_indicators(df: pd.DataFrame) -> pd.DataFrame:
     logret = np.log(df.close).diff()
     df["hurst_exponent"] = hurst_exponent(df.close, 100, 20)
     df["realized_vol_regime"] = realized_vol_regime(logret, 20, 100)
+    # Tarea M (PLAN_MEJORA_MATEMATICA §44): familia de tendencia adaptativa.
+    # Disponibles para diagnóstico de IC; NO wired a signal_engine sin trial.
+    df["kama10"] = kama(df.close)
+    df["hma16"] = hma(df.close)
+    st_line, st_dir = supertrend(df.high, df.low, df.close)
+    df["supertrend_line"] = st_line
+    df["supertrend_side"] = st_dir
+    df["kama_dist"] = (df.close - df["kama10"]) / df.close
+    df["hma_dist"] = (df.close - df["hma16"]) / df.close
     return df.ffill().dropna()

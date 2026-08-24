@@ -6,11 +6,16 @@ from app.core.indicators import (
     cvd_features,
     cvd_proxy,
     ema,
+    hma,
     hurst_exponent,
+    kama,
     ofi_features,
     ofi_proxy,
     realized_vol_regime,
     rsi,
+    sma,
+    supertrend,
+    wma,
 )
 
 EXPECTED_COLUMNS = {
@@ -24,6 +29,9 @@ EXPECTED_COLUMNS = {
     "cvd_bar_delta", "cvd_rolling", "cvd_slope_5bar", "cvd_divergence",
     # T2.3 (PLAN_INTEGRACION_INDICAGENT.md) — régimen por símbolo
     "hurst_exponent", "realized_vol_regime",
+    # Tarea M (PLAN_MEJORA_MATEMATICA §44) — tendencia adaptativa
+    "kama10", "hma16", "supertrend_line", "supertrend_side",
+    "kama_dist", "hma_dist",
 }
 
 
@@ -334,3 +342,122 @@ def test_calculate_all_indicators_includes_hurst_and_vol_regime(ohlcv_df):
     # acotados a valores sensatos (hurst ∈ [0,1]; ratio > 0)
     assert result["hurst_exponent"].between(0.0, 1.0).all()
     assert (result["realized_vol_regime"] > 0).all()
+
+
+# ============================================================
+# Tarea M — KAMA / HMA / Supertrend (PLAN_MEJORA_MATEMATICA §44)
+# Cada función con caso sintético de tendencia conocida (spec punto 4).
+# ============================================================
+
+def test_kama_en_rampa_alcista_sube_y_converge_al_precio():
+    """Rampa lineal limpia: ER=1 → KAMA acelera (sc=fast²), sube en toda la
+    cola y queda pegado al precio (lag residual geométricamente despreciable)."""
+    n = 120
+    prices = pd.Series(np.linspace(100.0, 200.0, n))
+    k = kama(prices, er_period=10, fast=2, slow=30).dropna()
+    assert len(k) == n - 10
+    tail = k.iloc[-20:]
+    assert (tail.diff().dropna() > 0).all()
+    # Lag de estado estacionario de un filtro con ganancia alpha siguiendo una
+    # rampa: s*(1-alpha)/alpha, con s=d paso y alpha=fast_sc^2=(2/3)^2 -> ~$1.05
+    # (~0.53% del precio final). NO es 0: corregido contra la teoría, verificado.
+    gap_relativo = abs(k.iloc[-1] - prices.iloc[-1]) / prices.iloc[-1]
+    assert gap_relativo < 0.01
+    # y su lag es mucho menor que el de la SMA20 clásica (lag (n-1)/2 pasos)
+    lag_sma20 = abs(sma(prices, 20).iloc[-1] - prices.iloc[-1])
+    assert abs(k.iloc[-1] - prices.iloc[-1]) < lag_sma20
+
+
+def test_kama_en_lateral_ruidoso_se_aplana():
+    """Choppy: ER≈0 → sc≈slow² → KAMA casi plano aunque el precio oscile.
+    La vol de la cola de KAMA debe ser una fracción chica de la del precio."""
+    rng = np.random.default_rng(11)
+    n = 300
+    prices = pd.Series(100.0 + rng.normal(0, 1.0, n))
+    k = kama(prices, 10, 2, 30).dropna()
+    assert np.isfinite(k).all()
+    assert k.tail(100).std() < 0.3 * prices.tail(100).std()
+
+
+def test_kama_serie_plana_devuelve_nan_sin_crash():
+    """Serie perfectamente constante: volatility=0 → ER indefinido → todo NaN
+    (edge documentado en el docstring; no debe lanzar excepción)."""
+    flat = pd.Series([50.0] * 60)
+    k = kama(flat, 10, 2, 30)
+    assert not np.isfinite(k).any()
+
+
+def test_wma_matches_manual_weighted_average():
+    """WMA ponderada lineal contra promedio manual con pesos 1..n."""
+    prices = pd.Series([10.0, 20.0, 30.0, 40.0])
+    w = wma(prices, 3).dropna()
+    expected_2 = (10 * 1 + 20 * 2 + 30 * 3) / 6
+    expected_3 = (20 * 1 + 30 * 2 + 40 * 3) / 6
+    assert abs(w.iloc[0] - expected_2) < 1e-9
+    assert abs(w.iloc[1] - expected_3) < 1e-9
+
+
+def test_hma_reduce_lag_vs_sma_en_rampa_lineal():
+    """En rampa lineal el lag de WMA_k es (k−1)/2 pasos: HMA queda a ~1 paso
+    del precio vs ~7.5 de la SMA16 — la propiedad por la que Hull la diseñó."""
+    n = 200
+    prices = pd.Series(100.0 + 0.5 * np.arange(n))
+    h = hma(prices, 16).dropna()
+    s = sma(prices, 16).dropna()
+    idx = h.index[-1]
+    lag_hma = abs(h.loc[idx] - prices.loc[idx])
+    lag_sma = abs(s.loc[idx] - prices.loc[idx])
+    assert lag_hma < lag_sma
+    assert lag_hma < 1.0
+
+
+def test_supertrend_direccion_alcista_en_tendencia_alcista():
+    """OHLC sintético con subida sostenida: tras el flip inicial, dirección
+    +1 sostenida en toda la cola."""
+    steps = np.full(80, 0.5)
+    _, d = _supertrend_from_steps(steps)
+    tail = d.dropna().iloc[-30:]
+    assert (tail == 1.0).all()
+
+
+def test_supertrend_direccion_bajista_en_tendencia_bajista():
+    """Caída sostenida espejada: dirección −1 sostenida en toda la cola."""
+    steps = np.full(80, -0.5)
+    _, d = _supertrend_from_steps(steps)
+    tail = d.dropna().iloc[-30:]
+    assert (tail == -1.0).all()
+
+
+def test_supertrend_flipea_tras_crash():
+    """60 ruedas alcistas + 30 fuertemente bajistas → la dirección termina
+    en −1 (el flip ocurre cuando el precio cruza la banda inferior final)."""
+    steps = np.concatenate([np.full(60, 0.5), np.full(30, -2.0)])
+    _, d = _supertrend_from_steps(steps)
+    assert d.dropna().iloc[-5:].eq(-1.0).all()
+
+
+def test_calculate_all_indicators_includes_adaptive_trend_columns(ohlcv_df):
+    """Las 6 columnas Tarea M aparecen en el pipeline completo con valores
+    sensatos: side binario {−1,+1}, distancias finitas post-warmup."""
+    result = calculate_all_indicators(ohlcv_df)
+    for col in ("kama10", "hma16", "supertrend_line", "supertrend_side",
+                "kama_dist", "hma_dist"):
+        assert col in result.columns
+        assert np.isfinite(result[col]).all()
+    assert result["supertrend_side"].isin([-1.0, 1.0]).all()
+    # en un precio que sube más rápido que su media, la distancia es positiva;
+    # ambas distancias comparten escala relativa acotada (<10% del precio)
+    assert (result["kama_dist"].abs() < 0.10).all()
+    assert (result["hma_dist"].abs() < 0.10).all()
+
+
+def _supertrend_from_steps(steps):
+    """Helper: construye OHLC sintético determinista desde cambios de close
+    (open = close previo, high/low = extremo ±0.4) y devuelve supertrend()."""
+    closes = 100.0 + np.cumsum(steps)
+    opens = np.concatenate([[100.0], closes[:-1]])
+    highs = np.maximum(opens, closes) + 0.4
+    lows = np.minimum(opens, closes) - 0.4
+    idx = pd.bdate_range("2024-01-02", periods=len(closes))
+    return supertrend(pd.Series(highs, index=idx), pd.Series(lows, index=idx),
+                      pd.Series(closes, index=idx))
