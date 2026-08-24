@@ -31,9 +31,14 @@ export default function RiskPanel({ apiUrl }: RiskPanelProps) {
     )
   }
 
-  const ddPct = (risk.current_drawdown_pct * 100).toFixed(2)
-  const isWarning = risk.current_drawdown_pct <= -0.05
-  const isCritical = risk.current_drawdown_pct <= -0.12
+  // Guard: si el monitor no trae drawdown, degradar a 0.00 — nunca NaN visible.
+  const dd = typeof risk.current_drawdown_pct === "number" && !Number.isNaN(risk.current_drawdown_pct)
+    ? risk.current_drawdown_pct : 0
+  const ceiling = typeof risk.absolute_ceiling === "number" && !Number.isNaN(risk.absolute_ceiling)
+    ? risk.absolute_ceiling : 0
+  const ddPct = (dd * 100).toFixed(2)
+  const isWarning = dd <= -0.05
+  const isCritical = dd <= -0.12
 
   return (
     <div
@@ -56,7 +61,7 @@ export default function RiskPanel({ apiUrl }: RiskPanelProps) {
         </div>
         <div>
           <p className="text-xs text-gray-400">Ceiling Absoluto</p>
-          <p className="text-2xl font-mono font-bold text-red-400">-{(risk.absolute_ceiling * 100).toFixed(0)}%</p>
+          <p className="text-2xl font-mono font-bold text-red-400">-{(ceiling * 100).toFixed(0)}%</p>
         </div>
         <div>
           <p className="text-xs text-gray-400">Régimen</p>
@@ -75,7 +80,7 @@ export default function RiskPanel({ apiUrl }: RiskPanelProps) {
             className={`h-full transition-all ${
               isCritical ? "bg-red-500" : isWarning ? "bg-yellow-500" : "bg-accent-green"
             }`}
-            style={{ width: `${Math.min(100, Math.abs(risk.current_drawdown_pct) / risk.absolute_ceiling * 100)}%` }}
+            style={{ width: `${Math.abs(dd) / (ceiling || 1) * 100}%` }}
           ></div>
         </div>
       </div>

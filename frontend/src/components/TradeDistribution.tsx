@@ -58,7 +58,7 @@ export default function TradeDistribution({ apiUrl }: TradeDistributionProps) {
 
   const wins = trades.filter(t => t.pnl > 0).length
   const losses = trades.filter(t => t.pnl <= 0).length
-  const winRate = (wins / trades.length * 100).toFixed(1)
+  const winRate = trades.length > 0 ? (wins / trades.length * 100).toFixed(1) : "—"
 
   // Count by exit reason
   const reasons: Record<string, number> = {}

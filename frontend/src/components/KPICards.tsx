@@ -22,9 +22,18 @@ export default function KPICards({ apiUrl }: KPICardsProps) {
 
   useEffect(() => {
     fetch(`${apiUrl}/api/backtest/metrics`)
-      .then(r => r.json())
+      .then(r => {
+        if (!r.ok) throw new Error(`HTTP ${r.status}`)
+        return r.json()
+      })
       .then(data => {
-        if (data.status !== "no_data") setMetrics(data)
+        // Validar forma antes de usar: un body de error con JSON válido
+        // no debe crashear el dashboard (fix test PortfolioPage 2026-08-24).
+        const numericas = ["cagr", "sharpe_ratio", "sortino_ratio", "max_drawdown",
+          "calmar_ratio", "win_rate", "profit_factor", "total_trades", "deflated_sharpe"]
+        const formaValida = data && data.status !== "no_data" &&
+          numericas.every(k => typeof data[k] === "number")
+        if (formaValida) setMetrics(data)
         setLoading(false)
       })
       .catch(() => setLoading(false))
