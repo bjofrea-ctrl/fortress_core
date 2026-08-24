@@ -64,3 +64,6 @@ Thumbs.db
 logs/
 *.log
 nohup.out
+
+# Heartbeat local del coordinador (Claude Code) — estado efímero, no se trackea
+.claude-heartbeat
