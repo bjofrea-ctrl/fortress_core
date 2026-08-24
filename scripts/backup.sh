@@ -88,6 +88,22 @@ if [[ -f "$DB_SRC" ]]; then
   fi
 fi
 
+# ---- Paso 6.6: Backup versionado de trial_registry.json (el rsync de abajo
+# lo copia igual, pero con --delete: si se corrompe localmente, el espejo se
+# sobreescribe con la versión corrupta en el próximo ciclo. Retención propia.
+REG_SRC="$PROJECT_DIR/backend/data/trial_registry.json"
+REG_BACKUP_DIR="$BACKUP_DIR/trial_registry"
+if [[ -f "$REG_SRC" ]]; then
+  mkdir -p "$REG_BACKUP_DIR"
+  REG_STAMP=$(date "+%Y%m%d_%H%M%S")
+  if cp "$REG_SRC" "$REG_BACKUP_DIR/trial_registry_$REG_STAMP.json"; then
+    echo "✅ Backup de trial_registry.json: $REG_BACKUP_DIR/trial_registry_$REG_STAMP.json"
+    ls -t "$REG_BACKUP_DIR"/trial_registry_*.json 2>/dev/null | tail -n +21 | xargs -I{} rm -f "{}" 2>/dev/null || true
+  else
+    echo "⚠️  Backup de trial_registry.json falló"
+  fi
+fi
+
 echo "💾 Copiando al disco externo..."
 rsync -av --delete $EXCLUDES "$PROJECT_DIR/" "$BACKUP_DIR/current/"
 

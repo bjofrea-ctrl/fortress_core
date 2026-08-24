@@ -28,6 +28,24 @@ backup_db() {
     fi
 }
 
+# Backup versionado de trial_registry.json (el rsync de abajo lo copia, pero
+# con --delete: si se corrompe localmente, el espejo se sobreescribe con la
+# versión corrupta en el próximo ciclo. Mismo patrón que backup_db(), retención 20.
+backup_trial_registry() {
+    local src="$PROJECT_DIR/backend/data/trial_registry.json"
+    local reg_dir="/Volumes/EMPRESA/fortress_core_backups/trial_registry"
+    [ -f "$src" ] || return 0
+    mkdir -p "$reg_dir"
+    local stamp
+    stamp=$(date '+%Y%m%d_%H%M%S')
+    if cp "$src" "$reg_dir/trial_registry_$stamp.json" >> "$LOG_FILE" 2>&1; then
+        echo "[$(date '+%Y-%m-%d %H:%M:%S')] OK Backup de trial_registry.json ($stamp)" >> "$LOG_FILE"
+        ls -t "$reg_dir"/trial_registry_*.json 2>/dev/null | tail -n +21 | xargs rm -f 2>/dev/null
+    else
+        echo "[$(date '+%Y-%m-%d %H:%M:%S')] WARN Backup de trial_registry.json falló" >> "$LOG_FILE"
+    fi
+}
+
 # Evitar ejecución concurrente
 if [ -f "$LOCK_FILE" ]; then
     exit 0
@@ -69,6 +87,7 @@ if [ -d "/Volumes/EMPRESA" ]; then
     BACKUP_DIR="/Volumes/EMPRESA/fortress_core_backups/current"
     mkdir -p "$BACKUP_DIR"
     backup_db
+    backup_trial_registry
     rsync -a --delete \
         --exclude='.git' \
         --exclude='.venv' \
