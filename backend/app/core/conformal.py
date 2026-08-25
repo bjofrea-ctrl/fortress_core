@@ -25,9 +25,19 @@ el 20% restante es un ÉXITO, no un fracaso — ver DISENO_INSTRUMENTO.md §8.
 LIMITACIÓN DECLARADA: la garantía de cobertura de conformal prediction asume que los
 datos de calibración y los de predicción son intercambiables (i.i.d. o exchangeable).
 Series financieras tienen autocorrelación y no-estacionariedad — la garantía formal
-se debilita con el tiempo. Por eso M5 (detector de deriva) existe: cuando detecta
-deriva, la calibración de este módulo debe rehacerse, no confiar en una calibración
-vieja indefinidamente. Este módulo no re-calibra solo.
+se debilita con el tiempo. Este módulo no re-calibra solo.
+
+ESTADO REAL DE LA RE-CALIBRACIÓN (corregido 2026-08-25, auditoría GLM hallazgo A1):
+en producción, la calibración se renueva por TIEMPO, no por evidencia de deriva —
+`advisor.py` cachea el contexto 5 min (_CONTEXT_CACHE_TTL_SECONDS) y `decision.py`
+re-fittea sobre una ventana móvil de 730 días. Eso mitiga (una calibración vieja no
+persiste indefinidamente) pero no es lo que este docstring afirmaba antes: M5
+(`drift_detector.py`) existe, sus tests pasan, pero NO tiene ningún consumidor en
+producción (cero imports fuera de su propio módulo/test, sin endpoint) — su reporte
+de deriva no dispara ninguna re-calibración. Conectar M5 al pipeline (para que
+dispare re-calibración inmediata ante deriva detectada, en vez de esperar el TTL) es
+una mejora de diseño válida, pero afirmar que "mejora la cobertura" es un veredicto
+que necesita pre-registro y decisión de Boris — no se toca sin eso.
 
 CORRECCIÓN ESTRUCTURAL 2026-08-17 (hallazgo del trial #16, PLAN_MEJORA_MATEMATICA §24):
 la versión anterior usaba residuos ABSOLUTOS `|outcome - point|` — el ancho del
