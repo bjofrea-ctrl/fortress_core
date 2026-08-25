@@ -114,6 +114,54 @@ inventar.
 - Coordinador: backup versionado de `trial_registry.json` + CI corre tests
   de frontend (commits `c67a99c`, `ead5a2a` en main).
 
+## 6.1 Auditoría externa (2026-08-25, glm-5.2) — verificada, alta calidad
+
+Tercera evaluación externa recibida esta sesión, la de mejor calidad de las
+tres: citó código real con números de línea, fue honesta sobre lo que no
+pudo verificar (terminal bloqueado, no corrió pytest/git log). Claude Code
+verificó lo que ella no pudo: los commits citados (1721a1e, 5edfe6e,
+c67a99c) SÍ están en main. Cinco "brechas" propuestas, verificadas y
+clasificadas:
+
+- **Brecha 2 — M3 (regime_gate.py) como compuerta STANDALONE sobre el score
+  compuesto del motor** (no condicionando un factor como hizo Tarea P/§42).
+  **VERIFICADA como genuinamente inédita** — ROADMAP.md línea 343 dice
+  textual: "el TRIAL que pruebe macro IC +0.198 GOLDILOCKS/−0.173 DEFLATION
+  como compuerta sigue sin pre-registrar — decisión del usuario". **AUTORIZADA
+  por Boris (2026-08-25)** — es la más sólida de las cinco, asignada a Kilo
+  (ver abajo) como próximo pre-registro tras cerrar §45.
+- **Brecha 1 — validar umbrales de salida (walk-forward, position_stop por
+  régimen + multiplicadores ATR de partial-TP/trailing/técnica)**: hallazgo
+  de código real (mismo que la asimetría sizing-vs-trigger ya pasada a
+  Kilo), pero §45 (recién cerrado NO_CUMPLE) ya testeó una variante cercana
+  de esta misma zona — un trial nuevo acá necesita diseño tan cuidadoso
+  como el de §45, no es territorio limpio. NO autorizada todavía — queda
+  documentada como candidata, a revisar después de Brecha 2.
+- **Brecha 3 — acumulación OOS para promover el baseline**: coincide con lo
+  ya identificado en §4 de este documento. Condicional al tiempo (el
+  updater acumula meses), no accionable hoy.
+- **Brecha 4 — M2 (conformal engine) sobre un score distinto a win_prob**
+  (ej. FinBERT o g3_score): plausible pero con MENOS verificación que la
+  Brecha 2 — necesita escrutinio adicional (¿es genuinamente distinto de lo
+  ya refutado, o el mismo mecanismo con otra etiqueta?) antes de proponerse
+  en firme. NO autorizada, queda anotada para revisión futura.
+- **Brecha 5 — cierre de superficie API (auth mínima en endpoints de
+  escritura, SECRET_KEY que falla sin setear fuera de development)**: NO es
+  investigación, no requiere gate de pre-registro. **Asignada a Cline**
+  (ver abajo) — accionable ya.
+
+## 6.2 Asignaciones activas (2026-08-25)
+
+- **Kilo**: tras cerrar/mergear §45, próximo pre-registro es **Brecha 2 (M3
+  standalone gate)**. Pre-registrar ANTES de correr, leer umbral real del
+  ledger en runtime, mismo rigor que §44/§45.
+- **Cline**: **Brecha 5 (auth API)** — endpoints de escritura con auth
+  mínima, SECRET_KEY que falla si no está seteada fuera de development.
+  Verificar primero contra AUDITORIA_TECNICA.md cuál es el estado real
+  antes de tocar nada (no asumir).
+- **OpenCode**: sigue con §45 (merge en curso) y §43 (supervisión, PID
+  96215 corriendo lento por carga de la Mac).
+
 ## 7. Verificación — la regla de oro de todo el proyecto
 
 Nunca aceptar "listo" de un agente sin comprobarlo contra el artefacto real:
