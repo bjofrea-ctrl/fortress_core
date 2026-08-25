@@ -25,6 +25,30 @@ evalúa viendo si, entre todos los días que dijo "70%", llovió ~70% de las
 veces. Esto define cómo se mide todo lo de abajo: por calibración acumulada
 en el tiempo, nunca por un resultado puntual.
 
+## La probabilidad existe para accionar, no solo para medir (Boris, 2026-08-25)
+
+Extensión de la analogía del clima: el pronóstico no es un fin en sí mismo —
+determina si salís con paraguas grande, paraguas chico "por si acaso", o sin
+nada. Trasladado al motor, esto YA está construido, no es una pieza nueva:
+
+- **Paraguas grande = posición grande**: `compute_position_size`
+  (`adaptive_risk.py`) ya dimensiona proporcional a `win_prob` vía Kelly —
+  más confianza, más capital asignado.
+- **Paraguas chico "por si acaso" = posición chica**: baja probabilidad no
+  es "no hacer nada", es cubrirse proporcionalmente poco — el sizing ya es
+  continuo, nunca todo-o-nada.
+- **Quedarse en casa = abstención (M2)**: cuando el intervalo conforme es
+  demasiado ancho (poca confianza real), el instrumento se abstiene en vez
+  de actuar sobre una lectura no confiable.
+
+**Esto redefine el objetivo final del paper trading**: no es solo comprobar
+si el pronóstico está bien calibrado (¿el 70% acierta 70% de las veces?) —
+es comprobar si **actuar proporcional a esa probabilidad (el sizing real que
+ya hace el motor) produce mejor resultado ajustado por riesgo que una acción
+fija o aleatoria**. La calibración es el prerrequisito; la pregunta que
+importa es si el sizing probabilístico protege y rinde mejor en la práctica,
+no solo si el número es honesto en el papel.
+
 ## Infraestructura ya existente (no arranca de cero)
 
 - **`AlpacaPaperClient`** (`execution_costs.py`): conexión real y probada a
