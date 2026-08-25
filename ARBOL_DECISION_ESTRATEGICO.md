@@ -140,6 +140,24 @@ Camino D (nueva inversión de datos/infra — evaluar costo real antes de decidi
 └─ D2 Intradía .......................... NO priorizado (peor prior, ya descartado por §13)
 ```
 
+## Nota sobre paralelismo (2026-08-25, revisión de GLM incorporada)
+
+A4 (extensiones baratas en el universo actual) y B1 (small/mid-cap) no tienen
+dependencia lógica real entre sí — son preguntas distintas (factor nuevo en
+universo viejo vs. factor viejo en universo nuevo) y podrían correr en
+paralelo si se pre-registran como familias separadas del ledger, cada una con
+su propio Bonferroni. Dos condiciones antes de habilitar ese paralelismo:
+
+1. **A3 (verificar H3.1) va primero, no en paralelo con más familias
+   nuevas** — si la segmentación de familias del ledger tiene el riesgo de
+   evadir Bonferroni que señaló la auditoría, sumar más familias paralelas
+   antes de resolver esa duda podría empeorar el problema, no evitarlo.
+2. **Capacidad de revisión, no solo estadística** — cada pre-registro nuevo
+   exige la misma revisión rigurosa (verificar contra el ledger, correr
+   tests, chequear el diseño) antes de aprobarse. Más paralelismo es más
+   carga de esa revisión al mismo tiempo, no es gratis aunque sea
+   estadísticamente sano.
+
 ## Próxima revisión
 
 Este árbol se actualiza cada vez que un gate se cierra (con evidencia real,
