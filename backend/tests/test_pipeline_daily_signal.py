@@ -165,6 +165,69 @@ def test_execute_dry_run_nunca_construye_cliente():
     assert state["entries"] == {}  # sin mutación de estado en dry-run
 
 
+# --------------------------------------------- checkpoint-inject (gate 08-25)
+
+def test_inyeccion_marca_override_y_no_duplica_senal_genuina():
+    reales = [{"symbol": "AAPL", "score": 0.71, "price_ref": 100.0}]
+    inyectadas, notas = pl.apply_checkpoint_injection(
+        reales, ["AAPL", "TSLA"],
+        price_lookup=lambda s: {"score": 0.2, "close": 250.0})
+    by = {s["symbol"]: s for s in inyectadas}
+    assert len(inyectadas) == 2                      # AAPL no se duplica
+    assert "checkpoint_override" not in by["AAPL"]   # genuina queda intacta
+    assert by["TSLA"]["checkpoint_override"] is True
+    assert by["TSLA"]["price_ref"] == 250.0
+    assert any("no se marca override" in n for n in notes)
+
+
+def test_plan_enter_sid_prefijado_chkpt_para_trades_de_mecanismo():
+    state = pl.new_state()
+    sized = [{"symbol": "TSLA", "score": 0.2, "price_ref": 250.0, "qty": 4,
+              "checkpoint_override": True},
+             {"symbol": "MSFT", "score": 0.68, "price_ref": 200.0, "qty": 5}]
+    plans = pl.plan_enter(state, "202609", sized, dt.date(2026, 9, 1))
+    by = {p["symbol"]: p for p in plans}
+    assert by["TSLA"]["sid"].startswith("chkpt__")
+    assert by["TSLA"]["checkpoint_override"] is True
+    assert not by["MSFT"]["sid"].startswith("chkpt__")
+    # y jamas colisionan entre si aunque coincidan simbolo+fecha
+    assert by["TSLA"]["sid"] != by["MSFT"]["sid"]
+
+
+def test_execute_guarda_override_en_estado_y_venta_deja_nota():
+    state = pl.new_state()
+    fecha = dt.date(2026, 9, 1)
+    plans = pl.plan_enter(state, "202609",
+                          [{"symbol": "TSLA", "score": 0.2, "price_ref": 250.0,
+                            "qty": 4, "checkpoint_override": True}], fecha)
+    pl.execute_plans(plans, state, dry_run=False, phase="enter",
+                     ref=fecha, client_factory=FakeClient)
+    e = state["entries"]["chkpt__TSLA__2026-09-01"]
+    assert e["checkpoint_override"] is True and e["status"] == "OPEN"
+    exit_plans = pl.plan_exit(state)
+    pl.execute_plans(exit_plans, state, dry_run=False, phase="exit",
+                     ref=dt.date(2026, 9, 30), client_factory=FakeClient)
+    assert state["entries"]["chkpt__TSLA__2026-09-01"]["exit_note"].startswith(
+        "OVERRIDE_MECANISMO")
+
+
+def test_ledger_row_payload_marca_triple_condicion_b():
+    entry = {"signal_id": "TSLA__2026-09-01", "symbol": "TSLA",
+             "entry_date": "2026-09-01", "exit_date": "2026-09-30",
+             "checkpoint_override": True}
+    row = pl.ledger_row_payload(entry, exit_reason="MONTH_END", pnl_r=-0.01)
+    import json as _json
+    assert row["signal_id"].startswith("chkpt__")
+    assert row["exit_reason"].startswith("OVERRIDE_MECANISMO")
+    assert _json.loads(row["factors_json"]) == {"checkpoint_override": True}
+    real = pl.ledger_row_payload({**entry, "checkpoint_override": False,
+                                  "signal_id": "AAPL__2026-09-01"},
+                                 exit_reason="MONTH_END", pnl_r=0.02)
+    assert not real["signal_id"].startswith("chkpt__")
+    assert real["exit_reason"] == "MONTH_END"
+    assert _json.loads(real["factors_json"]) == {}
+
+
 # -------------------------------------------------------------- calendario
 
 def test_month_bounds_primer_y_ultimo_habil_desde_indice_sintetico():

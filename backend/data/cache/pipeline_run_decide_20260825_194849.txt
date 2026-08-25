@@ -1,0 +1,14 @@
+Pipeline DECIDE — señal con definición CONGELADA (sin re-optimizar)
+==========================================================================
+Frescura cache: ultimo habil hace 4 dias (max 6)
+
+!! OVERRIDE_MECANISMO — no es senal real !!
+!! Simbolos inyectados SOLO para validar el tubo (Checkpoint S1): AAPL
+
+
+Universo cargado: 50/50 | senales: 0
+  BUY AAPL  score=0.6550 ref=309.35 [OVERRIDE_MECANISMO]
+  nota: AAPL: INYECTADO para mecanismo (gates reales NO evaluados como filtro)
+
+Frozen echo: {"w_mom_runtime": 0.6642, "w_rsi_runtime": 0.3358, "entry_threshold": 0.6, "rsi_score_band": [45, 70], "rsi_gate": [40, 75], "adx_min": 20, "vr_min": 1.0, "cost_per_side": 0.0005, "slippage_referencia": 0.0005, "universe_n": 50, "fuente": "validacion_oos_fresca_mom_rsi.py (congelada; pesos del motor en runtime)", "override_mecanismo": "OVERRIDE_MECANISMO — no es señal real. Corrida de checkpoint para validar el tubo (orden+registro); NO usar como historial de señal."}
+DRY-RUN: decision file NO escrito.

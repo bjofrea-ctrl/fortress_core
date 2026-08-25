@@ -131,6 +131,63 @@ def latest_signal(eng: SignalEngine, ind: pd.DataFrame) -> Optional[Dict[str, fl
     }
 
 
+CHECKPOINT_SID_PREFIX = "chkpt__"
+OVERRIDE_NOTE = "OVERRIDE_MECANISMO — no es señal real"
+
+
+def apply_checkpoint_injection(signals: List[Dict[str, Any]], inject_symbols: List[str],
+                               price_lookup) -> Tuple[List[Dict[str, Any]], List[str]]:
+    """Inyecta símbolos SOLO para validar el mecanismo del tubo (Checkpoint S1).
+
+    Marca cada uno con checkpoint_override=True; el par real/simulado NUNCA se
+    mezcla: si el símbolo ya viene en una señal GENUINA del día, no se duplica ni
+    se marca (el trade sería real, no de mecanismo). Devuelve (lista_final, notas).
+    Aprobado por coordinación 2026-08-25 (equivalente operativo al M4: validar el
+    tubo no es investigación ni consume Bonferroni).
+    """
+    out = [dict(s) for s in signals]
+    notes: List[str] = []
+    existing = {s["symbol"] for s in out}
+    for sym in inject_symbols:
+        if sym in existing:
+            notes.append(f"{sym}: ya era señal GENUINA del dia — no se marca override")
+            continue
+        info = price_lookup(sym) or {}
+        out.append({"symbol": sym,
+                    "score": round(float(info.get("score") or 0.0), 6),
+                    "price_ref": round(float(info.get("close") or 0.0), 4),
+                    "checkpoint_override": True})
+        notes.append(f"{sym}: INYECTADO para mecanismo (gates reales NO evaluados como filtro)")
+    return out, notes
+
+
+def ledger_row_payload(entry: Dict[str, Any], exit_reason: str = "",
+                       pnl_r: Optional[float] = None) -> Dict[str, Any]:
+    """Contrato EXACTO de la futura fila de signal_ledger (integra Cline).
+
+    Condición (b) del gate 2026-08-25: un trade de mecanismo JAMÁS se mezcla con
+    evidencia — marca triple: prefijo chkpt__ en signal_id, flag dentro de
+    factors_json y prefijo en exit_reason.
+    """
+    override = bool(entry.get("checkpoint_override"))
+    sid = entry.get("signal_id") or ""
+    if override and not sid.startswith(CHECKPOINT_SID_PREFIX):
+        sid = CHECKPOINT_SID_PREFIX + sid
+    reason = (OVERRIDE_NOTE + " | " + exit_reason) if (override and exit_reason) else (
+        OVERRIDE_NOTE if override else exit_reason)
+    factors = {"checkpoint_override": True} if override else {}
+    return {
+        "signal_id": sid,
+        "symbol": entry.get("symbol"),
+        "entry_date": entry.get("entry_date"),
+        "exit_date": entry.get("exit_date"),
+        "exit_reason": reason,
+        "pnl_r": pnl_r,
+        "factors_json": json.dumps(factors, ensure_ascii=False),
+        "regime_state": 0,
+    }
+
+
 def compute_signals(verbose_lines: List[str]) -> Tuple[List[Dict[str, Any]], Dict[str, int]]:
     """Aplica la definición congelada al universo completo (datos del cache)."""
     eng = SignalEngine(regime_classifier=None)
@@ -233,18 +290,25 @@ def sizing(signals: List[Dict[str, Any]], budget: float) -> List[Dict[str, Any]]
 
 def plan_enter(state: Dict[str, Any], month: str, sized: List[Dict[str, Any]],
                entry_date: dt.date, only_symbols: Optional[List[str]] = None) -> List[Dict[str, Any]]:
-    """Planes de compra; salta signal_ids ya registrados (idempotencia)."""
+    """Planes de compra; salta signal_ids ya registrados (idempotencia).
+
+    Los trades con checkpoint_override llevan sid prefijado chkpt__ para que
+    jamás colisionen (ni se mezclen) con señales genuinas en el estado/ledger.
+    """
     plans = []
     for o in sized:
         if only_symbols is not None and o["symbol"] not in only_symbols:
             continue
-        sid = f"{o['symbol']}__{entry_date.isoformat()}"
-        if sid in state["entries"]:
+        override = bool(o.get("checkpoint_override"))
+        sid = (CHECKPOINT_SID_PREFIX if override else "") + f"{o['symbol']}__{entry_date.isoformat()}"
+        if sid in state["entries"] or (not override and f"{o['symbol']}__{entry_date.isoformat()}" in state["entries"]):
             plans.append({"action": "buy", "symbol": o["symbol"], "sid": sid,
+                          "checkpoint_override": override,
                           "skip_reason": "ya_registrado_en_estado"})
             continue
         plans.append({"action": "buy", "symbol": o["symbol"], "sid": sid,
-                      "qty": o["qty"], "price_ref": o["price_ref"]})
+                      "qty": o["qty"], "price_ref": o["price_ref"],
+                      "checkpoint_override": override})
     return plans
 
 
@@ -272,6 +336,8 @@ def execute_plans(plans: List[Dict[str, Any]], state: Dict[str, Any],
     client = None
     for p in plans:
         res = {k: p[k] for k in ("action", "symbol", "sid")}
+        if p.get("checkpoint_override"):
+            res["checkpoint_override"] = True
         if "skip_reason" in p:
             res.update({"status": "skipped", "reason": p["skip_reason"]})
             results.append(res)
@@ -303,6 +369,7 @@ def execute_plans(plans: List[Dict[str, Any]], state: Dict[str, Any],
             prev = state["entries"].get(p["sid"])
             state["entries"][p["sid"]] = {
                 "symbol": p["symbol"], "status": "OPEN",
+                "checkpoint_override": bool(p.get("checkpoint_override")),
                 "entry_date": ref.isoformat(),
                 "qty": p["qty"], "price_ref": p.get("price_ref"),
                 "buy_fill": fill, "buy_client_order_id": coid,
@@ -312,6 +379,8 @@ def execute_plans(plans: List[Dict[str, Any]], state: Dict[str, Any],
             e = state["entries"][p["sid"]]
             e.update({"status": "CLOSED", "exit_date": ref.isoformat(),
                       "sell_fill": fill, "sell_client_order_id": coid})
+            if e.get("checkpoint_override"):
+                e["exit_note"] = OVERRIDE_NOTE
         results.append(res)
     return results
 
@@ -338,7 +407,7 @@ def _cache_stale_days() -> int:
     return (pd.Timestamp(dt.date.today()) - days[-1]).days
 
 
-def phase_decide(dry_run: bool) -> int:
+def phase_decide(dry_run: bool, inject_symbols: Optional[List[str]] = None) -> int:
     lines = ["Pipeline DECIDE — señal con definición CONGELADA (sin re-optimizar)",
              "=" * 74]
     stale = _cache_stale_days()
@@ -349,15 +418,37 @@ def phase_decide(dry_run: bool) -> int:
         _artifact(lines, {"phase": "decide", "aborted": "cache_stale", "stale_days": stale}, "decide")
         return 1
     signals, stats = compute_signals(lines)
+    notes: List[str] = []
+    if inject_symbols:
+        eng = SignalEngine(regime_classifier=None)
+
+        def price_lookup(sym):
+            _, ind = load_symbol(sym)
+            return latest_signal(eng, ind) if ind is not None else None
+
+        signals, notes = apply_checkpoint_injection(signals, inject_symbols, price_lookup)
+        signals.sort(key=lambda x: -x["score"])
     echo = frozen_echo()
+    if inject_symbols:
+        # Condición (a) del gate 2026-08-25: marca visible DENTRO del frozen_echo.
+        echo["override_mecanismo"] = (
+            "OVERRIDE_MECANISMO — no es señal real. Corrida de checkpoint para "
+            "validar el tubo (orden+registro); NO usar como historial de señal.")
     today = dt.date.today()
     mk = today.strftime("%Y%m")
     payload = {"phase": "decide", "decision_date": today.isoformat(),
                "month_key": mk, "frozen_echo": echo, "stats": stats, "signals": signals,
-               "dry_run": dry_run}
+               "checkpoint_notes": notes, "dry_run": dry_run}
+    if inject_symbols:
+        lines += ["", "!! OVERRIDE_MECANISMO — no es senal real !!",
+                  "!! Simbolos inyectados SOLO para validar el tubo (Checkpoint S1): "
+                  + ", ".join(inject_symbols), ""]
     lines += ["", f"Universo cargado: {stats['n_loaded']}/{len(UNIVERSE)} | senales: {stats['n_signals']}"]
     for s in signals:
-        lines.append(f"  BUY {s['symbol']:5s} score={s['score']:.4f} ref={s['price_ref']}")
+        tag = " [OVERRIDE_MECANISMO]" if s.get("checkpoint_override") else ""
+        lines.append(f"  BUY {s['symbol']:5s} score={s['score']:.4f} ref={s['price_ref']}{tag}")
+    for n in notes:
+        lines.append(f"  nota: {n}")
     lines.append("")
     lines.append("Frozen echo: " + json.dumps(echo, ensure_ascii=False))
     if not dry_run:
@@ -418,7 +509,8 @@ def phase_enter(dry_run: bool, only_symbols: Optional[List[str]]) -> int:
         save_state(state)
     lines += ["", f"Resultados ({'DRY-RUN' if dry_run else 'REAL'}):"]
     for r in results:
-        lines.append(f"  {r['action']:4s} {r['symbol']:5s} {r.get('status')}"
+        tag = " [OVERRIDE_MECANISMO]" if r.get("checkpoint_override") else ""
+        lines.append(f"  {r['action']:4s} {r['symbol']:5s} {r.get('status')}{tag}"
                      + (f" qty={r['qty']} fill={r.get('fill')}" if "qty" in r and r.get("status") != "skipped" else "")
                      + (f" [{r.get('reason')}]" if r.get("reason") else "")
                      + (f" ERROR={r['error']}" if r.get("error") else ""))
@@ -484,11 +576,16 @@ def main(argv: Optional[List[str]] = None) -> int:
                         help="calcula y reporta SIN enviar ordenes ni escribir estado")
     parser.add_argument("--symbols", default="",
                         help="filtro opcional 'AAPL,MSFT' (checkpoint controlado)")
+    parser.add_argument("--checkpoint-inject", default="",
+                        help="SOLO checkpoint S1: 'AAPL,MSFT' a inyectar para validar "
+                             "el tubo. Marcado OVERRIDE_MECANISMO en artefacto y en la "
+                             "fila futura de ledger (prefijo chkpt__). NUNCA es senal real.")
     args = parser.parse_args(argv)
     only = [s.strip().upper() for s in args.symbols.split(",") if s.strip()] or None
+    inject = [s.strip().upper() for s in args.checkpoint_inject.split(",") if s.strip()] or None
     phase = detect_auto_phase() if args.phase == "auto" else args.phase
     if phase == "decide":
-        return phase_decide(args.dry_run)
+        return phase_decide(args.dry_run, inject)
     if phase == "enter":
         return phase_enter(args.dry_run, only)
     if phase == "exit":
