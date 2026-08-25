@@ -57,10 +57,33 @@ vez no pasa DSR OOS (0.61 < 0.95) ni PBO (0.47, overfitting sustancial).
   valor/calidad SI se consigue mejor cobertura de fundamentales (EDGAR dio
   10% de cobertura — pudo matar señal por falta de dato, no por falta de
   señal real).
+- **A5 — Quality + Value sistemático ("Buffett's Alpha", Boris 2026-08-25)**:
+  distinto de lo ya refutado — el fundamentals test previo era ranking
+  cross-sectional crudo con 10% de cobertura EDGAR (candidato a revivir por
+  A4 si mejora la cobertura). Esto es otra cosa: el paper académico Frazzini/
+  Kabiller/Pedersen ("Buffett's Alpha") descompone el retorno de Buffett en
+  factores sistematizables — calidad (rentabilidad, estabilidad de
+  ganancias), valor (P/E, P/B), bajo-beta, apalancamiento moderado — nunca
+  probado acá con ese diseño. Puede correr EN PARALELO con A1 (Brecha 2,
+  Kilo) — son hipótesis independientes que alimentan el mismo ledger, no
+  dos caminos separados.
 
-**Gate de salida de A**: cuando A1-A4 estén cerrados (o descartados con
+**Gate de salida de A**: cuando A1-A5 estén cerrados (o descartados con
 evidencia) y A3 confirme que el ledger cuenta bien, recién ahí se considera
 agotado el camino A — con evidencia, no por cansancio.
+
+## Integración con el ensamble de paper trading (Boris, 2026-08-25)
+
+Todo candidato que cierre CUMPLE en cualquier rama de este árbol (A5, B1, lo
+que sea) no arranca un "modelo nuevo" separado — se suma como una fuente más
+al ensamble multivariante de `PROPUESTA_PAPER_TRADING_PROSPECTIVO.md`,
+combinado vía `BayesianOnlineUpdater` con el mismo criterio de Sharpe
+acumulado, nunca por selección de un ganador único. El objetivo de largo
+plazo (marco de Ray Dalio, "Santo Grial de la inversión"): 15-20 fuentes de
+retorno genuinamente no correlacionadas reducen el riesgo del portafolio de
+forma dramática, con el beneficio aplanándose después de ese número — no es
+un sistema aparte, es hacia dónde converge este mismo árbol a medida que se
+validan más candidatos. Un solo ledger, un solo árbol, un solo ensamble.
 
 ---
 
@@ -123,7 +146,8 @@ Camino A (actual, EN CURSO)
 ├─ A1 Brecha 2 M3 standalone ........... Kilo, en curso
 ├─ A2 Re-test sentimiento/macro×barreras  si A1 falla
 ├─ A3 Verificar H3.1 (Bonferroni re_test) antes de cerrar A
-└─ A4 Extensiones baratas (estacionalidad, 52w-high, fundamentales mejor cobertura)
+├─ A4 Extensiones baratas (estacionalidad, 52w-high, fundamentales mejor cobertura)
+└─ A5 Quality+Value sistemático (Buffett's Alpha) ... PARALELO a A1, mismo ledger
         │
         ▼ (si A se agota con evidencia)
 Camino B (universo distinto, misma infra)
@@ -138,6 +162,11 @@ Camino C (otra clase de activo, infra ya integrada)
 Camino D (nueva inversión de datos/infra — evaluar costo real antes de decidir)
 ├─ D1 Opciones/GEX diario ............... preferido
 └─ D2 Intradía .......................... NO priorizado (peor prior, ya descartado por §13)
+
+Todo candidato CUMPLE, de cualquier rama ──▶ ENSAMBLE de paper trading
+(PROPUESTA_PAPER_TRADING_PROSPECTIVO.md) ──▶ meta Dalio: 15-20 fuentes
+no correlacionadas, combinadas por Sharpe acumulado (BayesianOnlineUpdater),
+nunca por ganador único. Un solo sistema, no uno paralelo.
 ```
 
 ## Nota sobre paralelismo (2026-08-25, revisión de GLM incorporada)
