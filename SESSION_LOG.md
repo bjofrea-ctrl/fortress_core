@@ -1,5 +1,32 @@
 # Fortress Core — Memoria de Sesiones (Última sesión resumida)
 
+## 2026-08-25 — §46 TRIAL #19: compuerta M3 standalone — NO INTERPRETABLE mecánico (piso insuficiente), sin consumo de slot (Kilo Code, worktree test-kilo-orca)
+
+**Autor**: Kilo Code. Pre-registro §46 aprobado por el coordinador antes de
+correr; auto-cierre autorizado; cierre de merge vía `.pending-merge.md` (§1.1
+PLAN_HANDOVER_48H.md).
+
+- Primera medición REAL de M3 (`regime_gate.py`, jamás usado) como COMPUERTA de
+  operación del motor — genuinamente inédito vs §42 (condicionante diagnóstico).
+  ALWAYS vs GATED intra-corrida; GOLDILOCKS-rezagado 21b, fechas sin etiqueta →
+  no opera (conservador).
+- **Piso insuficiente**: GOLDILOCKS-lag cubre solo 28.7% de días → GATED opera
+  n=17/19/51 por ventana contra piso 30 → solo W3 computable (<2/3) → regla
+  pre-registrada: **NO registra NI consume slot** (motor_signal sigue 12,
+  th vigente 0.99231). Hipótesis SIN MEDIR BIEN, distinto de NO_CUMPLE.
+- Desglose exploratorio honesto: la compuerta mejora riesgo-retorno cuando
+  GOLDILOCKS es escaso (W1: Sharpe 0.689 vs 0.318, maxDD −1.5% vs −5.3%) y lo
+  empobrece cuando abunda (W3: Sharpe 0.161 vs 0.478). El filtro vale para
+  EVITAR regímenes malos, no para certificar buenos — pista para un re-diseño
+  con piso alcanzable (GOLDILOCKS∪NEUTRAL o similar), decisión de Boris.
+- Fidelidad OK×6: F9 identity-cache bit-idéntico (heredado §45), gate walk-forward
+  34 recalibs con asserts OK, suite **370 passed** pre-corrida, señales GATED
+  75.7% bloqueadas.
+- Artefacto `backend/data/cache/trial_m3_gate_standalone_20260825_164832.txt`
+  (+json+parquet ambos brazos); script `backend/scripts/trial_m3_gate_standalone.py`;
+  §46+§46.1 en PLAN_MEJORA_MATEMATICA.md; fila nueva en ROADMAP. Producción
+  intacta (proxy sobre signal_engine por atributo).
+
 ## 2026-08-24 — §45 TRIAL #18: EVT-stops v2 (sizing aislado) — NO_CUMPLE 0/3, línea EVT CERRADA DEFINITIVA (Kilo Code, worktree test-kilo-orca)
 
 **Autor**: Kilo Code. Pre-registro §45 escrito como borrador, revisado y APROBADO

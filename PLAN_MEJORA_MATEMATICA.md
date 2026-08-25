@@ -3798,4 +3798,155 @@ cola de decisiones de Boris, no resolverla aquí.
 
 ---
 
+## 46. TRIAL #19 — PRE-REGISTRO: compuerta M3 STANDALONE sobre la operación del motor (Brecha 2, auditoría externa glm-5.2)
+
+> **Estado**: APROBADO para ejecución (revisión del coordinador Claude Code,
+> 2026-08-25): distinción vs §42 correcta, criterio doble validado, umbral
+> n=13/th=0.99231 verificado contra el ledger real. Luz verde completa con
+> auto-cierre (protocolo §45); cierre de merge vía `.pending-merge.md`
+> (PLAN_HANDOVER_48H.md §1.1).
+
+**Pregunta**: ¿operar el motor completo SOLO cuando la etiqueta macro walk-forward
+de M3 es GOLDILOCKS — abstenerse el resto de los días — mejora el perfil OOS del
+motor comparado con operar siempre?
+
+**Por qué esta pregunta es genuinamente inédita** (verificado): el factor macro es
+el más fuerte medido en el proyecto (IC +0.13 pooled) pero es CONTRA-RÉGIMEN
+(+0.198 GOLDILOCKS / −0.173 DEFLATION, Fase 2). Solo se usó como término lineal
+ponderado dentro de `ridge_3f` (refutado por otras razones, trial #13). §42/Tarea P
+lo probó como CONDICIONANTE DIAGNÓSTICO del IC de un factor (momentum), no como
+compuerta de operación del motor. `regime_gate.py` (M3) fue construido para esto,
+tiene 8 tests y jamás gateó una corrida real. ROADMAP.md línea 343 lo dice
+textual: "el TRIAL que pruebe macro IC +0.198 GOLDILOCKS/−0.173 DEFLATION como
+compuerta sigue sin pre-registrar". Un peso promedia regímenes; una compuerta los
+separa — misma clase de corrección que pooled→intra-día aplicada a otra dimensión.
+
+**Diseño (dos armas intra-corrida, misma data, mismo motor vigente)**:
+
+- **Arma ALWAYS (control)**: `BacktestEngine` estándar — opera todos los días que
+  sus gates técnicos permiten, sin compuerta macro.
+- **Arma GATED (tratamiento)**: subclase del engine que reemplaza
+  `self.signal_engine` por un wrapper (`GatedSignalEngine`) construido sobre la
+  instancia original: si la etiqueta M3 rezagada de la fecha de decisión NO es
+  GOLDILOCKS → `generate_signal` devuelve None ese día (no hay entradas nuevas;
+  salidas/stops/sizing/calibrador intactos); si lo es → delega idéntico.
+  Inyección por atributo/subclase dentro del proceso del trial — cero edición de
+  producción (misma filosofía §45 vía `_make_risk_manager`; acá el seam es el
+  atributo `signal_engine`, público en `BacktestEngine.__init__`).
+
+**Etiqueta M3 (fórmulas fijadas ANTES de codear)**:
+`WalkForwardRegimeGate(favorable_states=frozenset({0}))` (GOLDILOCKS según
+remapeo canónico `_align_states`: estado con growth_SPY máximo), defaults del
+módulo (recalib_every=63 hábiles, min_history=756), macro SPY EFA QQQ GLD DBC TIP
+TLT AGG ^VIX desde 2015-01-01 (cache-only). La etiqueta usada en la fecha t es la
+de **t−21 días hábiles** (lag heredado de §42a: la decisión usa solo información
+disponible al momento; fechas sin etiqueta rezagada → GATED no opera, conservador
+y declarado). `label_series` lanza si falla un assert anti-lookahead → aborto
+documentado como FALLO honesto.
+
+**Umbral (leído del ledger EN runtime al redactar, 2026-08-25)**: familia
+motor_signal con **12 consumidos** → este trial es n=13 →
+`current_threshold("motor_signal")` = **0.9923076923076923** (= 1 − 0.10/13).
+n=13 alimenta también el Deflated Sharpe. El script re-lee en runtime; artefacto
+cita el efectivo.
+
+**CRITERIO DE ÉXITO POR VENTANA (pre-registrado)**: ventana computable requiere
+≥30 trades del arma GATED; CUMPLE la ventana si (a) **DSR_gated ≥ th vigente**
+Y (b) **Sharpe_gated > Sharpe_always** (la pregunta es COMPARATIVA: una compuerta
+que mejora relativo pero no alcanza evidencia absoluta de grado-promoción NO
+integra). **Veredicto global**: CUMPLE si ≥2/3 ventanas computables CUMPLEN.
+Si <2/3 ventanas son computables → **NO INTERPRETABLE mecánico** (piso insuficiente
+por diseño de la compuerta; NO registra ni consume slot, documentado como intento
+inválido — mismo tratamiento F7 de §45). Mejora relativa sin DSR absoluto →
+NO_CUMPLE documentando el gradiente como insumo de Brecha 3 (acumulación OOS),
+nunca como promoción.
+
+**Diagnósticos secundarios (pre-declarados, descriptivos)**: fracción de días
+GOLDILOCKS-rezagados por ventana y su distribución de estados HMM; n_trades por
+brazo/ventana (cuántas entradas excluye la compuerta); win_rate/VPP y profit_factor
+por brazo/ventana; Sharpe/CAGR/maxDD completos por brazo/ventana (tabla §45.1).
+
+**Checks de fidelidad**: F1 universo 50 cargadas; F2 cobertura meses por ventana;
+F3 determinismo seed HMM 42; F4 gate walk-forward con recalibraciones >0 y asserts
+anti-leakage pasados; F5 fracción GOLDILOCKS por ventana reportada (estados no
+degenerados); F6 suite completa backend verde ANTES de correr; F9 parche
+identity-cache de §45 REUTILIZADO con su verificación bit-idéntica en-corrida
+(generate_signal sigue siendo el hotspot — mismas 25 parejas × 10 columnas);
+F10 sanity del control intra-corrida: ALWAYS produce trades>0 y métricas finitas
+en las 3 ventanas.
+
+**Riesgos declarados**: la compuerta reduce trades (~40% histórico de días fuera
+de GOLDILOCKS) → W2 puede quedar bajo el piso de 30 (cuenta no-computable, ver
+regla arriba); alta correlación entre armas (GATED ⊂ ALWAYS en señales elegibles)
+→ las diferencias provienen solo de los días excluidos + cascada de exposición
+(`filter_by_regime_exposure` ve menos posiciones concurrentes en GATED — parte
+legítima del efecto, mecanismo idéntico en ambos); lag 21 desincroniza el timing
+del régimen (costo de información tardía, ya aceptado en §42a); DSR con n=13 es
+exigentísimo — el resultado más probable honesto es "dirección positiva pero
+NO_CUMPLE absoluto", que se documenta SIN zona gris; rechazos por cash difieren
+entre brazos (reportados); HMM/GPD sin convergencia → aborto FALLO honesto.
+
+**Script**: `backend/scripts/trial_m3_gate_standalone.py` (nuevo; reutiliza el
+patrón de dos armas intra-corrida de §45, el parche identity-cache con F9, y la
+maquinaria goldilocks-lag de §42). Python 3.9 real, SOLO cache parquet, sin
+descargas. No toca producción. Ventanas canónicas W1/W2/W3 (2020-2021, 2022-2023,
+2024→borde de cache); START=2015-01-02, OP_START=2019-01-01, DATA_END=borde de
+cache ≤7 días. Artefacto: `backend/data/cache/trial19_m3_gate_standalone_<ts>.txt`
+(+json +parquet equity/trades de ambos brazos). Corrida ÚNICA.
+
+**Ledger (AL CIERRE, manual)**: `register_trial(id="trial_m3_gate_standalone",
+familia="motor_signal", n_trials_consumidos=1,
+umbral_aplicado="DSR>=th(motor_signal)=0.99231 (n=13) Y Sharpe_gated>Sharpe_always
+en >=2/3 ventanas computables (piso 30 trades)", veredicto=mecánico,
+seccion_doc="§46")`. Regla de consumo: corrida interpretable REGISTRA sea
+CUMPLE o NO_CUMPLE; NO INTERPRETABLE (menos de 2/3 ventanas computables) o aborto
+por fidelidad NO registran NI consumen slot — mismo contrato explícito de §45.
+
+### 46.1 RESULTADO (apéndice post-corrida, 2026-08-25) — corrida única 16:48, **NO INTERPRETABLE mecánico (piso insuficiente)**
+
+Corrida única (`scripts/trial_m3_gate_standalone.py`, artefacto
+`data/cache/trial_m3_gate_standalone_20260825_164832.txt`+json+parquet ambos
+brazos, ~1h47m). Umbral efectivo = el del pre-registro: consumido=12 → n=13 →
+th=0.9923076923076923.
+
+**Fidelidad OK×6**: F1 universo 50/50; F9 identity-cache 25 pares × 7 columnas
+bit-idénticos; F4 gate walk-forward 34 recalibraciones con asserts anti-leakage
+OK, estados no degenerados {0:548, 1:446, 2:831, 3:285}; F5 fracción
+GOLDILOCKS-rezagada global 28.7%; F10 sanity del control OK; suite 370 passed
+pre-corrida. Señales del brazo GATED: 35250 delegadas / 109850 bloqueadas (75.7%).
+
+**GATE DE PISO FALLA — solo W3 computable**: trades GATED por ventana =
+**17 / 19 / 51** contra piso 30 → W1 y W2 no computables → <2/3 ventanas →
+**NO INTERPRETABLE mecánico** (regla pre-registrada §46). La hipótesis queda
+SIN MEDIR BIEN — distinto de NO_CUMPLE: la compuerta reduce la operación al
+28.7% de los días y eso hace el diseño insostenible para la vara muestral del
+proyecto con la historia disponible. **NO registra en trial_registry NI consume
+slot** (motor_signal sigue consumido=12, th vigente 0.99231) — mismo tratamiento
+que #15/F7 de §45.
+
+**Desglose DESCRIPTIVO (exploratorio, pre-declarado como secundario — NO
+veredicto)**:
+
+| ventana | GOLD% días | ALWAYS n | GATED n | Sharpe A→G | DSR A→G | maxDD A→G |
+|---|---|---|---|---|---|---|
+| W1 2020-21 | 8.5% | 95 | 17 | 0.318→**0.689** | 0.105→**0.227** | −5.3%→−1.5% |
+| W2 2022-23 | 32.1% | 51 | 19 | 0.175→**0.184** | 0.072→0.075 | −4.3%→**−1.4%** |
+| W3 2024-26 | 46.7% | 78 | 51 | **0.478**→0.161 | **0.185**→0.075 | −5.1%→−3.7% |
+
+Gradiente honesto: la compuerta mejora el perfil de riesgo-retorno cuando
+GOLDILOCKS es ESCASO (W1: Sharpe ×2.2, drawdown ÷3.4 sobre 17 trades) y lo
+empobrece cuando ABUNDA (W3: pierde 2/3 del Sharpe operando casi la mitad del
+tiempo) — consistente con que el valor del filtro está en EVITAR regímenes malos,
+no en certificar buenos. Con n_gated=17-19 en las ventanas donde se ve mejor,
+esto es pista, no evidencia.
+
+**Estado de la línea**: infraestructura M3 construida, walk-forward verificado,
+PRIMERA medición real de la compuerta sobre el motor completada. La pregunta
+queda ABIERTA pero con restricción de diseño conocida: cualquier re-intento
+requiere pre-registro NUEVO con piso alcanzable (ej. variante GOLDILOCKS∪NEUTRAL,
+o criterio por régimen-duración mínima) — decisión de Boris, no de agente.
+Conexión natural con Brecha 3: más meses OOS del updater suben n por ventana.
+
+---
+
 
