@@ -1,5 +1,43 @@
 # Fortress Core — Memoria de Sesiones (Última sesión resumida)
 
+## 2026-08-24 — §45 TRIAL #18: EVT-stops v2 (sizing aislado) — NO_CUMPLE 0/3, línea EVT CERRADA DEFINITIVA (Kilo Code, worktree test-kilo-orca)
+
+**Autor**: Kilo Code. Pre-registro §45 escrito como borrador, revisado y APROBADO
+por el coordinador (Claude Code) con Boris; auto-cierre completo autorizado
+("no esperar ok, criterio ya aprobado"). Ledger `motor_signal` id
+`trial_evt_stops_v2`, veredicto **NO_CUMPLE**.
+
+- Diseño neutraliza las DOS capas de inercia del Hallazgo 6 (el coordinador no
+  había visto la segunda): (1) Kelly desactivado SIMÉTRICAMENTE en ambos brazos —
+  `fractional_kelly=0` tal cual habría dado min(0,…)=0 shares; (2)
+  RISK_PER_TRADE_arm=0.0015 en ambos brazos para que el umbral de binding baje a
+  1.5%×precio (con el 1.5% vigente era 15%×precio: inalcanzable). Tope 10%
+  intacto. Alcance mínimo §20: solo cambia la distancia del sizing.
+- **Gate F7 de activación PASÓ AL 100%**: shares_by_risk fue la restricción
+  activa en todas las compras de ambos brazos en las 3 ventanas. Primera vez que
+  la distancia de riesgo decide tamaños — el experimento midió lo que decía.
+- **Resultado**: EVT PEOR en las 3 ventanas de forma consistente (Sharpe
+  0.274/−0.001/0.601 vs BASE 0.320/0.186/0.694; DSR 0.101/0.048/0.260 vs th
+  0.9916667 n=12). Mecanismo: VaR-GPD más ancho → posiciones más chicas → menos
+  capital capturando edge, sin protección compensatoria ni en W2 bear. Línea
+  EVT-stops CERRADA DEFINITIVA (§19 diagnóstico + §20 placebo + §45 refutación).
+- **Nota de ejecución**: intento 1 abortado tras >13h solo en baseline y sin
+  veredicto — generate_signal recalcula calculate_all_indicators por día×símbolo
+  sobre un frame ya indicatorizado (explosión de costo post-T2.3 hurst);
+  diagnosticado con sampler de stacks. Intento 2: parche identity intra-proceso
+  con equivalencia bit-idéntica verificada en-corrida (F9, 25 pares × 10
+  columnas) → corrida completa en ~37 min. Metodología intacta; producción
+  intacta (subclases vía _make_risk_manager).
+- **Hallazgo de código anotado para decisión futura** (reportado por Claude
+  Code, verificado): sizing usa max(2×ATR, floor) pero REGIME_STOP_HIT dispara
+  solo por position_stop% — asimetría sizing/trigger (adaptive_risk.py:109 vs
+  :149); decisión de producto, no bug inmediato. En §45.1.
+- Artefactos `backend/data/cache/trial18_evt_stops_v2_20260824_200927.txt`(+json,
+  +parquet ambos brazos) y `ABORTADO_trial18_evt_stops_v2_20260824_070552.txt`;
+  script `backend/scripts/trial_evt_stops_v2.py`; §45+§45.1+nota de ejecución en
+  PLAN_MEJORA_MATEMATICA.md; fila nueva en ROADMAP. Ledger motor_signal 11→12
+  (próximo umbral 0.99231), espejado al repo real.
+
 ## 2026-08-23 — TAREA M: KAMA/HMA/Supertrend (tendencia adaptativa) — NO_CUMPLE 0/9 (Kilo Code, worktree test-kilo-orca)
 
 **Autor**: Kilo Code. Asignación de Claude Code coordinando por Orca para Boris

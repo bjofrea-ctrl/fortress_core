@@ -1,0 +1,107 @@
+============================================================================
+TRIAL #18 (PLAN §45) — STOPS EVT CON SIZING AISLADO (pre-registrado y aprobado)
+Universo: 50 símbolos | data 2015-01-01 -> 2026-08-20 | operación 2019-01-01 -> 2026-08-20
+Dial §45: RISK_PER_TRADE_arm=0.0015 (AMBOS brazos), MAX_POSITION_PCT intacto
+Kelly desactivado SIMÉTRICAMENTE (rama no-Kelly int(min(by_risk, cap)))
+Brazo EVT: stop_distance = max(VaR_GPD(99%)_vigente x sigma_EWMA_dia, piso)
+Brazo BASE: stop_distance = max(2xATR, piso) | resto del risk manager INTACTO
+Walk-forward: recalib cada 63d habiles, ventana 756d, lambda=0.94, u=p95%, VaR p99% | fallback empirico si <30 excesos
+GATE F7: pct_by_risk_activo(brazo EVT) >= 50% en >= 2/3 ventanas
+Ledger runtime: motor_signal consumido=11 -> n=12 | current_threshold=0.9916666666666667
+Criterio: DSR OOS >= 0.99167 en >= 2/3 ventanas computables | piso 30 trades EVT
+============================================================================
+
+F1 precios cargados: 50/50 (2015-01-01 -> 2026-08-20)
+[heartbeat] t=60s | fase=F9 equivalencia
+[heartbeat] t=120s | fase=F9 equivalencia
+F9 equivalencia identity-cache: 25 pares (símbolo,fecha) bit-idénticos verificados en 10 columnas
+[heartbeat] t=180s | fase=F9 equivalencia
+[heartbeat] t=240s | fase=F9 equivalencia
+[heartbeat] t=300s | fase=F9 equivalencia
+[heartbeat] t=360s | fase=F9 equivalencia
+F5 regresión Hallazgo 5: mediana var_mult=2.9283 (rango plausible [1,20], nunca 10^3-10^5) | 50/50 símbolos calibrados | 35 fechas de recalibración
+
+Corriendo brazo BASELINE_RISK (mismo motor vigente, sin Kelly)...
+[heartbeat] t=420s | fase=baseline run
+[heartbeat] t=480s | fase=baseline run
+[heartbeat] t=540s | fase=baseline run
+[heartbeat] t=600s | fase=baseline run
+[heartbeat] t=660s | fase=baseline run
+[heartbeat] t=720s | fase=baseline run
+[heartbeat] t=780s | fase=baseline run
+[heartbeat] t=840s | fase=baseline run
+[heartbeat] t=900s | fase=baseline run
+[heartbeat] t=960s | fase=baseline run
+[heartbeat] t=1020s | fase=baseline run
+[heartbeat] t=1080s | fase=baseline run
+[heartbeat] t=1140s | fase=baseline run
+[heartbeat] t=1200s | fase=baseline run
+Corriendo brazo EVT_RISK (EVTEngineV2 walk-forward, sin Kelly)...
+[heartbeat] t=1260s | fase=EVT run
+[heartbeat] t=1320s | fase=EVT run
+[heartbeat] t=1380s | fase=EVT run
+[heartbeat] t=1440s | fase=EVT run
+[heartbeat] t=1500s | fase=EVT run
+[heartbeat] t=1560s | fase=EVT run
+[heartbeat] t=1620s | fase=EVT run
+[heartbeat] t=1680s | fase=EVT run
+[heartbeat] t=1740s | fase=EVT run
+[heartbeat] t=1800s | fase=EVT run
+[heartbeat] t=1860s | fase=EVT run
+[heartbeat] t=1920s | fase=EVT run
+[heartbeat] t=1980s | fase=EVT run
+[heartbeat] t=2040s | fase=EVT run
+[heartbeat] t=2100s | fase=EVT run
+[heartbeat] t=2160s | fase=EVT run
+[heartbeat] t=2220s | fase=EVT run
+
+Anti-lookahead: 254 compras EVT dimensionadas con VaR-GPD walk-forward (assert recalibración estrictamente anterior activo en todas) | 0 fallback ATR
+Activación BASE: {'compras_dimensionadas': 253, 'ejecutadas': 227, 'pct_by_risk_activo': 1.0}
+Activación EVT : {'compras_dimensionadas': 254, 'ejecutadas': 231, 'pct_by_risk_activo': 1.0}
+
+--- W1 2020-2021 (BASE n=125, EVT n=127) ---
+    cagr                     0.0045       0.0041
+    sharpe_ratio             0.3197       0.2738
+    sortino_ratio            0.4061       0.3561
+    max_drawdown            -0.0153      -0.0161
+    calmar_ratio             0.2965       0.2544
+    win_rate                 0.6480       0.6457
+    profit_factor            1.5994       1.5328
+    total_trades           125.0000     127.0000
+    deflated_sharpe          0.1132       0.1011
+    GATE F7 ventana: compras_EVT=100 pct_by_risk=1.0
+
+--- W2 2022-2023 (BASE n=53, EVT n=53) ---
+    cagr                     0.0011      -0.0000
+    sharpe_ratio             0.1855      -0.0012
+    sortino_ratio            0.2272      -0.0013
+    max_drawdown            -0.0101      -0.0145
+    calmar_ratio             0.1048      -0.0020
+    win_rate                 0.5849       0.5849
+    profit_factor            1.1755       1.0167
+    total_trades            53.0000      53.0000
+    deflated_sharpe          0.0804       0.0478
+    GATE F7 ventana: compras_EVT=43 pct_by_risk=1.0
+
+--- W3 2024-2026 (BASE n=98, EVT n=100) ---
+    cagr                     0.0084       0.0077
+    sharpe_ratio             0.6944       0.6008
+    sortino_ratio            0.8863       0.7629
+    max_drawdown            -0.0096      -0.0124
+    calmar_ratio             0.8815       0.6256
+    win_rate                 0.6020       0.6000
+    profit_factor            1.7256       1.5828
+    total_trades            98.0000     100.0000
+    deflated_sharpe          0.3174       0.2595
+    GATE F7 ventana: compras_EVT=89 pct_by_risk=1.0
+
+============================================================================
+GATE DE ACTIVACIÓN F7 (pre-registrado §45): ventanas con pct_by_risk>=50%: ['W1 2020-2021', 'W2 2022-2023', 'W3 2024-2026']
+Corrida INTERPRETABLE: SÍ
+  W1 2020-2021: n_EVT=127 DSR=0.1011 vs th=0.99167 -> no pasa
+  W2 2022-2023: n_EVT=53 DSR=0.0478 vs th=0.99167 -> no pasa
+  W3 2024-2026: n_EVT=100 DSR=0.2595 vs th=0.99167 -> no pasa
+
+VEREDICTO MECÁNICO §45: NO_CUMPLE (0/3 ventanas)
+
+Out: data/cache/trial18_evt_stops_v2_20260824_200927.txt

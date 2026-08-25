@@ -3584,4 +3584,218 @@ signal_engine.py intacto). Implementación: `kama()`/`hma()`/`wma()`/
 
 ---
 
+## 45. TRIAL #18 — PRE-REGISTRO: stops EVT con sizing aislado (re-take de la línea #15, neutralizando las DOS capas de inercia) — **BORRADOR PARA REVISIÓN, NO CORRER hasta aprobación explícita**
+
+> **Estado**: APROBADO para ejecución (revisión del coordinador Claude Code,
+> 2026-08-24, con Boris): diseño validado, umbral n=12/th=0.99167 verificado
+> contra el ledger real. Única modificación de la revisión incorporada abajo
+> (consumo explícito del slot según gate de activación). Luz verde completa:
+> implementar, correr UNA vez, cerrar.
+
+**Pregunta (la misma de §20, ahora medible)**: sustituir la distancia de riesgo
+del sizing (`stop_distance = max(2×ATR, price×position_stop)`) por la distancia
+EVT walk-forward (`stop_distance = max(VaR_GPD(99%)×σ_EWMA_día,
+price×position_stop)`), **cuando `shares_by_risk` es efectivamente la restricción
+activa del sizing**, ¿mejora el perfil de riesgo-retorno del motor (DSR OOS)?
+
+**Por qué #15 fue placebo y qué exige el re-diseño (Hallazgo 5+6,
+AUDITORIA_MECANICA.md)** — la inercia tenía DOS capas y hay que neutralizar las dos:
+
+1. **Capa Kelly**: `compute_position_size()` toma la rama Kelly cuando
+   win_prob/payoff_ratio ≠ None (siempre en producción, backtest_engine.py:552-557)
+   → `kelly_shares` domina el `min()`. Fix propuesto por ROADMAP: aislar
+   `shares_by_risk` del Kelly. PERO `fractional_kelly=0` NO sirve tal cual:
+   dejaría `kelly_shares=0` → `min(0,…)=0` → cero posiciones. El mecanismo
+   correcto equivalente es **desactivar la rama Kelly simétricamente en AMBOS
+   brazos** vía subclase que replica la rama no-Kelly
+   (`return int(min(shares_by_risk, max_shares))`, adaptive_risk.py:121).
+2. **Capa tope**: aun sin Kelly, `max_shares = 10%×equity/price` gana el `min()`
+   salvo que `stop_distance > (RISK_PER_TRADE/MAX_POSITION_PCT)×price = 15%×price`
+   (con RISK_PER_TRADE=1.5% vigente). Ni 2×ATR típico (4–6% del precio) ni el
+   VaR-GPD de §19 llegan ahí → placebo otra vez (281/281 trades, Hallazgo 6).
+   **Fix propuesto**: reducir RISK_PER_TRADE SOLO dentro del experimento, en
+   AMBOS brazos por igual.
+
+**DECISIÓN DE DISEÑO PROPUESTA (marcada para revisión)**:
+
+- **Dial elegido**: `RISK_PER_TRADE_arm = 0.0015` (0.15%, un décimo del vigente),
+  `MAX_POSITION_PCT` intacto (10%). Umbral de binding resultante:
+  `dist > (0.0015/0.10)×price = 1.5%×price` — por DEBAJO del rango típico de
+  AMBAS distancias documentadas ex-ante (2×ATR 4–6%P, Hallazgo 6; EVT mediana
+  5.2% σ-día, Hallazgo 6 reconstrucción). Así `shares_by_risk` es la restricción
+  activa esperada en la gran mayoría de los trades de ambos brazos, con tamaños
+  de posición resultantes (~2–5% equity por posición) dentro de lo
+  production-plausible. El dial se calibró contra distribuciones ya publicadas
+  en artefactos (Hallazgo 6), NO mirando resultados nuevos.
+- **Alternativas consideradas y rechazadas**: (i) subir MAX_POSITION_PCT a 100%
+  → concentraciones de 30–40% equity por nombre y artefactos de orden dependiente
+  de cash (el motor solo compra si `cost < cash`, backtest_engine.py:560);
+  (ii) overlay analítico post-hoc sobre la misma lista de trades → estadísticamente
+  limpio pero abandona la pregunta "el motor decidiendo"; (iii) apalancar capital
+  → mismo problema de realismo que (i). La auditoría (Hallazgo 6 "Implicación")
+  lista exactamente estas tres rutas; se elige la variante que mantiene el tope
+  de concentración de producción.
+- **Alcance idéntico a §20 (variante mínima)**: el EVT sustituye SOLO la
+  distancia de riesgo del sizing; `position_stop` ejecutivo, PARTIAL_TP 2×ATR,
+  trailing 2×ATR, ABSOLUTE_CEILING, cooldowns y gates de señal intactos.
+
+**Mecánica del trial (`scripts/trial_evt_stops_v2.py`, NUEVO — reuso verbatim de
+la maquinaria validada de `trial_evt_stops.py` post-fix-Hallazgo-5)**:
+
+- Dos subclases simétricas inyectadas vía hook `_make_risk_manager()`
+  (backtest_engine.py:41, sin duplicar `run()`, cero edición del motor):
+  - `BaselineRiskManager`: replica `compute_position_size` con
+    `stop_distance = max(2×atr, price×position_stop)` y rama no-Kelly
+    (`int(min(shares_by_risk, max_shares))`), RISK_PER_TRADE_arm=0.0015.
+  - `EVTRiskManagerV2`: idéntico pero
+    `stop_distance = max(var_mult_vigente(symbol) × σ_EWMA_día, price×position_stop)`.
+- Walk-forward EVT **idéntico al §20** (cero grados de libertad nuevos): EWMA
+  λ=0.94 causal (CON el cuadrado — regresión Hallazgo 5), recalibración cada 63
+  hábiles, ventana móvil 756 hábiles de z=r/σ, u=p95% empírico, GPD MLE loc=0,
+  VaR_GPD(99%) McNeil, fallback cuantil empírico si excesos<30, data desde
+  2015-01-01, asserts anti-lookahead estampados por compra (recalibración
+  ESTRICTAMENTE anterior, side='left').
+- **Dos corridas intra-corrida con la MISMA data y el MISMO motor actual**
+  (baseline_risk vs evt_risk). Nota declarada: el motor actual incluye
+  `execution_lag_days=1` (T0.2, adoptado DESPUÉS del trial #15) — el baseline
+  intra-corrida se re-establece bajo el motor vigente y contra ese se mide el EVT;
+  nada se compara contra artefactos históricos.
+- **Diagnósticos de activación (pre-registrados, por brazo × ventana)**: n_trades,
+  % de compras donde `shares_by_risk` fue la restricción activa del min(),
+  % compras ejecutadas vs rechazadas por cash, mediana del ratio dist_EVT/dist_2ATR
+  implícito, conteo `evt_term > floor` y `evt_term > 2×ATR`.
+
+**GATE DE ACTIVACIÓN (pre-registrado, lección #15 institucionalizada)**: el
+veredicto de mercado solo es interpretable si en el brazo EVT `shares_by_risk`
+fue la restricción activa en ≥50% de las compras en ≥2/3 ventanas. Si no:
+corrida **NO INTERPRETABLE mecánicamente** (no consume slot de mercado, se
+documenta como FALLO de diseño y no se re-corre sin pre-registro nuevo).
+
+**Umbral (leído del ledger EN runtime al redactar, 2026-08-24)**: familia
+motor_signal con **11 consumidos** → este trial es n=12 →
+`current_threshold("motor_signal")` = **0.9916666666666667** (= 1 − 0.10/12).
+Criterio: **DSR OOS ≥ 0.99167 en ≥2/3 ventanas computables**, piso ≥30 trades del
+brazo EVT por ventana; n=12 se alimenta también como N_trials al cálculo del
+Deflated Sharpe. Si otro trial de la familia registra antes de la corrida, el
+número se re-lee en runtime con la misma fórmula y el artefacto cita el efectivo.
+
+**Checks de fidelidad**: F1 universo 50 cargadas; F2 cobertura meses por ventana;
+F3 determinismo seed (HMM random_state 42); F4 asserts anti-lookahead pasados y
+recalibraciones >0 por símbolo; F5 EWMA cuadrado verificado (regresión Hallazgo 5:
+var_mult medianos en rango plausible [1.0, 20], nunca 10³–10⁵); F6 suite completa
+backend en verde ANTES de correr; F7 GATE DE ACTIVACIÓN ≥50%; F8 métricas del
+brazo baseline_risk reportadas como referencia interna (no comparables 1:1 con
+producción: RISK_PER_TRADE reducido y sin Kelly — declarado).
+
+**Riesgos declarados**: (1) el régimen de sizing del experimento NO es el de
+producción (risk budget 10× menor, sin Kelly): CUMPLE respondería la pregunta
+científica "¿normaliza mejor el riesgo la distancia EVT?", y la integración a
+producción exigiría decisión de producto aparte sobre QUÉ dial mover (risk budget,
+tope o pesos Kelly) con su propio gate; (2) cascadas de segunda orden: tamaños
+distintos → exposición distinta → `filter_by_regime_exposure` puede admitir señales
+extra en un brazo (parte legítima del efecto, mecanismo idéntico en ambos); (3)
+rechazos por cash difieren entre brazos (reportado en activación); (4) DSR≥0.9917
+es exigente (presupuesto familiar n=12) — un resultado "mejora pero no alcanza" se
+documenta como NO_CUMPLE sin zona gris; (5) HMM/GPD sin convergencia → aborto
+documentado como FALLO honesto.
+
+**Ledger (AL CIERRE, manual)**: `register_trial(id="trial_evt_stops_v2",
+familia="motor_signal", n_trials_consumidos=1,
+umbral_aplicado="DSR≥current_threshold(motor_signal)=0.99167 (n=12) en ≥2/3
+ventanas", veredicto=mecánico, seccion_doc="§45")`. Corrida ÚNICA por diseño; si
+aborta por fidelidad → NO INTERPRETABLE, no NO_CUMPLE.
+
+**Consumo del slot según el gate de activación (aclaración de la revisión, fijada
+ANTES de correr)**: si el gate de activación **F7 falla** → la corrida **NO se
+registra en `trial_registry`** (NO consume slot de `motor_signal`); se documenta
+como intento inválido en este documento + SESSION_LOG + ROADMAP — mismo
+tratamiento que el #15 original ("ningún n_trials se gasta por esto"). Si F7
+**pasa** (corrida interpretable) → SÍ se registra en el ledger sea CUMPLE o
+NO_CUMPLE (el slot se consume con el veredicto mecánico que salga). Un aborto por
+fidelidad (F1-F6/F8) tampoco registra ni consume: corrida no interpretable.
+
+**Nota de ejecución (2026-08-24, ANTES de la corrida válida)**: el INTENTO 1 se
+abortó tras ~13h sin completar siquiera el brazo baseline y SIN producir
+veredicto alguno (`ABORTADO_trial18_evt_stops_v2_20260824_070552.txt`, heartbeats
+en fase baseline hasta el corte; no consume slot — no llegó a evaluarse F7).
+Causa raíz diagnosticada con sampler de stacks: `SignalEngine.generate_signal`
+(signal_engine.py:200) recalcula `calculate_all_indicators(df.loc[:date])` en
+cada llamada día×símbolo sobre un frame que YA viene indicatorizado
+(backtest_engine.py:299 construye `indicators_cache` una vez) — redundancia que
+tras T2.3 (hurst_exponent con rolling-apply pesado, añadido DESPUÉS del #15)
+volvió el run ~10× más caro. El INTENTO 2 aplica un parche de identidad SOLO
+dentro del proceso del trial: `signal_engine.calculate_all_indicators` pasa a ser
+identidad porque el frame recibido ya contiene todas las columnas; equivalencia
+bit-idéntica por causalidad (todas las columnas son rolling/backward desde la
+primera fila del frame completo) y verificada EN-CORRIDA por el check nuevo **F9**
+(25 pares símbolo×fecha muestreados contra recálculo real, aborto si difieren;
+método determinista seed 42). Metodología de sizing, walk-forward, criterios y
+gates de §45: INTACTOS. La corrida única válida es la del intento 2.
+
+### 45.1 RESULTADO (apéndice post-corrida, 2026-08-24) — corrida única válida, intento 2, 20:09
+
+Corrida única (`scripts/trial_evt_stops_v2.py`, artefacto
+`data/cache/trial18_evt_stops_v2_20260824_200927.txt` + parquet trades/equity de
+ambos brazos). Duración ~37 min con el parche F9 (intento 1: >13h sin terminar).
+Umbral efectivo = el del pre-registro: motor_signal consumido=11 → n=12 → th=
+0.9916666666666667 (sin recálculo: ningún otro trial registró en el medio).
+
+**Fidelidad OK×8**: F1 universo 50/50; F4 anti-lookahead — **254 compras EVT
+dimensionadas con VaR-GPD walk-forward, asserts de recalibración estrictamente
+anterior OK en todas, 0 fallbacks** (35 fechas de recalibración); F5 regresión
+Hallazgo 5 — mediana var_mult=2.9283, rango plausible [1,20]; F9 equivalencia
+identity-cache — 25 pares × 10 columnas bit-idénticos; suite 367 passed pre-corrida.
+
+**GATE DE ACTIVACIÓN F7: PASA al 100%** — `shares_by_risk` fue la restricción
+activa en el **100%** de las compras dimensionadas en las 3 ventanas, en AMBOS
+brazos (BASE 253 dimensionadas / 227 ejecutadas; EVT 254/231). Por primera vez
+desde que existe el motor, la distancia de riesgo del sizing DECIDIÓ el tamaño:
+el experimento midió lo que decía medir (a diferencia del #15 placebo).
+
+**TESTS PRIMARIOS — 0/3 ventanas → GLOBAL NO_CUMPLE** (DSR vs th=0.99167):
+
+| ventana | n BASE/EVT | Sharpe BASE | Sharpe EVT | DSR EVT | maxDD BASE→EVT |
+|---|---|---|---|---|---|
+| W1 2020-2021 | 125/127 | 0.3197 | 0.2738 | 0.1011 | −1.53%→−1.61% |
+| W2 2022-2023 | 53/53 | 0.1855 | −0.0012 | 0.0478 | −1.01%→−1.45% |
+| W3 2024-2026 | 98/100 | 0.6944 | 0.6008 | 0.2595 | −0.96%→−1.24% |
+
+Veredicto mecánico: **NO_CUMPLE (0/3)** — y no por poco margen estadístico sino
+por DIRECCIÓN consistente: el brazo EVT fue PEOR que el baseline en las 3
+ventanas (Sharpe −0.05/−0.19/−0.09, drawdowns algo más profundos). Mecanismo
+económico medido: la distancia VaR-GPD es más ancha que 2×ATR la mayoría del
+tiempo → posiciones sistemáticamente más chicas → mismo número aproximado de
+trades (cascada de exposición casi idéntica: n 127/53/100 vs 125/53/98) pero
+menos capital capturando el edge; la protección extra de cola no compensó en
+NINGUNA ventana, ni siquiera en W2 (bear/chop 2022-2023), donde el daño relativo
+fue mayor.
+
+**Lectura honesta**: la hipótesis de §19/§20 ("los stops 2×ATR subestiman el
+riesgo de cola; normalizar por EVT mejora") queda ahora REFUTADA EN SU FORMA
+OPERATIVA para este motor y universo: cuando la normalización de riesgo por
+distancia realmente decide tamaños, usar el cuantil GPD de colas empeora el
+perfil completo (retorno, Sharpe, drawdown) frente al humilde 2×ATR. La línea
+EVT-stops queda **CERRADA DEFINITIVAMENTE**: §19 (colas reales, ratio 1.26) +
+§20/Hallazgo 6 (trial placebo) + §45 (trial válido, refutación direccional).
+
+**Ledger**: `motor_signal` 11→12 consumidos, id=`trial_evt_stops_v2`,
+veredicto=NO_CUMPLE, próximo threshold 0.9923076923. **Nada se integra al motor**
+(solo se corrieron subclases inyectadas vía `_make_risk_manager`; producción
+intacta).
+
+**Hallazgo de código para decisión futura de riesgo (NO bug a arreglar ahora,
+reportado por Claude Code 2026-08-24, verificado por Kilo Code)**:
+`adaptive_risk.py:109` dimensiona con `stop_distance=max(2×ATR,
+price×position_stop)` pero el trigger ejecutivo `REGIME_STOP_HIT`
+(`adaptive_risk.py:149`) dispara SOLO con `position_stop%` de pérdida desde
+entry, sin ATR. Cuando 2×ATR domina, la posición queda dimensionada para un stop
+más ANCHO del que realmente se aplica → el motor arriesga MENOS que su
+RISK_PER_TRADE nominal en nombres volátiles (asimetría sizing/trigger). En §45 el
+patrón existió igual en ambos brazos (alcance mínimo: solo cambió la distancia de
+sizing), así que no sesga esta comparación. Es una decisión de producto pendiente
+(¿debería el trigger usar la misma distancia que el sizing?) — registrarla en la
+cola de decisiones de Boris, no resolverla aquí.
+
+---
+
 
