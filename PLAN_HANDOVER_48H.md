@@ -1,8 +1,19 @@
-# Plan 48h — handover de coordinación a OpenCode (Muse Spark)
+# Plan 48h — implementación operativa a cargo de OpenCode
 
-Escrito por Claude Code, 2026-08-25, al ceder el rol de coordinador por límite
-de créditos. Objetivo: que la disciplina del proyecto no se pierda en el
-traspaso. Leer completo antes de actuar.
+Escrito por Claude Code, 2026-08-25. **Aclaración de roles (2026-08-25, pedido
+explícito de Boris)**: esto NO es un handover completo del rol de coordinador.
+Claude Code sigue siendo la autoridad de planificación, en consulta con
+OpenCode (dinámica ya establecida en esta sesión) — lo que cambia es que
+Claude Code deja de hacer el sondeo operativo continuo (créditos bajos) y
+esa parte queda a cargo de OpenCode, con Cline y Kilo implementando. Para
+cualquier decisión de planificación NUEVA (no cubierta en este documento —
+ej. una línea de investigación nueva, un cambio de arquitectura, "nivel
+dios"), OpenCode la plantea y espera que Boris la traiga de vuelta a Claude
+Code para consulta conjunta antes de ejecutar — no decide unilateralmente
+solo por tener más presupuesto de créditos disponible en este momento.
+
+Objetivo de este documento: que la disciplina del proyecto no se pierda en
+el traspaso operativo. Leer completo antes de actuar.
 
 ## 1. Lo que sigue en curso — cerrar con el criterio YA aprobado, no re-abrir
 
