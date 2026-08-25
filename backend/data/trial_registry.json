@@ -504,5 +504,16 @@
     "veredicto": "NO_CUMPLE",
     "artefacto": "data/cache/trial_kama_hma_supertrend_20260823_152846.txt",
     "seccion_doc": "§44"
+  },
+  {
+    "id": "trial_evt_stops_v2",
+    "fecha": "2026-08-24",
+    "familia": "motor_signal",
+    "hipotesis": "Stops EVT walk-forward (VaR_GPD99 x sigma_EWMA) como distancia de sizing, con shares_by_risk aislado como restriccion activa (Kelly off simetrico + RISK_PER_TRADE_arm 0.0015), mejora DSR OOS vs 2xATR",
+    "n_trials_consumidos": 1,
+    "umbral_aplicado": "DSR>=current_threshold(motor_signal)=0.9916666666666667 (n=12) en >=2/3 ventanas, piso >=30 trades",
+    "veredicto": "NO_CUMPLE",
+    "artefacto": "data/cache/trial18_evt_stops_v2_20260824_200927.txt",
+    "seccion_doc": "§45"
   }
 ]
