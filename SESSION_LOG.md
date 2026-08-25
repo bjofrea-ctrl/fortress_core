@@ -2718,3 +2718,17 @@ Control negativo verificado: una APIRoute POST sin dependencias hace fallar `_ha
 **Tests**: test_api_write_auth.py (3) + test_governance_auth.py (5) = 8/8 PASSED, ruff limpio. Sin cambios en routers ni motor (lectura pública intacta).
 
 **Docs**: AUDITORIA_TECNICA.md §6 re-sincronizado; ROADMAP.md fila nueva + pendiente #4.
+
+## 2026-08-25 — H2.3 cache predict + H8.2 staleness verificado (Cline, worktree sincronizado en 8c9a46f)
+
+**Worktree**: fetch origin main + reset --hard 8c9a46f (árbol trackeado limpio; no-trackeados del §45 intactos).
+
+### H2.3 — cache de datos en predict.py (patrón advisor.py::_get_context, sin inventar)
+- Antes: analyze_symbol/analyze_universe llamaban download_data por request (~57 lecturas/request en /universe) y _load_macro_data bloqueaba el event loop.
+- Ahora: cache compartido `_get_data()` -> (precios_universo, macro), TTL 300s, asyncio.Lock anti-manada, carga en threadpool (`_load_universe_prices_sync` aplica el mismo filtro >=200 filas que había por símbolo). Símbolo fuera del universo canónico -> fallback a descarga directa también offloaded. Trade-off documentado: /macro-correlations frío comparte la carga del universo (UI los pide juntos).
+- Tests: tests/test_predict_cache.py NUEVO (6): 2º request dentro del TTL NO re-descarga; /universe x2 = una sola carga; TTL expirado re-carga; fallback fuera-de-universo; series cortas descartadas en el loader. test_predict_api.py: reset de cache en _patch_io. **11 passed** (6 nuevos + 5 existentes), ruff limpio.
+
+### H8.2 — staleness del advisor: YA se renderiza (verificado, nada que construir)
+- Cadena completa: useAdvisorUniverse() -> MesaPage.tsx:38 -> MesaView.tsx:48-54 renderiza banner amarillo "Cache de datos desactualizado: último cierre {last_cache} (+{business_days_behind} ruedas)" cuando stale=true.
+- Test de contrato existente: MesaPage.test.tsx:88 "staleness y blocked_reason se muestran como banners" — corrido por mí: **6/6 passed** (8.42s).
+- Conclusión: la premisa "no está confirmado que algún componente lo renderice" es falsa contra el código actual; solo se documenta.
