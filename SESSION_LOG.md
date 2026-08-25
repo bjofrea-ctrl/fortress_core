@@ -2699,3 +2699,22 @@ umbral `current_threshold=0.9958333 / m=9 → |t|>3.5013`, veredicto NO_CUMPLE.
 **Fidelidad OK×5**: universo 50/50 · meses 24/24/31 · edge pooled IC +0.0079 positivo ·
 seed HMM 42 · gate walk-forward 34 recalibraciones con asserts anti-lookahead pasados y
 estados no degenerados (GOLDILOCKS 528 / REFLATION 446 / STAGFLATION 821 / DEFLATION 312).
+
+## 2026-08-24 — Brecha 5 (handover §6.2): cierre superficie API — cerrada por verificación + invariante (Cline)
+
+**Asignación**: Claude Code (autorizada por Boris). Verificar primero contra código real, no asumir.
+
+**Verificación contra el artefacto real (código más nuevo dd47569, no el worktree atrasado)**:
+1. Inventario exhaustivo de rutas (`@router.*` en app/api/routes/): **NO existe endpoint de escritura sin auth**. Los únicos 2 no-GET de toda la API son `POST /api/governance/record-prediction` y `POST /api/governance/knowledge/add`, ambos con `verify_api_key` desde el P0 del 2026-08-12 (governance.py:37, hmac.compare_digest vs settings.SECRET_KEY).
+2. SECRET_KEY: default "change-me-in-production" (config.py:8) BLOQUEADO fuera de development por `_require_secure_secret_key` (config.py:75-84); test `test_secret_key_default_blocked_outside_development` vigente y pasando.
+3. La lectura "36/38 endpoints sin control de acceso" de la auditoría externa cuenta GETs de LECTURA (públicos por decisión de producto) y da por no-existente la validación que sí está en el código. Además: `opportunities_universe.py` NO es router (lista canónica universo 50).
+
+**Aportación real (lo único que faltaba)**: INVARIANTE de regresión `tests/test_api_write_auth.py` (3 tests, chequeo estructural sobre árbol de dependencias FastAPI — el repo NO tiene httpx/TestClient por convención, ver test_costs_api.py):
+- inventario de escritura == 2 POST conocidos (si crece, el test avisa);
+- toda ruta no-GET debe depender de `verify_api_key` (falla si aparece escritura desprotegida);
+- el mecanismo es EL compartido (hmac.compare_digest + settings.SECRET_KEY).
+Control negativo verificado: una APIRoute POST sin dependencias hace fallar `_has_verify_api_key`.
+
+**Tests**: test_api_write_auth.py (3) + test_governance_auth.py (5) = 8/8 PASSED, ruff limpio. Sin cambios en routers ni motor (lectura pública intacta).
+
+**Docs**: AUDITORIA_TECNICA.md §6 re-sincronizado; ROADMAP.md fila nueva + pendiente #4.

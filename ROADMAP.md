@@ -36,6 +36,11 @@ Cline como implementadores), 2026-08-23/24. Verificar contra `git log --oneline 
    propia en la tabla maestra). Ledger motor_signal 11→12, próximo umbral
    0.99231. Incluye hallazgo de código sizing-vs-trigger pendiente de decisión
    de producto (ver §45.1).
+5. **Brecha 5 auditoría externa — cierre superficie API** (Cline, 2026-08-24) — 🟢
+   CERRADA POR VERIFICACIÓN: la escritura ya estaba 2/2 con auth (cierre P0
+   2026-08-12); SECRET_KEY validator vigente. Aportación real: test de invariante
+   `test_api_write_auth.py` (3 tests). Ver fila en la tabla maestra y §6 de
+   AUDITORIA_TECNICA.md.
 
 Si alguna de estas cambió de estado cuando leas esto, actualizá esta sección
 (borrala o marcá cerrado) — no la dejes desactualizada.
@@ -321,6 +326,7 @@ gantt
 | Código P0 | Contrato GovernancePanel ↔ backend | 🟢 cerrado (2026-08-12) | — | Frontend consume contrato real (`triad.{bull,bear,contrarian}.score`, `controller.approved`, `judge.verdict|status`); 5 tests de regresión en `test_governance_contract.py` |
 | Código P0 | `except:` desnudo + 200 OK con error en body | 🟢 cerrado (2026-08-12) | — | `market.py`/`live.py` ahora levantan HTTPException 500; `except:` acotado a (AttributeError, TypeError, ValueError); 0 patrones restantes en routers |
 | Código P0 | Auth mínima global + `SECRET_KEY` que falla si no está seteado | 🟢 cerrado (2026-08-12) | — | `hmac.compare_digest` en `verify_api_key`; Settings valida SECRET_KEY fuera de development (default bloqueado: `test_secret_key_default_blocked_outside_development`). Nota: 25/27 endpoints siguen abiertos POR DECISIÓN (UI pública con repo público) — solo rutas de escritura RAG tienen key; el resto es deliberado mientras la UI sea pública |
+| Código P0 | Brecha 5 auditoría externa — cierre superficie API (handover §6.1/§6.2) | 🟢 cerrado por verificación (2026-08-24, Cline) | — | Verificado contra código más nuevo (dd47569): NO existe endpoint de escritura sin auth — los únicos 2 no-GET (POST governance record-prediction/knowledge/add) ya tienen `verify_api_key`; SECRET_KEY validator (`_require_secure_secret_key`, config.py:75-84) vigente + test pasando. La lectura "36/38 sin acceso" de la auditoría cuenta GETs de lectura (públicos por decisión de producto). Aportación: INVARIANTE nuevo `tests/test_api_write_auth.py` (inventario de escritura == 2 POST; toda ruta no-GET debe depender de `verify_api_key`; mecanismo compartido hmac.compare_digest) — la suite falla si un endpoint de escritura futuro se agrega sin auth. 8/8 tests auth en verde (3 nuevos + 5 existentes), ruff limpio, control negativo verificado. AUDITORIA_TECNICA.md §6 sincronizado |
 | Código P1 | Fechas hardcodeadas de `market.py` (2015-2024) | 🟢 cerrado (2026-08-12) | — | Las 4 rutas ahora usan `download_data(symbol, "2015-01-01")` sin fin fijo (mismo patrón que predict.py/governance.py) — default a hoy. 80/80 tests sin regresión |
 | Código P1 | Python 3.11 (Dockerfile) vs 3.9.6 (venv real) | 🟢 cerrado (2026-08-12, commit `a56e516`) | — | Dockerfile fijado a `python:3.9-slim` — alineado con el venv real |
 | Código P1 | README desactualizado (Redis, versión, endpoints) | 🟢 cerrado (2026-08-12, commit `a56e516`) | — | README sin Redis, versión 3.9, tabla con los 27 endpoints reales |

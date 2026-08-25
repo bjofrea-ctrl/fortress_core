@@ -177,13 +177,23 @@ de concurrencia.
 
 ## 6. API / backend
 
-**🟡 36 de 38 endpoints sin control de acceso** (era 25/27 — la superficie creció a 14 routers /
-38 endpoints y la auth no siguió el ritmo). Sólo `POST
-/governance/record-prediction` y `POST /governance/knowledge/add` requieren `X-API-Key`,
-comparado con string directa (no `secrets.compare_digest`). Default de `SECRET_KEY` en
-`config.py`: `"change-me-in-production"`. En este entorno el `.env` real lo sobreescribe
-(verificado sin exponer el valor), pero el código debería fallar al arrancar si no se
-configuró.
+**✅ CERRADO / RE-VERIFICADO EN CÓDIGO (2026-08-24, Brecha 5 handover §6.2, Cline)**:
+la superficie de ESCRITURA está 2/2 con auth — los únicos endpoints no-GET de toda la
+API son `POST /governance/record-prediction` y `POST /governance/knowledge/add`, ambos
+con `verify_api_key` (`hmac.compare_digest` contra `settings.SECRET_KEY`, governance.py:37)
+desde el cierre P0 del 2026-08-12. El "default inseguro" `change-me-in-production`
+(config.py:8) está BLOQUEADO fuera de development por el model_validator
+`_require_secure_secret_key` (config.py:75-84) con test
+`test_secret_key_default_blocked_outside_development` — vigente y pasando. El conteo
+"36/38 sin acceso" cuenta endpoints GET de LECTURA: abiertos POR DECISIÓN de producto
+(UI pública). INVARIANTE fijado hacia adelante: `tests/test_api_write_auth.py` (3 tests,
+incluye control de inventario) falla la suite si aparece cualquier endpoint de escritura
+sin `verify_api_key`. Nota: el módulo `opportunities_universe.py` NO es un router (no
+define endpoints; es la lista canónica del universo 50).
+
+**Era (lectura de la auditoría externa, desactualizada contra el código)**: 🟡 36 de 38
+endpoints sin control de acceso; sólo los 2 POST con `X-API-Key`; default de `SECRET_KEY`
+en `config.py`: `"change-me-in-production"` sin validación.
 
 *Sync 2026-08-23*: rate limit por IP agregado a los GET que disparan LLM real (`app/api/rate_limit.py`, Tanda B `217eb51`, con tests).
 
