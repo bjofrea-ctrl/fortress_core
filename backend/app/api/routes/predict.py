@@ -39,14 +39,12 @@ MACRO_TICKERS = {
 # con degradación a sample marcado. SAMPLE_FUNDAMENTALS vive en
 # app/core/edgar_fundamentals.py (junto al cargador EDGAR).
 
-# Datos de predicción (Polymarket-like) — valores de ejemplo actualizables
-SAMPLE_PREDICTION_DATA = {
-    "recession_prob": 0.22,      # Probabilidad de recesión en 12 meses
-    "fed_cut_prob": 0.75,        # Probabilidad de recorte de tasas en 2025
-    "inflation_prob": 0.15,      # Probabilidad de inflación > 4%
-    "default_prob": 0.05,        # Probabilidad de default EEUU
-    "unemployment_prob": 0.18,   # Probabilidad de desempleo > 5%
-}
+# prediction_data (señales estilo Polymarket) nunca se conectó a una fuente
+# real -- se pasaba un dict hardcodeado (SAMPLE_PREDICTION_DATA) como si fuera
+# dato real, entrando al composite_score etiquetado "Polymarket: ..." sin
+# ningún marcador de que era de ejemplo (violación de ONBOARDING.md regla #4).
+# Eliminado 2026-08-25 (hallazgo H1.1, auditoría externa GLM). engine.analyze()
+# recibe prediction_data=None hasta que haya una fuente real conectada.
 
 
 def get_fundamentals_api(symbol: str) -> Optional[dict]:
@@ -173,7 +171,7 @@ async def analyze_symbol(symbol: str, regime_state: int = Query(0, ge=0, le=3)):
             regime_state=regime_state,
             fundamentals=fundamentals,
             macro_data=macro_data,
-            prediction_data=SAMPLE_PREDICTION_DATA,
+            prediction_data=None,
             sentiment_data=sentiment_data,
         )
 
@@ -208,7 +206,7 @@ async def analyze_universe(regime_state: int = Query(0, ge=0, le=3)):
                 regime_state=regime_state,
                 fundamentals=fundamentals,
                 macro_data=macro_data,
-                prediction_data=SAMPLE_PREDICTION_DATA,
+                prediction_data=None,
                 sentiment_data=sentiment_data,
             )
             results.append({
