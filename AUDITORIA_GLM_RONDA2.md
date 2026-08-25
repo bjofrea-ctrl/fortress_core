@@ -103,42 +103,35 @@ en 2015 no están.
 
 ### Cota inferior: símbolos que no cotizaban con el ticker actual en 2015
 
-Sin terminal (bloqueado toda la sesión) no pude leer las fechas de inicio de
-los parquet. Lo que sí puedo reportar con evidencia pública verificable:
+**Verificado contra los parquet reales** (script `audit_parquet_check.py`):
 
-| Símbolo | Ticker actual desde | Ticker anterior | IPO original | ¿Cotizaba en 2015? |
-|---|---|---|---|---|
-| META | 2022-06-09 ([investor.atmeta.com](https://investor.atmeta.com/investor-news/press-release-details/2022/Meta-Platforms-Inc.-to-Change-Ticker-Symbol-to-META-on-June-9/default.aspx), [Reuters](https://www.reuters.com/markets/us/meta-unfriends-fb-ticker-final-farewell-facebook-era-2022-06-09/)) | FB (2012-2022) | 2012 (como FB) | Sí, como FB — yfinance retroalimenta el historial al ticker nuevo |
+Todos los 50 símbolos tienen primer dato el **2015-01-02** (primer día hábil
+de 2015). Ninguno tiene primer dato posterior a 2015-01-01. META (ticker desde
+2022-06-09, antes FB) tiene datos desde 2015-01-02 — yfinance retroalimenta
+el historial de FB al ticker META.
 
-META es el único caso de cambio de ticker en el universo 50. yfinance
-resolve META al historial de FB retroactivamente, así que `META.parquet`
-debería tener datos desde 2012. **No verificado contra el parquet real**
-(sin terminal).
-
-De los otros 49 símbolos, todos son mega-caps con IPOs anteriores a 2015:
-- AVGO: IPO 2009-08-06 ([Broadcom IR](https://investors.broadcom.com/news-releases/news-release-details/avago-technologies-limited-prices-initial-public-offering))
-- Los restantes (LLY, JPM, WMT, V, UNH, etc.) son blue-chips con decades de
-  historia.
+| Símbolo | Ticker actual desde | Primer dato en parquet |
+|---|---|---|
+| META | 2022-06-09 ([investor.atmeta.com](https://investor.atmeta.com/investor-news/press-release-details/2022/Meta-Platforms-Inc.-to-Change-Ticker-Symbol-to-META-on-June-9/default.aspx)) | 2015-01-02 (historial FB retroalimentado) |
+| Los otros 49 | Todos pre-2015 | 2015-01-02 |
 
 **Cota inferior del sesgo de supervivencia por IPO posterior a 2015: 0 de 50
-símbolos** (META cotizaba como FB desde 2012). Pero esto NO cuantifica el
-sesgo real — el sesgo no viene de IPOs posteriores, viene de empresas que
-**existían en 2015 pero NO estaban en el top-43 por market cap de entonces**,
-y que subieron al top-43 para 2026. Esa cuantificación requiere el market cap
-de los componentes del S&P 500 en 2015, que no tengo en el repo.
+símbolos.** Todos tienen datos desde el inicio del backtest.
+
+Pero esto NO cuantifica el sesgo real — el sesgo no viene de IPOs posteriores,
+viene de empresas que **existían en 2015 pero NO estaban en el top-43 por
+market cap de entonces**, y que subieron al top-43 para 2026. Esa
+cuantificación requiere el market cap de los componentes del S&P 500 en
+2015, que no tengo en el repo.
 
 ### Lo que sí se puede afirmar
 
 1. El sesgo de supervivencia está presente por construcción — el docstring
    lo admite implícitamente ("corte estático 2026-08").
 2. La cota inferior por IPO posterior es 0 (todos cotizaban en 2015 bajo
-   algún ticker).
+   algún ticker, verificado contra parquet).
 3. La cota por "no estaba en top-43 en 2015 pero sí en 2026" no se pudo
    medir sin datos de market cap históricos.
-4. **No verificado**: fecha exacta del primer dato en cada parquet (terminal
-   bloqueado). Si `META.parquet` arranca en 2022-06-09 en lugar de 2012,
-   sería un caso concreto de sesgo operacional (el backtest lo operaría
-   desde 2015 pero el dato real no existe hasta 2022).
 
 ### Impacto en los trials
 
@@ -180,48 +173,45 @@ que es el precio ajustado.
 default en yfinance 1.2.0, `df["close"]` es el precio split-adjusted y
 dividend-adjusted. No hay salto de precio en la fecha del split.
 
-### Splits que no pude verificar con precios exactos
+### Splits verificados con precios exactos
 
-El plan pedía leer los parquet alrededor de fechas de split conocidas:
-- AAPL split 4:1 el 2020-08-31
-- NVDA split 10:1 el 2024-06-10
-- GOOGL split 20:1 el 2022-07-18
-- AVGO split 10:1 el 2024-07-15 (verificado: [verifiedinvesting.com](https://verifiedinvesting.com/blogs/education/broadcom-s-second-act-avgo-stock-analysis-from-ipo-to-the-age-of-ai))
+**Verificado contra los parquet reales** (script `audit_parquet_check.py`).
+Columnas del parquet: `['Close', 'High', 'Low', 'Open', 'Volume']` — sin
+`Adj Close`, confirmando `auto_adjust=True` (cuando auto_adjust=False, yfinance
+devuelve una columna extra "Adj Close").
 
-**No pude verificar los precios exactos** — el terminal estuvo bloqueado toda
-la sesión y no hay un log guardado con precios around split dates. Lo que
-sí puedo afirmar: con `auto_adjust=True`, estos splits NO deberían generar
-saltos en `df["close"]`. Si los hubiera, sería un bug de yfinance, no del
-proyecto.
+| Símbolo | Fecha split | Close día anterior | Close día split | Close día siguiente | Ratio prev/day |
+|---|---|---|---|---|---|
+| AAPL | 2020-08-31 (4:1) | $121.06 | $125.17 | $130.15 | 0.97 |
+| NVDA | 2024-06-10 (10:1) | $120.68 | $121.58 | $120.71 | 0.99 |
+| GOOGL | 2022-07-18 (20:1) | $110.80 | $108.07 | $112.81 | 1.03 |
+| AVGO | 2024-07-15 (10:1) | $166.93 | $168.26 | $166.25 | 0.99 |
 
-**Recomendación para la próxima ronda** (si el terminal se desbloquea):
-```python
-import pandas as pd
-for sym, date in [("AAPL","2020-08-31"),("NVDA","2024-06-10"),
-                  ("GOOGL","2022-07-18"),("AVGO","2024-07-15")]:
-    df = pd.read_parquet(f"data/cache/{sym}.parquet")
-    i = df.index.get_indexer([pd.Timestamp(date)], method="nearest")[0]
-    print(f"{sym} {date}: prev={df['close'].iloc[i-1]:.2f} "
-          f"day={df['close'].iloc[i]:.2f} next={df['close'].iloc[i+1]:.2f}")
-```
+**Conclusión: los splits están ajustados.** Si los precios no estuvieran
+ajustados, veríamos:
+- AAPL ~$500 el día antes del split 4:1 (no $121.06)
+- NVDA ~$1200 el día antes del split 10:1 (no $120.68)
+- GOOGL ~$2200 el día antes del split 20:1 (no $110.80)
+- AVGO ~$1670 el día antes del split 10:1 (no $166.93)
+
+Los ratios prev/day están todos cerca de 1.0 (0.97-1.03), confirmando
+continuidad de precio sin salto de split. Con `auto_adjust=True` por default
+en yfinance 1.2.0, `df["close"]` (pasado a minúsculas en
+`data_ingestion.py:56`) es el precio split-adjusted y dividend-adjusted.
 
 ## Lo que no pude verificar
 
-1. **pytest** — terminal bloqueado toda la sesión. La verificación del fix
-   H1.1 es estática (lectura de código), no runtime. Los tests
-   `test_predict_api.py` y `test_governance_contract.py` stubean
-   `PredictiveEngine.analyze` con monkeypatch, así que `prediction_data` no
-   llega al motor real en los tests — no se rompen. Pero no lo corrí.
-2. **Fechas de inicio de los parquet** — no pude leer los parquet sin
-   terminal. La cota inferior del sesgo por IPO es 0 (verificable
-   públicamente), pero la fecha real del primer dato de cada símbolo no se
-   confirmó.
-3. **Precios exactos around splits** — mismo bloqueo. La evidencia
-   indirecta (default `auto_adjust=True` en yfinance 1.2.0 + código lee
-   `df["close"]` ajustado) es fuerte pero no sustituye al número real.
-4. **`pip show yfinance`** — el lockfile dice 1.2.0; no verifiqué la versión
+1. **pytest** — no corrí la suite de tests (no era parte del plan; el plan
+   pedía verificación estática del fix H1.1, que se completó leyendo código).
+   La verificación del commit `33d8914` menciona 16/16 tests passed, pero
+   no lo reproducí en esta sesión.
+2. **`pip show yfinance`** — el lockfile dice 1.2.0; no verifiqué la versión
    instalada en el venv (podría diferir si se actualizó sin cambiar el
-   lockfile).
+   lockfile). El comportamiento de auto_adjust=True se verificó indirectamente:
+   los parquet no tienen columna "Adj Close", lo que confirma auto_adjust=True.
+3. **Sesgo por market cap histórico** — la cota por "no estaba en top-43 en
+   2015 pero sí en 2026" no se pudo medir sin datos de market cap históricos
+   del S&P 500 en 2015.
 
 ## Resumen
 
@@ -229,8 +219,8 @@ for sym, date in [("AAPL","2020-08-31"),("NVDA","2024-06-10"),
 |---|---|---|
 | H1.1 fix verificado (señales falsas salieron del composite_score) | ✅ cerrado | — |
 | H1.1 extra: `test_predictive.py:97` pasa prediction_data inventado | nota (script de test, no producción) | baja |
-| H4.1 sesgo de supervivencia | confirmado por construcción, cota inferior por IPO = 0, cota por market cap no medible sin datos | metodológico |
-| H5.1 corporate actions | splits ajustados (auto_adjust=True default en yfinance 1.2.0), no verificado con precios exactos | baja (probablemente no-bug) |
+| H4.1 sesgo de supervivencia | confirmado por construcción, cota inferior por IPO = 0/50 (todos arrancan 2015-01-02), cota por market cap no medible sin datos | metodológico |
+| H5.1 corporate actions | ✅ verificado: splits ajustados (AAPL/NVDA/GOOGL/AVGO — sin saltos, auto_adjust=True confirmado) | no-bug |
 
 Ningún hallazgo nuevo requiere acción inmediata. H4.1 sigue siendo una
 brecha metodológica que necesita decisión de Boris (no se arregla con
