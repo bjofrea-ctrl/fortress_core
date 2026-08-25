@@ -67,3 +67,6 @@ nohup.out
 
 # Heartbeat local del coordinador (Claude Code) — estado efímero, no se trackea
 .claude-heartbeat
+
+# Señal de merge pendiente de aprobación — efímero, no se trackea
+.pending-merge.md

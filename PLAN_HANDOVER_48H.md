@@ -38,6 +38,28 @@ el traspaso operativo. Leer completo antes de actuar.
 aprobados. Solo verificar que el cierre real coincide con lo aprobado antes
 de mergear a main.
 
+## 1.1 Gate de aprobación de merges (2026-08-25, autorizado por Boris)
+
+**Ningún merge a `main` se completa (el `git commit` final tras el
+cherry-pick) sin aprobación explícita de Claude Code.** Protocolo:
+
+1. El agente prepara el merge COMPLETO: `git cherry-pick -n` (rango
+   completo), corre tests/build él mismo, verifica que todo esté limpio —
+   pero **NO ejecuta el commit final**.
+2. Escribe (o sobreescribe) `/Users/boris/Desktop/fortress_core/.pending-merge.md`
+   (gitignoreado, no se trackea) en la raíz del repo con: qué se va a
+   mergear (commits/rango origen), resumen de qué se verificó (tests
+   corridos, resultado exacto), y cualquier duda o riesgo detectado.
+3. Claude Code tiene un `Monitor` que detecta este archivo apareciendo o
+   cambiando y revisa apenas se entera — no hace falta avisar por otro
+   canal, pero un mensaje directo por `orca terminal` acelera la revisión.
+4. Claude Code aprueba (responde "adelante" o similar) o pide cambios. Solo
+   con la aprobación explícita el agente completa `git commit` (+ push si
+   corresponde).
+5. Excepción: cambios ya pre-aprobados en este mismo documento (ej. cierres
+   de trials con criterio ya revisado como §45) igual pasan por el gate —
+   la aprobación de DISEÑO no es aprobación de MERGE, son pasos distintos.
+
 ## 2. Disciplina de merge a main (no negociable)
 
 - **Nunca usar `git merge-tree` (legacy)** — da conflictos espurios,
