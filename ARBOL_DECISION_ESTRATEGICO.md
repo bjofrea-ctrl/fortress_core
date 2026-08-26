@@ -89,6 +89,26 @@ vez no pasa DSR OOS (0.61 < 0.95) ni PBO (0.47, overfitting sustancial).
   en vez de uniforme — screening barato primero (rank IC por sector), antes
   de comprometer presupuesto Bonferroni en confirmación cara.
 
+  **Extensión (Boris, 2026-08-26)** — dos dimensiones más de la misma
+  heterogeneidad, no cubiertas hoy:
+  - **Sensibilidad a liquidez**: el motor ya tiene `volume_ratio>=1.0` como
+    GATE binario (`signal_engine.py`), pero es un filtro de pasa/no-pasa,
+    no una segmentación — no distingue si el factor se comporta distinto
+    en régimen de liquidez abundante vs escasa dentro de los que sí pasan
+    el gate. Hipótesis: nombres más líquidos podrían absorber momentum de
+    forma distinta a los menos líquidos del mismo universo de 50.
+  - **Oferta/demanda y factores geopolíticos** (analogía de Boris: la
+    sandía en invierno es más cara por oferta escasa; el petróleo se mueve
+    por oferta/demanda + decisiones de gobiernos/cadenas de suministro).
+    Esto aplica con más fuerza a *commodities* que a las acciones del
+    universo actual (50 US large-cap) — más relevante si algún día se
+    evalúa Camino D (nueva fuente de datos/activo) que al Camino A tal
+    como está hoy. Para equities, el equivalente más cercano y ya
+    accesible sería sensibilidad sectorial a shocks de oferta (ej. energía/
+    materiales vs. sectores no expuestos a insumos físicos) — overlap
+    parcial con la segmentación sectorial de arriba, no una dimensión 100%
+    aparte.
+
 **Gate de salida de A**: cuando A1-A6 estén cerrados (o descartados con
 evidencia) y A3 confirme que el ledger cuenta bien, recién ahí se considera
 agotado el camino A — con evidencia, no por cansancio.
