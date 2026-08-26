@@ -613,7 +613,10 @@ def phase_enter(dry_run: bool, only_symbols: Optional[List[str]]) -> int:
 def _make_client_factory():
     def factory():
         from app.core.execution_costs import AlpacaPaperClient
-        return AlpacaPaperClient()
+        return AlpacaPaperClient(
+            api_key=settings.ALPACA_PAPER_API_KEY,
+            secret_key=settings.ALPACA_PAPER_SECRET_KEY,
+        )
     return factory
 
 
