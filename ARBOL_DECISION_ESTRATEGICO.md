@@ -146,6 +146,54 @@ vez no pasa DSR OOS (0.61 < 0.95) ni PBO (0.47, overfitting sustancial).
   candidatos, qué ventana de anticipación, cómo evitar lookahead) antes de
   poder correrse.
 
+  **Traducción a diseño estadístico concreto (2026-08-26)** — toda la
+  filosofía de A6/A6.1 (frutas y estaciones, uva vs zanahoria frente a la
+  lluvia, cuadrantes de Dalio) se traduce a UNA idea estadística estándar:
+  el efecto de un factor (momentum+RSI) no es uniforme entre activos — está
+  modulado por (a) el régimen macro vigente (M3) y (b) la sensibilidad
+  estructural propia de cada activo a esos mismos factores macro. En
+  finanzas esto es un modelo de **cargas factoriales condicionadas
+  (interacción factor×régimen×activo)** — nada exótico, es la misma lógica
+  de un modelo multi-factor (estilo Fama-French) aplicada con el M3 que ya
+  existe. Tres piezas, escalando de barato a caro, sin descartar ninguna:
+
+  1. **Perfil de sensibilidad por activo (screening, barato, NO consume
+     Bonferroni — es perfilado, no trial)**: para cada uno de los 50
+     activos, regresión rolling de sus retornos contra los MISMOS factores
+     macro que M3 ya calcula (`growth_SPY/EFA/QQQ`, `inflation_GLD/DBC/TIP`,
+     `rates_TLT/AGG`, VIX). Da el "perfil de cultivo" de cada activo — cuánto
+     sufre o se beneficia cada uno de cada factor — con datos que el
+     proyecto ya carga para M3, sin fuente nueva.
+  2. **Rank IC condicionado, no agrupado (screening, barato)**: en vez de un
+     único IC de momentum+RSI pooled sobre los 50 (como todos los trials
+     hasta hoy), calcular el IC SEPARADO dentro de cada celda
+     (cuadrante M3 × bucket de sensibilidad del paso 1). Es la traducción
+     exacta de "uva vs zanahoria cuando llueve": mismo factor, folds
+     distintos según sensibilidad conocida. Si el IC condicionado es
+     sustancialmente distinto entre celdas, confirma que el pooled diluye
+     señal real — recién ahí vale la pena la confirmación cara.
+  3. **Backtest confirmatorio (caro, SÍ consume Bonferroni, pre-registro
+     obligatorio)**: solo si el paso 2 muestra heterogeneidad real, un
+     trial formal que rote hacia los activos de sensibilidad favorable
+     según el cuadrante M3 vigente, medido con el mismo rigor DSR/PBO de
+     siempre — mismo criterio de éxito binario, mismo umbral del ledger.
+
+  **Dónde encaja `BayesianOnlineUpdater` (verificado en código, no
+  hipotético)**: ya generaliza a esto sin construir nada nuevo —
+  `probabilistic_engine.py` mantiene pesos por CLAVE de texto arbitraria
+  (patrón ya en uso: `f"{regimen}_{factor}"` en `triad_agents.py`).
+  Extender la clave a `f"{regimen}_{sector}_{factor}"` le permitiría
+  aprender pesos regimen×sector online desde `pnl_r` real, sin tocar la
+  clase. **Limitación honesta**: cada clave aprende de forma INDEPENDIENTE
+  (Beta-Binomial simple, sin partial pooling/shrinkage entre celdas
+  relacionadas) — con 4 regímenes × ~11 sectores GICS sobre solo 50
+  activos, la mayoría de las celdas tendrían muy pocas observaciones para
+  aprender de forma confiable por sí solas. Un modelo jerárquico bayesiano
+  de verdad (que preste fuerza estadística entre sectores relacionados)
+  sería más robusto, pero eso sí es código nuevo, no una extensión de
+  nombres de clave — queda anotado como mejora futura si el paso 2 confirma
+  que vale la pena, no como parte del diseño mínimo.
+
 **Gate de salida de A**: cuando A1-A6 estén cerrados (o descartados con
 evidencia) y A3 confirme que el ledger cuenta bien, recién ahí se considera
 agotado el camino A — con evidencia, no por cansancio.
