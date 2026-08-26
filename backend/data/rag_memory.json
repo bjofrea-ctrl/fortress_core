@@ -34,6 +34,13 @@
       "context": "Triad=COMPRAR, Controller=COMPRAR, Professor=REJECT",
       "outcome": "Juez emiti\u00f3 veredicto final",
       "timestamp": "2026-08-26 07:54:50.089143"
+    },
+    {
+      "agent": "SYSTEM",
+      "lesson": "Conflicto resuelto en SPY: MANTENER",
+      "context": "Triad=MANTENER, Controller=MANTENER, Professor=APPROVE",
+      "outcome": "Juez emiti\u00f3 veredicto final",
+      "timestamp": "2026-08-26 07:56:02.590878"
     }
   ],
   "agent_knowledge": {
@@ -41,6 +48,7 @@
       "Conflicto resuelto en AAPL: COMPRAR",
       "Conflicto resuelto en AAPL: COMPRAR",
       "Conflicto resuelto en AAPL: COMPRAR",
+      "Conflicto resuelto en SPY: MANTENER",
       "Conflicto resuelto en SPY: MANTENER",
       "Conflicto resuelto en SPY: MANTENER"
     ]
