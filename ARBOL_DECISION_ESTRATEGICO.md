@@ -89,6 +89,17 @@ vez no pasa DSR OOS (0.61 < 0.95) ni PBO (0.47, overfitting sustancial).
   en vez de uniforme — screening barato primero (rank IC por sector), antes
   de comprometer presupuesto Bonferroni en confirmación cara.
 
+  **Aclaración de alcance (Boris, 2026-08-26) — esto es la versión FÁCIL,
+  no A6.1 más abajo**: no hace falta predecir cuándo cambia el régimen. La
+  pregunta es más simple — analogía de Boris: "es verano y hay poca lluvia
+  (dato YA conocido) — ¿plantarías uvas para buen vino, o manzanas?". M3 ya
+  clasifica el cuadrante ACTUAL de forma reactiva (funciona, ya probado en
+  §46) — lo que falta es la mitad más simple: dado que M3 ya dice en qué
+  cuadrante estamos HOY, decidir qué sector/activo favorecer en ESE
+  cuadrante conocido. Es abordable con lo que ya existe (M3 + universo de
+  50), no requiere pronóstico de nada — es la prioridad práctica antes que
+  A6.1.
+
   **Extensión (Boris, 2026-08-26)** — dos dimensiones más de la misma
   heterogeneidad, no cubiertas hoy:
   - **Sensibilidad a liquidez**: el motor ya tiene `volume_ratio>=1.0` como
