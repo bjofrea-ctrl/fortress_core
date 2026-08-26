@@ -41,6 +41,12 @@ Cline como implementadores), 2026-08-23/24. Verificar contra `git log --oneline 
    2026-08-12); SECRET_KEY validator vigente. Aportación real: test de invariante
    `test_api_write_auth.py` (3 tests). Ver fila en la tabla maestra y §6 de
    AUDITORIA_TECNICA.md.
+6. **Dashboard — visual de inversiones sintéticas** (pedido por Boris, 2026-08-26)
+   — 🔴 SIN EMPEZAR. Objetivo: acceso visual en el dashboard a cómo evolucionan
+   las posiciones de paper trading (Frente 2, `signal_ledger`/`monthly_report`)
+   — abiertas, cerradas, pnl_r acumulado. Empezar cuando cierren los frentes en
+   curso ahora mismo (Checkpoint Semana 1, H3.1/A3, integración OpenRouter de la
+   tríada) — no antes, así no compite por foco con lo que ya está en vuelo.
 
 Si alguna de estas cambió de estado cuando leas esto, actualizá esta sección
 (borrala o marcá cerrado) — no la dejes desactualizada.
