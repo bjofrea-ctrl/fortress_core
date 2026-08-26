@@ -305,7 +305,8 @@
     "umbral_aplicado": "DSR>=0.90 en >=2/3 (n_trials=17, registro previo — sin slot nuevo)",
     "veredicto": "NO_CUMPLE",
     "artefacto": "data/cache/fase06_retest_20260812_175055.txt",
-    "seccion_doc": "§0.6.1"
+    "seccion_doc": "§0.6.1",
+    "re_test_de": "trial_08_sentimiento"
   },
   {
     "id": "fase06_retest_fundamentales",
@@ -316,7 +317,8 @@
     "umbral_aplicado": "DSR>=0.90 en >=2/3 (n_trials=17, registro previo — sin slot nuevo)",
     "veredicto": "NO_CUMPLE",
     "artefacto": "data/cache/fase06_retest_20260812_175055.txt",
-    "seccion_doc": "§0.6.1"
+    "seccion_doc": "§0.6.1",
+    "re_test_de": "trial_09_fundamentales"
   },
   {
     "id": "lead_lag_diag",
