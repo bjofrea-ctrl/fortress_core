@@ -68,7 +68,28 @@ vez no pasa DSR OOS (0.61 < 0.95) ni PBO (0.47, overfitting sustancial).
   Kilo) — son hipótesis independientes que alimentan el mismo ledger, no
   dos caminos separados.
 
-**Gate de salida de A**: cuando A1-A5 estén cerrados (o descartados con
+- **A6 — Heterogeneidad sectorial/por tipo de activo (Boris, 2026-08-26)**:
+  hueco real, verificado — hasta ahora TODOS los trials (§13-§47) aplicaron
+  la señal de forma UNIFORME a los 50 nombres del universo, sin diferenciar
+  por sector o tipo de activo. El régimen macro (M3) condiciona el mercado
+  entero (temporada general), no la "temporada" específica de cada activo; la
+  estacionalidad de A4 es de calendario, no de comportamiento por tipo de
+  activo. Analogía de Boris: no todas las frutas se dan en la misma época ni
+  responden igual a la misma condición climática (una helada afecta distinto
+  a la uva que a la sandía) — un tech stock y una utility pueden responder
+  distinto al MISMO indicador porque tienen dinámicas de precio y
+  vulnerabilidades estructuralmente distintas. Hipótesis: con 50 nombres
+  heterogéneos tratados igual, una señal sectorial real podría diluirse en
+  el promedio — coherente con que el edge nunca superó DSR pese a IC pooled
+  positivo en varios factores. Prioriza profundidad (conocer a cabalidad el
+  comportamiento de un sector/activo) por sobre diversificar a ciegas.
+  Diseño pendiente de pre-registro: segmentar el universo por sector
+  (GICS o clasificación equivalente disponible) y medir si el factor
+  momentum+RSI (o algún otro ya probado) tiene IC/DSR distinto por segmento
+  en vez de uniforme — screening barato primero (rank IC por sector), antes
+  de comprometer presupuesto Bonferroni en confirmación cara.
+
+**Gate de salida de A**: cuando A1-A6 estén cerrados (o descartados con
 evidencia) y A3 confirme que el ledger cuenta bien, recién ahí se considera
 agotado el camino A — con evidencia, no por cansancio.
 
@@ -143,11 +164,12 @@ si aplica a lo específico que se propone.
 
 ```
 Camino A (actual, EN CURSO)
-├─ A1 Brecha 2 M3 standalone ........... Kilo, en curso
-├─ A2 Re-test sentimiento/macro×barreras  si A1 falla
-├─ A3 Verificar H3.1 (Bonferroni re_test) antes de cerrar A
+├─ A1 Brecha 2 M3 standalone ........... CERRADO, NO_INTERPRETABLE (§46, 2026-08-26)
+├─ A2 Re-test sentimiento/macro×barreras  si A1 falla (no aplica, A1 no fue NO_CUMPLE)
+├─ A3 Verificar H3.1 (Bonferroni re_test)  CERRADO, garantías implementadas (2026-08-26)
 ├─ A4 Extensiones baratas (estacionalidad, 52w-high, fundamentales mejor cobertura)
-└─ A5 Quality+Value sistemático (Buffett's Alpha) ... PARALELO a A1, mismo ledger
+├─ A5 Quality+Value sistemático (Buffett's Alpha) . CERRADO, NO_CUMPLE (§47, 2026-08-26)
+└─ A6 Heterogeneidad sectorial/por activo .......... pendiente de pre-registro (Boris, 2026-08-26)
         │
         ▼ (si A se agota con evidencia)
 Camino B (universo distinto, misma infra)
