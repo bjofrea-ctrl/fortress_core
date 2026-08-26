@@ -228,6 +228,81 @@ def test_ledger_row_payload_marca_triple_condicion_b():
     assert _json.loads(real["factors_json"]) == {}
 
 
+# --------------------------------- integración ledger real (merge 838934b)
+
+def test_net_return_r_descuenta_costs_y_cae_en_casos_borde():
+    c = 0.0005 + 0.0005
+    esperado = ((110 * (1 - c)) / (100 * (1 + c))) - 1
+    assert pl._net_return_r(100.0, 110.0) == pytest.approx(esperado, abs=1e-9)
+    assert pl._net_return_r(None, 110.0, price_ref=100.0) == pytest.approx(esperado, abs=1e-9)
+    assert pl._net_return_r(None, None) == 0.0
+
+
+def test_plan_enter_capas_skip_ledger_y_broker():
+    state = pl.new_state()
+    sized = [{"symbol": "AAPL", "score": 0.7, "price_ref": 100.0, "qty": 5},
+             {"symbol": "MSFT", "score": 0.69, "price_ref": 200.0, "qty": 3},
+             {"symbol": "NVDA", "score": 0.68, "price_ref": 300.0, "qty": 2}]
+    plans = pl.plan_enter(state, "202609", sized, dt.date(2026, 9, 1),
+                          skip_sids={"MSFT__2026-09-01"}, held_symbols={"NVDA"})
+    by = {p["symbol"]: p for p in plans}
+    assert by["AAPL"]["status"] if False else "qty" in by["AAPL"]   # pasa a compra
+    assert by["MSFT"]["skip_reason"] == "ya_abierta_en_ledger"
+    assert by["NVDA"]["skip_reason"] == "posicion_existente_en_broker"
+    assert "skip_reason" not in by["AAPL"]
+
+
+def test_execute_con_ledger_real_roundtrip_abre_y_cierra(tmp_path):
+    from app.core.signal_ledger import SignalLedger
+    led = SignalLedger(db_path=str(tmp_path / "test_ledger.db"))
+    state = pl.new_state()
+    fecha = dt.date(2026, 9, 1)
+
+    class FillClient(FakeClient):
+        def submit_market_order(self, symbol, qty, side):
+            super().submit_market_order(symbol, qty, side)
+            return {"filled_avg_price": 100.0 if side == "buy" else 110.0,
+                    "status": "filled"}
+
+    buys = pl.plan_enter(state, "202609",
+                         [{"symbol": "AAPL", "score": 0.7, "price_ref": 100.0, "qty": 5}],
+                         fecha)
+    pl.execute_plans(buys, state, dry_run=False, phase="enter", ref=fecha,
+                     client_factory=lambda: FillClient(), ledger=led)
+    abiertas = led.open_orders()
+    assert len(abiertas) == 1 and abiertas[0]["signal_id"] == "AAPL__2026-09-01"
+    assert abiertas[0]["status"] == "open" and abiertas[0]["qty"] == 5
+
+    sells = pl.plan_exit(state) or pl.plan_exit_from_ledger(abiertas)
+    pl.execute_plans(sells, state, dry_run=False, phase="exit", ref=dt.date(2026, 9, 30),
+                     client_factory=lambda: FillClient(), ledger=led)
+    assert led.open_orders() == []
+    fila = led.fetch(symbol="AAPL")[0]
+    assert fila["status"] == "closed" and fila["exit_reason"] == "MONTH_END"
+    assert fila["pnl_r"] == pytest.approx(pl._net_return_r(100.0, 110.0), abs=1e-6)
+
+
+def test_override_llega_marcado_al_ledger_real_condicion_b(tmp_path):
+    from app.core.signal_ledger import SignalLedger
+    led = SignalLedger(db_path=str(tmp_path / "test_ledger.db"))
+    state = pl.new_state()
+    fecha = dt.date(2026, 9, 1)
+    buys = pl.plan_enter(state, "202609",
+                         [{"symbol": "TSLA", "score": 0.2, "price_ref": 250.0, "qty": 4,
+                           "checkpoint_override": True}], fecha)
+    pl.execute_plans(buys, state, dry_run=False, phase="enter", ref=fecha,
+                     client_factory=FakeClient, ledger=led)
+    import json as _json
+    row = led.open_orders()[0]
+    assert row["signal_id"].startswith("chkpt__")
+    assert _json.loads(row["factors_json"]) == {"checkpoint_override": True}
+    sells = pl.plan_exit(state)
+    pl.execute_plans(sells, state, dry_run=False, phase="exit", ref=dt.date(2026, 9, 30),
+                     client_factory=FakeClient, ledger=led)
+    cerrada = led.fetch(symbol="TSLA")[0]
+    assert cerrada["exit_reason"].startswith("OVERRIDE_MECANISMO")
+
+
 # -------------------------------------------------------------- calendario
 
 def test_month_bounds_primer_y_ultimo_habil_desde_indice_sintetico():

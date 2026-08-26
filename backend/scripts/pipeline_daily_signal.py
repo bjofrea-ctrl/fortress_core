@@ -289,11 +289,15 @@ def sizing(signals: List[Dict[str, Any]], budget: float) -> List[Dict[str, Any]]
 
 
 def plan_enter(state: Dict[str, Any], month: str, sized: List[Dict[str, Any]],
-               entry_date: dt.date, only_symbols: Optional[List[str]] = None) -> List[Dict[str, Any]]:
+               entry_date: dt.date, only_symbols: Optional[List[str]] = None,
+               skip_sids: Optional[set] = None,
+               held_symbols: Optional[set] = None) -> List[Dict[str, Any]]:
     """Planes de compra; salta signal_ids ya registrados (idempotencia).
 
-    Los trades con checkpoint_override llevan sid prefijado chkpt__ para que
-    jamás colisionen (ni se mezclen) con señales genuinas en el estado/ledger.
+    Capas anti-duplicado (en orden): estado propio -> ledger real (skip_sids)
+    -> posición ya tenida en el broker (held_symbols). Los trades con
+    checkpoint_override llevan sid prefijado chkpt__ para que jamás colisionen
+    ni se mezclen con señales genuinas en el estado/ledger.
     """
     plans = []
     for o in sized:
@@ -301,10 +305,21 @@ def plan_enter(state: Dict[str, Any], month: str, sized: List[Dict[str, Any]],
             continue
         override = bool(o.get("checkpoint_override"))
         sid = (CHECKPOINT_SID_PREFIX if override else "") + f"{o['symbol']}__{entry_date.isoformat()}"
-        if sid in state["entries"] or (not override and f"{o['symbol']}__{entry_date.isoformat()}" in state["entries"]):
+        plain_sid = f"{o['symbol']}__{entry_date.isoformat()}"
+        if sid in state["entries"] or (not override and plain_sid in state["entries"]):
             plans.append({"action": "buy", "symbol": o["symbol"], "sid": sid,
                           "checkpoint_override": override,
                           "skip_reason": "ya_registrado_en_estado"})
+            continue
+        if skip_sids and (sid in skip_sids or plain_sid in skip_sids):
+            plans.append({"action": "buy", "symbol": o["symbol"], "sid": sid,
+                          "checkpoint_override": override,
+                          "skip_reason": "ya_abierta_en_ledger"})
+            continue
+        if held_symbols and o["symbol"] in held_symbols:
+            plans.append({"action": "buy", "symbol": o["symbol"], "sid": sid,
+                          "checkpoint_override": override,
+                          "skip_reason": "posicion_existente_en_broker"})
             continue
         plans.append({"action": "buy", "symbol": o["symbol"], "sid": sid,
                       "qty": o["qty"], "price_ref": o["price_ref"],
@@ -324,13 +339,27 @@ def plan_exit(state: Dict[str, Any], only_symbols: Optional[List[str]] = None) -
     return plans
 
 
+def _net_return_r(buy_fill: Optional[float], sell_fill: Optional[float],
+                  price_ref: Optional[float] = None) -> float:
+    """Retorno neto de costs como pnl_r (denominador r=1: la def congelada no
+    tiene stops — limitación §7 declarada, misma del backtest mensual)."""
+    c = float(settings.COST_PER_SIDE) + 0.0005
+    buy = float(buy_fill if buy_fill else (price_ref or 0.0))
+    sell = float(sell_fill or 0.0)
+    if buy <= 0 or sell <= 0:
+        return 0.0
+    return ((sell * (1 - c)) / (buy * (1 + c))) - 1.0
+
+
 def execute_plans(plans: List[Dict[str, Any]], state: Dict[str, Any],
                   dry_run: bool, phase: str, ref: dt.date,
-                  client_factory=None) -> List[Dict[str, Any]]:
+                  client_factory=None, ledger=None) -> List[Dict[str, Any]]:
     """Ejecuta planes contra el cliente paper; muta y devuelve resultados por plan.
 
     En dry_run NUNCA construye cliente ni manda órdenes. En real, una orden
     rechazada/time-out se registra como error en la entrada y NO corta el resto.
+    Si se pasa `ledger` (SignalLedger real), compra abre fila (open_order) y
+    venta la cierra (close_order) — fuente de verdad desde merge 838934b.
     """
     results = []
     client = None
@@ -375,12 +404,26 @@ def execute_plans(plans: List[Dict[str, Any]], state: Dict[str, Any],
                 "buy_fill": fill, "buy_client_order_id": coid,
                 "prev_error": (prev or {}).get("error"),
             }
+            if ledger is not None:
+                ledger.open_order(
+                    p["sid"], p["symbol"], ref.isoformat(), p["qty"],
+                    float(fill) if fill is not None else float(p.get("price_ref") or 0.0),
+                    factors=({"checkpoint_override": True} if p.get("checkpoint_override") else None),
+                )
         else:
-            e = state["entries"][p["sid"]]
-            e.update({"status": "CLOSED", "exit_date": ref.isoformat(),
-                      "sell_fill": fill, "sell_client_order_id": coid})
-            if e.get("checkpoint_override"):
-                e["exit_note"] = OVERRIDE_NOTE
+            e = state["entries"].get(p["sid"])
+            override = bool((e or p).get("checkpoint_override")) or p["sid"].startswith(CHECKPOINT_SID_PREFIX)
+            if e is not None:
+                e.update({"status": "CLOSED", "exit_date": ref.isoformat(),
+                          "sell_fill": fill, "sell_client_order_id": coid})
+                if override:
+                    e["exit_note"] = OVERRIDE_NOTE
+            if ledger is not None:
+                reason = f"{OVERRIDE_NOTE} | MONTH_END" if override else "MONTH_END"
+                pnl_r = _net_return_r((e or {}).get("buy_fill"), fill,
+                                      (e or {}).get("price_ref"))
+                ledger.close_order(p["sid"], ref.isoformat(), reason,
+                                   round(pnl_r, 6), fill)
         results.append(res)
     return results
 
@@ -464,22 +507,52 @@ def phase_decide(dry_run: bool, inject_symbols: Optional[List[str]] = None) -> i
     return 0
 
 
-def _equity_budget(lines: List[str]):
-    """Presupuesto: equity real vía extensión de Cline si existe; si no, fallback."""
+def plan_exit_from_ledger(open_rows: List[Dict[str, Any]],
+                          only_symbols: Optional[List[str]] = None) -> List[Dict[str, Any]]:
+    """Planes de venta desde el LEDGER REAL (fuente de verdad, robusto a pérdida
+    del estado propio). Marca override si el sid trae prefijo chkpt__."""
+    plans = []
+    for r in open_rows:
+        sym = r.get("symbol")
+        if only_symbols is not None and sym not in only_symbols:
+            continue
+        plans.append({"action": "sell", "symbol": sym,
+                      "sid": r.get("signal_id"),
+                      "qty": int(r.get("qty") or 0),
+                      "checkpoint_override": str(r.get("signal_id", "")).startswith(CHECKPOINT_SID_PREFIX)})
+    return [p for p in plans if p["qty"] >= 1]
+
+
+def _open_client_and_budget(lines: List[str], dry_run: bool):
+    """Un solo cliente para todo el run real: equity + posiciones + órdenes.
+
+    Devuelve (client|None, budget, source, held_symbols:set). En dry_run no
+    construye nada y devuelve fallback informativo.
+    """
+    if dry_run:
+        lines.append(f"Equity fuente: FALLBACK (dry-run) {PAPER_CAPITAL_BUDGET}")
+        return None, PAPER_CAPITAL_BUDGET, "dry_run_fallback", set()
     try:
         from app.core.execution_costs import AlpacaPaperClient
         client = AlpacaPaperClient()
-        if hasattr(client, "get_account"):
-            acct = client.get_account()
-            eq = float(acct.get("equity"))
-            lines.append(f"Equity fuente: get_account() = {eq}")
-            return eq, "account", client
-        client.close()
     except Exception as exc:  # noqa: BLE001
-        lines.append(f"[info] cuenta no disponible ({str(exc)[:80]}) -> fallback")
-    lines.append(f"Equity fuente: FALLBACK constante {PAPER_CAPITAL_BUDGET} "
-                 "(extension get_account de Cline aun no existe)")
-    return PAPER_CAPITAL_BUDGET, "fallback", None
+        lines.append(f"[info] cliente no construible ({str(exc)[:80]}) -> fallback")
+        return None, PAPER_CAPITAL_BUDGET, "fallback", set()
+    budget, src = PAPER_CAPITAL_BUDGET, "fallback_constante"
+    held: set = set()
+    try:
+        acct = client.get_account()
+        budget = float(acct.get("equity"))
+        src = "get_account"
+        lines.append(f"Equity fuente: get_account() = {budget}")
+    except Exception as exc:  # noqa: BLE001
+        lines.append(f"[info] get_account fallo ({str(exc)[:60]}) -> {src}={budget}")
+    try:
+        held = {p["symbol"] for p in client.get_positions()}
+        lines.append(f"Posiciones broker: {sorted(held) if held else 'ninguna'}")
+    except Exception as exc:  # noqa: BLE001
+        lines.append(f"[info] get_positions fallo ({str(exc)[:60]})")
+    return client, budget, src, held
 
 
 def phase_enter(dry_run: bool, only_symbols: Optional[List[str]]) -> int:
@@ -495,14 +568,26 @@ def phase_enter(dry_run: bool, only_symbols: Optional[List[str]]) -> int:
         dec = json.load(fh)
     signals = [s for s in dec["signals"]
                if only_symbols is None or s["symbol"] in only_symbols]
-    budget, src, _client = _equity_budget(lines)
+    client, budget, src, held = _open_client_and_budget(lines, dry_run)
     sized = sizing(signals, budget)
     lines.append(f"Senales: {len(signals)} | presupuesto {budget} ({src}) | tamanos: "
                  + ", ".join(f"{o['symbol']}x{o['qty']}" for o in sized))
     state = load_state()
-    plans = plan_enter(state, mk, sized, today, only_symbols=only_symbols)
+    ledger = None
+    skip_sids: set = set()
+    if not dry_run:
+        try:
+            from app.core.signal_ledger import SignalLedger
+            ledger = SignalLedger()
+            skip_sids = {r["signal_id"] for r in ledger.open_orders()}
+            lines.append(f"Open orders en ledger real: {len(skip_sids)}")
+        except Exception as exc:  # noqa: BLE001
+            lines.append(f"[warn] ledger no disponible ({str(exc)[:60]}) -> dedup solo estado propio")
+    plans = plan_enter(state, mk, sized, today, only_symbols=only_symbols,
+                       skip_sids=skip_sids, held_symbols=held)
     results = execute_plans(plans, state, dry_run, "enter", today,
-                            client_factory=(None if dry_run else _make_client_factory()))
+                            client_factory=(None if dry_run else (lambda: client)),
+                            ledger=ledger)
     state.setdefault("months", {}).setdefault(mk, {})["enter"] = (
         "dry_run" if dry_run else ("done" if all(r.get("status") != "error" for r in results) else "partial"))
     if not dry_run:
@@ -531,20 +616,37 @@ def phase_exit(dry_run: bool, only_symbols: Optional[List[str]]) -> int:
     lines = ["Pipeline EXIT — venta mecanica de posiciones OPEN del pipeline", "=" * 62]
     state = load_state()
     open_n = sum(1 for e in state["entries"].values() if e.get("status") == "OPEN")
-    lines.append(f"Posiciones OPEN en estado propio: {open_n}")
-    plans = plan_exit(state, only_symbols=only_symbols)
+    ledger = None
+    open_rows: List[Dict[str, Any]] = []
+    if not dry_run:
+        try:
+            from app.core.signal_ledger import SignalLedger
+            ledger = SignalLedger()
+            open_rows = ledger.open_orders()
+        except Exception as exc:  # noqa: BLE001
+            lines.append(f"[warn] ledger no disponible ({str(exc)[:60]}) -> estado propio")
+    if open_rows:
+        plans = plan_exit_from_ledger(open_rows, only_symbols)
+        source = f"ledger real ({len(open_rows)} abiertas)"
+    else:
+        plans = plan_exit(state, only_symbols=only_symbols)
+        source = "estado propio"
+    lines.append(f"Fuente de verdad EXIT: {source} | OPEN estado={open_n}")
     results = execute_plans(plans, state, dry_run, "exit", dt.date.today(),
-                            client_factory=(None if dry_run else _make_client_factory()))
+                            client_factory=(None if dry_run else _make_client_factory()),
+                            ledger=ledger)
     if not dry_run:
         save_state(state)
     lines += ["", f"Resultados ({'DRY-RUN' if dry_run else 'REAL'}):"]
     for r in results:
-        lines.append(f"  {r['action']:4s} {r['symbol']:5s} {r.get('status')}"
+        tag = " [OVERRIDE_MECANISMO]" if r.get("checkpoint_override") else ""
+        lines.append(f"  {r['action']:4s} {r['symbol']:5s} {r.get('status')}{tag}"
                      + (f" qty={r['qty']} fill={r.get('fill')}" if "qty" in r else "")
                      + (f" [{r.get('reason')}]" if r.get("reason") else ""))
-    if open_n == 0:
+    if not plans:
         lines.append("(sin posiciones: fase no-op — normal fuera de ciclo mensual)")
-    payload = {"phase": "exit", "dry_run": dry_run, "open_before": open_n, "results": results}
+    payload = {"phase": "exit", "dry_run": dry_run, "open_before": open_n,
+               "source": source, "results": results}
     _artifact(lines, payload, "exit")
     return 0
 
