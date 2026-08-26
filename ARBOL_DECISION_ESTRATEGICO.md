@@ -337,6 +337,31 @@ vez no pasa DSR OOS (0.61 < 0.95) ni PBO (0.47, overfitting sustancial).
   (secuenciación/automatización de laboratorio), economía espacial, fusión.
   Queda 100% conceptual — no hay pre-registro posible sin universo/datos.
 
+  **Método para asignar probabilidad sin certeza: razonamiento por clase de
+  referencia (Boris, 2026-08-26)**: cuando el caso es genuinamente nuevo (no
+  hay serie de tiempo que backtestear), la forma correcta de fundamentar una
+  probabilidad no es inventar una historia sobre ESE caso puntual (Kahneman/
+  Tversky lo llaman "inside view") sino compararlo contra la clase de casos
+  históricos/actuales que comparten su estructura ("outside view" /
+  *reference class forecasting*, formalizado por Flyvbjerg) y usar la tasa
+  base de esa clase. Es la versión cualitativa del mismo principio que
+  sostiene el backtest cuantitativo del proyecto — DISTINTA herramienta,
+  mismo espíritu: no confiar en la narrativa, confiar en el patrón repetido.
+  Ejemplo aplicado (robótica vs. jarrones de greda, ambos como candidatos a
+  "próximo oro"): robótica comparte con la clase de referencia de "oros"
+  exitosos (fiebre del oro, ferrocarriles, internet, IA) cuatro rasgos
+  verificables hoy — curva tecnológica en mejora exponencial (hereda los
+  avances de percepción/control de la IA ya validada), flujo de capital de
+  riesgo real y observable (Figure, Tesla Optimus, Unitree, plataformas de
+  NVIDIA), driver de demanda estructural creciente (escasez de mano de obra,
+  envejecimiento poblacional — datos demográficos verificables), y encaje en
+  la clase "tecnología de propósito general que abarata un costo
+  estructural" (abarata trabajo físico, igual que la IA abarató trabajo
+  cognitivo). Jarrones de greda no comparte ninguno de los cuatro. La
+  probabilidad más alta para robótica no es predicción del ganador — es que
+  la evidencia disponible la ubica dentro de la clase de referencia de
+  "oros" exitosos, y el otro candidato no está en ninguna clase relevante.
+
 **Gate de salida de A**: cuando A1-A6 estén cerrados (o descartados con
 evidencia) y A3 confirme que el ledger cuenta bien, recién ahí se considera
 agotado el camino A — con evidencia, no por cansancio.
