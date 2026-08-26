@@ -2808,3 +2808,16 @@ Control negativo verificado: una APIRoute POST sin dependencias hace fallar `_ha
 5. Tests: test_paper_trading.py 6 tests contra fakes (cuenta/posiciones, ciclo ledger, abrir/cerrar, cierre sin precio vía last trade, reconcile, DB pre-migrada). Suites relacionadas 53 passed, ruff limpio.
 
 Nota: proceso trial18 intento-1 ya muerto (abortado >13h, documentado en ROADMAP §45); sin procesos huérfanos.
+
+## 2026-08-26 — Frente 2 S2: mecanismo del reporte mensual (Cline)
+
+**Alcance**: construcción pura — NO toca trial_registry.json, NO consume Bonferroni, sin pre-registro (autorizado por Boris).
+
+1. `app/core/monthly_report.py`: MonthlyReporter — agrupa filas cerradas del signal_ledger por mes de cierre × variante (`factors_json["variant"]`, default `mom_rsi_congelada`), Sharpe realizado nativo por-oficio (mean/std ddof=1 de pnl_r), comparación contra expectativa de la validación OOS congelada.
+2. `backend/config/expected_sharpe.json` (nuevo, semilla): Sharpe mensual 0.3838 / anualizado 1.3296 de validacion_oos_fresca_mom_rsi_20260822. Cada variante nueva agrega su entrada al cerrar su OOS.
+3. Veredictos: EN_CALIBRACION / DEBAJO_ESPERADO / NEGATIVO / SIN_DATOS / DEGENERADO / ESPERADO_NO_DEFINIDO + diagnóstico de una línea. Umbral de calibración parametrizable (default 0.5× esperado).
+4. Bitácora acumulada: tabla propia `monthly_report_log` en fortress.db, upsert idempotente por (variante, mes). Ajena a trial_registry.
+5. Runner CLI: `scripts/monthly_report.py` (--db, --mes). Smoke end-to-end con DB sembrada en /tmp: 3 meses → EN_CALIBRACION + NEGATIVO + SIN_DATOS + bitácora 1/3. Primer reporte generado = checkpoint semana 2 del plan maestro.
+6. Tests: test_monthly_report.py 11 tests contra fixtures; suite amplia (monthly+paper_trading+barrier_labeling) 43 passed; ruff limpio.
+
+**Limitación documentada**: Sharpe por-oficio ≠ Sharpe cartera mensual del backtest hasta acumular meses; el mecanismo se vuelve más fiel con historial. Pendiente para OpenCode: etiquetar factors_json["variant"] cuando el ensamble sume variantes.
