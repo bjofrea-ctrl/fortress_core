@@ -561,6 +561,41 @@ construidos o diagnosticados, con estado real conocido (no supuesto):
   académico (factor value, Fama-French) — punto de partida si se retoma,
   no el punto más débil que fue el sentimiento/AAII de Fase 0.6.
 
+### Síntesis de cierre del bloque A6.x (Claude Code, 2026-08-26)
+
+- **Capa fundamental (QUÉ activo)**: la idea central que sostiene A6.3,
+  destrucción creativa y "próximo oro" es la MISMA — necesidad estable vs.
+  producto transitorio (Levitt). Nokia colapsó por aferrarse al producto
+  en vez de a la necesidad; eso ES por qué existe la destrucción creativa,
+  no una coincidencia entre secciones separadas.
+- **Capa técnica (CUÁNDO actuar)**: A6.1, A6.2 y la distinción
+  especulativo/fundamental son todas sobre timing, no sobre selección de
+  activo — la separación fruta-fundamental/fruta-técnico se mantuvo
+  consistente en todo el bloque sin contradicción.
+- **Metanivel**: nada de hoy predice — arma un método de pronóstico
+  calibrado (reference class forecasting + event study + sobrerreacción)
+  que asigna probabilidad por mecanismo, no por certeza. Reusable más
+  allá de hoy.
+- **Tres conexiones nuevas que solo aparecen al ver todo el bloque
+  junto**:
+  1. El ciclo de la "pala" (A6.3, mediano plazo, medible por compresión
+     de margen) podría ser señal TEMPRANA de fase Nokia (largo plazo) —
+     conecta un mecanismo medible con uno antes solo especulativo.
+  2. El pop especulativo de días (cemento post-terremoto) y el ciclo de
+     sobreoferta de años (la pala) son el mismo patrón — precio
+     adelantándose a la economía real y corrigiendo — repetido en
+     escalas de tiempo distintas, no fenómenos separados.
+  3. La velocidad de reemplazo de paradigma parece acelerarse (vela→
+     incandescente: décadas; touchscreen: ~5 años) — si es cierto, el
+     "largo plazo" de hoy se comporta como el "mediano plazo" de hace 50
+     años, y el riesgo de survivorship bias del universo estático madura
+     más rápido de lo esperable ingenuamente.
+- **Límite honesto**: nada de esto es estadísticamente testeable hoy con
+  el rigor DSR/PBO del proyecto — son hipótesis de marco conceptual, no
+  trials. Lo único accionable y verificado en código: el ejemplo del
+  terremoto con nombres reales del universo (CAT/HD/AVGO/QCOM/TXN) y la
+  infraestructura de shorting/pairs trade en desarrollo con OpenCode.
+
 ## Integración con el ensamble de paper trading (Boris, 2026-08-25)
 
 Todo candidato que cierre CUMPLE en cualquier rama de este árbol (A5, B1, lo
