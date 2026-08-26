@@ -177,7 +177,7 @@ def test_inyeccion_marca_override_y_no_duplica_senal_genuina():
     assert "checkpoint_override" not in by["AAPL"]   # genuina queda intacta
     assert by["TSLA"]["checkpoint_override"] is True
     assert by["TSLA"]["price_ref"] == 250.0
-    assert any("no se marca override" in n for n in notes)
+    assert any("no se marca override" in n for n in notas)
 
 
 def test_plan_enter_sid_prefijado_chkpt_para_trades_de_mecanismo():
