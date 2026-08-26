@@ -194,6 +194,37 @@ vez no pasa DSR OOS (0.61 < 0.95) ni PBO (0.47, overfitting sustancial).
   nombres de clave — queda anotado como mejora futura si el paso 2 confirma
   que vale la pena, no como parte del diseño mínimo.
 
+  **A6.2 — Beta/volatilidad determina la CADENCIA, no solo el activo (Boris,
+  2026-08-26)**: dimensión adicional real. Mayor beta = mayor volatilidad =
+  más oportunidades de "cosecha" en ambas direcciones (sube y baja) en el
+  mismo período — no es lo mismo que llueva 4 veces al año (Coca-Cola, ~4%
+  anual, baja vol) que 2-3 veces al DÍA (NVIDIA, oscila varios % por
+  semana/día). La definición congelada hoy rebalancea **mensual para los 50
+  por igual** — el mismo problema de uniformidad de A6, pero en el eje
+  TIEMPO en vez del eje activo: un rebalanceo mensual puede promediar/perder
+  varios movimientos reales de un nombre de alta beta dentro del mismo mes,
+  mientras que para un nombre de baja beta esa cadencia puede sobrar (pocos
+  movimientos reales que capturar, mantenerse posicionado todo el período
+  captura mejor las pocas "lluvias" que caen). Pregunta de Boris respondida:
+  sí, la estrategia debería diferir — probablemente cadencia de
+  evaluación/rebalanceo más corta para beta alta, más larga (más cercana a
+  buy-and-hold dentro del universo) para beta baja.
+
+  **Límite importante, ya cerrado antes por otra razón — no confundir**:
+  esto NO reabre la discusión de ejecución intradía (§13, D2, explícitamente
+  NO priorizado por competencia de HFT/colocation). "Más frecuente que
+  mensual" tiene margen amplio dentro de la infraestructura diaria ya
+  existente (barras diarias de yfinance) — semanal, quincenal, cadencia
+  variable por beta — sin tocar microestructura ni datos intradía. Es una
+  pregunta de FRECUENCIA DE REBALANCEO condicionada por volatilidad, no de
+  velocidad de ejecución; distinta en su raíz de lo que §13 cerró.
+  Diseño pendiente de pre-registro: mismo funnel barato→caro que A6 arriba
+  — perfil de volatilidad realizada por activo (ya casi gratis, deriva del
+  mismo perfil de sensibilidad del paso 1), screening de si el IC de
+  momentum+RSI mejora con cadencia condicionada por beta vs. el mensual
+  uniforme actual, y recién si hay señal, confirmación cara con el mismo
+  rigor DSR/PBO.
+
 **Gate de salida de A**: cuando A1-A6 estén cerrados (o descartados con
 evidencia) y A3 confirme que el ledger cuenta bien, recién ahí se considera
 agotado el camino A — con evidencia, no por cansancio.
