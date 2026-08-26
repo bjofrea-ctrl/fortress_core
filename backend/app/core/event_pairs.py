@@ -13,6 +13,10 @@ DISEÑO:
 USO:
   cd backend && .venv/bin/python -m scripts.event_pairs \\
       --long CAT --short TRV --qty 10 --reason "terremoto California"
+
+  # O directamente (sin wrapper):
+  cd backend && .venv/bin/python -m app.core.event_pairs \\
+      --long CAT --short TRV --qty 10
 """
 import argparse
 import datetime as dt
