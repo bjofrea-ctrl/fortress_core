@@ -166,6 +166,29 @@ vez no pasa DSR OOS (0.61 < 0.95) ni PBO (0.47, overfitting sustancial).
     nueva. Para el modelo de trading es irrelevante (el precio sube
     igual, eso es lo que se opera), pero no hay que confundir "sube el
     precio" con "es positivo" al leer este ejemplo.
+  - **Movimiento especulativo vs. fundamental (Boris, 2026-08-26)**: el
+    salto de precio inicial (CAT/HD subiendo, aseguradoras cayendo) es
+    reacción a la narrativa, instantánea — el traspaso real del
+    costo/margen a las ganancias reportadas (**cost pass-through**,
+    concepto de economía industrial) es lento e incierto (contratos
+    vigentes, competencia, rigidez de precios). Si el traspaso no se
+    completa como el mercado asumió el día 1, el precio revierte —
+    patrón conocido en finanzas conductuales como **hipótesis de
+    sobrerreacción** (De Bondt & Thaler, 1985) / "comprá el rumor, vendé
+    la noticia." Es simétrico: aplica igual al ganador temporal
+    (cementera que sube y revierte) que al perdedor temporal (aseguradora
+    que cae de golpe y puede recuperar si la exposición real es menor a
+    la temida). Herramienta académica para medirlo de verdad si algún día
+    se pre-registra: **metodología de estudio de eventos** (Fama/
+    MacKinlay) — retorno anormal acumulado en ventanas día 0/día+5/día+20
+    para separar el "pop" de anuncio de la deriva fundamental posterior.
+  - **Marco epistémico que amarra todo lo de hoy**: no se predice el
+    futuro con certeza — se asigna un peso de probabilidad explícito
+    basado en mecanismo + clase de referencia, y se corrige cuando llega
+    evidencia nueva (**pronóstico calibrado**, término más citado:
+    Philip Tetlock, *Superforecasting*). Es el hilo común entre reference
+    class forecasting (próximo oro), destrucción creativa, y esta
+    distinción especulativo/fundamental.
 
   **A6.1 — Factores líderes de transición de cuadrante (Boris, 2026-08-26,
   conectado a M3/§46) [capa técnica — timing]**: verificado que M3
