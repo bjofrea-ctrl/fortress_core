@@ -635,7 +635,10 @@ existían.
   el rigor DSR/PBO del proyecto — son hipótesis de marco conceptual, no
   trials. Lo único accionable y verificado en código: el ejemplo del
   terremoto con nombres reales del universo (CAT/HD/AVGO/QCOM/TXN) y la
-  infraestructura de shorting/pairs trade en desarrollo con OpenCode.
+  infraestructura de shorting/pairs trade — YA CONSTRUIDA, testeada
+  (12/12) y mergeada a main (`app/core/event_pairs.py`,
+  `scripts/event_pairs.py`) — disponible para uso discrecional de Boris
+  hoy mismo, no requiere pre-registro por ser herramienta, no trial.
 
 ### Glosario de fundamentos del día (Boris, 2026-08-26 — "recabalas y
 ### aplicalas")
@@ -689,13 +692,48 @@ como lista de nombres.
 **Trading práctico**
 - **Pairs trade / market-neutral** — técnica de trading (Morgan Stanley,
   ~1980s), no ley académica. Aplicación: long CAT / short aseguradora —
-  requiere shorting, en desarrollo con OpenCode.
+  capacidad de shorting ya construida, testeada (12/12) y mergeada a
+  main; disponible para uso discrecional hoy.
 
 **Nota honesta de rigor**: "asimetría de visibilidad" (capex discrecional
 vs. ingresos opacos, usada en la sección de secuencia oro/pala) NO tiene
 autor único citable — es inferencia razonada sobre disclosure
 corporativo, no una ley establecida como las de arriba. Separada acá para
 no mezclar peso académico donde no lo hay.
+
+### Próximos pasos: orden de prioridad y dos formas de aplicar (Claude
+### Code, 2026-08-26 — nada de esto se descarta, Boris pidió mantener
+### todo en cola)
+
+**Dos formas distintas de "aplicar" lo de hoy — no confundirlas**:
+1. **Uso discrecional, disponible YA, sin pre-registro**: la herramienta
+   de pairs trade (`event_pairs.py`) — Boris la invoca manualmente cuando
+   decide que un evento real lo amerita, usando razonamiento de clase de
+   referencia para elegir el par. No es un trial porque no hace un
+   reclamo estadístico sistemático de edge.
+2. **Uso sistemático, requiere pre-registro + decisión explícita de
+   Boris antes de correr nada** (regla #1 de `ONBOARDING.md`): convertir
+   cualquier idea de A6.x en una regla que el motor use automáticamente
+   (ej. "el motor prefiere sistemáticamente las palas etiquetadas de
+   A6.3"). Nada de hoy pasó por ese proceso todavía.
+
+**Orden de prioridad sugerido para pre-registrar (nada se descarta, es
+solo el orden de la cola)**:
+1. **A6.3** — screening barato de "palas" (NVDA/AVGO/QCOM/MSFT/ORCL/CSCO
+   etiquetados a mano vs. resto del universo vs. pooled, Sharpe/DSR).
+   Primero porque: testeable hoy sin datos nuevos, barato (primer
+   escalón del embudo, no backtest caro), respaldo fundamental real,
+   aplica a corto/mediano plazo (donde opera el proyecto hoy).
+2. **A6.2** — cadencia por régimen de volatilidad ACTUAL (uso distinto
+   al ya descartado de `realized_vol_regime` para predecir vol futura).
+3. **En cola, sin fecha, sin descartar**: A6.1 (rezago informativo /
+   factores líderes de transición de cuadrante — el hilo de los
+   cuadrantes de Dalio, ya estructuralmente presente en M3), A6 completo
+   (heterogeneidad de liquidez), destrucción creativa / riesgo de
+   survivorship bias del universo estático, y todo el bloque de
+   "próximo oro" (reference class forecasting, necesidad estable vs.
+   producto transitorio) — estos últimos son de horizonte largo, el
+   proyecto no opera ahí todavía.
 
 ## Integración con el ensamble de paper trading (Boris, 2026-08-25)
 
