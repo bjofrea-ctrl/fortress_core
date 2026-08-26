@@ -1,0 +1,8 @@
+{
+  "mom_rsi_congelada": {
+    "sharpe_mensual": 0.383816,
+    "sharpe_anualizado": 1.3296,
+    "fuente": "data/cache/validacion_oos_fresca_mom_rsi_20260822_155520.txt",
+    "nota": "definicion congelada sin re-optimizar; OOS efectivo 2024-02..2026-07 (T=30 meses). Cada variante nueva del ensamble agrega su entrada aca cuando cierre su validacion OOS."
+  }
+}
