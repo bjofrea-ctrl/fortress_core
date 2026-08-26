@@ -138,6 +138,35 @@ vez no pasa DSR OOS (0.61 < 0.95) ni PBO (0.47, overfitting sustancial).
     parcial con la segmentación sectorial de arriba, no una dimensión 100%
     aparte.
 
+  **Ejemplo concreto con nombres reales del universo: shock exógeno tipo
+  terremoto (Boris, 2026-08-26)** — misma heterogeneidad sectorial de
+  arriba, esta vez con símbolos ya presentes en `NEW_UNIVERSE`
+  (`fetch_universe_data.py`), no solo especulación:
+  - **Suben** (patrón de reconstrucción): **CAT** (maquinaria pesada para
+    remoción de escombros/reconstrucción), **HD** (pico de ventas
+    post-desastre — patrón que retail ya rastrea después de huracanes en
+    EEUU). Fuera del universo pero conceptualmente relevante: generadores
+    (Generac), homebuilders, y reaseguradoras SIN exposición en la zona
+    (el mercado de seguros se endurece a nivel nacional después de un
+    evento grande, no solo en la zona afectada).
+  - **Bajan**: aseguradoras/reaseguradoras con exposición concentrada en
+    la zona (ninguna en el universo actual — no hay AIG/Travelers/Chubb,
+    queda conceptual); bancos regionales con hipotecas concentradas ahí
+    (JPM/BAC están en el universo pero demasiado diversificados
+    nacionalmente para que un sismo regional les pegue fuerte);
+    **semiconductoras si el sismo pega cerca de una planta de
+    fabricación** — conecta con A6.3 (riesgo geográfico de la capa
+    "pala," no documentado ahí todavía) — precedente real del mismo
+    mecanismo: terremotos en Taiwán interrumpieron producción de chips y
+    movieron acciones de semiconductoras globalmente. AVGO/QCOM/TXN están
+    en el universo actual y tienen exposición a fabricación.
+  - **Advertencia honesta — falacia de la ventana rota (Bastiat)**: que
+    CAT/HD suban no significa que el terremoto sea bueno para la
+    economía — es capital destruido siendo reemplazado, no riqueza
+    nueva. Para el modelo de trading es irrelevante (el precio sube
+    igual, eso es lo que se opera), pero no hay que confundir "sube el
+    precio" con "es positivo" al leer este ejemplo.
+
   **A6.1 — Factores líderes de transición de cuadrante (Boris, 2026-08-26,
   conectado a M3/§46) [capa técnica — timing]**: verificado que M3
   (`regime_gate.py`) ya construye
