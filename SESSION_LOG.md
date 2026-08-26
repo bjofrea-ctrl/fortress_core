@@ -2759,3 +2759,15 @@ Control negativo verificado: una APIRoute POST sin dependencias hace fallar `_ha
 - Cadena completa: useAdvisorUniverse() -> MesaPage.tsx:38 -> MesaView.tsx:48-54 renderiza banner amarillo "Cache de datos desactualizado: último cierre {last_cache} (+{business_days_behind} ruedas)" cuando stale=true.
 - Test de contrato existente: MesaPage.test.tsx:88 "staleness y blocked_reason se muestran como banners" — corrido por mí: **6/6 passed** (8.42s).
 - Conclusión: la premisa "no está confirmado que algún componente lo renderice" es falsa contra el código actual; solo se documenta.
+
+## 2026-08-25 — Frente 2 S1: conector Alpaca paper + ledger de órdenes (Cline)
+
+**Alcance**: conector de ejecución/registro ONLY — motor de decisión y signal_engine.py intactos.
+
+1. `execution_costs.py`: `get_account()` (GET /v2/account) + `get_positions()` (GET /v2/positions, símbolos al formato interno BRK-B) en el mismo patrón que submit_market_order/last_trade_price.
+2. `signal_ledger.py`: migración ADITIVA por PRAGMA (status/open_fill_price/close_fill_price/qty); open_order/close_order/open_orders. El record() T1.6 sigue funcionando sobre DB pre-migrada (test lo cubre).
+3. `paper_trading.py` (nuevo): PaperTrader — abrir→fila open; cerrar→pnl_r+close_fill_price; reconcile contra posiciones reales del paper.
+4. **BUG encontrado y arreglado durante tests**: record() referenciaba columnas dentro del VALUES del INSERT OR REPLACE → SQLite no resuelve columnas en VALUES (`no such column: open_fill_price`, solo explotaba con DB pre-migrada). Reescrito como ON CONFLICT DO UPDATE (preserva fills al re-etiquetar). Lección: el error 'no such column' en INSERT puede ser referencia inválida en VALUES, no falta de migración.
+5. Tests: test_paper_trading.py 6 tests contra fakes (cuenta/posiciones, ciclo ledger, abrir/cerrar, cierre sin precio vía last trade, reconcile, DB pre-migrada). Suites relacionadas 53 passed, ruff limpio.
+
+Nota: proceso trial18 intento-1 ya muerto (abortado >13h, documentado en ROADMAP §45); sin procesos huérfanos.
