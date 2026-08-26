@@ -307,6 +307,38 @@ vez no pasa DSR OOS (0.61 < 0.95) ni PBO (0.47, overfitting sustancial).
 evidencia) y A3 confirme que el ledger cuenta bien, recién ahí se considera
 agotado el camino A — con evidencia, no por cansancio.
 
+### Indicadores ya existentes que conectan con A6/A6.1/A6.2/A6.3 (Boris,
+### 2026-08-26 — "revivir" candidatos de `DICCIONARIO_INDICADORES.md`)
+
+Antes de diseñar desde cero cualquier pieza de A6, revisar estos — ya están
+construidos o diagnosticados, con estado real conocido (no supuesto):
+
+- **A6.1 (rezago informativo / dinero informado vs. tardío)**: `market_structure.py`
+  (T1.3) ya implementa Smart Money Concepts (Order Blocks, Fair Value Gaps,
+  BOS/CHoCH, Liquidity Sweeps) — 18 tests + smoke real, pero **nunca
+  integrado como señal**, solo detecta zonas, no genera score. Aparte, OFI y
+  CVD (proxies de flujo de órdenes desde OHLCV) ya se testearon como factor
+  de score directo y salieron **NO_CUMPLE** (§37/§38, rank IC 0/3 ventanas)
+  — pero ese test midió si predicen retorno a 20 ruedas, no si sirven para
+  detectar la transición de cuadrante que pide A6.1, que es una pregunta de
+  diseño distinta sobre los mismos datos.
+- **A6.2 (cadencia por volatilidad/beta)**: `realized_vol_regime`
+  (`indicators.py`, ratio vol20d/vol100d) ya implementado y diagnosticado
+  (`RESUMEN_HURST_VOL_REGIME.md`) — predice débilmente el NIVEL de vol
+  futura (funcionó W1, no W2/W3), por eso no se promovió a señal. Pero A6.2
+  no necesita predecir vol futura — necesita el régimen de vol ACTUAL para
+  decidir cadencia de rebalanceo, un uso distinto del que se descartó.
+- **A6/A6.3 (heterogeneidad por activo)**: Hurst exponent (`indicators.py`,
+  mismo diagnóstico) mide persistencia vs. reversión a la media POR
+  SÍMBOLO — una "personalidad" cuantitativa por activo que podría
+  complementar el etiquetado manual de "palas" de A6.3 con algo medible en
+  vez de solo cualitativo.
+- **Si A4/A5 se revive con mejor cobertura de fundamentales**: `DICCIONARIO_
+  INDICADORES.md` Parte II ya señala que los múltiplos de valoración
+  (P/E, P/B, EV/EBITDA, FCF Yield) son el subgrupo con mejor respaldo
+  académico (factor value, Fama-French) — punto de partida si se retoma,
+  no el punto más débil que fue el sentimiento/AAII de Fase 0.6.
+
 ## Integración con el ensamble de paper trading (Boris, 2026-08-25)
 
 Todo candidato que cierre CUMPLE en cualquier rama de este árbol (A5, B1, lo
