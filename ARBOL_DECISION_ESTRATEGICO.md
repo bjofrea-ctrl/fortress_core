@@ -413,6 +413,40 @@ vez no pasa DSR OOS (0.61 < 0.95) ni PBO (0.47, overfitting sustancial).
   opera. Vale como marco para el futuro, no como algo que deba cambiar la
   operativa actual.
 
+  **Principio organizador: necesidad estable vs. producto transitorio
+  (Boris, 2026-08-26, ejemplo vela→LED)**: miopía del marketing (Theodore
+  Levitt, 1960, *Marketing Myopia*) — su ejemplo canónico son los
+  ferrocarriles, que creyeron estar en el "negocio de trenes" en vez del
+  "negocio de transporte," y por eso los desplazaron autos y aviones: no
+  porque el transporte dejó de ser necesario, sino porque se aferraron al
+  PRODUCTO en vez de a la NECESIDAD. Complemento moderno: *Jobs to be Done*
+  (Christensen) — el cliente "contrata" algo para resolver un trabajo
+  (job); el job es estable, lo que se contrata para resolverlo cambia.
+  Vela → filamento incandescente → LED: mismo job (ver en la oscuridad),
+  tres cadenas de suministro completamente distintas (cera/mecha vs.
+  tungsteno/vidrio vs. semiconductores) — el fabricante de velas que se
+  definía por el producto, no por la necesidad, no tenía mecanismo de
+  adaptación cuando llegó la electricidad; hoy la vela es casi decorativa.
+
+  **Reformula el marco del "próximo oro" (arriba)**: el punto de partida
+  correcto no es listar industrias candidatas (robótica, cuántica,
+  biotech) sino listar **necesidades humanas estables** que nunca
+  desaparecen — luz/visión, comunicación, movilidad, salud/longevidad,
+  energía, alimento, refugio, **amplificación de capacidad cognitiva** — y
+  preguntar qué solución tecnológica resuelve HOY cada una. La IA no es el
+  oro actual por ser IA — es el oro porque es la solución actual al need
+  de amplificar capacidad cognitiva, el mismo need que antes resolvieron
+  la calculadora, la computadora, internet.
+
+  **Advertencia honesta que le agrega a A6.3**: la lógica de "no importa
+  qué empresa de IA gane, vendele a todas" (diversificación por categoría)
+  protege DENTRO de un paradigma tecnológico — pero no protege si el
+  paradigma entero (chips de silicio) es reemplazado por otra forma de
+  resolver el mismo need (cómputo cuántico, fotónico, neuromórfico). Los
+  vendedores de semiconductores de hoy podrían ser las velas de mañana si
+  eso pasa — riesgo de nivel superior al de A6.3, no cubierto por su
+  propia lógica de diversificación.
+
 **Gate de salida de A**: cuando A1-A6 estén cerrados (o descartados con
 evidencia) y A3 confirme que el ledger cuenta bien, recién ahí se considera
 agotado el camino A — con evidencia, no por cansancio.
