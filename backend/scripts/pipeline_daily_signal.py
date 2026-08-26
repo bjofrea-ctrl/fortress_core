@@ -535,6 +535,11 @@ def _open_client_and_budget(lines: List[str], dry_run: bool):
     try:
         from app.core.execution_costs import AlpacaPaperClient
         client = AlpacaPaperClient()
+        # Fix: AlpacaPaperClient lee os.environ, pero pydantic-settings
+        # no inyecta allí. Si nace sin key pero Settings la tiene, copiar.
+        if not client.api_key and settings.ALPACA_PAPER_API_KEY:
+            client.api_key = settings.ALPACA_PAPER_API_KEY
+            client.secret_key = settings.ALPACA_PAPER_SECRET_KEY
     except Exception as exc:  # noqa: BLE001
         lines.append(f"[info] cliente no construible ({str(exc)[:80]}) -> fallback")
         return None, PAPER_CAPITAL_BUDGET, "fallback", set()
