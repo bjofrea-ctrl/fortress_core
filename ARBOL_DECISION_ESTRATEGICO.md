@@ -189,6 +189,22 @@ vez no pasa DSR OOS (0.61 < 0.95) ni PBO (0.47, overfitting sustancial).
     Philip Tetlock, *Superforecasting*). Es el hilo común entre reference
     class forecasting (próximo oro), destrucción creativa, y esta
     distinción especulativo/fundamental.
+  - **Estructura de apuesta que captura ambos lados (Boris, 2026-08-26)**:
+    comprar cementera + shortear aseguradora en el mismo evento es una
+    operación **long/short basada en evento** (event-driven long/short),
+    específicamente un **pairs trade / relative value trade** — la
+    propiedad clave no es "ganar por los dos lados" sino quedar
+    **neutral al mercado**: la ganancia depende del SPREAD entre las dos
+    patas, no de si el mercado sube o baja en general, así que reduce
+    exposición al riesgo sistemático que sí tiene una posición long-only
+    simple. **Verificado en el código, no solo conceptual**: fortress_core
+    hoy es long-only — `execution_costs.py` y `pipeline_daily_signal.py`
+    solo generan `"buy"` para entradas; `"sell"` aparece únicamente como
+    cierre de una posición larga, nunca como apertura de un short
+    independiente. Esta estrategia de dos patas es conceptualmente sólida
+    pero NO ejecutable con la arquitectura actual sin agregar mecánica de
+    venta en corto — cambio estructural real, no un ajuste de parámetro,
+    y ninguna decisión de hacerlo sin definición explícita de Boris.
 
   **A6.1 — Factores líderes de transición de cuadrante (Boris, 2026-08-26,
   conectado a M3/§46) [capa técnica — timing]**: verificado que M3
