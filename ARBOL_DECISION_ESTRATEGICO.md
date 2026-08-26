@@ -619,6 +619,66 @@ existían.
   terremoto con nombres reales del universo (CAT/HD/AVGO/QCOM/TXN) y la
   infraestructura de shorting/pairs trade en desarrollo con OpenCode.
 
+### Glosario de fundamentos del día (Boris, 2026-08-26 — "recabalas y
+### aplicalas")
+
+Catorce principios distintos aparecieron hoy, esparcidos en varios
+commits — se compilan acá con su fundamento y aplicación real, no solo
+como lista de nombres.
+
+**Economía / valor**
+- **Paradoja del valor / utilidad marginal** — Adam Smith (1776) la
+  planteó, la revolución marginalista (Menger/Jevons/Walras, 1871-74) la
+  resolvió. Aplicación: valor condicional al contexto actual — ya
+  implementado en M3 (lee régimen actual) y A6.2 (cadencia por vol
+  actual).
+- **Miopía del marketing** — Theodore Levitt, *Marketing Myopia*, 1960.
+  Aplicación: reformula "próximo oro" — buscar necesidades estables
+  (luz, movilidad, cognición), no industrias candidatas.
+- **Jobs to be Done** — Clayton Christensen. Aplicación: complementa lo
+  anterior, el cliente contrata un producto para resolver un job estable.
+- **Destrucción creativa** — Joseph Schumpeter, 1942. Aplicación:
+  Nokia/rotación de liderazgo — riesgo real y verificado (código) de
+  survivorship bias en el universo estático de 50.
+- **Dilema del innovador** — Clayton Christensen, 1997. Aplicación:
+  mecanismo específico de por qué cae un líder que optimiza tecnología
+  vieja en vez de adoptar el paradigma nuevo.
+- **Falacia de la ventana rota** — Frédéric Bastiat, 1850. Aplicación:
+  CAT/HD suben tras un terremoto, pero eso no es bueno para la economía
+  — no confundir precio con bienestar.
+
+**Finanzas conductuales / mercados**
+- **Efecto bullwhip** — Jay Forrester (1961), formalizado por Lee/
+  Padmanabhan/Whang (1997). Aplicación: por qué la "pala" cae primero y
+  más fuerte que el "oro" en un shock.
+- **Hipótesis de sobrerreacción** — De Bondt & Thaler, 1985. Aplicación:
+  pop especulativo de cementeras post-terremoto, revierte si el traspaso
+  no se completa.
+- **Cost pass-through** — concepto estándar de economía industrial, sin
+  autor único citable. Aplicación: por qué el traspaso de costo a margen
+  es lento e incierto — separa movimiento especulativo del fundamental.
+
+**Metodología probabilística/estadística**
+- **Reference class forecasting** — Kahneman & Tversky (1979),
+  formalizado por Flyvbjerg. Aplicación: robótica vs. jarrones de greda
+  — asignar probabilidad sin certeza.
+- **Pronóstico calibrado** — Philip Tetlock, *Superforecasting*, 2015.
+  Aplicación: marco epistémico que amarra todo el día.
+- **Event study methodology** — Fama/Fisher/Jensen/Roll (1969),
+  formalizado por MacKinlay (1997). Aplicación: cómo se mediría de
+  verdad el patrón especulativo/fundamental si se pre-registrara.
+
+**Trading práctico**
+- **Pairs trade / market-neutral** — técnica de trading (Morgan Stanley,
+  ~1980s), no ley académica. Aplicación: long CAT / short aseguradora —
+  requiere shorting, en desarrollo con OpenCode.
+
+**Nota honesta de rigor**: "asimetría de visibilidad" (capex discrecional
+vs. ingresos opacos, usada en la sección de secuencia oro/pala) NO tiene
+autor único citable — es inferencia razonada sobre disclosure
+corporativo, no una ley establecida como las de arriba. Separada acá para
+no mezclar peso académico donde no lo hay.
+
 ## Integración con el ensamble de paper trading (Boris, 2026-08-25)
 
 Todo candidato que cierre CUMPLE en cualquier rama de este árbol (A5, B1, lo
