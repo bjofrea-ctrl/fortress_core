@@ -165,6 +165,22 @@ vez no pasa DSR OOS (0.61 < 0.95) ni PBO (0.47, overfitting sustancial).
   candidatos, qué ventana de anticipación, cómo evitar lookahead) antes de
   poder correrse.
 
+  **Mecanismo concreto de por qué es difícil, y por dónde empezar (Boris,
+  2026-08-26, analogía de la fiebre del oro)**: la escasez real de oro
+  ocurre ANTES de que el mercado agregado lo sepa — hay un rezago de
+  difusión de información, y mientras tanto la demanda de palas sigue
+  sostenida por sentimiento/inercia conductual (la gente sigue comprando
+  por hábito o esperanza, no por información nueva). Esto explica POR QUÉ
+  cualquier indicador basado en PRECIO (técnico) es, por construcción, un
+  eco rezagado del cambio fundamental — nunca lo detecta en el momento en
+  que realmente ocurre, solo el reflejo tardío cuando ya se difundió lo
+  suficiente. Consecuencia práctica: más sofisticación en patrones de
+  precio no resuelve A6.1 — la brecha entre "quién ya sabe" (dinero
+  informado) y "quién sigue actuando con información vieja" (dinero tardío)
+  es la variable real a buscar, y se aproxima con datos de FLUJO/
+  posicionamiento (institucional vs retail, dispersión de estimados de
+  analistas), no con más indicadores derivados del precio mismo.
+
   **Traducción a diseño estadístico concreto (2026-08-26)** — toda la
   filosofía de A6/A6.1 (frutas y estaciones, uva vs zanahoria frente a la
   lluvia, cuadrantes de Dalio) se traduce a UNA idea estadística estándar:
@@ -271,6 +287,21 @@ vez no pasa DSR OOS (0.61 < 0.95) ni PBO (0.47, overfitting sustancial).
   comparar el desempeño (Sharpe/DSR) de ese subconjunto "habilitador"
   etiquetado a mano contra el resto del universo y contra el pooled actual
   — screening barato, confirmación cara solo si hay separación real.
+
+  **La ventaja de "pala" no es estática — tiene su propio ciclo (Boris,
+  2026-08-26)**: al inicio de la fiebre, pocos vendedores + demanda
+  explosiva → precio/margen alto. Al final, la demanda de mineros nuevos se
+  seca Y la oferta de palas se disparó (entraron competidores viendo que el
+  negocio funcionaba, más mineros que abandonan y revenden sus palas
+  usadas) → **sobre-stock**, precio se derrumba al costo de una pala común.
+  Consecuencia: etiquetar "esto es una pala" UNA vez no alcanza — la
+  pregunta correcta es en qué momento del ciclo de oferta/demanda DE LA
+  PALA MISMA (no del oro/tema macro) está el activo hoy: ¿escasez de
+  competidores todavía, o ya se saturó de competencia y el margen se está
+  comprimiendo aunque la categoría (IA) siga creciendo? Este ciclo es
+  propio de cada "pala" y distinto del ciclo macro que mide M3 — no se
+  puede asumir que la ventaja de A6.3 dura para siempre solo por haberla
+  identificado una vez.
 
 **Gate de salida de A**: cuando A1-A6 estén cerrados (o descartados con
 evidencia) y A3 confirme que el ledger cuenta bien, recién ahí se considera
