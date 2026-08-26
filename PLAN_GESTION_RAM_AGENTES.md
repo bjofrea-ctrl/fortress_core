@@ -86,3 +86,116 @@ Con los 3 proyectos aplicando esto, la RAM ocupada por agentes en un momento
 dado pasa de "9 sesiones siempre vivas" a "solo las 2-3 sesiones que
 realmente tienen trabajo en curso ahora mismo" — el resto queda liberado
 hasta que haga falta.
+
+---
+
+## Hallazgos de las tres sesiones (2026-08-26) — para revisión de Boris, NADA aplicado todavía
+
+Las tres coordinadoras (fortress_core, medai, empresa-hibrida) analizaron su
+propio estado sin ejecutar cambios adicionales, salvo las excepciones que se
+marcan explícitamente abajo como ya hechas (todas de bajo riesgo, verificadas).
+
+### fortress_core
+
+- Cerré las terminales de Kilo y Cline al confirmar que no tenían tarea
+  pendiente (H3.1 cerrado y mergeado, reporte mensual cerrado). Resultado
+  medido: liberó ~680MB de esos dos procesos, pero la RAM total del sistema
+  no bajó proporcionalmente porque otras sesiones activas crecieron en
+  paralelo por su propio trabajo — la medida funciona, pero el techo real es
+  cuántas sesiones están genuinamente activas al mismo tiempo, no las
+  ociosas.
+- Las 3 sesiones de Claude Code coordinadoras (una por proyecto) son las que
+  más pesan individualmente (700-970MB cada una) — todas llevan ~3 días
+  corriendo sin reiniciar. Cerrarlas es una decisión más pesada que cerrar un
+  agente (se pierde el hilo completo de coordinación, no solo el de una
+  tarea puntual) — no se tocó ninguna, queda para que decida Boris.
+
+### medai
+
+1. **Terminales fantasma sin dueño claro**: encontró 2 terminales vivas que
+   no formaban parte de su rotación activa de 3 agentes con nombre (una
+   segunda instancia de OpenCode duplicada en el mismo worktree, una
+   terminal vacía en un worktree sin uso) — invisibles porque el chequeo
+   asume "solo 3 agentes con nombre" por proyecto. **Ya cerradas** (cruzó
+   con el pedido de no aplicar nada más, pero eran verificablemente basura —
+   una muerta, otra duplicada sin uso). Propone que el plan incluya un
+   `orca terminal list` completo por proyecto antes de asumir que solo hay 3
+   terminales — puede haber residuales de sesiones anteriores.
+2. **Colisiones de trabajo duplicado por reasignación silenciosa**: pasó 2
+   veces hoy — reasigna una tarea de un agente sin crédito a otro, y cuando
+   el original recupera sesión retoma la tarea vieja por su cuenta (su
+   contexto todavía dice "pendiente", no sabe que ya se resolvió). Propone
+   que la política de reasignación incluya avisar DIRECTO al agente original
+   apenas se detecta que volvió a estar operativo, antes de que tenga
+   oportunidad de actuar solo — no alcanza con dejarlo en el log de
+   coordinación.
+3. **Fricción de rotación de modelo/cuenta**: funciona pero consume varias
+   vueltas de verificación manual cada vez. Propone documentar los comandos
+   exactos que expone cada CLI (Kilo/Cline/OpenCode pueden diferir) para no
+   redescubrirlo cada vez.
+4. **Fricción mecánica menor**: los mensajes por `orca terminal send` a
+   veces quedan sin enviarse en el input, necesita un segundo `--enter`
+   vacío — no consume tokens de agente, pero sí vueltas extra del
+   coordinador (mismo patrón que vi yo en fortress_core con Cline hoy).
+5. **Lo que NO recomienda tocar**: la calidad del contexto inicial en cada
+   dispatch (citas al log + alcance acotado) — según su experiencia de hoy,
+   eso es lo que hace que las auditorías pasen limpias a la primera, y es lo
+   que hace viable cerrar/reabrir sin perder calidad. No es solo
+   compensación del cierre de RAM, es parte central del mecanismo.
+
+### empresa-hibrida
+
+- Estado actual: solo OpenCode sigue con terminal viva, legítimamente
+  (vigila un batch real de re-medición en background, ~102 chunks en
+  curso). Cline y Kilo ya estaban cerradas — las cerró Boris directamente
+  tras confirmar que terminaron su trabajo (2 tickets mergeados hoy).
+- **Ya cerrado** (antes de la corrección, sin relación con "aplicar el
+  plan"): un monitor de fondo propio, roto, que seguía vigilando handles de
+  terminal de Cline/Kilo que ya no existían — loop de 60s corriendo en vano
+  desde que esas terminales rotaron, cero impacto en trabajo real.
+- **Propuesta 1 — no incluir el hub daemon de Cline en la política de
+  cerrar/reabrir**: `--cline-hub-daemon` (puerto 25463) lleva 2 días 7h
+  corriendo continuo — parece ser infraestructura compartida (multiplexor de
+  sesiones), no un worker por tarea, y probablemente deba persistir aunque
+  las terminales individuales de Cline se cierren y reabran. Sí encontró un
+  cliente `.cline` conectado a ese hub con la misma antigüedad que no
+  corresponde a ninguna terminal viva ahora — candidato a huérfano, lo deja
+  para que decida Boris, no lo tocó.
+- **Propuesta 2 — cerrar un loop redundante**: un loop de shell corriendo
+  ~6h vigilando el catálogo de NVIDIA NIM cada 30min quedó redundante desde
+  que se mergeó `scripts/check_model_health.py` (hace lo mismo, testeado,
+  on-demand). Recomienda cerrarlo cuando Boris confirme.
+- **Eficiencia de tokens/créditos — hallazgos**:
+  - 2 falsos positivos distintos en el security scan de `staff/bin/gate.sh`
+    (regex sin boundary de palabra: matcheaba el nombre de variable
+    `OPENROUTER_API_KEY` y también "eval(" dentro de "retrieval(") — cada
+    uno costó un ciclo completo de verificación manual. Si `gate.sh` es
+    compartido entre los tres proyectos, vale la pena arreglar el regex una
+    sola vez.
+  - Fricción de UI de agente (cola de mensajes sin procesar en Cline/Kilo)
+    que necesitó varios intentos a ciegas hasta destrabar — mismo patrón de
+    fricción mecánica que reportó medai independientemente.
+  - Tramos de espera activa por rate-limits de proveedores generan turnos
+    cortos de "sin cambios" — el propio mecanismo de loop ya los colapsa en
+    la vista de Boris, impacto real bajo pero lo marca igual.
+
+### Patrón que aparece en las tres sesiones, independientemente
+
+La fricción mecánica de `orca terminal send` (mensajes que no se procesan a
+la primera, necesitan reintento o un segundo Enter) la reportaron las tres
+sesiones por separado, sin coordinarse entre sí — es la señal más fuerte de
+que vale la pena investigar/documentar una solución única en vez de que cada
+proyecto la resuelva a mano cada vez que aparece.
+
+### Para que decida Boris (nada de esto se ejecutó)
+
+1. ¿Cerrar el cliente `.cline` huérfano del hub daemon en empresa-hibrida?
+2. ¿Cerrar el loop redundante de vigilancia de NIM en empresa-hibrida (ya
+   reemplazado por `check_model_health.py`)?
+3. ¿Arreglar el regex de `gate.sh` (falsos positivos) si es compartido entre
+   proyectos?
+4. ¿Adoptar la política de "avisar directo al agente al recuperar sesión"
+   antes de que reasigne nada, para evitar las colisiones de trabajo
+   duplicado que vio medai?
+5. ¿Alguna de las 3 sesiones coordinadoras de Claude Code (700-970MB cada
+   una, ~3 días corriendo) se puede reiniciar sin perder algo importante?
