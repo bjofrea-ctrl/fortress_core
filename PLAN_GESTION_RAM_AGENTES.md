@@ -187,6 +187,63 @@ sesiones por separado, sin coordinarse entre sí — es la señal más fuerte de
 que vale la pena investigar/documentar una solución única en vez de que cada
 proyecto la resuelva a mano cada vez que aparece.
 
+---
+
+## Memoria externa (gbrain, Obsidian, OpenViking, Cognee, TencentDB Agent
+## Memory, OpenKnowledge) — ¿sirve para el problema de RAM? (2026-08-26)
+
+Boris preguntó si alguna herramienta de "memoria acumulada" externa serviría
+para aliviar la presión de RAM. Se investigó en tres frentes independientes
+(fortress_core vía sub-agente, medai, empresa-hibrida) — las tres convergen
+en la misma conclusión, con caveat: el WebSearch estuvo caído para las tres
+sesiones ese turno (falla de plataforma, no puntual); solo el sub-agente de
+fortress_core logró búsquedas reales y verificó las herramientas con fuentes.
+
+### Qué son realmente (verificado)
+
+| Herramienta | ¿Real? | Qué es |
+|---|---|---|
+| **gbrain** | Sí | `github.com/garrytan/gbrain` — "cerebro" de conocimiento personal/equipo, grafo de páginas con síntesis, expuesto a agentes vía capa de retrieval tipo MCP. Servicio externo. |
+| **Obsidian** | Sí (no es memoria de agente por sí sola) | App de notas markdown sin lógica de retrieval propia — solo funciona como "memoria de agente" si se le suma un MCP server aparte que lea/escriba notas; en ese caso el trabajo lo hace el MCP, no Obsidian. |
+| **OpenViking** | Sí | `github.com/volcengine/OpenViking` (ByteDance/Volcengine) — "base de datos de contexto" autohospedada, filesystem virtual `viking://` con carga por niveles. Servicio externo. |
+| **Cognee** | Sí | `cognee.ai` — plataforma de memoria de agentes open-source, combina grafo+vectores+relacional, autohospedada o cloud. Servicio externo. |
+| **TencentDB Agent Memory** | Sí | `github.com/TencentCloud/TencentDB-Agent-Memory` — convierte conversaciones/código en memoria reusable (Chat Memory, Skill, LLM-Wiki, Code-Graph), afirma ~61% de reducción de TOKENS en sesiones largas (dato real y citado, pero es sobre tokens/costo, no sobre RAM). Servicio externo.
+| **OpenKnowledge** | No hay match creíble | El repo más cercano tiene 48 estrellas, proyecto personal chico. No es un producto establecido — probablemente no es a lo que se refería. |
+
+### El veredicto (triangulado, tres fuentes independientes coinciden)
+
+**Ninguna de estas resuelve el problema de RAM — es la capa equivocada del
+stack.** El argumento, consistente entre las tres investigaciones:
+
+- La RAM de una sesión Claude Code de larga duración viene de que el
+  **proceso** (runtime Node del CLI) retiene en memoria el historial
+  completo de conversación/salidas de herramientas mientras está vivo — eso
+  no cambia según dónde viva el conocimiento de largo plazo.
+- Las 4 herramientas reales (gbrain, OpenViking, Cognee, TencentDB Agent
+  Memory) son, arquitectónicamente, almacenes externos a los que el agente
+  consulta por tool call — **exactamente el mismo patrón que ya usa Engram**
+  (memoria persistente ya instalada y en uso). No corren "adentro" del
+  proceso de Claude Code para achicarlo.
+- Si alguna corriera como servidor MCP local, **sumaría** un proceso más
+  (más RAM), no restaría.
+- El único lever real para bajar RAM de una sesión sigue siendo el mismo
+  que ya está documentado arriba: cerrar terminales ociosas + compactar o
+  reiniciar la sesión coordinadora cuando haga falta. Una memoria externa
+  puede hacer que reiniciar sea MÁS CÓMODO (menos que re-explicar al volver,
+  porque el estado relevante se recarga del almacén) — pero no reduce la RAM
+  de un proceso que sigue corriendo.
+
+**Nota aparte, no sobre RAM**: el dato de TencentDB Agent Memory (~61% menos
+tokens en sesiones largas) es real y podría ser interesante para *costo/
+eficiencia de tokens* — un eje distinto al de RAM, que no se evaluó acá en
+profundidad. Si a Boris le interesa esa arista, es una investigación aparte.
+
+**Recomendación de las tres sesiones**: no adoptar ninguna de estas
+herramientas para el problema de RAM — Engram ya cubre lo que aportarían. El
+fix sigue siendo cerrar-terminal-ociosa/reabrir-a-demanda (ya documentado
+arriba) más compactar/reiniciar la sesión coordinadora cuando el proceso
+crezca demasiado.
+
 ### Para que decida Boris (nada de esto se ejecutó)
 
 1. ¿Cerrar el cliente `.cline` huérfano del hub daemon en empresa-hibrida?
