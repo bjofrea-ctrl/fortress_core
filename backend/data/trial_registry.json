@@ -515,5 +515,16 @@
     "veredicto": "NO_CUMPLE",
     "artefacto": "data/cache/trial18_evt_stops_v2_20260824_200927.txt",
     "seccion_doc": "§45"
+  },
+  {
+    "id": "trial_a5_buffett_alpha",
+    "fecha": "2026-08-25",
+    "familia": "motor_signal",
+    "hipotesis": "Buffett's Alpha sistemático (calidad+valor+bajo-beta+apalancamiento moderado) como portafolio cross-sectional long top-quintile mejora Sharpe OOS neto y DSR del ensamble",
+    "n_trials_consumidos": 1,
+    "umbral_aplicado": "DSR>=th(motor_signal)=0.99231 (n=13) Y Sharpe_OOS_neto>0 en OOS fresco 2024-02..",
+    "veredicto": "NO_CUMPLE",
+    "artefacto": "data/cache/trial20_a5_buffett_alpha_20260825_211648.txt",
+    "seccion_doc": "§47"
   }
 ]
