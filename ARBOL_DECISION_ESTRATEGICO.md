@@ -303,6 +303,40 @@ vez no pasa DSR OOS (0.61 < 0.95) ni PBO (0.47, overfitting sustancial).
   puede asumir que la ventaja de A6.3 dura para siempre solo por haberla
   identificado una vez.
 
+  **Secuencia del colapso: ¿cae primero el oro o la pala? (Boris,
+  2026-08-26)**: hipótesis con dos mecanismos concretos, ninguno testeado
+  todavía (no hubo busto de IA en este ciclo — queda documentado, no
+  pre-registrado):
+  1. **Efecto bullwhip** (cadena de suministro): una desaceleración chica en
+     demanda final se amplifica río arriba porque los proveedores (palas)
+     operan con backlog/capacidad construida por adelantado — un enfriamiento
+     leve en monetización de IA puede traducirse en un frenazo brusco de
+     pedidos de chips/datacenters.
+  2. **Asimetría de visibilidad**: el capex de las palas es discrecional,
+     trimestral, con guidance público — se repriea rápido. El ingreso del
+     oro (contratos/suscripciones multianuales) es más opaco/gradual — tarda
+     más en mostrarse en resultados reportados. Consecuencia esperada: la
+     acción de la pala se mueve ANTES que la del oro, aunque el oro sea la
+     causa raíz.
+  Precedente parcial (no prueba, solo patrón histórico similar): la burbuja
+  .com — Cisco/Nortel/fibra óptica colapsaron con la misma dinámica de
+  sobre-oferta ya descrita arriba (entraron competidores, se construyó
+  capacidad de más, un enfriamiento leve de demanda produjo compresión de
+  margen brutal).
+
+  **El próximo oro (Boris, 2026-08-26)**: pregunta genuinamente especulativa,
+  no estadística — el universo actual de 50 large-caps no puede responderla
+  (la mayoría de los candidatos ni cotiza todavía). Lo reusable no es
+  predecir el ganador sino el MARCO: categoría con alta incertidumbre sobre
+  QUIÉN gana pero una dependencia física/de infraestructura común que TODOS
+  los competidores necesitan sin importar quién gane (igual que
+  semiconductores para IA). Candidatos que menciona el mercado hoy (no
+  predicción del proyecto, solo ejemplos del marco): robótica
+  (actuadores/sensores/motores), computación cuántica
+  (criogenia/materiales especializados), biotecnología/longevidad
+  (secuenciación/automatización de laboratorio), economía espacial, fusión.
+  Queda 100% conceptual — no hay pre-registro posible sin universo/datos.
+
 **Gate de salida de A**: cuando A1-A6 estén cerrados (o descartados con
 evidencia) y A3 confirme que el ledger cuenta bien, recién ahí se considera
 agotado el camino A — con evidencia, no por cansancio.
