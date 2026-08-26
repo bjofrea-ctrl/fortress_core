@@ -56,17 +56,19 @@ NVIDIA_MODELS = {
 }
 
 # Asignación de modelos LLM a agentes de la tríada
+# Prefijo openrouter/ = sale por OpenRouter (minimax m3 free, glm 5.2 free);
+# el resto por NVIDIA NIM (kimi k3). Slugs a validar en primera llamada viva.
 TRIAD_LLM_MODELS = {
     "BULL": "deepseek-ai/deepseek-v4-flash",
-    "BEAR": "minimaxai/minimax-m3",
-    "CONTRARIAN": "z-ai/glm-5.2",
+    "BEAR": "openrouter/minimax/minimax-m3",
+    "CONTRARIAN": "openrouter/z-ai/glm-5.2",
 }
 
 # Asignación de modelos LLM a agentes de gobernanza
 GOVERNANCE_LLM_MODELS = {
     "CONTROLLER": "deepseek-ai/deepseek-v4-flash",
-    "PROFESSOR": "minimaxai/minimax-m3",
-    "JUDGE": "z-ai/glm-5.2",
+    "PROFESSOR": "openrouter/minimax/minimax-m3",
+    "JUDGE": "openrouter/z-ai/glm-5.2",
 }
 
 
@@ -255,14 +257,26 @@ class NvidiaNIMClient:
     def is_available(self) -> bool:
         return bool(self.api_key)
 
+    def _resolve_provider(self, model: str):
+        """Routing por prefijo: 'openrouter/...' usa OpenRouter (key propia);
+        el resto sale por NVIDIA NIM. Patrón medai. Devuelve (url, key, model)."""
+        if model.startswith("openrouter/"):
+            return (settings.OPENROUTER_BASE_URL.rstrip("/") + "/chat/completions",
+                    settings.OPENROUTER_API_KEY, model.split("/", 1)[1])
+        return f"{self.base_url}/chat/completions", self.api_key, model
+
     def generate(self, system_prompt: str, user_message: str, model: str = None) -> Optional[str]:
         if not self.is_available():
             return None
         used_model = model or self.model
+        url, api_key, wire_model = self._resolve_provider(used_model)
+        if not api_key:
+            logger.warning("provider_key_missing", extra={"model": used_model})
+            return None
         try:
-            headers = {"Authorization": f"Bearer {self.api_key}", "Content-Type": "application/json"}
+            headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
             payload = {
-                "model": used_model,
+                "model": wire_model,
                 "messages": [
                     {"role": "system", "content": system_prompt},
                     {"role": "user", "content": user_message},
@@ -270,7 +284,7 @@ class NvidiaNIMClient:
                 "temperature": self.temperature,
                 "max_tokens": self.max_tokens,
             }
-            r = requests.post(f"{self.base_url}/chat/completions", headers=headers, json=payload, timeout=30)
+            r = requests.post(url, headers=headers, json=payload, timeout=30)
             if r.status_code == 200:
                 return r.json()["choices"][0]["message"]["content"]
             if r.status_code == 429:
