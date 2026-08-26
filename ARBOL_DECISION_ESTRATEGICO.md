@@ -392,6 +392,24 @@ vez no pasa DSR OOS (0.61 < 0.95) ni PBO (0.47, overfitting sustancial).
   capacidad de más, un enfriamiento leve de demanda produjo compresión de
   margen brutal).
 
+  **Complemento — no es solo secuencia, es amplitud (Boris, 2026-08-26)**:
+  además de moverse ANTES, la pala se mueve MÁS que el oro con la misma
+  noticia, en las dos direcciones (alzas y caídas). Ejemplo: una noticia
+  negativa de Google genera una caída — pero genera una caída MAYOR en
+  semiconductoras/centros de datos. Dos mecanismos concretos, distintos
+  del bullwhip (que es sobre timing, no magnitud):
+  1. **Apalancamiento operativo**: las palas tienen costos fijos altos
+     (fábricas, capex) que no bajan aunque baje la demanda — un cambio
+     chico en expectativa de ingresos se amplifica en un cambio grande de
+     margen esperado, y por lo tanto en el precio.
+  2. **Concentración de clientes**: un recorte de capex de Google es un
+     % enorme de los ingresos de un proveedor de chips, pero un % chico
+     del negocio diversificado de Google (búsqueda, ads, nube, otras
+     apuestas) — la misma noticia es un shock proporcionalmente mucho
+     mayor para el proveedor puro que para el comprador diversificado.
+  Ninguno de los dos mecanismos está testeado — mismo estado que el resto
+  de esta sección: hipótesis documentada, no trial.
+
   **El próximo oro (Boris, 2026-08-26)**: pregunta genuinamente especulativa,
   no estadística — el universo actual de 50 large-caps no puede responderla
   (la mayoría de los candidatos ni cotiza todavía). Lo reusable no es
