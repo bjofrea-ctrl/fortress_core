@@ -244,6 +244,54 @@ fix sigue siendo cerrar-terminal-ociosa/reabrir-a-demanda (ya documentado
 arriba) más compactar/reiniciar la sesión coordinadora cuando el proceso
 crezca demasiado.
 
+---
+
+## Protocolo de orquestación nativo de Orca — probado en vivo (2026-08-26)
+
+Boris pidió explorar si el sistema nativo de Orca (`orchestration
+send/check/task-create/dispatch/gate-*`) mejora el protocolo manual de
+coordinación (mensajes de texto libre por `terminal send`), y aplicar lo más
+sólido, no lo más fácil.
+
+### Qué es realmente
+
+No es memoria compartida automática — es mensajería/coordinación
+estructurada: un "Run" (namespace + buzón), tareas formales
+(`task-create`), despacho a una terminal (`dispatch`), workers supervisados
+(`worker-start/stop`), y gates de decisión bloqueantes (equivalente formal a
+`.pending-merge.md`).
+
+### Prueba real (no solo lectura de `--help`)
+
+Se probó `orca orchestration dispatch --inject` contra una terminal de
+Cline, dos veces, la segunda de forma limpia (una sola tarea, un solo
+intento, sin cadena de reintentos previa):
+
+- **El contrato/preámbulo es sólido**: heartbeat cada 5 min mientras el
+  agente trabaja, prohibición explícita de usar el prompt bloqueante local
+  del agente (debe usar `orchestration ask`, nunca `AskUserQuestion`),
+  `worker_done` con resumen estructurado de 3 oraciones. Cline lo entendió y
+  lo ejecutó correctamente las dos veces.
+- **El mecanismo de entrega falla de forma reproducible**: `dispatch
+  --inject` devuelve `agent_prompt_stalled` incluso en el intento limpio. En
+  el segundo intento se confirmó la causa: el `worker_done` que Cline intentó
+  mandar de vuelta llegó con un token de capability inválido y nunca alcanzó
+  al coordinador — la falla no es de reintentos del coordinador, es del
+  mecanismo de inyección en sí contra esta TUI.
+- No se probó contra Kilo ni OpenCode — puede ser específico de Cline o un
+  problema general del mecanismo. Si otra sesión lo reproduce con un agente
+  distinto, vale la pena reportarlo como bug real de Orca.
+
+### Decisión adoptada
+
+**Contrato sí, mecanismo de entrega no (por ahora).** Se adopta el contenido
+del protocolo (heartbeats, prohibición de prompts locales bloqueantes,
+`worker_done` de 3 oraciones) escribiéndolo directamente en los mensajes que
+ya se mandan por `terminal send` — canal probado estable toda la sesión —
+en vez de depender de `dispatch --inject`, que está roto ahora mismo. Es la
+combinación más sólida disponible hoy con evidencia real detrás, no la más
+fácil ni la más "oficial" en apariencia.
+
 ### Para que decida Boris (nada de esto se ejecutó)
 
 1. ¿Cerrar el cliente `.cline` huérfano del hub daemon en empresa-hibrida?
