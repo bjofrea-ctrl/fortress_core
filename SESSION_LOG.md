@@ -1,5 +1,28 @@
 # Fortress Core — Memoria de Sesiones (Última sesión resumida)
 
+## 2026-08-26 — Garantías anti-evasión Bonferroni familia re_test (H3.1, Cline — espera merge)
+
+**Asignación**: Boris aprobó implementar §4.1+4.2+4.3 de `ANALISIS_RE_TEST_BONFERRONI.md` (segunda mirada independiente vs Kilo). Infraestructura del ledger, trabajo directo SIN pre-registro.
+
+**Verificación previa**: `trial_08_sentimiento` / `trial_09_fundamentales` existen tal cual en ledger y backfill (motor_signal, NO_CUMPLE, n=1) antes de escribir las referencias.
+
+**Implementación en `trial_registry.py`**:
+1. `re_test_de` obligatorio si `familia=="re_test"`: objetivo existente y ANTERIOR (sin forward-refs), veredicto NO_CUMPLE, familia de investigación (`RESEARCH_FAMILIES`; no `producto`, no otro `re_test` — sin cadenas).
+2. `MAX_RETESTS_PER_TARGET = 2` por objetivo (constante nombrada; subirla = decisión visible en diff).
+3. `n_trials_consumidos=0` solo legal en familia `re_test` (cierra el vector real H3.1: cero libre en cualquier familia).
+4. Invariante cruzado `_validate_cross_entries()` corre tanto en `register_trial()` como en `_load_raw` (un JSON editado a mano también explota).
+
+**Backfill**: 2 entradas históricas con su `re_test_de` real (`→trial_08_sentimiento` / `→trial_09_fundamentales`).
+
+**Tests**: 8 rutas nuevas (obligatoriedad, existencia+forward-ref, veredicto, cadenas×2 parametrizadas, tope, camino feliz con umbral intacto, cero fuera de re_test×5 familias vía register y vía carga, backfill completo pasa validación) + 2 tests existentes ajustados al contrato nuevo. **Suite completa: 420 passed**, ruff limpio.
+
+**Compatibilidad verificada sobre copia /tmp (NO toqué ningún JSON real)**: ledger sin migrar → falla ruidosa (por diseño); migradas las 2 líneas → carga completa (47 entradas) OK.
+
+**Lección**: el índice de ids previos del invariante cruzado debe incluir TODAS las familias — si solo indexa no-re_test, un objetivo legítimo pero invalidable da error de existencia en vez del error específico (lo detectó la ruta 4).
+
+**PENDIENTE AL MERGEAR**: agregar los 2 campos `re_test_de` al `trial_registry.json` de producción (el código nuevo lo rechaza sin ellos POR DISEÑO).
+
+
 ## 2026-08-25 — §46 TRIAL #19: compuerta M3 standalone — NO INTERPRETABLE mecánico (piso insuficiente), sin consumo de slot (Kilo Code, worktree test-kilo-orca)
 
 **Autor**: Kilo Code. Pre-registro §46 aprobado por el coordinador antes de
