@@ -68,7 +68,25 @@ vez no pasa DSR OOS (0.61 < 0.95) ni PBO (0.47, overfitting sustancial).
   Kilo) — son hipótesis independientes que alimentan el mismo ledger, no
   dos caminos separados.
 
-- **A6 — Heterogeneidad sectorial/por tipo de activo (Boris, 2026-08-26)**:
+- **Marco organizador: fundamental vs. técnico (Boris, 2026-08-26)** — todo
+  A6 en adelante se separa en dos capas distintas, que hasta hoy el proyecto
+  no distinguía con claridad:
+  - **Fundamental = QUÉ activo plantar (selección)**: calidad del negocio,
+    posición en la cadena de valor, si encaja con la temporada/cuadrante
+    actual. Es sobre el activo en sí mismo, no sobre el momento de actuar.
+    A5 (Buffett's Alpha) y A6.3 (más abajo) son de esta capa.
+  - **Técnico = CUÁNDO sembrar y cosechar (timing)**: el momentum+RSI que ya
+    usa el motor congelado es 100% técnico — lee patrón de precio, no dice
+    nada sobre si la empresa es buena o mala como negocio. M3/A1 (régimen) y
+    A6.2 (cadencia por beta) son de esta capa.
+  Las dos capas son complementarias, no sustitutas — un activo fundamentalmente
+  bueno en el momento técnico equivocado, o un timing técnico perfecto sobre
+  un activo fundamentalmente débil, pierden valor igual. El motor actual solo
+  cubre la capa técnica; la capa fundamental está casi sin explorar (A5 fue
+  el único intento, y era un ranking crudo, no el enfoque de A6.3).
+
+- **A6 — Heterogeneidad sectorial/por tipo de activo (Boris, 2026-08-26)
+  [capa fundamental — selección]**:
   hueco real, verificado — hasta ahora TODOS los trials (§13-§47) aplicaron
   la señal de forma UNIFORME a los 50 nombres del universo, sin diferenciar
   por sector o tipo de activo. El régimen macro (M3) condiciona el mercado
@@ -121,7 +139,8 @@ vez no pasa DSR OOS (0.61 < 0.95) ni PBO (0.47, overfitting sustancial).
     aparte.
 
   **A6.1 — Factores líderes de transición de cuadrante (Boris, 2026-08-26,
-  conectado a M3/§46)**: verificado que M3 (`regime_gate.py`) ya construye
+  conectado a M3/§46) [capa técnica — timing]**: verificado que M3
+  (`regime_gate.py`) ya construye
   features de crecimiento (`growth_SPY/EFA/QQQ`), inflación
   (`inflation_GLD/DBC/TIP`) y tasas (`rates_TLT/AGG`) + VIX — la misma
   estructura growth×inflation del marco de Dalio (4 cuadrantes), clasificada
@@ -195,7 +214,8 @@ vez no pasa DSR OOS (0.61 < 0.95) ni PBO (0.47, overfitting sustancial).
   que vale la pena, no como parte del diseño mínimo.
 
   **A6.2 — Beta/volatilidad determina la CADENCIA, no solo el activo (Boris,
-  2026-08-26)**: dimensión adicional real. Mayor beta = mayor volatilidad =
+  2026-08-26) [capa técnica — timing]**: dimensión adicional real. Mayor
+  beta = mayor volatilidad =
   más oportunidades de "cosecha" en ambas direcciones (sube y baja) en el
   mismo período — no es lo mismo que llueva 4 veces al año (Coca-Cola, ~4%
   anual, baja vol) que 2-3 veces al DÍA (NVIDIA, oscila varios % por
@@ -224,6 +244,33 @@ vez no pasa DSR OOS (0.61 < 0.95) ni PBO (0.47, overfitting sustancial).
   momentum+RSI mejora con cadencia condicionada por beta vs. el mensual
   uniforme actual, y recién si hay señal, confirmación cara con el mismo
   rigor DSR/PBO.
+
+  **A6.3 — Posición en la cadena de valor / "vendedor de palas" (Boris,
+  2026-08-26) [capa fundamental — selección]**: patrón histórico real
+  (fiebre del oro: los vendedores de herramientas y suministros ganaron de
+  forma consistente mientras la inmensa mayoría de los mineros individuales
+  perdía o apenas empataba; los ferrocarriles tuvieron un patrón similar con
+  las empresas de rieles/acero). Distinción clave de Boris: no importa CUÁL
+  empresa específica gane dentro de una categoría (IA, robótica) — las
+  empresas "habilitadoras" (semiconductores, centros de datos, energía,
+  componentes) le venden a TODA la categoría por igual, diversificando el
+  riesgo de "apostar al ganador" entre cientos de clientes en vez de
+  concentrarlo en una sola apuesta. Es 100% capa FUNDAMENTAL — clasifica el
+  modelo de negocio del activo, no dice nada sobre cuándo comprar/vender
+  (eso lo sigue resolviendo la capa técnica, A1/A6.1/A6.2).
+
+  **Limitación honesta**: operacionalizar esto de verdad (revenue
+  diversificado entre clientes, posición en la cadena de valor) requiere
+  datos fundamentales/cualitativos — mismo obstáculo que ya mató el test de
+  fundamentales crudo (cobertura EDGAR 5/50). **Atajo barato disponible
+  sin esperar mejor cobertura**: el universo actual de 50 ya contiene
+  nombres que califican como "pala" para la ola de IA sin necesitar datos
+  nuevos — NVDA/AVGO/QCOM (semiconductores), MSFT/ORCL/CSCO (nube/
+  infraestructura) — etiquetado manual de un puñado de nombres, no
+  fundamentales sistemáticos de los 50. Diseño pendiente de pre-registro:
+  comparar el desempeño (Sharpe/DSR) de ese subconjunto "habilitador"
+  etiquetado a mano contra el resto del universo y contra el pooled actual
+  — screening barato, confirmación cara solo si hay separación real.
 
 **Gate de salida de A**: cuando A1-A6 estén cerrados (o descartados con
 evidencia) y A3 confirme que el ledger cuenta bien, recién ahí se considera
