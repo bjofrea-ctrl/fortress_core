@@ -278,9 +278,17 @@ intento, sin cadena de reintentos previa):
   mandar de vuelta llegó con un token de capability inválido y nunca alcanzó
   al coordinador — la falla no es de reintentos del coordinador, es del
   mecanismo de inyección en sí contra esta TUI.
-- No se probó contra Kilo ni OpenCode — puede ser específico de Cline o un
-  problema general del mecanismo. Si otra sesión lo reproduce con un agente
-  distinto, vale la pena reportarlo como bug real de Orca.
+- **Confirmado por medai, independientemente, contra los 3 agentes**: mismo
+  síntoma exacto (`agent_prompt_stalled`, dispatch marcado `failed` aunque
+  el agente sí recibe y procesa el prompt, capability revocada al intentar
+  responder) con Kilo, Cline y OpenCode en un proyecto distinto. Hipótesis de
+  medai (sin confirmar contra el código de Orca): el mecanismo de capability/
+  heartbeat parece pensado para agentes nativos que Orca hookea de verdad
+  (`claude`/`codex`/`grok`), no para CLIs de terceros accedidos vía gateway
+  (OpenCode Zen, Kilo Gateway, ClinePass) — que es exactamente cómo están
+  configurados Kilo/Cline/OpenCode en los tres proyectos. Con evidencia de 2
+  proyectos y 3 agentes distintos fallando igual, es un caso sólido para
+  reportarlo como bug real de Orca si Boris quiere hacerlo.
 
 ### Decisión adoptada
 
