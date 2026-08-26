@@ -438,6 +438,16 @@ vez no pasa DSR OOS (0.61 < 0.95) ni PBO (0.47, overfitting sustancial).
   de amplificar capacidad cognitiva, el mismo need que antes resolvieron
   la calculadora, la computadora, internet.
 
+  **Ejemplo con cadena completa, no un solo salto (Boris, 2026-08-26)**:
+  movilidad — trenes (rieles/acero) → auto a combustión (motor/petróleo) →
+  auto eléctrico (batería/litio/semiconductores) → auto autónomo
+  (sensores/LIDAR/cómputo, especulativo) → dron personal (motores/
+  baterías/materiales livianos, especulativo). Mismo need resuelto por al
+  menos cinco cadenas de suministro distintas en menos de 150 años, cada
+  una con su propio "vendedor de palas" y su propio Nokia potencial —
+  confirma que el principio no es anecdótico de la luz, se repite need por
+  need.
+
   **Advertencia honesta que le agrega a A6.3**: la lógica de "no importa
   qué empresa de IA gane, vendele a todas" (diversificación por categoría)
   protege DENTRO de un paradigma tecnológico — pero no protege si el
