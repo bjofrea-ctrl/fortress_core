@@ -109,6 +109,32 @@ vez no pasa DSR OOS (0.61 < 0.95) ni PBO (0.47, overfitting sustancial).
     parcial con la segmentación sectorial de arriba, no una dimensión 100%
     aparte.
 
+  **A6.1 — Factores líderes de transición de cuadrante (Boris, 2026-08-26,
+  conectado a M3/§46)**: verificado que M3 (`regime_gate.py`) ya construye
+  features de crecimiento (`growth_SPY/EFA/QQQ`), inflación
+  (`inflation_GLD/DBC/TIP`) y tasas (`rates_TLT/AGG`) + VIX — la misma
+  estructura growth×inflation del marco de Dalio (4 cuadrantes), clasificada
+  vía HMM. Hoy M3 es **reactivo**: clasifica el régimen ya ocurrido (retornos
+  trailing) y solo prende/apaga el motor entero según el cuadrante actual
+  (probado como A1/§46, cerrado NO_INTERPRETABLE por piso insuficiente).
+  Propuesta de Boris: en vez de solo clasificar el cuadrante presente,
+  investigar qué factores empujan la transición ENTRE cuadrantes (subida y
+  bajada de crecimiento/inflación) — para usar eso como condición de
+  compra/venta/rebalanceo ANTES de que el cuadrante termine de confirmarse,
+  no después.
+
+  **Nota de honestidad metodológica**: esto es un salto de dificultad real
+  respecto a A6 (segmentación) — no es clasificar régimen, es *anticipar*
+  su transición, más cerca de pronóstico macro que de clasificación de
+  patrón. HMM por diseño es retrospectivo (ajusta estados a datos ya
+  ocurridos); encontrar factores líderes con poder predictivo genuino
+  (no sobreajustado) es un problema mucho más exigente, con su propio riesgo
+  de overfitting si no se pre-registra con el mismo rigor que todo lo
+  demás. Queda anotado como dirección de investigación futura, NO como
+  trial listo para pre-registrar — requiere diseño propio (qué factores
+  candidatos, qué ventana de anticipación, cómo evitar lookahead) antes de
+  poder correrse.
+
 **Gate de salida de A**: cuando A1-A6 estén cerrados (o descartados con
 evidencia) y A3 confirme que el ledger cuenta bien, recién ahí se considera
 agotado el camino A — con evidencia, no por cansancio.
