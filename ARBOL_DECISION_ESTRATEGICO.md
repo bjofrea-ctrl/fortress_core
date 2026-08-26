@@ -561,6 +561,29 @@ construidos o diagnosticados, con estado real conocido (no supuesto):
   académico (factor value, Fama-French) — punto de partida si se retoma,
   no el punto más débil que fue el sentimiento/AAII de Fase 0.6.
 
+### Principio raíz: el valor es condicional al contexto actual, no fijo
+### (Boris, 2026-08-26, ejemplo RAM/agua en el desierto)
+
+Paradoja del valor (Adam Smith, diamante/agua, sin resolverla) resuelta
+por la **revolución marginalista** (Menger/Jevons/Walras, 1870s, teoría de
+la utilidad marginal): el valor no es propiedad intrínseca del bien, es
+la utilidad de la PRÓXIMA unidad dado el estado actual del que valora.
+RAM vale más que agua en contexto normal (agua abundante, utilidad
+marginal de la próxima unidad ≈0); en el desierto el mismo vaso de agua
+vale más — no cambió el bien, cambió el contexto, y con él la utilidad
+marginal. Mismo principio que la lluvia y la uva: no hay regla fija
+"lluvia=bueno/malo," depende del estado actual de la planta (floración
+vs. cosecha).
+
+**No es solo filosofía — ya está implementado en el proyecto**: M3
+(`regime_gate.py`) no aplica una regla fija, lee el régimen ACTUAL
+(growth/inflation/rates/vix) y condiciona el comportamiento a eso. A6.2
+(cadencia por volatilidad) es la misma idea aplicada a la cadencia. Este
+principio de condicionalidad al contexto es probablemente el más
+fundamental de todo el bloque A6.x — explica POR QUÉ M3 y A6.2 tienen
+sentido en primer lugar, no es una idea nueva sino la raíz de las que ya
+existían.
+
 ### Síntesis de cierre del bloque A6.x (Claude Code, 2026-08-26)
 
 - **Capa fundamental (QUÉ activo)**: la idea central que sostiene A6.3,
