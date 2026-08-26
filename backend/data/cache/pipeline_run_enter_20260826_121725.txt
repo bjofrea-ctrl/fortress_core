@@ -1,0 +1,9 @@
+Pipeline ENTER — compras equal-weight del decision file
+============================================================
+Equity fuente: get_account() = 25053.38
+Posiciones broker: ninguna
+Senales: 1 | presupuesto 25053.38 (get_account) | tamanos: AAPLx80
+Open orders en ledger real: 0
+
+Resultados (REAL):
+  buy  AAPL  submitted [OVERRIDE_MECANISMO] qty=80 fill=313.53

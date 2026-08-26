@@ -1,0 +1,7 @@
+Pipeline ENTER — compras equal-weight del decision file
+============================================================
+Equity fuente: FALLBACK (dry-run) 25000.0
+Senales: 1 | presupuesto 25000.0 (dry_run_fallback) | tamanos: AAPLx80
+
+Resultados (DRY-RUN):
+  buy  AAPL  dry_run_plan [OVERRIDE_MECANISMO] qty=80 fill=None
