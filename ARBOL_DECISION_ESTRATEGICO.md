@@ -362,6 +362,34 @@ vez no pasa DSR OOS (0.61 < 0.95) ni PBO (0.47, overfitting sustancial).
   la evidencia disponible la ubica dentro de la clase de referencia de
   "oros" exitosos, y el otro candidato no está en ninguna clase relevante.
 
+  **El liderazgo de mercado rota — destrucción creativa (Boris, 2026-08-26,
+  ejemplos Nokia/Moderna)**: los 10 mejores activos de hoy no son los de
+  hace 10 años ni serán los de dentro de 10-20 años — patrón documentado en
+  economía como *destrucción creativa* (Schumpeter). Nokia y Moderna
+  ilustran DOS mecanismos distintos de rotación, no el mismo:
+  1. **Disrupción** (Nokia, "dilema del innovador" — Christensen): dominaba
+     optimizando su tecnología existente (Symbian) hasta que un paradigma
+     nuevo (touchscreen/iOS/Android) volvió obsoleta esa competencia
+     central. Cambian las reglas de la categoría entera, no es un ciclo de
+     oferta/demanda.
+  2. **Reversión a la media por catalizador** (Moderna): no la desplazó
+     tecnología nueva, la infló una demanda temporal (pandemia) que se
+     desvaneció — mismo mecanismo que el ciclo de la "pala" ya documentado
+     en A6.3 (escasez → sobreoferta → colapso de margen), aplicado a una
+     empresa completa en vez de una categoría de proveedores.
+
+  **Implicancia metodológica verificada en el código (no solo observación
+  económica)**: el universo de 50 símbolos del proyecto
+  (`backend/scripts/fetch_universe_data.py::NEW_UNIVERSE`) es una lista
+  **estática**, fijada una vez, sin refresco automático. Si algún día se
+  decide "actualizarla a los líderes actuales," eso mismo introduce el
+  riesgo clásico de sesgo de supervivencia (survivorship bias) en cualquier
+  backtest histórico corrido con esa nueva composición — construir el
+  universo con el conocimiento de HOY de quién ganó y correrlo hacia atrás.
+  No es una alarma para actuar ahora (cambiar el universo es decisión de
+  Boris, no automática) — queda documentado como riesgo metodológico
+  conocido, no algo a descubrir tarde.
+
 **Gate de salida de A**: cuando A1-A6 estén cerrados (o descartados con
 evidencia) y A3 confirme que el ledger cuenta bien, recién ahí se considera
 agotado el camino A — con evidencia, no por cansancio.
