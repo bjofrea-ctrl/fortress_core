@@ -390,6 +390,29 @@ vez no pasa DSR OOS (0.61 < 0.95) ni PBO (0.47, overfitting sustancial).
   Boris, no automática) — queda documentado como riesgo metodológico
   conocido, no algo a descubrir tarde.
 
+  **Horizonte de inversión como filtro de relevancia (Boris, 2026-08-26)**:
+  no todos los mecanismos de A6.x aplican en la misma escala de tiempo —
+  el horizonte determina cuáles pesan:
+  - **Corto plazo (días-semanas)** — horizonte en el que opera HOY el
+    proyecto (momentum 12-1 meses, entradas/salidas de checkpoint en el
+    orden de días): destrucción creativa tipo Nokia es prácticamente
+    irrelevante (tarda años en completarse). Pesan cadencia por
+    volatilidad (A6.2) y régimen macro actual (M3). Riesgo de universo
+    estático es bajo.
+  - **Mediano plazo (meses a 1-2 años)**: empieza a pesar el ciclo de la
+    "pala" (A6.3, reversión a la media estilo Moderna) — se completa en
+    esa ventana. El régimen macro de M3 rota varias veces en esta escala.
+  - **Largo plazo (años-décadas)**: se vuelve central la destrucción
+    creativa tipo Nokia y el riesgo de survivorship bias del universo
+    estático (arriba) — un "comprá y mantené" de 10-20 años sobre el
+    universo fijo de hoy apuesta a que ninguno de los 50 se vuelva el
+    próximo Nokia, sin mecanismo de reemplazo.
+  **Nota honesta de alcance**: el proyecto opera hoy en el primer tramo
+  (corto plazo) — la mayoría de lo discutido en A6.3/destrucción creativa/
+  próximo oro es relevante a un horizonte que el proyecto TODAVÍA no
+  opera. Vale como marco para el futuro, no como algo que deba cambiar la
+  operativa actual.
+
 **Gate de salida de A**: cuando A1-A6 estén cerrados (o descartados con
 evidencia) y A3 confirme que el ledger cuenta bien, recién ahí se considera
 agotado el camino A — con evidencia, no por cansancio.
