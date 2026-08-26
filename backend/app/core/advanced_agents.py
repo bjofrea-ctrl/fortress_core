@@ -59,16 +59,16 @@ NVIDIA_MODELS = {
 # Prefijo openrouter/ = sale por OpenRouter (minimax m3 free, glm 5.2 free);
 # el resto por NVIDIA NIM (kimi k3). Slugs a validar en primera llamada viva.
 TRIAD_LLM_MODELS = {
-    "BULL": "deepseek-ai/deepseek-v4-flash",
-    "BEAR": "openrouter/minimax/minimax-m3",
-    "CONTRARIAN": "openrouter/z-ai/glm-5.2",
+    "BULL": "moonshotai/kimi-k3",
+    "BEAR": "openrouter/minimax/minimax-m3:free",
+    "CONTRARIAN": "openrouter/z-ai/glm-5.2:free",
 }
 
 # Asignación de modelos LLM a agentes de gobernanza
 GOVERNANCE_LLM_MODELS = {
-    "CONTROLLER": "deepseek-ai/deepseek-v4-flash",
-    "PROFESSOR": "openrouter/minimax/minimax-m3",
-    "JUDGE": "openrouter/z-ai/glm-5.2",
+    "CONTROLLER": "moonshotai/kimi-k3",
+    "PROFESSOR": "openrouter/minimax/minimax-m3:free",
+    "JUDGE": "openrouter/z-ai/glm-5.2:free",
 }
 
 
