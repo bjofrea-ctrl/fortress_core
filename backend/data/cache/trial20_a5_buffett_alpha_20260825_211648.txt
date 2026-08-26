@@ -1,0 +1,19 @@
+==============================================================================
+TRIAL #20 (§47) — Buffett's Alpha sistemático (Quality+Value+Low-Beta), A5
+Pre-registro APROBADO (coordinador 2026-08-25). Diseño congelado.
+==============================================================================
+F1 universo operativo: 48 símbolos (sin ETF SPY/QQQ)
+F1 precios cacheados: 48/48
+F4 low-beta: rolling 126d vs SPY computado para 48 símbolos
+F2 coverage-gate: universo=0.979 (>=0.90)  fechas_OOS>=80% computable=1.000 (>=0.80)
+
+Ledger motor_signal: consumido_antes=12 -> n=13 -> th=0.992308
+IS meses=107  OOS meses=31
+Sharpe_OOS neto anualizado = 0.8856
+DSR (Bailey&LdP2014, n=13) = 0.3610
+Criterio binario: Sharpe_OOS>0 Y DSR>=0.99231
+
+VEREDICTO: NO_CUMPLE (mecánico) — Sharpe_OOS=0.8856 DSR=0.3610 vs th=0.99231. Nada se promueve.
+F7 control universo equal-weight OOS Sharpe = 1.5000 (sanity maquinaria)
+
+Out: data/cache/trial20_a5_buffett_alpha_20260825_211648.txt

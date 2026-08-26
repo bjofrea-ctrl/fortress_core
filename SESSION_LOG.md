@@ -27,6 +27,43 @@ PLAN_HANDOVER_48H.md).
   §46+§46.1 en PLAN_MEJORA_MATEMATICA.md; fila nueva en ROADMAP. Producción
   intacta (proxy sobre signal_engine por atributo).
 
+## 2026-08-25 — §47 TRIAL #20: "Buffett's Alpha" sistemático (A5) — cerrado NO_CUMPLE (Kilo Code, worktree test-kilo-orca)
+
+**Autor**: Kilo Code. Directiva explícita de Boris (2026-08-25): "pasá a A5 ... pre-registro
+nuevo, misma disciplina". §46 (A1) ya cerrado por Boris en main (merge manual, no-op del
+cherry-pick del RESULTADO).
+
+- Pre-registro §47 en PLAN_MEJORA_MATEMATICA.md. Hipótesis inédita: descomposición
+  Frazzini/Kabiller/Pedersen ("Buffett's Alpha") — calidad (ROE/ROA/gross-margin/FCF-yield +
+  estabilidad de ganancias) + valor (P/E,P/B,EV/EBITDA invertidos) + **bajo-beta de precio
+  (cobertura 50/50, componente novedoso)** + apalancamiento moderado — como portafolio
+  cross-sectional long top-quintile mensual sobre el universo 50.
+- Distinto del FUND previo (ranking crudo 15 ratios EDGAR, 5/50, refutado por cobertura)
+  y de A4 (revivir ese ranking si mejora cobertura). A5 corre en paralelo, mismo ledger,
+  sin competir con Frente 2 (construcción no consume Bonferroni).
+- **Fork de datos resuelto de forma decisiva**: hoy `data/cache/edgar/` está VACÍO (0 panel)
+  — el 5/50 que mató a FUND. Resuelvo con **Fase 0** (extender `build_fundamentals_panel.py`
+  a los 50, descargar companyfacts SEC EDGAR, construir `fundamentals_panel.parquet`
+  point-in-time; cache después, el trial es cache-only) + **coverage-gate pre-registrado
+  ≥90% universo / ≥80% fechas OOS** → si falla, NO INTERPRETABLE, no registra ni consume slot.
+  yfinance (.info/fast_info) rechazado como primario: snapshot actual = lookahead, viola la
+  disciplina point-in-time del proyecto. Es "empezar a acumular el histórico hoy" (doctrina Boris).
+- Criterio binario sin zona gris: **CUMPLE** si Sharpe_OOS_neto>0 Y DSR≥th(motor_signal)
+  (=0.99231, n=13, mismo de §46, porque §46 NO consumió slot); **NO_CUMPLE** otra cosa;
+  **NO_INTERPRETABLE** si coverage-gate/fidelidad fallan. Familia motor_signal,
+  n_trials_consumidos=1 si interpretable.
+- **EJECUTADO (2026-08-25, 21:16)**: Fase 0 OK (panel EDGAR 47/48, coverage-gate 97.9%/100%
+  PASS) + corrida única. OOS 31m: Sharpe neto **0.8856>0**, DSR **0.3610** (n=13) →
+  **NO_CUMPLE mecánico** (DSR<0.99231). Hallazgo descriptivo honesto: control equal-weight
+  OOS Sharpe **1.50 > factor 0.886** — el composite quality+value+low-beta long-only top-quintile
+  NO supera al universo naive en esta ventana OOS; señal de existencia (Sharpe>0) pero no de
+  grado promocionable (DSR<umbral). **Registrado** id `trial_a5_buffett_alpha`, familia
+  `motor_signal`, `n_trials_consumidos=1`, veredicto NO_CUMPLE → ledger 12→13 (th 0.992857).
+  Conexión A4: si se mejora valor, el re-test es A4, no re-abrir A5.
+- Artefacto `backend/data/cache/trial20_a5_buffett_alpha_20260825_211648.txt`(+json);
+  script `backend/scripts/trial_a5_buffett_alpha.py`; §47+§47.1 en PLAN_MEJORA_MATEMATICA.md;
+  fila ROADMAP actualizada. Producción intacta.
+
 ## 2026-08-24 — §45 TRIAL #18: EVT-stops v2 (sizing aislado) — NO_CUMPLE 0/3, línea EVT CERRADA DEFINITIVA (Kilo Code, worktree test-kilo-orca)
 
 **Autor**: Kilo Code. Pre-registro §45 escrito como borrador, revisado y APROBADO
