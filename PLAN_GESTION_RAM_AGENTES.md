@@ -312,3 +312,34 @@ fácil ni la más "oficial" en apariencia.
    duplicado que vio medai?
 5. ¿Alguna de las 3 sesiones coordinadoras de Claude Code (700-970MB cada
    una, ~3 días corriendo) se puede reiniciar sin perder algo importante?
+   **RESUELTO 2026-08-26**: sí, se puede — ver práctica de cierre abajo.
+   Boris reinicia él mismo cada sesión (el coordinador no puede reiniciarse a
+   sí mismo, requiere acción externa).
+
+---
+
+## Práctica adoptada: cierre de jornada + reinicio de sesión (2026-08-26)
+
+Confirmado con Boris: reiniciar la sesión coordinadora de Claude Code (no
+solo los agentes) es la única forma real de devolverle esa RAM al sistema —
+compactar no siempre libera memoria a nivel de sistema operativo. Boris
+reinicia las sesiones él mismo; el coordinador no puede terminar su propio
+proceso.
+
+**Requisito para que el reinicio sea seguro (cero pérdida)**: antes de que
+Boris reinicie, el coordinador deja todo en un estado del que una sesión
+nueva puede retomar sin pedirle que repita nada:
+
+1. Todo el trabajo real committeado y **pusheado** a `origin/main` — nada
+   viviendo solo en el working tree o en la conversación.
+2. `.claude-heartbeat` actualizado con el estado completo: qué se cerró hoy,
+   qué queda pendiente, en qué está cada agente, cualquier decisión de Boris
+   todavía sin aplicar.
+3. `ROADMAP.md` reflejando el estado real (no desactualizado).
+4. Confirmación explícita al usuario de que es seguro reiniciar — no asumir,
+   decirlo.
+
+Esta ya era la práctica de facto (se usó al cerrar la jornada anterior, sesión
+previa) — queda formalizada acá como parte del mismo plan de gestión de RAM,
+no como algo nuevo y separado. Aplica a las tres sesiones coordinadoras por
+igual.
