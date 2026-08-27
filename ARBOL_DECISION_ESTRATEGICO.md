@@ -415,6 +415,25 @@ vez no pasa DSR OOS (0.61 < 0.95) ni PBO (0.47, overfitting sustancial).
     (destrucción creativa, más abajo) aplica también al propio etiquetado
     de A6.3.
 
+  **Etiquetado incompleto + principio de mapeo de cadena de valor (Boris,
+  2026-08-27)**: el etiquetado manual de 6 símbolos usado en el screening
+  YA CORRIENDO (arriba) quedó corto — faltan los fabricantes de
+  almacenamiento (discos duros/SSD tipo Western Digital, SanDisk) que
+  también proveen componentes a los centros de datos de IA, la misma
+  categoría "habilitador" que semiconductores/nube/networking. Más
+  general: la cadena de "palas" tiene niveles — hay empresas que
+  CONSTRUYEN los centros de datos que son stakeholders/socios de nubes
+  como Oracle, y así sucesivamente hacia atrás en la cadena. Principio de
+  Boris: **"saber es poder"** — mapear quién es socio/proveedor/stakeholder
+  de quién importa más que adivinar la categoría por el nombre del
+  sector. **No se aplica retroactivamente al screening que ya está
+  corriendo** (el criterio de `PRE_REGISTRO_SCREENING_PALAS.md` está
+  congelado — regla de oro, no se edita post-hoc) — queda como insumo
+  para un v2 del etiquetado A6.3 cuando se pre-registre esa expansión,
+  con el mapeo de cadena de valor completo (fabricantes de storage,
+  constructores de datacenters, y sus relaciones de stakeholder) antes de
+  correr nada nuevo.
+
   **Secuencia del colapso: ¿cae primero el oro o la pala? (Boris,
   2026-08-26)**: hipótesis con dos mecanismos concretos, ninguno testeado
   todavía (no hubo busto de IA en este ciclo — queda documentado, no
