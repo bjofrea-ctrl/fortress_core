@@ -1,0 +1,58 @@
+============================================================================
+TRIAL #19 (PLAN §46) — COMPUERTA M3 STANDALONE SOBRE EL MOTOR (aprobado)
+Pregunta: operar SOLO en GOLDILOCKS-rezagado vs operar siempre
+ALWAYS: BacktestEngine estándar | GATED: proxy sobre signal_engine
+Etiqueta: WalkForwardRegimeGate(GOLDILOCKS), recalib 63d/min_hist 756d, lag 21 hábiles | sin etiqueta -> no opera
+Ledger runtime: motor_signal consumido=12 -> n=13 | th=0.9923076923076923
+CRITERIO ventana computable (piso 30 trades gated): DSR_gated>=0.99231 Y Sharpe_gated>Sharpe_always
+<2/3 ventanas computables -> NO INTERPRETABLE: no registra ni consume
+============================================================================
+
+F1 universo: 50/50 | panel 2015-01-02 -> 2026-08-20
+F9 equivalencia identity-cache: 25 pares x 7 columnas bit-idénticos
+
+F4 gate: recalibs=34 | fechas etiquetadas=2110 | estados={'0': 548, '1': 446, '2': 831, '3': 285}
+F5 fracción días GOLDILOCKS-lag (global): 0.287
+
+Corriendo arma ALWAYS (control, sin compuerta)...
+Corriendo arma GATED (M3 standalone)...
+Señales GATED: delegadas=35250 bloqueadas=109850 (75.7% bloqueadas)
+
+--- W1 2020-2021 (ALWAYS n=95, GATED n=17) | GOLDILOCKS 8.5% días ---
+    cagr               ALWAYS=      0.0148 GATED=      0.0093
+    sharpe_ratio       ALWAYS=      0.3177 GATED=      0.6892
+    sortino_ratio      ALWAYS=      0.4059 GATED=      0.2888
+    max_drawdown       ALWAYS=     -0.0532 GATED=     -0.0153
+    calmar_ratio       ALWAYS=      0.2783 GATED=      0.6116
+    win_rate           ALWAYS=      0.6632 GATED=      0.7647
+    profit_factor      ALWAYS=      1.4962 GATED=      3.5149
+    total_trades       ALWAYS=     95.0000 GATED=     17.0000
+    deflated_sharpe    ALWAYS=      0.1052 GATED=      0.2268
+
+--- W2 2022-2023 (ALWAYS n=51, GATED n=19) | GOLDILOCKS 32.1% días ---
+    cagr               ALWAYS=      0.0033 GATED=      0.0027
+    sharpe_ratio       ALWAYS=      0.1748 GATED=      0.1838
+    sortino_ratio      ALWAYS=      0.1631 GATED=      0.1529
+    max_drawdown       ALWAYS=     -0.0432 GATED=     -0.0141
+    calmar_ratio       ALWAYS=      0.0767 GATED=      0.1931
+    win_rate           ALWAYS=      0.6275 GATED=      0.6316
+    profit_factor      ALWAYS=      1.1393 GATED=      1.5355
+    total_trades       ALWAYS=     51.0000 GATED=     19.0000
+    deflated_sharpe    ALWAYS=      0.0724 GATED=      0.0747
+
+--- W3 2024-2026 (ALWAYS n=78, GATED n=51) | GOLDILOCKS 46.7% días ---
+    cagr               ALWAYS=      0.0162 GATED=      0.0034
+    sharpe_ratio       ALWAYS=      0.4782 GATED=      0.1612
+    sortino_ratio      ALWAYS=      0.5774 GATED=      0.1420
+    max_drawdown       ALWAYS=     -0.0507 GATED=     -0.0371
+    calmar_ratio       ALWAYS=      0.3197 GATED=      0.0903
+    win_rate           ALWAYS=      0.6410 GATED=      0.6078
+    profit_factor      ALWAYS=      1.4783 GATED=      1.2321
+    total_trades       ALWAYS=     78.0000 GATED=     51.0000
+    deflated_sharpe    ALWAYS=      0.1850 GATED=      0.0749
+
+============================================================================
+VENTANAS COMPUTABLES (>= 30 trades gated): ['W3 2024-2026']
+NO INTERPRETABLE mecánico (<2/3 ventanas computables): NO registra NI consume slot motor_signal (contrato §46). Documentado como intento inválido.
+
+Artefacto: data/cache/trial_m3_gate_standalone_20260825_164832.txt

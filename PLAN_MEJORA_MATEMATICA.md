@@ -3437,4 +3437,657 @@ a Boris antes de lanzar.**
 
 ---
 
+## 44. Tarea M — KAMA / HMA / Supertrend: familia de tendencia adaptativa, UN trial coordinado con 3 sub-hipótesis (2026-08-23, PRE-REGISTRO ANTES de correr, consume ledger)
+
+Fuente: `PLAN_LARGO_PLAZO.md` Tarea M (líneas 585-640) + regla añadida 2026-08-19
+(líneas 574-583): los 3 indicadores miden DIRECCIÓN (verificado contra origen por la
+spec — KAMA Kaufman 1972/1995; HMA Hull 2005; Supertrend Seban ~2009, sin respaldo
+académico, caveat registrado), por eso comparten protocolo con momentum/RSI: rank IC
+intra-día contra fwd_return_20d. No es el error de Bollinger (régimen) repetido.
+Contexto: Tarea N (§36) cerró MACD NO_CUMPLE 0/3 con este mismo protocolo.
+
+**DECISIÓN DOCUMENTADA**: UN SOLO TRIAL COORDINADO con las 3 sub-hipótesis
+(KAMA, HMA, Supertrend), `n_trials_consumidos=1`. Corrección intra-trial:
+Bonferroni sobre 3 indicadores × 3 ventanas = **m=9 tests primarios**.
+
+**Umbral (leído del ledger EN runtime al redactar este pre-registro, 2026-08-23)**:
+familia signal_diagnosis con **25 consumidos** → este trial es n=26 →
+`trial_registry.current_threshold("signal_diagnosis")` = **0.9961538461538462**
+(= 1 − 0.10/26). Masa de error del trial α_trial = 0.00384615; repartida Bonferroni
+sobre m=9 celdas → α_por_test = 0.00384615/9 = 0.00042735 bilateral →
+**|t| > z(1 − 0.00042735/2) = z(0.99978633) = 3.5226**. El script lee el ledger en
+runtime y recalcula con la MISMA fórmula si otro trial de la familia registra antes
+de esta corrida (patrón §42); el artefacto cita el número efectivo usado.
+
+**Los 3 factores (fórmulas fijadas ANTES de codear)** — todos normalizados por
+precio para ser comparables cross-sectional (el IC es Spearman intra-día entre
+símbolos):
+
+- **kama_dist** = (close − KAMA)/close. KAMA estándar de Kaufman:
+  ER = `predictive_indicators.compute_efficiency_ratio(close, period=10)` (reusado,
+  no reinventado — orden expreso de la spec); sc_t = (ER_t×(2/(2+1) − 2/(30+1)) +
+  2/(30+1))²; recursión causal kama_t = kama_{t−1} + sc_t×(close_t − kama_{t−1})
+  sembrada en el primer close válido del ER. Parámetros canónicos er=10/fast=2/slow=30.
+- **hma_dist** = (close − HMA)/close con HMA(16): WMA ponderada lineal (pesos
+  1..n), HMA_n = WMA(2×WMA(n/2) − WMA(n), √n) con n=16 (√n→4). Fórmula literal de
+  Alan Hull (2005).
+- **supertrend_side** ∈ {+1, −1}: Supertrend(ATR period=10, multiplicador=3.0),
+  parámetros canónicos de comunidad. basic_ub/lb = hl2 ± 3×ATR10 (atr() ya existente);
+  bandas finales con ratchet causal estándar (final_ub solo baja si basic_ub baja o
+  close_{t−1} > final_ub_{t−1}; simétrico abajo); dirección flip a +1 cuando close
+  cruza por encima de final_ub previo, a −1 cuando cruza por debajo de final_lb
+  previo, sino arrastra. NaN hasta el primer ATR válido.
+
+**Signo esperado (declarado antes de correr)**: +1 para los tres — proxy de
+tendencia alcista en t → mayor retorno futuro (misma hipótesis de continuación que
+momentum_12_1/RSI; ADX ya mostró señal nominal positiva en esta familia).
+
+**Protocolo CONGELADO** (fidelidad §0.5a, copia §41/§42): fwd_20 =
+close.shift(−20)/close − 1; IC diario = Spearman(factor, fwd_20) por fecha sobre
+≥5 símbolos; SE Newey-West L=min(12, n//8), copia fiel; SIN máscara de elegibilidad;
+los factores entran a `calculate_all_indicators` como columnas nuevas (patrón
+T1.1/T1.2/T2.3: disponibles para diagnóstico, NO wired a signal_engine ni al score).
+Ventanas canónicas: W1 2020-2021, W2 2022-2023, W3 2024-01-01→2026-07-06 (idénticas
+a §41/§42 para comparabilidad). START=2015-01-02 (warmup máximo necesario ≈60 ruedas,
+cubierto de sobra); DATA_END=2026-08-21 (cache termina 08-14/17+, diff ≤7 días →
+cero descargas, mismo criterio §41).
+
+**CRITERIO DE ÉXITO POR INDICADOR (pre-registrado)**: IC > 0 (signo declarado) con
+t_NW > **+ZC** en **≥2/3 ventanas computables** → CUMPLE ese indicador. Ventana no
+computable (<30 días con IC o <5 símbolos) cuenta como no-signal. **Veredicto
+global**: CUMPLE si ≥1 de los 3 CUMPLE (regla OR, protegida por Bonferroni m=9).
+Ninguno integra motor sin trial de MOTOR aparte (esto no toca signal_engine.py ni
+el score vivo — regla explícita de la spec).
+
+**Desglose por régimen (SECUNDARIO, NO gating — declarado antes de correr)**:
+requisito de la spec ("reportar también el IC condicionado por régimen… usar
+regime_gate.py para clasificar cada fecha ANTES de correr — no post-hoc"). Estado
+HMM rezagado 21 hábiles vía `WalkForwardRegimeGate(favorable_states={0})`
+(GOLDILOCKS, defaults recalib_every=63/min_history=756, macro SPY EFA QQQ GLD DBC
+TIP TLT AGG ^VIX — idéntico a §42a, segundo uso real de M3). Para cada indicador ×
+ventana se REPORTA ΔIC(GOLDILOCKS-lag − resto) con su t_NW y n por bucket. Este
+desglose es EXPLORATORIO: ningún veredicto CUMPLE/NO_CUMPLE sale de acá; una pista
+fuerte (t>ZC sostenido) se documenta como candidata a trial propio, nunca como
+resultado positivo del trial M. Los 9 tests primarios son los únicos que gatean.
+
+**Riesgos declarados**: los 3 factores comparten la misma señal latente (tendencia)
+→ ICs correlacionados entre sub-hipótesis; el OR con Bonferroni m=9 asume celdas
+contables, un único CUMPLE aislado tiene menor informatividad (declarado). Supertrend
+es binario → varianza cross-sectional mínima, ties masivos en ranks, |IC| diarios
+chicos por construcción. hma_dist/kama_dist correlacionan con momentum de corto
+pelo (misma familia, no invalida la medición). Warmup nuevo (<60 ruedas) ≪ 252 de
+momentum_12_1 → el dropna de `calculate_all_indicators` sigue dominado por momentum,
+sin cambio de comportamiento en columnas existentes (tests existentes lo verifican).
+Cobertura W1 del gate depende del START extendido (mismo riesgo aceptado en §42).
+HMM sin convergencia → label_series lanza → corrida abortada documentada como FALLO
+honesto, no NO_CUMPLE.
+
+**Checks de fidelidad (estilo §39/§41/§42)**: F1 universo 50 cargadas; F2 cobertura
+de meses por ventana (~24/24/30); F3 edge pooled TOTAL por factor (informativo);
+F4 determinismo seed 42 del HMM verificado en runtime; F5 asserts anti-lookahead del
+gate pasaron y n_recalibraciones>0; F6 tests unitarios sintéticos de tendencia
+conocida de los 3 indicadores en verde ANTES de correr (la corrida exige suite de
+indicators pasada — caso sintético de tendencia conocida por función, orden de la
+spec punto 4).
+
+**Script**: `backend/scripts/trial_kama_hma_supertrend.py` (nuevo, plantilla
+`trial_regime_gating_p.py`). Python 3.9 real (backend/.venv), lee SOLO cache parquet,
+sin descargas. **No toca**: signal_engine.py, regime_gate.py/regime_classifier.py,
+trial_registry.py en runtime (registro manual al cierre), predictivo_engine/triad
+(peso de score intacto). Implementación nueva SOLO en indicators.py (funciones +
+columnas diagnósticas) y tests/test_indicators.py. Artefacto:
+`backend/data/cache/trial_kama_hma_supertrend_<ts>.txt` (+`.json`). Ledger:
+`register_trial(id="trial_kama_hma_supertrend", familia="signal_diagnosis",
+n_trials_consumidos=1, umbral_aplicado="Bonferroni m=9 |t|>ZC sobre th vigente",
+veredicto=mecánico, seccion_doc="§44")`. Corrida ÚNICA: si aborta por fidelidad →
+NO INTERPRETABLE, no NO_CUMPLE (mismo contrato §43.8).
+
+### 44.1 RESULTADO (apéndice post-corrida, 2026-08-23) — corrida ÚNICA 15:28
+
+Corrida única (`scripts/trial_kama_hma_supertrend.py`, artefacto
+`data/cache/trial_kama_hma_supertrend_20260823_152846.txt`+`.json`). Umbral
+efectivo = el del pre-registro: ledger consumido=25 → n=26 → th=0.9961538461538462,
+m=9 → **|t|>3.5226** (sin recalculo: ningún otro trial registró en el medio).
+
+**Fidelidad OK×5**: F1 universo 50/50; F2 cobertura 24/24/31 meses; F4 seed HMM 42;
+F5 gate walk-forward 34 recalibraciones, asserts anti-lookahead OK, estados no
+degenerados {0:548, 1:446, 2:831, 3:285}; panel 133650 filas × 2673 fechas
+(2016-01-04→2026-08-20), cero descargas. Nota técnica declarada: días con
+supertrend_side constante cross-sectional (todos +1 o todos −1) no producen IC
+(Spearman indefinido) y quedan fuera — n st = 2651 vs 2653 días de los otros.
+
+**TESTS PRIMARIOS — 0/9 celdas significativas → GLOBAL NO_CUMPLE**:
+
+| factor | W1 | W2 | W3 | pooled TOTAL (informativo) |
+|---|---|---|---|---|
+| kama_dist | −0.0219 (t−0.98) | −0.0026 (t−0.10) | +0.0061 (t+0.27) | IC −0.0103 (t−1.01) |
+| hma_dist | −0.0044 (t−0.26) | +0.0059 (t+0.31) | −0.0090 (t−0.67) | IC −0.0016 (t−0.24) |
+| supertrend_side | −0.0361 (t−1.40) | +0.0127 (t+0.55) | +0.0195 (t+0.91) | IC −0.0126 (t−1.24) |
+
+Veredictos por indicador: kama_dist NO_CUMPLE, hma_dist NO_CUMPLE,
+supertrend_side NO_CUMPLE. Ni siquiera señal nominal: los tres con IC TOTAL
+ligeramente NEGATIVO (signo contrario al esperado de continuación) y |t| máximos
+por ventana ≤1.40 — lejos del umbral 3.5226 y sin consistencia de signo entre
+ventanas. La familia de tendencia adaptativa sobre N=50 diario NO predice
+retorno a 20 ruedas cross-sectional.
+
+**Desglose por régimen (EXPLORATORIO, pre-declarado no-gating)**: ΔIC(GOLDILOCKS-lag
+− resto) máximo |t|=+2.58 (supertrend_side W1) — mismo patrón débil-no-confirmado
+de Tarea P(a): sugerente solo en W1 (n gold=43), sin repetición en W2/W3, muy por
+debajo de ZC=3.52. Sin pistas sobre el umbral; nada candidatiza trial propio.
+
+**Ledger**: `signal_diagnosis` 25→26 consumidos, id=`trial_kama_hma_supertrend`,
+veredicto=NO_CUMPLE, próximo threshold 0.99630. **Nada se integra al motor**
+(indicadores quedan disponibles como columnas diagnósticas, patrón T1.x/T2.x;
+signal_engine.py intacto). Implementación: `kama()`/`hma()`/`wma()`/
+`supertrend()` en indicators.py + 10 tests sintéticos (suite 367 passed).
+
+---
+
+## 45. TRIAL #18 — PRE-REGISTRO: stops EVT con sizing aislado (re-take de la línea #15, neutralizando las DOS capas de inercia) — **BORRADOR PARA REVISIÓN, NO CORRER hasta aprobación explícita**
+
+> **Estado**: APROBADO para ejecución (revisión del coordinador Claude Code,
+> 2026-08-24, con Boris): diseño validado, umbral n=12/th=0.99167 verificado
+> contra el ledger real. Única modificación de la revisión incorporada abajo
+> (consumo explícito del slot según gate de activación). Luz verde completa:
+> implementar, correr UNA vez, cerrar.
+
+**Pregunta (la misma de §20, ahora medible)**: sustituir la distancia de riesgo
+del sizing (`stop_distance = max(2×ATR, price×position_stop)`) por la distancia
+EVT walk-forward (`stop_distance = max(VaR_GPD(99%)×σ_EWMA_día,
+price×position_stop)`), **cuando `shares_by_risk` es efectivamente la restricción
+activa del sizing**, ¿mejora el perfil de riesgo-retorno del motor (DSR OOS)?
+
+**Por qué #15 fue placebo y qué exige el re-diseño (Hallazgo 5+6,
+AUDITORIA_MECANICA.md)** — la inercia tenía DOS capas y hay que neutralizar las dos:
+
+1. **Capa Kelly**: `compute_position_size()` toma la rama Kelly cuando
+   win_prob/payoff_ratio ≠ None (siempre en producción, backtest_engine.py:552-557)
+   → `kelly_shares` domina el `min()`. Fix propuesto por ROADMAP: aislar
+   `shares_by_risk` del Kelly. PERO `fractional_kelly=0` NO sirve tal cual:
+   dejaría `kelly_shares=0` → `min(0,…)=0` → cero posiciones. El mecanismo
+   correcto equivalente es **desactivar la rama Kelly simétricamente en AMBOS
+   brazos** vía subclase que replica la rama no-Kelly
+   (`return int(min(shares_by_risk, max_shares))`, adaptive_risk.py:121).
+2. **Capa tope**: aun sin Kelly, `max_shares = 10%×equity/price` gana el `min()`
+   salvo que `stop_distance > (RISK_PER_TRADE/MAX_POSITION_PCT)×price = 15%×price`
+   (con RISK_PER_TRADE=1.5% vigente). Ni 2×ATR típico (4–6% del precio) ni el
+   VaR-GPD de §19 llegan ahí → placebo otra vez (281/281 trades, Hallazgo 6).
+   **Fix propuesto**: reducir RISK_PER_TRADE SOLO dentro del experimento, en
+   AMBOS brazos por igual.
+
+**DECISIÓN DE DISEÑO PROPUESTA (marcada para revisión)**:
+
+- **Dial elegido**: `RISK_PER_TRADE_arm = 0.0015` (0.15%, un décimo del vigente),
+  `MAX_POSITION_PCT` intacto (10%). Umbral de binding resultante:
+  `dist > (0.0015/0.10)×price = 1.5%×price` — por DEBAJO del rango típico de
+  AMBAS distancias documentadas ex-ante (2×ATR 4–6%P, Hallazgo 6; EVT mediana
+  5.2% σ-día, Hallazgo 6 reconstrucción). Así `shares_by_risk` es la restricción
+  activa esperada en la gran mayoría de los trades de ambos brazos, con tamaños
+  de posición resultantes (~2–5% equity por posición) dentro de lo
+  production-plausible. El dial se calibró contra distribuciones ya publicadas
+  en artefactos (Hallazgo 6), NO mirando resultados nuevos.
+- **Alternativas consideradas y rechazadas**: (i) subir MAX_POSITION_PCT a 100%
+  → concentraciones de 30–40% equity por nombre y artefactos de orden dependiente
+  de cash (el motor solo compra si `cost < cash`, backtest_engine.py:560);
+  (ii) overlay analítico post-hoc sobre la misma lista de trades → estadísticamente
+  limpio pero abandona la pregunta "el motor decidiendo"; (iii) apalancar capital
+  → mismo problema de realismo que (i). La auditoría (Hallazgo 6 "Implicación")
+  lista exactamente estas tres rutas; se elige la variante que mantiene el tope
+  de concentración de producción.
+- **Alcance idéntico a §20 (variante mínima)**: el EVT sustituye SOLO la
+  distancia de riesgo del sizing; `position_stop` ejecutivo, PARTIAL_TP 2×ATR,
+  trailing 2×ATR, ABSOLUTE_CEILING, cooldowns y gates de señal intactos.
+
+**Mecánica del trial (`scripts/trial_evt_stops_v2.py`, NUEVO — reuso verbatim de
+la maquinaria validada de `trial_evt_stops.py` post-fix-Hallazgo-5)**:
+
+- Dos subclases simétricas inyectadas vía hook `_make_risk_manager()`
+  (backtest_engine.py:41, sin duplicar `run()`, cero edición del motor):
+  - `BaselineRiskManager`: replica `compute_position_size` con
+    `stop_distance = max(2×atr, price×position_stop)` y rama no-Kelly
+    (`int(min(shares_by_risk, max_shares))`), RISK_PER_TRADE_arm=0.0015.
+  - `EVTRiskManagerV2`: idéntico pero
+    `stop_distance = max(var_mult_vigente(symbol) × σ_EWMA_día, price×position_stop)`.
+- Walk-forward EVT **idéntico al §20** (cero grados de libertad nuevos): EWMA
+  λ=0.94 causal (CON el cuadrado — regresión Hallazgo 5), recalibración cada 63
+  hábiles, ventana móvil 756 hábiles de z=r/σ, u=p95% empírico, GPD MLE loc=0,
+  VaR_GPD(99%) McNeil, fallback cuantil empírico si excesos<30, data desde
+  2015-01-01, asserts anti-lookahead estampados por compra (recalibración
+  ESTRICTAMENTE anterior, side='left').
+- **Dos corridas intra-corrida con la MISMA data y el MISMO motor actual**
+  (baseline_risk vs evt_risk). Nota declarada: el motor actual incluye
+  `execution_lag_days=1` (T0.2, adoptado DESPUÉS del trial #15) — el baseline
+  intra-corrida se re-establece bajo el motor vigente y contra ese se mide el EVT;
+  nada se compara contra artefactos históricos.
+- **Diagnósticos de activación (pre-registrados, por brazo × ventana)**: n_trades,
+  % de compras donde `shares_by_risk` fue la restricción activa del min(),
+  % compras ejecutadas vs rechazadas por cash, mediana del ratio dist_EVT/dist_2ATR
+  implícito, conteo `evt_term > floor` y `evt_term > 2×ATR`.
+
+**GATE DE ACTIVACIÓN (pre-registrado, lección #15 institucionalizada)**: el
+veredicto de mercado solo es interpretable si en el brazo EVT `shares_by_risk`
+fue la restricción activa en ≥50% de las compras en ≥2/3 ventanas. Si no:
+corrida **NO INTERPRETABLE mecánicamente** (no consume slot de mercado, se
+documenta como FALLO de diseño y no se re-corre sin pre-registro nuevo).
+
+**Umbral (leído del ledger EN runtime al redactar, 2026-08-24)**: familia
+motor_signal con **11 consumidos** → este trial es n=12 →
+`current_threshold("motor_signal")` = **0.9916666666666667** (= 1 − 0.10/12).
+Criterio: **DSR OOS ≥ 0.99167 en ≥2/3 ventanas computables**, piso ≥30 trades del
+brazo EVT por ventana; n=12 se alimenta también como N_trials al cálculo del
+Deflated Sharpe. Si otro trial de la familia registra antes de la corrida, el
+número se re-lee en runtime con la misma fórmula y el artefacto cita el efectivo.
+
+**Checks de fidelidad**: F1 universo 50 cargadas; F2 cobertura meses por ventana;
+F3 determinismo seed (HMM random_state 42); F4 asserts anti-lookahead pasados y
+recalibraciones >0 por símbolo; F5 EWMA cuadrado verificado (regresión Hallazgo 5:
+var_mult medianos en rango plausible [1.0, 20], nunca 10³–10⁵); F6 suite completa
+backend en verde ANTES de correr; F7 GATE DE ACTIVACIÓN ≥50%; F8 métricas del
+brazo baseline_risk reportadas como referencia interna (no comparables 1:1 con
+producción: RISK_PER_TRADE reducido y sin Kelly — declarado).
+
+**Riesgos declarados**: (1) el régimen de sizing del experimento NO es el de
+producción (risk budget 10× menor, sin Kelly): CUMPLE respondería la pregunta
+científica "¿normaliza mejor el riesgo la distancia EVT?", y la integración a
+producción exigiría decisión de producto aparte sobre QUÉ dial mover (risk budget,
+tope o pesos Kelly) con su propio gate; (2) cascadas de segunda orden: tamaños
+distintos → exposición distinta → `filter_by_regime_exposure` puede admitir señales
+extra en un brazo (parte legítima del efecto, mecanismo idéntico en ambos); (3)
+rechazos por cash difieren entre brazos (reportado en activación); (4) DSR≥0.9917
+es exigente (presupuesto familiar n=12) — un resultado "mejora pero no alcanza" se
+documenta como NO_CUMPLE sin zona gris; (5) HMM/GPD sin convergencia → aborto
+documentado como FALLO honesto.
+
+**Ledger (AL CIERRE, manual)**: `register_trial(id="trial_evt_stops_v2",
+familia="motor_signal", n_trials_consumidos=1,
+umbral_aplicado="DSR≥current_threshold(motor_signal)=0.99167 (n=12) en ≥2/3
+ventanas", veredicto=mecánico, seccion_doc="§45")`. Corrida ÚNICA por diseño; si
+aborta por fidelidad → NO INTERPRETABLE, no NO_CUMPLE.
+
+**Consumo del slot según el gate de activación (aclaración de la revisión, fijada
+ANTES de correr)**: si el gate de activación **F7 falla** → la corrida **NO se
+registra en `trial_registry`** (NO consume slot de `motor_signal`); se documenta
+como intento inválido en este documento + SESSION_LOG + ROADMAP — mismo
+tratamiento que el #15 original ("ningún n_trials se gasta por esto"). Si F7
+**pasa** (corrida interpretable) → SÍ se registra en el ledger sea CUMPLE o
+NO_CUMPLE (el slot se consume con el veredicto mecánico que salga). Un aborto por
+fidelidad (F1-F6/F8) tampoco registra ni consume: corrida no interpretable.
+
+**Nota de ejecución (2026-08-24, ANTES de la corrida válida)**: el INTENTO 1 se
+abortó tras ~13h sin completar siquiera el brazo baseline y SIN producir
+veredicto alguno (`ABORTADO_trial18_evt_stops_v2_20260824_070552.txt`, heartbeats
+en fase baseline hasta el corte; no consume slot — no llegó a evaluarse F7).
+Causa raíz diagnosticada con sampler de stacks: `SignalEngine.generate_signal`
+(signal_engine.py:200) recalcula `calculate_all_indicators(df.loc[:date])` en
+cada llamada día×símbolo sobre un frame que YA viene indicatorizado
+(backtest_engine.py:299 construye `indicators_cache` una vez) — redundancia que
+tras T2.3 (hurst_exponent con rolling-apply pesado, añadido DESPUÉS del #15)
+volvió el run ~10× más caro. El INTENTO 2 aplica un parche de identidad SOLO
+dentro del proceso del trial: `signal_engine.calculate_all_indicators` pasa a ser
+identidad porque el frame recibido ya contiene todas las columnas; equivalencia
+bit-idéntica por causalidad (todas las columnas son rolling/backward desde la
+primera fila del frame completo) y verificada EN-CORRIDA por el check nuevo **F9**
+(25 pares símbolo×fecha muestreados contra recálculo real, aborto si difieren;
+método determinista seed 42). Metodología de sizing, walk-forward, criterios y
+gates de §45: INTACTOS. La corrida única válida es la del intento 2.
+
+### 45.1 RESULTADO (apéndice post-corrida, 2026-08-24) — corrida única válida, intento 2, 20:09
+
+Corrida única (`scripts/trial_evt_stops_v2.py`, artefacto
+`data/cache/trial18_evt_stops_v2_20260824_200927.txt` + parquet trades/equity de
+ambos brazos). Duración ~37 min con el parche F9 (intento 1: >13h sin terminar).
+Umbral efectivo = el del pre-registro: motor_signal consumido=11 → n=12 → th=
+0.9916666666666667 (sin recálculo: ningún otro trial registró en el medio).
+
+**Fidelidad OK×8**: F1 universo 50/50; F4 anti-lookahead — **254 compras EVT
+dimensionadas con VaR-GPD walk-forward, asserts de recalibración estrictamente
+anterior OK en todas, 0 fallbacks** (35 fechas de recalibración); F5 regresión
+Hallazgo 5 — mediana var_mult=2.9283, rango plausible [1,20]; F9 equivalencia
+identity-cache — 25 pares × 10 columnas bit-idénticos; suite 367 passed pre-corrida.
+
+**GATE DE ACTIVACIÓN F7: PASA al 100%** — `shares_by_risk` fue la restricción
+activa en el **100%** de las compras dimensionadas en las 3 ventanas, en AMBOS
+brazos (BASE 253 dimensionadas / 227 ejecutadas; EVT 254/231). Por primera vez
+desde que existe el motor, la distancia de riesgo del sizing DECIDIÓ el tamaño:
+el experimento midió lo que decía medir (a diferencia del #15 placebo).
+
+**TESTS PRIMARIOS — 0/3 ventanas → GLOBAL NO_CUMPLE** (DSR vs th=0.99167):
+
+| ventana | n BASE/EVT | Sharpe BASE | Sharpe EVT | DSR EVT | maxDD BASE→EVT |
+|---|---|---|---|---|---|
+| W1 2020-2021 | 125/127 | 0.3197 | 0.2738 | 0.1011 | −1.53%→−1.61% |
+| W2 2022-2023 | 53/53 | 0.1855 | −0.0012 | 0.0478 | −1.01%→−1.45% |
+| W3 2024-2026 | 98/100 | 0.6944 | 0.6008 | 0.2595 | −0.96%→−1.24% |
+
+Veredicto mecánico: **NO_CUMPLE (0/3)** — y no por poco margen estadístico sino
+por DIRECCIÓN consistente: el brazo EVT fue PEOR que el baseline en las 3
+ventanas (Sharpe −0.05/−0.19/−0.09, drawdowns algo más profundos). Mecanismo
+económico medido: la distancia VaR-GPD es más ancha que 2×ATR la mayoría del
+tiempo → posiciones sistemáticamente más chicas → mismo número aproximado de
+trades (cascada de exposición casi idéntica: n 127/53/100 vs 125/53/98) pero
+menos capital capturando el edge; la protección extra de cola no compensó en
+NINGUNA ventana, ni siquiera en W2 (bear/chop 2022-2023), donde el daño relativo
+fue mayor.
+
+**Lectura honesta**: la hipótesis de §19/§20 ("los stops 2×ATR subestiman el
+riesgo de cola; normalizar por EVT mejora") queda ahora REFUTADA EN SU FORMA
+OPERATIVA para este motor y universo: cuando la normalización de riesgo por
+distancia realmente decide tamaños, usar el cuantil GPD de colas empeora el
+perfil completo (retorno, Sharpe, drawdown) frente al humilde 2×ATR. La línea
+EVT-stops queda **CERRADA DEFINITIVAMENTE**: §19 (colas reales, ratio 1.26) +
+§20/Hallazgo 6 (trial placebo) + §45 (trial válido, refutación direccional).
+
+**Ledger**: `motor_signal` 11→12 consumidos, id=`trial_evt_stops_v2`,
+veredicto=NO_CUMPLE, próximo threshold 0.9923076923. **Nada se integra al motor**
+(solo se corrieron subclases inyectadas vía `_make_risk_manager`; producción
+intacta).
+
+**Hallazgo de código para decisión futura de riesgo (NO bug a arreglar ahora,
+reportado por Claude Code 2026-08-24, verificado por Kilo Code)**:
+`adaptive_risk.py:109` dimensiona con `stop_distance=max(2×ATR,
+price×position_stop)` pero el trigger ejecutivo `REGIME_STOP_HIT`
+(`adaptive_risk.py:149`) dispara SOLO con `position_stop%` de pérdida desde
+entry, sin ATR. Cuando 2×ATR domina, la posición queda dimensionada para un stop
+más ANCHO del que realmente se aplica → el motor arriesga MENOS que su
+RISK_PER_TRADE nominal en nombres volátiles (asimetría sizing/trigger). En §45 el
+patrón existió igual en ambos brazos (alcance mínimo: solo cambió la distancia de
+sizing), así que no sesga esta comparación. Es una decisión de producto pendiente
+(¿debería el trigger usar la misma distancia que el sizing?) — registrarla en la
+cola de decisiones de Boris, no resolverla aquí.
+
+---
+
+## 46. TRIAL #19 — PRE-REGISTRO: compuerta M3 STANDALONE sobre la operación del motor (Brecha 2, auditoría externa glm-5.2)
+
+> **Estado**: APROBADO para ejecución (revisión del coordinador Claude Code,
+> 2026-08-25): distinción vs §42 correcta, criterio doble validado, umbral
+> n=13/th=0.99231 verificado contra el ledger real. Luz verde completa con
+> auto-cierre (protocolo §45); cierre de merge vía `.pending-merge.md`
+> (PLAN_HANDOVER_48H.md §1.1).
+
+**Pregunta**: ¿operar el motor completo SOLO cuando la etiqueta macro walk-forward
+de M3 es GOLDILOCKS — abstenerse el resto de los días — mejora el perfil OOS del
+motor comparado con operar siempre?
+
+**Por qué esta pregunta es genuinamente inédita** (verificado): el factor macro es
+el más fuerte medido en el proyecto (IC +0.13 pooled) pero es CONTRA-RÉGIMEN
+(+0.198 GOLDILOCKS / −0.173 DEFLATION, Fase 2). Solo se usó como término lineal
+ponderado dentro de `ridge_3f` (refutado por otras razones, trial #13). §42/Tarea P
+lo probó como CONDICIONANTE DIAGNÓSTICO del IC de un factor (momentum), no como
+compuerta de operación del motor. `regime_gate.py` (M3) fue construido para esto,
+tiene 8 tests y jamás gateó una corrida real. ROADMAP.md línea 343 lo dice
+textual: "el TRIAL que pruebe macro IC +0.198 GOLDILOCKS/−0.173 DEFLATION como
+compuerta sigue sin pre-registrar". Un peso promedia regímenes; una compuerta los
+separa — misma clase de corrección que pooled→intra-día aplicada a otra dimensión.
+
+**Diseño (dos armas intra-corrida, misma data, mismo motor vigente)**:
+
+- **Arma ALWAYS (control)**: `BacktestEngine` estándar — opera todos los días que
+  sus gates técnicos permiten, sin compuerta macro.
+- **Arma GATED (tratamiento)**: subclase del engine que reemplaza
+  `self.signal_engine` por un wrapper (`GatedSignalEngine`) construido sobre la
+  instancia original: si la etiqueta M3 rezagada de la fecha de decisión NO es
+  GOLDILOCKS → `generate_signal` devuelve None ese día (no hay entradas nuevas;
+  salidas/stops/sizing/calibrador intactos); si lo es → delega idéntico.
+  Inyección por atributo/subclase dentro del proceso del trial — cero edición de
+  producción (misma filosofía §45 vía `_make_risk_manager`; acá el seam es el
+  atributo `signal_engine`, público en `BacktestEngine.__init__`).
+
+**Etiqueta M3 (fórmulas fijadas ANTES de codear)**:
+`WalkForwardRegimeGate(favorable_states=frozenset({0}))` (GOLDILOCKS según
+remapeo canónico `_align_states`: estado con growth_SPY máximo), defaults del
+módulo (recalib_every=63 hábiles, min_history=756), macro SPY EFA QQQ GLD DBC TIP
+TLT AGG ^VIX desde 2015-01-01 (cache-only). La etiqueta usada en la fecha t es la
+de **t−21 días hábiles** (lag heredado de §42a: la decisión usa solo información
+disponible al momento; fechas sin etiqueta rezagada → GATED no opera, conservador
+y declarado). `label_series` lanza si falla un assert anti-lookahead → aborto
+documentado como FALLO honesto.
+
+**Umbral (leído del ledger EN runtime al redactar, 2026-08-25)**: familia
+motor_signal con **12 consumidos** → este trial es n=13 →
+`current_threshold("motor_signal")` = **0.9923076923076923** (= 1 − 0.10/13).
+n=13 alimenta también el Deflated Sharpe. El script re-lee en runtime; artefacto
+cita el efectivo.
+
+**CRITERIO DE ÉXITO POR VENTANA (pre-registrado)**: ventana computable requiere
+≥30 trades del arma GATED; CUMPLE la ventana si (a) **DSR_gated ≥ th vigente**
+Y (b) **Sharpe_gated > Sharpe_always** (la pregunta es COMPARATIVA: una compuerta
+que mejora relativo pero no alcanza evidencia absoluta de grado-promoción NO
+integra). **Veredicto global**: CUMPLE si ≥2/3 ventanas computables CUMPLEN.
+Si <2/3 ventanas son computables → **NO INTERPRETABLE mecánico** (piso insuficiente
+por diseño de la compuerta; NO registra ni consume slot, documentado como intento
+inválido — mismo tratamiento F7 de §45). Mejora relativa sin DSR absoluto →
+NO_CUMPLE documentando el gradiente como insumo de Brecha 3 (acumulación OOS),
+nunca como promoción.
+
+**Diagnósticos secundarios (pre-declarados, descriptivos)**: fracción de días
+GOLDILOCKS-rezagados por ventana y su distribución de estados HMM; n_trades por
+brazo/ventana (cuántas entradas excluye la compuerta); win_rate/VPP y profit_factor
+por brazo/ventana; Sharpe/CAGR/maxDD completos por brazo/ventana (tabla §45.1).
+
+**Checks de fidelidad**: F1 universo 50 cargadas; F2 cobertura meses por ventana;
+F3 determinismo seed HMM 42; F4 gate walk-forward con recalibraciones >0 y asserts
+anti-leakage pasados; F5 fracción GOLDILOCKS por ventana reportada (estados no
+degenerados); F6 suite completa backend verde ANTES de correr; F9 parche
+identity-cache de §45 REUTILIZADO con su verificación bit-idéntica en-corrida
+(generate_signal sigue siendo el hotspot — mismas 25 parejas × 10 columnas);
+F10 sanity del control intra-corrida: ALWAYS produce trades>0 y métricas finitas
+en las 3 ventanas.
+
+**Riesgos declarados**: la compuerta reduce trades (~40% histórico de días fuera
+de GOLDILOCKS) → W2 puede quedar bajo el piso de 30 (cuenta no-computable, ver
+regla arriba); alta correlación entre armas (GATED ⊂ ALWAYS en señales elegibles)
+→ las diferencias provienen solo de los días excluidos + cascada de exposición
+(`filter_by_regime_exposure` ve menos posiciones concurrentes en GATED — parte
+legítima del efecto, mecanismo idéntico en ambos); lag 21 desincroniza el timing
+del régimen (costo de información tardía, ya aceptado en §42a); DSR con n=13 es
+exigentísimo — el resultado más probable honesto es "dirección positiva pero
+NO_CUMPLE absoluto", que se documenta SIN zona gris; rechazos por cash difieren
+entre brazos (reportados); HMM/GPD sin convergencia → aborto FALLO honesto.
+
+**Script**: `backend/scripts/trial_m3_gate_standalone.py` (nuevo; reutiliza el
+patrón de dos armas intra-corrida de §45, el parche identity-cache con F9, y la
+maquinaria goldilocks-lag de §42). Python 3.9 real, SOLO cache parquet, sin
+descargas. No toca producción. Ventanas canónicas W1/W2/W3 (2020-2021, 2022-2023,
+2024→borde de cache); START=2015-01-02, OP_START=2019-01-01, DATA_END=borde de
+cache ≤7 días. Artefacto: `backend/data/cache/trial19_m3_gate_standalone_<ts>.txt`
+(+json +parquet equity/trades de ambos brazos). Corrida ÚNICA.
+
+**Ledger (AL CIERRE, manual)**: `register_trial(id="trial_m3_gate_standalone",
+familia="motor_signal", n_trials_consumidos=1,
+umbral_aplicado="DSR>=th(motor_signal)=0.99231 (n=13) Y Sharpe_gated>Sharpe_always
+en >=2/3 ventanas computables (piso 30 trades)", veredicto=mecánico,
+seccion_doc="§46")`. Regla de consumo: corrida interpretable REGISTRA sea
+CUMPLE o NO_CUMPLE; NO INTERPRETABLE (menos de 2/3 ventanas computables) o aborto
+por fidelidad NO registran NI consumen slot — mismo contrato explícito de §45.
+
+### 46.1 RESULTADO (apéndice post-corrida, 2026-08-25) — corrida única 16:48, **NO INTERPRETABLE mecánico (piso insuficiente)**
+
+Corrida única (`scripts/trial_m3_gate_standalone.py`, artefacto
+`data/cache/trial_m3_gate_standalone_20260825_164832.txt`+json+parquet ambos
+brazos, ~1h47m). Umbral efectivo = el del pre-registro: consumido=12 → n=13 →
+th=0.9923076923076923.
+
+**Fidelidad OK×6**: F1 universo 50/50; F9 identity-cache 25 pares × 7 columnas
+bit-idénticos; F4 gate walk-forward 34 recalibraciones con asserts anti-leakage
+OK, estados no degenerados {0:548, 1:446, 2:831, 3:285}; F5 fracción
+GOLDILOCKS-rezagada global 28.7%; F10 sanity del control OK; suite 370 passed
+pre-corrida. Señales del brazo GATED: 35250 delegadas / 109850 bloqueadas (75.7%).
+
+**GATE DE PISO FALLA — solo W3 computable**: trades GATED por ventana =
+**17 / 19 / 51** contra piso 30 → W1 y W2 no computables → <2/3 ventanas →
+**NO INTERPRETABLE mecánico** (regla pre-registrada §46). La hipótesis queda
+SIN MEDIR BIEN — distinto de NO_CUMPLE: la compuerta reduce la operación al
+28.7% de los días y eso hace el diseño insostenible para la vara muestral del
+proyecto con la historia disponible. **NO registra en trial_registry NI consume
+slot** (motor_signal sigue consumido=12, th vigente 0.99231) — mismo tratamiento
+que #15/F7 de §45.
+
+**Desglose DESCRIPTIVO (exploratorio, pre-declarado como secundario — NO
+veredicto)**:
+
+| ventana | GOLD% días | ALWAYS n | GATED n | Sharpe A→G | DSR A→G | maxDD A→G |
+|---|---|---|---|---|---|---|
+| W1 2020-21 | 8.5% | 95 | 17 | 0.318→**0.689** | 0.105→**0.227** | −5.3%→−1.5% |
+| W2 2022-23 | 32.1% | 51 | 19 | 0.175→**0.184** | 0.072→0.075 | −4.3%→**−1.4%** |
+| W3 2024-26 | 46.7% | 78 | 51 | **0.478**→0.161 | **0.185**→0.075 | −5.1%→−3.7% |
+
+Gradiente honesto: la compuerta mejora el perfil de riesgo-retorno cuando
+GOLDILOCKS es ESCASO (W1: Sharpe ×2.2, drawdown ÷3.4 sobre 17 trades) y lo
+empobrece cuando ABUNDA (W3: pierde 2/3 del Sharpe operando casi la mitad del
+tiempo) — consistente con que el valor del filtro está en EVITAR regímenes malos,
+no en certificar buenos. Con n_gated=17-19 en las ventanas donde se ve mejor,
+esto es pista, no evidencia.
+
+**Estado de la línea**: infraestructura M3 construida, walk-forward verificado,
+PRIMERA medición real de la compuerta sobre el motor completada. La pregunta
+queda ABIERTA pero con restricción de diseño conocida: cualquier re-intento
+requiere pre-registro NUEVO con piso alcanzable (ej. variante GOLDILOCKS∪NEUTRAL,
+o criterio por régimen-duración mínima) — decisión de Boris, no de agente.
+Conexión natural con Brecha 3: más meses OOS del updater suben n por ventana.
+
+---
+
+## 47. TRIAL #20 — PRE-REGISTRO: "Buffett's Alpha" sistemático (Quality + Value + Low-Beta), Camino A / A5
+
+> **Estado**: REDACTADO por Kilo (2026-08-25) por directiva explícita de Boris
+> ("pasá a A5 ... pre-registro nuevo, misma disciplina", ARBOL_DECISION_ESTRATEGICO.md
+> A5 / PLAN_MAESTRO_FASE_PRODUCCION.md Frente 1). Pendiente de aprobación y merge vía
+> `.pending-merge.md` (PLAN_HANDOVER_48H.md §1.1). Se sella ANTES de correr; el script
+> se escribe para coincidir literalmente con esta definición.
+
+**Pregunta**: ¿un portafolio cross-sectional sistemático "Buffett's Alpha" — calidad
+(rentabilidad + estabilidad de ganancias) + valor (P/E, P/B, EV/EBITDA) + bajo-beta +
+apalancamiento moderado, sobre el universo 50 US large-cap — forma una fuente de retorno
+genuina y no correlacionada con Sharpe OOS neto > 0 y DSR ≥ umbral Bonferroni, que
+justifique sumarla al ensamble multivariante (BayesianOnlineUpdater)?
+
+**Por qué es inédita (verificado)**: el test de fundamentales previo (FUND, backfill
+trial) era ranking cross-sectional CRUDO de 15 ratios EDGAR con **5/50 cobertura** →
+refutado por cobertura, no por señal. A4 = revivir ESE ranking si mejora cobertura.
+A5 = la descomposición de Frazzini/Kabiller/Pedersen ("Buffett's Alpha", 2018): calidad,
+valor, bajo-beta, apalancamiento moderado — **nunca probada acá con ese diseño** (ARBOL
+A5, líneas 60-69). El componente bajo-beta (de precio, cobertura 50/50) es novedoso y
+libre del problema de cobertura EDGAR. Es independiente de A1/§46 (hipótesis distinta,
+mismo ledger, sin competir con Frente 2 de construcción).
+
+**Diseño (congelado, CERO re-optimización; el script lee estas definiciones literalmente)**:
+
+- Universo 50 (SYMBOLS canónicos de `app.api.routes.opportunities_universe`), daily, cache-only.
+- Por cada fecha de rebalance mensual `t` (último hábil del mes), para cada símbolo:
+  - **Calidad (panel EDGAR point-in-time `fundamentals_panel.parquet`, as-of ≤ t, ffilled)**:
+    - rentabilidad_z = media z(roe), z(roa), z(gross_margin), z(fcf_yield) — z cross-sectional en t.
+    - estabilidad_z = z(−std(eps_ttm rol 504d, mín 126)) — menor volatilidad de utilidad = mayor calidad.
+    - quality_z = media(rentabilidad_z, estabilidad_z), z cross-sectional en t.
+  - **Valor (panel EDGAR)**: value_z = media(z(−pe_ratio winsor [5,60]), z(−pb_ratio winsor [0.5,10]),
+    z(−ev_ebitda winsor [3,30])) — menor múltiplo = más barato; winsor a los rangos de `_FUND_SPECS`
+    del motor. Invertido porque value = barato.
+  - **Bajo-beta (PRICE-ONLY, cobertura 50/50)**: beta = cov(ret_stk, ret_SPY, 126d)/var(ret_SPY, 126d);
+    lowbeta_z = z(−beta) cross-sectional en t. (Componente novedoso, sin EDGAR.)
+  - **Apalancamiento moderado (EDGAR)**: lev_z = z(−|debt_equity − 1.0|) (cerca de 1.0 = óptimo, ni
+    bajo ni alto extremo); peso menor (0.5).
+  - **composite_t = quality_z + value_z + lowbeta_z + 0.5·lev_z**, normalizado z cross-sectional
+    (equal-weight de los 3 núcleos + 0.5 leverage).
+  - **Selección**: long top quintile (top 20%, mín 5 símbolos con datos completos), equal-weight.
+    SIN short (fiel al libro largo de Buffett y desplegable como fuente LONG del ensamble).
+- **Rebalanceo mensual**, hold hasta próximo rebalance. Timing fiel a `validacion_oos_fresca_mom_rsi`:
+  señal al cierre del último hábil de m (solo datos ≤ t), entrada OPEN primer hábil m+1 (lag 1),
+  salida CLOSE último hábil m+1. Costos config: 0.0005+0.0005/side → 0.002 ida-vuelta/mes con posiciones.
+- **IS/OOS**: corte 2023-12-31; embargo ene-2024 (≈20 ruedas, CALIBRATION_HORIZON_DAYS); último mes
+  parcial del cache excluido. OOS = 2024-02 → borde de cache.
+
+**Umbral (ledger EN runtime, 2026-08-25)**: familia `motor_signal`. §46 fue NO INTERPRETABLE →
+NO consumió slot → consumido=12 al redactar → n=13 → `current_threshold("motor_signal")` =
+**0.9923076923076923** (= 1 − 0.10/13). n=13 alimenta el Deflated Sharpe. El script re-lee en
+runtime; artefacto cita el efectivo. A5 CONSUME 1 slot (n_trials_consumidos=1) sea CUMPLE o
+NO_CUMPLE interpretable; NO INTERPRETABLE (coverage-gate/fidelidad) → NO consume.
+
+**CRITERIO DE ÉXITO (binario, sin zona gris, pre-registrado)**: **CUMPLE** si (a) Sharpe_OOS_neto
+anualizado > 0 Y (b) **DSR ≥ th vigente (n=13)**, con fidelidad OK y coverage-gate OK. **NO_CUMPLE**
+cualquier otra cosa (mecánico). **NO_INTERPRETABLE** si coverage-gate falla (<90% universo / <80%
+fechas OOS con quality+value computables) o aborto por fidelidad → NO registra ni consume slot.
+
+**Diagnósticos secundarios (pre-declarados, descriptivos — NO veredicto)**: retorno long-short
+(top−bottom quintile) como contraste académico; correlación del composite con momentum (declarar
+ortogonalidad al ensamble); fracción de días en mercado; nombres top-quintile estables por ventana;
+Sharpe/CAGR/maxDD del portafolio vs universo equal-weight (control); descomposición de contribución
+quality/value/lowbeta al IC.
+
+**Checks de fidelidad**: F1 universo 50 cargado; F2 coverage-gate reportado (EDGAR ≥90% universo,
+≥80% fechas OOS) — gate de interpretabilidad; F3 determinismo seed 42 (desempates rank + beta);
+F4 low-beta sanity (beta finita y >0 para los 50; correlación(β, retorno mercado)>0); F5 no-lookahead
+del panel: assert que todo valor de ratio usado en t tiene filing_date ≤ t (vía index del panel),
+aborto si no; F6 suite completa backend verde ANTES de correr; F7 control: portafolio universo
+equal-weight produce Sharpe OOS finito (la maquinaria funciona); F8 DSR vía
+`backtest_engine.calculate_metrics` (V[SR_n] proxy Fase 0b, comparable a W1/W2/W3 históricos);
+F9 timing fiel (señal cierre m → OPEN m+1 → CLOSE m+1, lag 1); F10 costos aplicados (0.002/round-trip/mes).
+
+**Riesgos declarados**: (1) Cobertura EDGAR es el riesgo central — hoy 0 panel (`data/cache/edgar/`
+vacío; FUND previo 5/50). Fase 0 (abajo) lo construye; si no alcanza el gate → NO INTERPRETABLE
+documentado, no se corre el trial principal. (2) Calidad/valor escasos para algunas acciones aunque
+haya panel (EPS negativo → pe NaN): composite usa componentes disponibles con winsorización;
+documentado. (3) DSR con n=13 exigentísimo → resultado honesto más probable: "dirección positiva
+pero NO_CUMPLE absoluto" → documentado sin zona gris. (4) Universos de 50 large-caps actuales tienen
+lookahead de membresía (compartido por todo el proyecto; limitación heredada, no de A5). (5) Bajo-beta
+price-based puede solaparse con momentum; NO se ortogonaliza en primario (fidelidad a la mezcla de
+Buffett); correlación reportada como diagnóstico. (6) Fase 0 requiere descarga de companyfacts EDGAR
+(red, rate-limit ~10/s) para 50 símbolos — acumulación única, cache después; el trial en sí es cache-only.
+
+**Fase 0 (prerrequisito, NO consume slot)**: extender `build_fundamentals_panel.py` SYMBOLS a los 50
+del universo canónico; descargar companyfacts SEC EDGAR (`data/cache/edgar/*.json`); construir
+`fundamentals_panel.parquet` point-in-time. Verificar coverage-gate (F2) ANTES de correr el trial. Si
+F2 falla → NO INTERPRETABLE, no se corre el principal. Esto es "empezar a acumular el histórico hoy"
+(doctrina Boris), no un trial — no consume presupuesto DSR.
+
+**Script**: `backend/scripts/trial_a5_buffett_alpha.py` (nuevo; reutiliza `deflated_sharpe` de
+`validacion_oos_fresca_mom_rsi`, `edgar_fundamentals.get_edgar_fundamentals`/`compute_fundamental_score_series`
+extendido a specs A5, y la maquinaria de rebalanceo mensual OOS). Python 3.9 real; el trial corre SOLO
+sobre cache (panel ya construido en Fase 0). No toca producción. Ventanas canónicas W1/W2/W3;
+START=2015-01-02; DATA_END=borde de cache ≤7 días. Artefacto:
+`backend/data/cache/trial20_a5_buffett_alpha_<ts>.txt` (+json +parquet equity/positions). Corrida ÚNICA.
+
+**Ledger (AL CIERRE, manual, solo si interpretable)**: `register_trial(id="trial_a5_buffett_alpha",
+familia="motor_signal", n_trials_consumidos=1,
+umbral_aplicado="DSR>=th(motor_signal)=0.99231 (n=13) Y Sharpe_OOS_neto>0 en OOS fresco",
+veredicto=mecánico, seccion_doc="§47")`. Regla: interpretable REGISTRA sea CUMPLE o NO_CUMPLE;
+NO INTERPRETABLE (coverage-gate/fidelidad) NO registra ni consume slot — mismo contrato de §45/§46.
+
+### 47.1 RESULTADO (apéndice post-corrida, 2026-08-25) — corrida única 21:16, **NO_CUMPLE mecánico (DSR<umbral), interpretable, consume 1 slot**
+
+**Fase 0 ejecutada y verificada**: panel EDGAR point-in-time construido para **47/48** empresas
+operativas (una sin filings parseables quedó fuera; universo 97.9% ≥90%). `build_fundamentals_panel.py`
+extendido a las 48 (excluye SPY/QQQ ETF) y se añadió `eps_ttm` al panel para la estabilidad
+de ganancias. 48 companyfacts descargados de SEC EDGAR (43 nuevos + 5 cacheados).
+
+Corrida única (`scripts/trial_a5_buffett_alpha.py`, artefacto
+`trial20_a5_buffett_alpha_20260825_211648.txt`+json, ~2min). Umbral efectivo = el del
+pre-registro: consumido=12 → n=13 → th=0.9923076923.
+
+**Fidelidad OK**: F1 universo 48/48 precios; F2 coverage-gate universo **0.979** / fechas OOS
+**1.000** (PASS); F4 low-beta rolling 126d vs SPY para 48; F7 control equal-weight OOS
+Sharpe **1.50** (maquinaria sana).
+
+**Resultado OOS** (31 meses, 2024-02→borde de cache, embargo ene-2024):
+- Sharpe_OOS neto anualizado = **0.8856** (>0)
+- DSR (Bailey&LdP2014, n=13) = **0.3610**
+- Criterio binario: Sharpe>0 Y DSR≥0.99231 → **NO_CUMPLE mecánico** (DSR lejos del umbral;
+  el Bonferroni n=13 es exigente — mismo patrón que §39/§45).
+
+**Lectura honesta**: el composite "Buffett's Alpha" long-only top-quintile **NO supera al
+universo naive** — el control equal-weight da Sharpe OOS 1.50, por encima del 0.886 del factor.
+La prima quality+value+lowbeta, tal como se implementó (selección cross-sectional mensual,
+equal-weight, sin ortogonalizar a momentum), no añade valor en esta ventana OOS y el DSR
+penalizado por n=13 queda muy por debajo del umbral. Consistente con el patrón del proyecto:
+señal de EXISTENCIA posible (Sharpe>0) pero no de GRADO promocionable (DSR<umbral). **Nada se
+promueve al ensamble.**
+
+**Registrado**: id `trial_a5_buffett_alpha`, familia `motor_signal`, `n_trials_consumidos=1`,
+veredicto `NO_CUMPLE`. motor_signal consumido **12→13** (th vigente **0.992857** para el
+próximo). Espejado en ledger real (`backend/data/trial_registry.json`) por ser gitignored.
+
+**Estado de la línea**: A5 cerrado con evidencia. El diseño era genuinamente distinto del FUND
+crudo ya refutado y del ranking de A4; el dato (panel 47/48) ya no es la limitación — la
+limitación es que el factor no bate al universo. Conexión con A4: si se mejora cobertura/
+definición de valor, el re-test corresponde a A4, no re-abrir A5.
 

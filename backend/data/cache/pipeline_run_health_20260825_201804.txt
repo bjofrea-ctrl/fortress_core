@@ -1,0 +1,5 @@
+Pipeline HEALTH
+========================================
+Cache: ultimo habil hace 4 dias -> OK
+Estado: 0 OPEN / 0 CLOSED / 0 ERROR | meses: []
+Hoy: 2026-08-25 | fase auto sugerida: health

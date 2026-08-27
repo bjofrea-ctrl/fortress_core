@@ -1,5 +1,6 @@
 """API routes para el motor predictivo Fortress Core Fase 2."""
-import os
+import asyncio
+import time
 from typing import Optional
 
 import pandas as pd
@@ -39,14 +40,12 @@ MACRO_TICKERS = {
 # con degradación a sample marcado. SAMPLE_FUNDAMENTALS vive en
 # app/core/edgar_fundamentals.py (junto al cargador EDGAR).
 
-# Datos de predicción (Polymarket-like) — valores de ejemplo actualizables
-SAMPLE_PREDICTION_DATA = {
-    "recession_prob": 0.22,      # Probabilidad de recesión en 12 meses
-    "fed_cut_prob": 0.75,        # Probabilidad de recorte de tasas en 2025
-    "inflation_prob": 0.15,      # Probabilidad de inflación > 4%
-    "default_prob": 0.05,        # Probabilidad de default EEUU
-    "unemployment_prob": 0.18,   # Probabilidad de desempleo > 5%
-}
+# prediction_data (señales estilo Polymarket) nunca se conectó a una fuente
+# real -- se pasaba un dict hardcodeado (SAMPLE_PREDICTION_DATA) como si fuera
+# dato real, entrando al composite_score etiquetado "Polymarket: ..." sin
+# ningún marcador de que era de ejemplo (violación de ONBOARDING.md regla #4).
+# Eliminado 2026-08-25 (hallazgo H1.1, auditoría externa GLM). engine.analyze()
+# recibe prediction_data=None hasta que haya una fuente real conectada.
 
 
 def get_fundamentals_api(symbol: str) -> Optional[dict]:
@@ -74,6 +73,49 @@ def _load_macro_data() -> dict:
         except Exception:
             continue
     return macro_data
+
+
+# Cache en memoria + offload a threadpool (H2.3, 2026-08-25 — MISMO patrón que
+# advisor.py::_get_context, HANDOFF 2026-08-19): analyze_symbol/analyze_universe
+# llamaban download_data por request sin cachear — /universe hacía ~57 lecturas
+# parquet/red por request y analyze_symbol bloqueaba el event loop con I/O
+# síncrono. TTL 5 min: los precios no cambian más rápido que eso para este uso
+# de solo-lectura. El lock asyncio evita manada (requests concurrentes
+# disparando la misma carga cara a la vez). Trade-off aceptado: /macro-
+# correlations en frío también carga el universo (comparten cache; la UI los
+# pide juntos y el TTL lo amortiza).
+_DATA_CACHE_TTL_SECONDS = 300
+_data_lock = asyncio.Lock()
+_data_cache: Optional[tuple] = None  # (precios_universo: dict, macro: dict)
+_data_cache_time: float = 0.0
+
+
+def _load_universe_prices_sync() -> dict:
+    """Precios del universo canónico; descarta series <200 filas (mismo filtro
+    que aplicaba /universe por símbolo)."""
+    out = {}
+    for s in SYMBOLS:
+        try:
+            df = download_data(s, "2015-01-01")
+        except Exception:
+            continue
+        if len(df) >= 200:
+            out[s] = df
+    return out
+
+
+async def _get_data() -> tuple:
+    """(precios_universo, macro) cacheados TTL 5 min, carga en threadpool."""
+    global _data_cache, _data_cache_time
+    async with _data_lock:
+        now = time.monotonic()
+        if _data_cache is not None and (now - _data_cache_time) < _DATA_CACHE_TTL_SECONDS:
+            return _data_cache
+        prices = await run_in_threadpool(_load_universe_prices_sync)
+        macro = await run_in_threadpool(_load_macro_data)
+        _data_cache = (prices, macro)
+        _data_cache_time = time.monotonic()
+        return _data_cache
 
 
 def _load_sentiment_data() -> Optional[dict]:
@@ -148,13 +190,16 @@ def _serialize_result(result, fundamentals_source: str = "unavailable") -> dict:
 async def analyze_symbol(symbol: str, regime_state: int = Query(0, ge=0, le=3)):
     """Analiza un símbolo con el motor predictivo completo."""
     try:
-        # Cargar datos del símbolo
-        df = download_data(symbol, "2015-01-01")
+        # Precios + macro del cache compartido (TTL 5 min, threadpool)
+        prices, macro_data = await _get_data()
+
+        # Cargar datos del símbolo (del universo cacheado; si es ajeno al
+        # universo canónico, descarga directa también offloaded al threadpool)
+        df = prices.get(symbol.upper())
+        if df is None:
+            df = await run_in_threadpool(download_data, symbol.upper(), "2015-01-01")
         if len(df) < 200:
             raise HTTPException(status_code=404, detail=f"Datos insuficientes para {symbol}")
-
-        # Cargar datos macro
-        macro_data = _load_macro_data()
 
         # V1 (AAII): degrada a None (baseline) si el fetch falla
         sentiment_data = _load_sentiment_data()
@@ -173,7 +218,7 @@ async def analyze_symbol(symbol: str, regime_state: int = Query(0, ge=0, le=3)):
             regime_state=regime_state,
             fundamentals=fundamentals,
             macro_data=macro_data,
-            prediction_data=SAMPLE_PREDICTION_DATA,
+            prediction_data=None,
             sentiment_data=sentiment_data,
         )
 
@@ -190,15 +235,13 @@ async def analyze_symbol(symbol: str, regime_state: int = Query(0, ge=0, le=3)):
 async def analyze_universe(regime_state: int = Query(0, ge=0, le=3)):
     """Analiza todos los símbolos del universo canónico y los rankea."""
     engine = PredictiveEngine()
-    macro_data = _load_macro_data()
+    prices, macro_data = await _get_data()
     sentiment_data = _load_sentiment_data()
     results = []
 
-    for symbol in sorted(SYMBOLS):
+    for symbol in sorted(prices):
         try:
-            df = download_data(symbol, "2015-01-01")
-            if len(df) < 200:
-                continue
+            df = prices[symbol]
 
             fundamentals = get_fundamentals_api(symbol)
             result = await run_in_threadpool(
@@ -208,7 +251,7 @@ async def analyze_universe(regime_state: int = Query(0, ge=0, le=3)):
                 regime_state=regime_state,
                 fundamentals=fundamentals,
                 macro_data=macro_data,
-                prediction_data=SAMPLE_PREDICTION_DATA,
+                prediction_data=None,
                 sentiment_data=sentiment_data,
             )
             results.append({
@@ -234,7 +277,7 @@ async def analyze_universe(regime_state: int = Query(0, ge=0, le=3)):
 async def get_macro_correlations():
     """Analiza correlaciones actuales entre activos macro (dólar, oro, plata, etc.)."""
     try:
-        macro_data = _load_macro_data()
+        _, macro_data = await _get_data()
         engine = PredictiveEngine()
         correlations = engine.analyze_macro_correlations(macro_data)
 

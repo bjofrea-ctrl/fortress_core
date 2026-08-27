@@ -2,6 +2,10 @@
 
 Revisión de código, agentes, API, frontend, testing, seguridad, datos e infraestructura,
 verificada contra el repositorio real (2026-08-12) — no contra README ni reportes previos.
+
+> **SYNC 2026-08-23 (Cline, coordinación Orca):** cada sección fue re-verificada contra el código
+> real (grep/lectura directa, no confiar en este texto viejo). Lo cerrado lleva ✅ y cita commit o
+> fila de `ROADMAP.md`. Lo que sigue abierto se dejó tal cual porque sigue siendo cierto.
 Complementa `PLAN_MEJORA_MATEMATICA.md` (motor predictivo/matemática) y
 `RESUMEN_VALIDACION_VARIABLES.md`, que cubren en detalle la parte de investigación.
 
@@ -16,13 +20,13 @@ Metodología: mapeo amplio vía agente Explore + verificación directa (grep/lec
 |---|---|
 | Motor predictivo / matemática | 🟢 rigor excelente |
 | Señal comercial en vivo | 🔴 ninguna verificada |
-| Sistema multi-agente | 🟡 parcial, mal documentado |
-| API / backend | 🔴 casi sin auth |
-| Frontend | 🟡 un panel roto en silencio |
-| Testing | 🟡 70/70 pasan, cobertura despareja |
-| Seguridad | 🔴 default inseguro, repo público |
-| Infra / deploy | 🟡 sin CI/CD, versión inconsistente |
-| Documentación | 🟡 desactualizada en partes |
+| Sistema multi-agente | 🟢 docstrings corregidos (Tanda A, `a56e516`) |
+| API / backend | 🟡 2 endpoints con auth + rate limit; resto sin auth = decisión de producto pendiente |
+| Frontend | 🟢 contrato GovernancePanel fijado por tests backend + frontend |
+| Testing | 🟢 backend 358 passed + frontend 17 tests (antes: 70 y cero) |
+| Seguridad | 🟡 rate limit y backup DB agregados; SECRET_KEY default y auth parcial siguen |
+| Infra / deploy | 🟢 CI activo (ruff+pytest), Python Dockerfile = venv (3.9) |
+| Documentación | 🟢 README corregido (Tanda A); esta auditoría sincronizada 2026-08-23 |
 | Datos | 🟡 única fuente gratuita |
 
 ---
@@ -37,14 +41,18 @@ Metodología: mapeo amplio vía agente Explore + verificación directa (grep/lec
 3. **El sistema multi-agente es real pero se miente a sí mismo en la documentación.**
    Controller y Judge están marcados como deterministas en el propio código, pero la tabla de
    modelos LLM del docstring dice que usan DeepSeek/GLM. Sólo Professor llama efectivamente a
-   un LLM.
-4. **La superficie API es prácticamente pública.** 25 de 27 endpoints sin ningún control de
-   acceso, comparación de API key no tiempo-constante, y el default de `SECRET_KEY` en código
+   un LLM. **✅ CERRADO — docstrings corregidos (Tanda A, commit `a56e516`).**
+4. **La superficie API es prácticamente pública** (en la auditoría: 25 de 27; hoy 36 de 38).
+   Endpoints sin control de acceso, comparación de API key no tiempo-constante, y el default de `SECRET_KEY` en código
    es `"change-me-in-production"` — mitigado en este entorno porque el `.env` real lo
    sobreescribe, pero es una trampa para cualquier despliegue nuevo.
+   *Sync 2026-08-23*: sigue siendo cierto y es **decisión de producto, no bug**. La superficie
+   creció a 38 endpoints en 14 routers (antes 27 en 8) y la auth no siguió el ritmo (siguen 2).
+   Rate limit agregado en Tanda B (`217eb51`).
 5. **Hay un bug de contrato silencioso en producción.** El panel de gobernanza del frontend
    espera campos que el backend no envía — no crashea, simplemente muestra "RECHAZADO" y
-   "undefined" siempre. Cero tests lo hubieran atrapado.
+   "undefined" siempre. Cero tests lo hubieran atrapado. **✅ CERRADO — contrato corregido y
+   fijado por `backend/tests/test_governance_contract.py` + 17 tests de frontend (`7c154f2`).**
 
 ---
 
@@ -74,12 +82,12 @@ flowchart TB
     end
 
     subgraph api["API FastAPI — 27 endpoints"]
-      EP["8 routers<br/>2/27 con auth"]
+      EP["14 routers · 38 endpoints<br/>2 con auth"]
     end
 
     subgraph front["Frontend React"]
-      DASH["14 componentes<br/>fetch directo, sin caché"]
-      GOV["GovernancePanel<br/>contrato roto con backend"]
+      DASH["31 componentes<br/>capa api/client.ts + hooks"]
+      GOV["GovernancePanel<br/>contrato fijado por tests"]
     end
 
     YF --> SIG & REG & PRED
@@ -90,10 +98,10 @@ flowchart TB
     TRIAD --> CTRL --> PROF
     PROF -.si no hay consenso.-> JUDGE
     PROF -.único llamado real.-> NIM
-    CTRL & JUDGE -->|"marcados LLM en docstring, nunca lo llaman"| EP
+    CTRL & JUDGE -->|"deterministas — docstring corregido"| EP
     BT --> EP
     EP --> DASH
-    EP -.shape distinto.-> GOV
+    EP -.contrato testado.-> GOV
 ```
 
 ---
@@ -123,7 +131,7 @@ confirmar (no sobrevive Bonferroni-4). `TARGET_VOLATILITY` existe en `config.py`
 
 ## 4. Sistema multi-agente / gobernanza
 
-**⚠️ Controller y Judge nunca llaman a un LLM.** El docstring y `GOVERNANCE_LLM_MODELS`
+**✅ CERRADO (Tanda A, `a56e516`) — hallazgo original:** ⚠️ Controller y Judge nunca llaman a un LLM. El docstring y `GOVERNANCE_LLM_MODELS`
 afirman que Controller usa "DeepSeek V4 Flash" y Judge "GLM 5.2". El código dice lo
 contrario, explícito en el propio comentario:
 
@@ -140,7 +148,9 @@ documentación que dice lo contrario sí es un problema de integridad.
 donde varias tienen `weight=0` o signo invertido explícitamente porque el IC medido salió
 negativo o sin efecto — señal real de validación estadística, no números elegidos a mano.
 
-**🔴 `prompt_engine.py` — 659 líneas sin uso, con bug incluido.** `PromptEngine`,
+**✅ RESUELTO — `prompt_engine.py` fue ELIMINADO (ver ROADMAP): `HardinessChecker` extraído
+intacto a `app/core/hardiness.py` con sus tests portados (`tests/test_hardiness.py`, incluye la
+regresión del bug latente de `self_consistency`). Hallazgo original:** 🔴 659 líneas sin uso, con bug incluido. `PromptEngine`,
 `MemorySystem`, `GOD_LEVEL_PROMPTS` no se importan desde ningún lado (verificado con grep
 sobre `app/` y tests). Los prompts reales en producción están duplicados dentro de
 `advanced_agents.py`. `PromptEngine.self_consistency()` (línea 647) referencia una variable
@@ -167,40 +177,65 @@ de concurrencia.
 
 ## 6. API / backend
 
-**🔴 25 de 27 endpoints sin ningún control de acceso.** Sólo `POST
-/governance/record-prediction` y `POST /governance/knowledge/add` requieren `X-API-Key`,
-comparado con string directa (no `secrets.compare_digest`). Default de `SECRET_KEY` en
-`config.py`: `"change-me-in-production"`. En este entorno el `.env` real lo sobreescribe
-(verificado sin exponer el valor), pero el código debería fallar al arrancar si no se
-configuró.
+**✅ CERRADO / RE-VERIFICADO EN CÓDIGO (2026-08-24, Brecha 5 handover §6.2, Cline)**:
+la superficie de ESCRITURA está 2/2 con auth — los únicos endpoints no-GET de toda la
+API son `POST /governance/record-prediction` y `POST /governance/knowledge/add`, ambos
+con `verify_api_key` (`hmac.compare_digest` contra `settings.SECRET_KEY`, governance.py:37)
+desde el cierre P0 del 2026-08-12. El "default inseguro" `change-me-in-production`
+(config.py:8) está BLOQUEADO fuera de development por el model_validator
+`_require_secure_secret_key` (config.py:75-84) con test
+`test_secret_key_default_blocked_outside_development` — vigente y pasando. El conteo
+"36/38 sin acceso" cuenta endpoints GET de LECTURA: abiertos POR DECISIÓN de producto
+(UI pública). INVARIANTE fijado hacia adelante: `tests/test_api_write_auth.py` (3 tests,
+incluye control de inventario) falla la suite si aparece cualquier endpoint de escritura
+sin `verify_api_key`. Nota: el módulo `opportunities_universe.py` NO es un router (no
+define endpoints; es la lista canónica del universo 50).
 
-**🔴 Errores devueltos como 200 OK.** `market.py` y `live.py` capturan excepciones y devuelven
-`200 OK` con `{"error": str(e)}` en el body. `live.py:53` tiene un `except:` desnudo.
+**Era (lectura de la auditoría externa, desactualizada contra el código)**: 🟡 36 de 38
+endpoints sin control de acceso; sólo los 2 POST con `X-API-Key`; default de `SECRET_KEY`
+en `config.py`: `"change-me-in-production"` sin validación.
 
-**⚠️ `market.py` sirve datos fijos a fines de 2024.** Las 4 rutas de `/api/market/*` usan
-`download_data(symbol, "2015-01-01", "2024-12-31")` con fecha de fin fija — hoy ese dashboard
-muestra el mercado congelado hace año y medio, mientras `opportunities.py` sí está actualizado
-a mano y `predict.py`/`governance.py` usan la fecha de hoy implícita.
+*Sync 2026-08-23*: rate limit por IP agregado a los GET que disparan LLM real (`app/api/rate_limit.py`, Tanda B `217eb51`, con tests).
 
-| Router | Endpoints | Auth | Manejo de errores |
-|---|---|---|---|
-| backtest | 5 | — | sin captura, 500 no controlado |
-| governance | 8 | 2/8 con API key | correcto |
-| live | 2 | — | 200 OK con error en body, `except:` desnudo |
-| market | 5 | — | 200 OK con error en body, fechas fijas 2024 |
-| opportunities | 1 | — | correcto |
-| predict | 3 | — | correcto |
-| risk | 1 | — | — |
-| system | 1 | — | — |
+**✅ CERRADO (ronda 2026-08-12, ROADMAP «Fix except desnudo + errores como 200 OK»; re-verificado hoy por grep: `live.py` sólo tiene `except` tipados o con manejo, cero `except:` desnudos). Era:** 🔴 `market.py` y `live.py` capturan excepciones y devuelven `200 OK` con `{"error": str(e)}` en el body; `live.py:53` tenía un `except:` desnudo.
+
+**✅ CERRADO — re-verificado hoy: las 4 rutas usan `download_data(symbol, "2015-01-01")` SIN fecha
+de fin fija (fin = hoy implícito; el arranque 2015 es histórico intencional). Era:** ⚠️ fecha de fin fija "2024-12-31" que congelaba el dashboard a mediados de 2024.
+
+**Cobertura por router (sync 2026-08-23)** — la tabla original de manejo de errores quedó
+obsoleta: los fixes se cerraron en la ronda 2026-08-12 y HOY cada router principal tiene tests
+de integración en `backend/tests/`. Total actual: **38 endpoints en 14 módulos bajo `routes/`**
+(advisor, backtest, costs, decision, decision_history, governance, live, market, opportunities,
+opportunities_universe, predict, ranking, risk, system — los últimos cuatro y costs son nuevos
+post-auditoría).
+
+| Router | Tests de integración | Auth |
+|---|---|---|
+| advisor | ✅ `test_advisor_api.py` | — |
+| backtest | ✅ `test_backtest_api.py` | — |
+| costs | ✅ `test_costs_api.py` | — |
+| governance | ✅ ×3 (`test_governance_auth/contract/api`) | 2 POST con `X-API-Key` |
+| live | ✅ `test_live_api.py` | — |
+| market | ✅ `test_market_api.py` | — |
+| opportunities | ✅ `test_opportunities_api.py` | — |
+| predict | ✅ `test_predict_api.py` | — |
+| risk | ✅ `test_risk_api.py` | — |
+| system | ✅ `test_system_api.py` | — |
 
 ---
 
 ## 7. Frontend
 
-React 18 + TypeScript + Vite + Tailwind + Recharts. 14 componentes, ~1962 líneas TSX, plano
-en `src/components/`. Sin librería de data-fetching, sin caché. **Cero tests de frontend.**
+React 18 + TypeScript + Vite + Tailwind + Recharts.
 
-**🔴 GovernancePanel espera un contrato que el backend no envía.** Frontend espera
+*Sync 2026-08-23*: **31 componentes TSX** organizados en `components/` + `advisor/` + `views/`,
+con capa de datos dedicada (`src/api/client.ts`, tipos por endpoint + `hooks.ts`).
+**17 tests de frontend** con Vitest 2 + React Testing Library 16 (commit `7c154f2`) — antes cero:
+GovernancePanel (7, contrato), CostField (4, honestidad M4), hooks advisor (6). Scripts `npm test`
+/ `npm run test:watch`; el build (`tsc && vite build`) tipa también los tests.
+
+**✅ CERRADO — corregido y blindado por `test_governance_contract.py` (backend) y 7 tests de
+contrato en frontend (`7c154f2`). Hallazgo original:** 🔴 GovernancePanel esperaba un contrato que el backend no envía. Frontend espera
 `governance.triad_consensus`, `governance.controller_approved`, `governance.judge_verdict`.
 Backend envía `governance.triad`, `governance.controller.approved`, `governance.judge.verdict`
 — nombres y anidamiento distintos. Efecto: el bloque TRIAD nunca renderiza, Controller siempre
@@ -208,20 +243,23 @@ muestra "RECHAZADO", el texto del Juez imprime literalmente `undefined`. No cras
 nadie lo notó. TypeScript no lo atrapa porque `fetch().then(r => r.json())` tipa como `any`.
 *Verificado: `GovernancePanel.tsx` líneas 8-32 vs `advanced_agents.py` líneas 570-675.*
 
-**⚠️ URL del backend hardcodeada.** `App.tsx` define `API_URL = "http://localhost:8000"` fijo.
-`SystemStatus.tsx` y `RiskPanel.tsx` ni siquiera reciben la prop — hardcodean su propio fetch.
+**✅ RESUELTO — `client.ts` centraliza la URL vía `VITE_API_URL` (fallback `localhost:8000`);
+`SystemStatus.tsx` y `RiskPanel.tsx` hoy reciben la prop `apiUrl`. Era:** ⚠️ URL hardcodeada en `App.tsx` y fetch propio en SystemStatus/RiskPanel.
 
 ---
 
 ## 8. Testing
 
-**🟢 70 passed, 0 failed** — corrido directamente en esta auditoría (`pytest -q`, 7.42s), no
-heredado de un reporte anterior.
+*[Sección reescrita 2026-08-23]*
 
-**⚠️ Cobertura despareja.** 13 archivos de test, todos sobre módulos "core". Cero cobertura
-sobre `advanced_agents.py`, `knowledge_repo.py`, `prompt_engine.py`, ni 7 de los 8 routers
-FastAPI. El bug de §7 es exactamente lo que un test de integración API↔frontend hubiera
-atrapado en minutos.
+- **Backend**: ~39 archivos de test; suite **358 passed** (reportada verificada en el repo real por
+  Claude Code, 2026-08-23). Invocación canónica: `cd backend && .venv/bin/python -m pytest`
+  (desde la raíz se cuelga — config en `backend/pytest.ini`).
+- **Cobertura nueva vs. la foto del 12-08** (13 archivos, todo "core", 7/8 routers sin cubrir):
+  hoy hay integración para los 10 routers principales (ver tabla §6), más auth, rate limit,
+  costos, execution costs, trial registry y hardiness (portado de `prompt_engine.py`, que fue
+  **eliminado** — ver §4).
+- **Frontend**: **17 tests** Vitest+RTL (commit `7c154f2`) — antes cero. Detalle en §7.
 
 ---
 
@@ -229,10 +267,10 @@ atrapado en minutos.
 
 | Hallazgo | Severidad | Estado |
 |---|---|---|
-| 25/27 endpoints sin autenticación | alta | abierto |
+| Endpoints sin autenticación (36/38 hoy) | alta | abierto — decisión de producto, NO bug |
 | Default `SECRET_KEY` inseguro en código | media | mitigado por .env local, código sigue mal |
 | Comparación de API key no tiempo-constante | baja | abierto |
-| Sin rate-limiting | media | abierto |
+| Sin rate-limiting | media | ✅ CERRADO (Tanda B, `217eb51`) — ventana deslizante por IP en predict/analyze y governance/analyze, con tests |
 | Repo público en GitHub | contexto | confirmado (bjofrea-ctrl/fortress_core) |
 | Token QuantConnect expuesto en chat | — | resuelto, rotado |
 | Credenciales LEAN | — | correcto, fuera del repo, verificado con `gh api` |
@@ -241,9 +279,12 @@ atrapado en minutos.
 
 ## 10. Infraestructura y deploy
 
-- **Python 3.11 en Dockerfile, 3.9.6 en el `.venv` real** — riesgo de "funciona en mi máquina".
-- **Sin CI/CD** — repo público sin `.github/workflows` ni ningún check automático en push.
-- **Redis documentado, no existe en el código** — `docker-compose.yml` sólo tiene db/backend/frontend.
+- ✅ **CERRADO (Tanda A, `a56e516`)**: `Dockerfile` fijado a `python:3.9-slim` = `.venv` real (3.9.6). Era: Python 3.11 vs 3.9.6.
+- ✅ **CERRADO**: `.github/workflows/ci.yml` activo (ruff + pytest). Era: sin CI/CD ni checks en push.
+- ✅ **CERRADO (Tanda A)**: mención de Redis removida del README. Era: Redis documentado que no existía.
+- ➕ **Nuevo (Tanda B, `217eb51`)**: backup específico de `fortress.db` vía `sqlite3 .backup` en
+  `auto_backup.sh` / `backup.sh` (retención 20 snapshots). Despliegue permanente vía launchd
+  (ROADMAP 2026-08-20): API :8000 + dashboard http://localhost:3000 + data updater 22:00.
 - **Bueno**: flujo de auto-backup + commit descriptivo encima cumplió su función durante toda
   esta investigación — nunca se perdió trabajo, aunque el historial de git queda ruidoso.
 
@@ -253,8 +294,8 @@ atrapado en minutos.
 
 Conviven dos culturas muy distintas: `PLAN_MEJORA_MATEMATICA.md` /
 `RESUMEN_VALIDACION_VARIABLES.md` son ejemplares (pre-registro, veredictos con artefacto
-citado, correcciones documentadas). `README.md` está desactualizado (Python 3.11 vs 3.9.6
-real, Redis inexistente, sólo 3 de 27 endpoints documentados).
+citado, correcciones documentadas). `README.md` fue **corregido en Tanda A (`a56e516`)** — versión 3.9, sin Redis, tabla completa de
+endpoints vigente a esa fecha (hoy son 38 en 14 routers; revisar en próxima pasada de docs).
 
 ---
 
@@ -284,14 +325,14 @@ sobre búsqueda de alfa de alta frecuencia.
 
 | Prioridad | Acción | Por qué | Esfuerzo |
 |---|---|---|---|
-| P0 | Arreglar contrato GovernancePanel ↔ backend | Bug activo, silencioso, engaña al usuario | bajo |
-| P0 | `except:` desnudo + errores como 200 OK en market/live | Oculta fallos reales al cliente | bajo |
-| P0 | Auth mínima global + comparación tiempo-constante + fallar si `SECRET_KEY` no está seteado | 25/27 endpoints abiertos en repo público | medio |
-| P1 | Fechas fijas de `market.py` (2015-2024) | Dashboard sirviendo datos de hace año y medio | bajo |
-| P1 | Alinear versión Python Dockerfile ↔ venv real | Riesgo de "funciona en mi máquina" | bajo |
-| P1 | Corregir README (Redis, versión, endpoints) | Documentación que miente es peor que ninguna | bajo |
-| P1 | Corregir docstring de Controller/Judge | Mismo problema de integridad que el README | bajo |
-| P2 | Tests de integración para governance + routers sin cobertura | Hubiera atrapado el bug de §7 en minutos | medio |
-| P2 | Decidir destino de `prompt_engine.py` (borrar o integrar) | 659 líneas muertas con un bug adentro | bajo |
-| P2 | CI básico (lint + test en push) | Repo público sin ningún check automático | medio |
+| ~~P0~~ ✅ | Arreglar contrato GovernancePanel ↔ backend | Cerrado — `test_governance_contract.py` + tests frontend (`7c154f2`) | hecho |
+| ~~P0~~ ✅ | `except:` desnudo + errores como 200 OK en market/live | Cerrado ronda 12-08; re-verificado grep 23-08 | hecho |
+| **P0 ABIERTO** | Auth mínima global + comparación tiempo-constante + fallar si `SECRET_KEY` no está seteado | **Decisión de producto** — 36/38 endpoints abiertos en repo público; requiere a Boris | medio |
+| ~~P1~~ ✅ | Fechas fijas de `market.py` | Cerrado — fecha de fin dinámica verificada 23-08 | hecho |
+| ~~P1~~ ✅ | Alinear Python Dockerfile ↔ venv | Cerrado Tanda A `a56e516` | hecho |
+| ~~P1~~ ✅ | Corregir README (Redis, versión, endpoints) | Cerrado Tanda A | hecho |
+| ~~P1~~ ✅ | Corregir docstring Controller/Judge | Cerrado Tanda A | hecho |
+| ~~P2~~ ✅ | Tests de integración routers (+17 de frontend) | Cerrado — suite 358 passed + frontend 17 | hecho |
+| ~~P2~~ ✅ | Destino de `prompt_engine.py` | Cerrado — ELIMINADO; hardiness extraído a `app/core/hardiness.py` | hecho |
+| ~~P2~~ ✅ | CI básico (lint + test en push) | Cerrado — `.github/workflows/ci.yml` | hecho |
 | Mantener | El protocolo de investigación matemática tal cual está | Es lo mejor del proyecto | — |

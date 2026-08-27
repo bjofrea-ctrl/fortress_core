@@ -29,7 +29,15 @@ from app.core.data_ingestion import load_universe
 EDGAR_DIR = Path(__file__).resolve().parent.parent / "data" / "cache" / "edgar"
 OUT_PATH = Path(__file__).resolve().parent.parent / "data" / "cache" / "fundamentals_panel.parquet"
 
-SYMBOLS = ["AAPL", "MSFT", "GOOGL", "AMZN", "NVDA"]
+# Universo operativo del proyecto (50 canónicos menos SPY/QQQ ETFs, que no
+# tienen fundamentales en EDGAR). Extensión Fase 0 de A5 (§47) para cubrir
+# todo el universo en vez de los 5 originales.
+try:
+    from app.api.routes.opportunities_universe import SYMBOLS as _ALL_SYMBOLS
+
+    SYMBOLS = [s for s in _ALL_SYMBOLS if s not in ("SPY", "QQQ")]
+except Exception:  # pragma: no cover - fallback a los 5 originales
+    SYMBOLS = ["AAPL", "MSFT", "GOOGL", "AMZN", "NVDA"]
 LOOKBACK_START = "2015-01-01"
 
 # Tags US-GAAP (con fallbacks) -> (nombre canónico, es flujo TTM).
@@ -293,7 +301,7 @@ def main():
         panel.loc[sub_mask, "peg"] = (pe / growth).values
 
     keep = ["date", "symbol", "pe_ratio", "pb_ratio", "ev_ebitda", "roe", "roa",
-            "debt_equity", "fcf_yield", "div_yield", "eps_growth", "gross_margin",
+            "debt_equity", "fcf_yield", "div_yield", "eps_growth", "eps_ttm", "gross_margin",
             "peg", "current_ratio", "asset_turnover", "book_value_growth", "sue_score"]
     panel = panel[keep].set_index(["date", "symbol"])
     panel = panel[~panel.index.duplicated(keep="last")]

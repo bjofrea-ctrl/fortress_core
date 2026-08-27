@@ -1,5 +1,157 @@
 # Fortress Core — Memoria de Sesiones (Última sesión resumida)
 
+## 2026-08-26 — Garantías anti-evasión Bonferroni familia re_test (H3.1, Cline — espera merge)
+
+**Asignación**: Boris aprobó implementar §4.1+4.2+4.3 de `ANALISIS_RE_TEST_BONFERRONI.md` (segunda mirada independiente vs Kilo). Infraestructura del ledger, trabajo directo SIN pre-registro.
+
+**Verificación previa**: `trial_08_sentimiento` / `trial_09_fundamentales` existen tal cual en ledger y backfill (motor_signal, NO_CUMPLE, n=1) antes de escribir las referencias.
+
+**Implementación en `trial_registry.py`**:
+1. `re_test_de` obligatorio si `familia=="re_test"`: objetivo existente y ANTERIOR (sin forward-refs), veredicto NO_CUMPLE, familia de investigación (`RESEARCH_FAMILIES`; no `producto`, no otro `re_test` — sin cadenas).
+2. `MAX_RETESTS_PER_TARGET = 2` por objetivo (constante nombrada; subirla = decisión visible en diff).
+3. `n_trials_consumidos=0` solo legal en familia `re_test` (cierra el vector real H3.1: cero libre en cualquier familia).
+4. Invariante cruzado `_validate_cross_entries()` corre tanto en `register_trial()` como en `_load_raw` (un JSON editado a mano también explota).
+
+**Backfill**: 2 entradas históricas con su `re_test_de` real (`→trial_08_sentimiento` / `→trial_09_fundamentales`).
+
+**Tests**: 8 rutas nuevas (obligatoriedad, existencia+forward-ref, veredicto, cadenas×2 parametrizadas, tope, camino feliz con umbral intacto, cero fuera de re_test×5 familias vía register y vía carga, backfill completo pasa validación) + 2 tests existentes ajustados al contrato nuevo. **Suite completa: 420 passed**, ruff limpio.
+
+**Compatibilidad verificada sobre copia /tmp (NO toqué ningún JSON real)**: ledger sin migrar → falla ruidosa (por diseño); migradas las 2 líneas → carga completa (47 entradas) OK.
+
+**Lección**: el índice de ids previos del invariante cruzado debe incluir TODAS las familias — si solo indexa no-re_test, un objetivo legítimo pero invalidable da error de existencia en vez del error específico (lo detectó la ruta 4).
+
+**PENDIENTE AL MERGEAR**: agregar los 2 campos `re_test_de` al `trial_registry.json` de producción (el código nuevo lo rechaza sin ellos POR DISEÑO).
+
+
+## 2026-08-25 — §46 TRIAL #19: compuerta M3 standalone — NO INTERPRETABLE mecánico (piso insuficiente), sin consumo de slot (Kilo Code, worktree test-kilo-orca)
+
+**Autor**: Kilo Code. Pre-registro §46 aprobado por el coordinador antes de
+correr; auto-cierre autorizado; cierre de merge vía `.pending-merge.md` (§1.1
+PLAN_HANDOVER_48H.md).
+
+- Primera medición REAL de M3 (`regime_gate.py`, jamás usado) como COMPUERTA de
+  operación del motor — genuinamente inédito vs §42 (condicionante diagnóstico).
+  ALWAYS vs GATED intra-corrida; GOLDILOCKS-rezagado 21b, fechas sin etiqueta →
+  no opera (conservador).
+- **Piso insuficiente**: GOLDILOCKS-lag cubre solo 28.7% de días → GATED opera
+  n=17/19/51 por ventana contra piso 30 → solo W3 computable (<2/3) → regla
+  pre-registrada: **NO registra NI consume slot** (motor_signal sigue 12,
+  th vigente 0.99231). Hipótesis SIN MEDIR BIEN, distinto de NO_CUMPLE.
+- Desglose exploratorio honesto: la compuerta mejora riesgo-retorno cuando
+  GOLDILOCKS es escaso (W1: Sharpe 0.689 vs 0.318, maxDD −1.5% vs −5.3%) y lo
+  empobrece cuando abunda (W3: Sharpe 0.161 vs 0.478). El filtro vale para
+  EVITAR regímenes malos, no para certificar buenos — pista para un re-diseño
+  con piso alcanzable (GOLDILOCKS∪NEUTRAL o similar), decisión de Boris.
+- Fidelidad OK×6: F9 identity-cache bit-idéntico (heredado §45), gate walk-forward
+  34 recalibs con asserts OK, suite **370 passed** pre-corrida, señales GATED
+  75.7% bloqueadas.
+- Artefacto `backend/data/cache/trial_m3_gate_standalone_20260825_164832.txt`
+  (+json+parquet ambos brazos); script `backend/scripts/trial_m3_gate_standalone.py`;
+  §46+§46.1 en PLAN_MEJORA_MATEMATICA.md; fila nueva en ROADMAP. Producción
+  intacta (proxy sobre signal_engine por atributo).
+
+## 2026-08-25 — §47 TRIAL #20: "Buffett's Alpha" sistemático (A5) — cerrado NO_CUMPLE (Kilo Code, worktree test-kilo-orca)
+
+**Autor**: Kilo Code. Directiva explícita de Boris (2026-08-25): "pasá a A5 ... pre-registro
+nuevo, misma disciplina". §46 (A1) ya cerrado por Boris en main (merge manual, no-op del
+cherry-pick del RESULTADO).
+
+- Pre-registro §47 en PLAN_MEJORA_MATEMATICA.md. Hipótesis inédita: descomposición
+  Frazzini/Kabiller/Pedersen ("Buffett's Alpha") — calidad (ROE/ROA/gross-margin/FCF-yield +
+  estabilidad de ganancias) + valor (P/E,P/B,EV/EBITDA invertidos) + **bajo-beta de precio
+  (cobertura 50/50, componente novedoso)** + apalancamiento moderado — como portafolio
+  cross-sectional long top-quintile mensual sobre el universo 50.
+- Distinto del FUND previo (ranking crudo 15 ratios EDGAR, 5/50, refutado por cobertura)
+  y de A4 (revivir ese ranking si mejora cobertura). A5 corre en paralelo, mismo ledger,
+  sin competir con Frente 2 (construcción no consume Bonferroni).
+- **Fork de datos resuelto de forma decisiva**: hoy `data/cache/edgar/` está VACÍO (0 panel)
+  — el 5/50 que mató a FUND. Resuelvo con **Fase 0** (extender `build_fundamentals_panel.py`
+  a los 50, descargar companyfacts SEC EDGAR, construir `fundamentals_panel.parquet`
+  point-in-time; cache después, el trial es cache-only) + **coverage-gate pre-registrado
+  ≥90% universo / ≥80% fechas OOS** → si falla, NO INTERPRETABLE, no registra ni consume slot.
+  yfinance (.info/fast_info) rechazado como primario: snapshot actual = lookahead, viola la
+  disciplina point-in-time del proyecto. Es "empezar a acumular el histórico hoy" (doctrina Boris).
+- Criterio binario sin zona gris: **CUMPLE** si Sharpe_OOS_neto>0 Y DSR≥th(motor_signal)
+  (=0.99231, n=13, mismo de §46, porque §46 NO consumió slot); **NO_CUMPLE** otra cosa;
+  **NO_INTERPRETABLE** si coverage-gate/fidelidad fallan. Familia motor_signal,
+  n_trials_consumidos=1 si interpretable.
+- **EJECUTADO (2026-08-25, 21:16)**: Fase 0 OK (panel EDGAR 47/48, coverage-gate 97.9%/100%
+  PASS) + corrida única. OOS 31m: Sharpe neto **0.8856>0**, DSR **0.3610** (n=13) →
+  **NO_CUMPLE mecánico** (DSR<0.99231). Hallazgo descriptivo honesto: control equal-weight
+  OOS Sharpe **1.50 > factor 0.886** — el composite quality+value+low-beta long-only top-quintile
+  NO supera al universo naive en esta ventana OOS; señal de existencia (Sharpe>0) pero no de
+  grado promocionable (DSR<umbral). **Registrado** id `trial_a5_buffett_alpha`, familia
+  `motor_signal`, `n_trials_consumidos=1`, veredicto NO_CUMPLE → ledger 12→13 (th 0.992857).
+  Conexión A4: si se mejora valor, el re-test es A4, no re-abrir A5.
+- Artefacto `backend/data/cache/trial20_a5_buffett_alpha_20260825_211648.txt`(+json);
+  script `backend/scripts/trial_a5_buffett_alpha.py`; §47+§47.1 en PLAN_MEJORA_MATEMATICA.md;
+  fila ROADMAP actualizada. Producción intacta.
+
+## 2026-08-24 — §45 TRIAL #18: EVT-stops v2 (sizing aislado) — NO_CUMPLE 0/3, línea EVT CERRADA DEFINITIVA (Kilo Code, worktree test-kilo-orca)
+
+**Autor**: Kilo Code. Pre-registro §45 escrito como borrador, revisado y APROBADO
+por el coordinador (Claude Code) con Boris; auto-cierre completo autorizado
+("no esperar ok, criterio ya aprobado"). Ledger `motor_signal` id
+`trial_evt_stops_v2`, veredicto **NO_CUMPLE**.
+
+- Diseño neutraliza las DOS capas de inercia del Hallazgo 6 (el coordinador no
+  había visto la segunda): (1) Kelly desactivado SIMÉTRICAMENTE en ambos brazos —
+  `fractional_kelly=0` tal cual habría dado min(0,…)=0 shares; (2)
+  RISK_PER_TRADE_arm=0.0015 en ambos brazos para que el umbral de binding baje a
+  1.5%×precio (con el 1.5% vigente era 15%×precio: inalcanzable). Tope 10%
+  intacto. Alcance mínimo §20: solo cambia la distancia del sizing.
+- **Gate F7 de activación PASÓ AL 100%**: shares_by_risk fue la restricción
+  activa en todas las compras de ambos brazos en las 3 ventanas. Primera vez que
+  la distancia de riesgo decide tamaños — el experimento midió lo que decía.
+- **Resultado**: EVT PEOR en las 3 ventanas de forma consistente (Sharpe
+  0.274/−0.001/0.601 vs BASE 0.320/0.186/0.694; DSR 0.101/0.048/0.260 vs th
+  0.9916667 n=12). Mecanismo: VaR-GPD más ancho → posiciones más chicas → menos
+  capital capturando edge, sin protección compensatoria ni en W2 bear. Línea
+  EVT-stops CERRADA DEFINITIVA (§19 diagnóstico + §20 placebo + §45 refutación).
+- **Nota de ejecución**: intento 1 abortado tras >13h solo en baseline y sin
+  veredicto — generate_signal recalcula calculate_all_indicators por día×símbolo
+  sobre un frame ya indicatorizado (explosión de costo post-T2.3 hurst);
+  diagnosticado con sampler de stacks. Intento 2: parche identity intra-proceso
+  con equivalencia bit-idéntica verificada en-corrida (F9, 25 pares × 10
+  columnas) → corrida completa en ~37 min. Metodología intacta; producción
+  intacta (subclases vía _make_risk_manager).
+- **Hallazgo de código anotado para decisión futura** (reportado por Claude
+  Code, verificado): sizing usa max(2×ATR, floor) pero REGIME_STOP_HIT dispara
+  solo por position_stop% — asimetría sizing/trigger (adaptive_risk.py:109 vs
+  :149); decisión de producto, no bug inmediato. En §45.1.
+- Artefactos `backend/data/cache/trial18_evt_stops_v2_20260824_200927.txt`(+json,
+  +parquet ambos brazos) y `ABORTADO_trial18_evt_stops_v2_20260824_070552.txt`;
+  script `backend/scripts/trial_evt_stops_v2.py`; §45+§45.1+nota de ejecución en
+  PLAN_MEJORA_MATEMATICA.md; fila nueva en ROADMAP. Ledger motor_signal 11→12
+  (próximo umbral 0.99231), espejado al repo real.
+
+## 2026-08-23 — TAREA M: KAMA/HMA/Supertrend (tendencia adaptativa) — NO_CUMPLE 0/9 (Kilo Code, worktree test-kilo-orca)
+
+**Autor**: Kilo Code. Asignación de Claude Code coordinando por Orca para Boris
+("Kilo → Tarea M en su worktree; pre-registro primero"). Pre-registro §44 ANTES
+de correr; ledger `signal_diagnosis` id `trial_kama_hma_supertrend`, veredicto
+**NO_CUMPLE**.
+
+- UN trial coordinado con 3 sub-hipótesis direccionales (los 3 miden DIRECCIÓN,
+  verificación de origen en PLAN_LARGO_PLAZO.md Tarea M): kama_dist=(close−KAMA)/close
+  (ER reusado de predictive_indicators), hma_dist=(close−HMA16)/close, y
+  supertrend_side∈{±1} ATR10×3.0. m=9 Bonferroni (3 indicadores × W1/W2/W3).
+- Umbral ex-ante LEÍDO del registry (no asumido): consumido=25 → n=26 →
+  th=0.9961538461538462 → |t|>3.5226 bilateral.
+- **Resultado**: 0/9 celdas significativas; IC pooled TOTAL NEGATIVO en los tres
+  (kama t−1.01, hma t−0.24, st t−1.24) — ni señal nominal, signo contrario a la
+  continuación y sin consistencia entre ventanas. Desglose GOLDILOCKS-lag
+  EXPLORATORIO no-gating: máx |t|=+2.58 (st W1) sin repetición → sin pistas.
+- Implementación previa con tests sintéticos de tendencia conocida:
+  `wma()/kama()/hma()/supertrend()` nuevas en indicators.py como columnas
+  diagnósticas NO wired al motor (patrón T1.x/T2.x). Suite completa **367 passed**
+  ANTES de la corrida (F6); ruff limpio.
+- Artefacto `backend/data/cache/trial_kama_hma_supertrend_20260823_152846.txt`(+json);
+  script `backend/scripts/trial_kama_hma_supertrend.py`; §44+§44.1 en
+  PLAN_MEJORA_MATEMATICA.md; fila nueva en ROADMAP. **Nada integrado al motor**
+  — signal_engine.py intacto. Ledger signal_diagnosis ahora 26 consumidos
+  (próximo umbral 0.99630).
+
 ## 2026-08-22 (tarde-3) — TAREA O: Frog-in-the-Pan (ID × momentum_12_1) — NO_CUMPLE 0/3 (Kilo Code)
 
 **Autor**: Kilo Code. Asignación de Boris ("Kilo → Tarea O, cálculo barato sobre
@@ -2634,3 +2786,61 @@ umbral `current_threshold=0.9958333 / m=9 → |t|>3.5013`, veredicto NO_CUMPLE.
 **Fidelidad OK×5**: universo 50/50 · meses 24/24/31 · edge pooled IC +0.0079 positivo ·
 seed HMM 42 · gate walk-forward 34 recalibraciones con asserts anti-lookahead pasados y
 estados no degenerados (GOLDILOCKS 528 / REFLATION 446 / STAGFLATION 821 / DEFLATION 312).
+
+## 2026-08-24 — Brecha 5 (handover §6.2): cierre superficie API — cerrada por verificación + invariante (Cline)
+
+**Asignación**: Claude Code (autorizada por Boris). Verificar primero contra código real, no asumir.
+
+**Verificación contra el artefacto real (código más nuevo dd47569, no el worktree atrasado)**:
+1. Inventario exhaustivo de rutas (`@router.*` en app/api/routes/): **NO existe endpoint de escritura sin auth**. Los únicos 2 no-GET de toda la API son `POST /api/governance/record-prediction` y `POST /api/governance/knowledge/add`, ambos con `verify_api_key` desde el P0 del 2026-08-12 (governance.py:37, hmac.compare_digest vs settings.SECRET_KEY).
+2. SECRET_KEY: default "change-me-in-production" (config.py:8) BLOQUEADO fuera de development por `_require_secure_secret_key` (config.py:75-84); test `test_secret_key_default_blocked_outside_development` vigente y pasando.
+3. La lectura "36/38 endpoints sin control de acceso" de la auditoría externa cuenta GETs de LECTURA (públicos por decisión de producto) y da por no-existente la validación que sí está en el código. Además: `opportunities_universe.py` NO es router (lista canónica universo 50).
+
+**Aportación real (lo único que faltaba)**: INVARIANTE de regresión `tests/test_api_write_auth.py` (3 tests, chequeo estructural sobre árbol de dependencias FastAPI — el repo NO tiene httpx/TestClient por convención, ver test_costs_api.py):
+- inventario de escritura == 2 POST conocidos (si crece, el test avisa);
+- toda ruta no-GET debe depender de `verify_api_key` (falla si aparece escritura desprotegida);
+- el mecanismo es EL compartido (hmac.compare_digest + settings.SECRET_KEY).
+Control negativo verificado: una APIRoute POST sin dependencias hace fallar `_has_verify_api_key`.
+
+**Tests**: test_api_write_auth.py (3) + test_governance_auth.py (5) = 8/8 PASSED, ruff limpio. Sin cambios en routers ni motor (lectura pública intacta).
+
+**Docs**: AUDITORIA_TECNICA.md §6 re-sincronizado; ROADMAP.md fila nueva + pendiente #4.
+
+## 2026-08-25 — H2.3 cache predict + H8.2 staleness verificado (Cline, worktree sincronizado en 8c9a46f)
+
+**Worktree**: fetch origin main + reset --hard 8c9a46f (árbol trackeado limpio; no-trackeados del §45 intactos).
+
+### H2.3 — cache de datos en predict.py (patrón advisor.py::_get_context, sin inventar)
+- Antes: analyze_symbol/analyze_universe llamaban download_data por request (~57 lecturas/request en /universe) y _load_macro_data bloqueaba el event loop.
+- Ahora: cache compartido `_get_data()` -> (precios_universo, macro), TTL 300s, asyncio.Lock anti-manada, carga en threadpool (`_load_universe_prices_sync` aplica el mismo filtro >=200 filas que había por símbolo). Símbolo fuera del universo canónico -> fallback a descarga directa también offloaded. Trade-off documentado: /macro-correlations frío comparte la carga del universo (UI los pide juntos).
+- Tests: tests/test_predict_cache.py NUEVO (6): 2º request dentro del TTL NO re-descarga; /universe x2 = una sola carga; TTL expirado re-carga; fallback fuera-de-universo; series cortas descartadas en el loader. test_predict_api.py: reset de cache en _patch_io. **11 passed** (6 nuevos + 5 existentes), ruff limpio.
+
+### H8.2 — staleness del advisor: YA se renderiza (verificado, nada que construir)
+- Cadena completa: useAdvisorUniverse() -> MesaPage.tsx:38 -> MesaView.tsx:48-54 renderiza banner amarillo "Cache de datos desactualizado: último cierre {last_cache} (+{business_days_behind} ruedas)" cuando stale=true.
+- Test de contrato existente: MesaPage.test.tsx:88 "staleness y blocked_reason se muestran como banners" — corrido por mí: **6/6 passed** (8.42s).
+- Conclusión: la premisa "no está confirmado que algún componente lo renderice" es falsa contra el código actual; solo se documenta.
+
+## 2026-08-25 — Frente 2 S1: conector Alpaca paper + ledger de órdenes (Cline)
+
+**Alcance**: conector de ejecución/registro ONLY — motor de decisión y signal_engine.py intactos.
+
+1. `execution_costs.py`: `get_account()` (GET /v2/account) + `get_positions()` (GET /v2/positions, símbolos al formato interno BRK-B) en el mismo patrón que submit_market_order/last_trade_price.
+2. `signal_ledger.py`: migración ADITIVA por PRAGMA (status/open_fill_price/close_fill_price/qty); open_order/close_order/open_orders. El record() T1.6 sigue funcionando sobre DB pre-migrada (test lo cubre).
+3. `paper_trading.py` (nuevo): PaperTrader — abrir→fila open; cerrar→pnl_r+close_fill_price; reconcile contra posiciones reales del paper.
+4. **BUG encontrado y arreglado durante tests**: record() referenciaba columnas dentro del VALUES del INSERT OR REPLACE → SQLite no resuelve columnas en VALUES (`no such column: open_fill_price`, solo explotaba con DB pre-migrada). Reescrito como ON CONFLICT DO UPDATE (preserva fills al re-etiquetar). Lección: el error 'no such column' en INSERT puede ser referencia inválida en VALUES, no falta de migración.
+5. Tests: test_paper_trading.py 6 tests contra fakes (cuenta/posiciones, ciclo ledger, abrir/cerrar, cierre sin precio vía last trade, reconcile, DB pre-migrada). Suites relacionadas 53 passed, ruff limpio.
+
+Nota: proceso trial18 intento-1 ya muerto (abortado >13h, documentado en ROADMAP §45); sin procesos huérfanos.
+
+## 2026-08-26 — Frente 2 S2: mecanismo del reporte mensual (Cline)
+
+**Alcance**: construcción pura — NO toca trial_registry.json, NO consume Bonferroni, sin pre-registro (autorizado por Boris).
+
+1. `app/core/monthly_report.py`: MonthlyReporter — agrupa filas cerradas del signal_ledger por mes de cierre × variante (`factors_json["variant"]`, default `mom_rsi_congelada`), Sharpe realizado nativo por-oficio (mean/std ddof=1 de pnl_r), comparación contra expectativa de la validación OOS congelada.
+2. `backend/config/expected_sharpe.json` (nuevo, semilla): Sharpe mensual 0.3838 / anualizado 1.3296 de validacion_oos_fresca_mom_rsi_20260822. Cada variante nueva agrega su entrada al cerrar su OOS.
+3. Veredictos: EN_CALIBRACION / DEBAJO_ESPERADO / NEGATIVO / SIN_DATOS / DEGENERADO / ESPERADO_NO_DEFINIDO + diagnóstico de una línea. Umbral de calibración parametrizable (default 0.5× esperado).
+4. Bitácora acumulada: tabla propia `monthly_report_log` en fortress.db, upsert idempotente por (variante, mes). Ajena a trial_registry.
+5. Runner CLI: `scripts/monthly_report.py` (--db, --mes). Smoke end-to-end con DB sembrada en /tmp: 3 meses → EN_CALIBRACION + NEGATIVO + SIN_DATOS + bitácora 1/3. Primer reporte generado = checkpoint semana 2 del plan maestro.
+6. Tests: test_monthly_report.py 11 tests contra fixtures; suite amplia (monthly+paper_trading+barrier_labeling) 43 passed; ruff limpio.
+
+**Limitación documentada**: Sharpe por-oficio ≠ Sharpe cartera mensual del backtest hasta acumular meses; el mecanismo se vuelve más fiel con historial. Pendiente para OpenCode: etiquetar factors_json["variant"] cuando el ensamble sume variantes.

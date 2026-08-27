@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends, Header, HTTPException, Query
 from starlette.concurrency import run_in_threadpool
 
 from app.api.rate_limit import RateLimitDependency
-from app.api.routes.predict import SAMPLE_PREDICTION_DATA, _load_macro_data, get_fundamentals_api
+from app.api.routes.predict import _load_macro_data, get_fundamentals_api
 from app.config import settings
 from app.core.advanced_agents import (
     AGENT_PROMPTS,
@@ -109,7 +109,7 @@ async def analyze_with_governance(symbol: str, regime_state: int = Query(0, ge=0
             symbol=symbol.upper(), df=df, regime_state=regime_state,
             fundamentals=get_fundamentals_api(symbol),
             macro_data=_load_macro_data(),
-            prediction_data=SAMPLE_PREDICTION_DATA,
+            prediction_data=None,
         )
 
         triad_data = {

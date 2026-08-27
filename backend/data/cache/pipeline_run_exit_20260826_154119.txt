@@ -1,0 +1,6 @@
+Pipeline EXIT — venta mecanica de posiciones OPEN del pipeline
+==============================================================
+Fuente de verdad EXIT: ledger real (1 abiertas) | OPEN estado=1
+
+Resultados (REAL):
+  sell AAPL  submitted [OVERRIDE_MECANISMO] qty=80 fill=315.23

@@ -52,6 +52,10 @@ def _patch_io(monkeypatch, result=None, macro=None, cache_dir=None):
     monkeypatch.setattr(predict, "_load_macro_data", lambda: macro or {})
     monkeypatch.setattr(predict, "_load_sentiment_data", lambda: None)
     monkeypatch.setattr(predict, "get_fundamentals_api", lambda symbol: None)
+    # H2.3: reset del cache compartido para que cada test arranque frío
+    # (los globals sobreviven entre tests; los valores originales son None/0.0).
+    predict._data_cache = None
+    predict._data_cache_time = 0.0
     if cache_dir is not None:
         monkeypatch.setattr(predict, "CACHE_DIR", cache_dir)
     if result is not None:

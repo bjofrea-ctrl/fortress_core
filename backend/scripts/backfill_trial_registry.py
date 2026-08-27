@@ -200,12 +200,17 @@ TRIALS = [
      "seccion_doc": "§9"},
 
     # --- familia re_test (Fase 0.6: re-test barato, NO consume slot nuevo, §6.1 RESUMEN) ---
+    # re_test_de obligatorio (garantia H3.1 aprobada 2026-08-26): cada re-test cita
+    # el id del hallazgo NO_CUMPLE que re-confirma. Ambos objetivos existen arriba
+    # en esta misma lista (familia motor_signal, veredicto NO_CUMPLE).
     {"id": "fase06_retest_sentimiento", "fecha": "2026-08-12", "familia": "re_test",
+     "re_test_de": "trial_08_sentimiento",
      "hipotesis": "Re-test V1 (AAII) contra motor post-fix + universo 50: DSR 0.041/0.002/0.225 — 0/3, refutacion #8 CONFIRMADA con vara arreglada",
      "n_trials_consumidos": 0, "umbral_aplicado": "DSR>=0.90 en >=2/3 (n_trials=17, registro previo — sin slot nuevo)",
      "veredicto": "NO_CUMPLE", "artefacto": ARTEFACTOS["fase06"],
      "seccion_doc": "§0.6.1"},
     {"id": "fase06_retest_fundamentales", "fecha": "2026-08-12", "familia": "re_test",
+     "re_test_de": "trial_09_fundamentales",
      "hipotesis": "Re-test FUND (EDGAR) contra motor post-fix + universo 50: DSR 0.121/0.004/0.330 — 0/3 (limitacion: cobertura 5/50)",
      "n_trials_consumidos": 0, "umbral_aplicado": "DSR>=0.90 en >=2/3 (n_trials=17, registro previo — sin slot nuevo)",
      "veredicto": "NO_CUMPLE", "artefacto": ARTEFACTOS["fase06"],

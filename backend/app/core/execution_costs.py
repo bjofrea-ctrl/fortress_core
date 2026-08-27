@@ -117,6 +117,39 @@ class AlpacaPaperClient:
         resp.raise_for_status()
         return float(resp.json()["trade"]["p"])
 
+    def get_account(self) -> Dict[str, Any]:
+        """Snapshot de la cuenta paper: `GET /v2/account`.
+
+        Devuelve el JSON estándar de Alpaca (cash, equity, buying_power,
+        long_market_value, pattern_day_trader, status, etc.). Es la fuente para
+        el pipeline diario (cuánto hay para posicionar / exposición total).
+        """
+        resp = self._session.get(
+            f"{self.base_url}/v2/account", timeout=DEFAULT_TIMEOUT_SECONDS
+        )
+        resp.raise_for_status()
+        return resp.json()
+
+    def get_positions(self) -> List[Dict[str, Any]]:
+        """Posiciones abiertas paper: `GET /v2/positions`.
+
+        Devuelve una lista por símbolo con qty, avg_entry_price, current_price,
+        market_value, unrealized_pl, etc. (símbolos con guion BRK-B ya traducidos
+        al formato interno). Base para reconciliar el `signal_ledger` contra el
+        estado real del paper y para cerrar posiciones con el precio actual.
+        """
+        resp = self._session.get(
+            f"{self.base_url}/v2/positions", timeout=DEFAULT_TIMEOUT_SECONDS
+        )
+        resp.raise_for_status()
+        positions = resp.json()
+        out = []
+        for pos in positions or []:
+            row = dict(pos)
+            row["symbol"] = row.get("symbol", "").replace(".", "-")
+            out.append(row)
+        return out
+
     def submit_market_order(self, symbol: str, qty: float, side: str) -> Dict[str, Any]:
         """Manda una orden MARKET de PAPER y devuelve el JSON de la orden ya fillada.
 
