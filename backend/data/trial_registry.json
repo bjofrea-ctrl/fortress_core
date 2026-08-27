@@ -8,7 +8,8 @@
     "umbral_aplicado": "DSR>=0.90 2/3 ventanas (n_trials=17)",
     "veredicto": "NO_CUMPLE",
     "artefacto": "(sin artefacto en cache — ver SESSION_LOG)",
-    "seccion_doc": "RESUMEN §2"
+    "seccion_doc": "RESUMEN §2",
+    "status": "COMPLETED"
   },
   {
     "id": "trial_09_fundamentales",
@@ -19,7 +20,8 @@
     "umbral_aplicado": "DSR>=0.90 2/3 ventanas (n_trials=17)",
     "veredicto": "NO_CUMPLE",
     "artefacto": "(sin artefacto en cache — ver SESSION_LOG)",
-    "seccion_doc": "RESUMEN §2"
+    "seccion_doc": "RESUMEN §2",
+    "status": "COMPLETED"
   },
   {
     "id": "trial_10_partial_tp_fix",
@@ -30,7 +32,8 @@
     "umbral_aplicado": "PF sube 1.30->1.46 (fix de reporting honesto)",
     "veredicto": "NO_CUMPLE",
     "artefacto": "(sin artefacto en cache — ver SESSION_LOG)",
-    "seccion_doc": "RESUMEN §4"
+    "seccion_doc": "RESUMEN §4",
+    "status": "COMPLETED"
   },
   {
     "id": "trial_11_universo50",
@@ -41,7 +44,8 @@
     "umbral_aplicado": "DSR>=0.90 2/3 ventanas (n_trials=17)",
     "veredicto": "NO_CUMPLE",
     "artefacto": "(sin artefacto en cache — ver SESSION_LOG)",
-    "seccion_doc": "RESUMEN §2"
+    "seccion_doc": "RESUMEN §2",
+    "status": "COMPLETED"
   },
   {
     "id": "trial_12_er_velocidad",
@@ -52,7 +56,8 @@
     "umbral_aplicado": "IC / DSR (ver SESSION_LOG)",
     "veredicto": "NO_CUMPLE",
     "artefacto": "(sin artefacto en cache — ver SESSION_LOG)",
-    "seccion_doc": "RESUMEN §2"
+    "seccion_doc": "RESUMEN §2",
+    "status": "COMPLETED"
   },
   {
     "id": "trial_13_ridge_motor",
@@ -63,7 +68,8 @@
     "umbral_aplicado": "DSR>=0.90 2/3 ventanas (n_trials=17)",
     "veredicto": "NO_CUMPLE",
     "artefacto": "data/cache/trial13_ridge_motor_20260811_120029.txt",
-    "seccion_doc": "§6"
+    "seccion_doc": "§6",
+    "status": "COMPLETED"
   },
   {
     "id": "trial_14_basket_adx",
@@ -74,7 +80,8 @@
     "umbral_aplicado": "DSR>=0.90 2/3 ventanas (n_trials=17+1=18)",
     "veredicto": "NO_CUMPLE",
     "artefacto": "data/cache/trial14_basket_adx_20260811_215113.txt",
-    "seccion_doc": "§11"
+    "seccion_doc": "§11",
+    "status": "COMPLETED"
   },
   {
     "id": "trial_15_evt_stops",
@@ -85,7 +92,8 @@
     "umbral_aplicado": "DSR>=0.90 2/3 ventanas (n_trials=19)",
     "veredicto": "NO_CUMPLE",
     "artefacto": "(en curso — ROADMAP #21, fix EWMA aplicado)",
-    "seccion_doc": "§20"
+    "seccion_doc": "§20",
+    "status": "COMPLETED"
   },
   {
     "id": "fase05a_rr2_intraday",
@@ -96,7 +104,8 @@
     "umbral_aplicado": "|t|>2 nominal; Bonferroni-4 ≈2.5 para ADX",
     "veredicto": "NO_CUMPLE",
     "artefacto": "data/cache/rr2_intraday_20260811_150741.txt",
-    "seccion_doc": "§8 0.5a"
+    "seccion_doc": "§8 0.5a",
+    "status": "COMPLETED"
   },
   {
     "id": "fase05b_rmt",
@@ -107,7 +116,8 @@
     "umbral_aplicado": "autovalores > lambda+ (1.385)",
     "veredicto": "NO_CUMPLE",
     "artefacto": "data/cache/rmt_mp_20260811_150849.txt",
-    "seccion_doc": "§8 0.5b"
+    "seccion_doc": "§8 0.5b",
+    "status": "COMPLETED"
   },
   {
     "id": "fase05c_ridge_macro_crudo",
@@ -118,7 +128,8 @@
     "umbral_aplicado": "IC OOS / delta vs blend",
     "veredicto": "NO_CUMPLE",
     "artefacto": "data/cache/ridge_comb_20260811_150859.txt",
-    "seccion_doc": "§8 0.5c"
+    "seccion_doc": "§8 0.5c",
+    "status": "COMPLETED"
   },
   {
     "id": "sectorial_endogeno",
@@ -129,7 +140,8 @@
     "umbral_aplicado": "Bonferroni-8, |t|>2.73",
     "veredicto": "NO_CUMPLE",
     "artefacto": "data/cache/sector_clusters_20260811_170235.txt",
-    "seccion_doc": "§9"
+    "seccion_doc": "§9",
+    "status": "COMPLETED"
   },
   {
     "id": "reeval_trial14",
@@ -140,7 +152,8 @@
     "umbral_aplicado": "t-NW(media diaria) > 2 en >=2/3 ventanas",
     "veredicto": "NO_CUMPLE",
     "artefacto": "data/cache/reeval_trial14_basket_adx_20260811_220640.txt",
-    "seccion_doc": "§11.1"
+    "seccion_doc": "§11.1",
+    "status": "COMPLETED"
   },
   {
     "id": "gap_reversion_diag",
@@ -151,7 +164,8 @@
     "umbral_aplicado": "|t-NW|>2 por horizonte",
     "veredicto": "NO_CUMPLE",
     "artefacto": "data/cache/diagnose_gap_reversion_20260812_082809.txt",
-    "seccion_doc": "§13"
+    "seccion_doc": "§13",
+    "status": "COMPLETED"
   },
   {
     "id": "rr2_subperiodos",
@@ -162,7 +176,8 @@
     "umbral_aplicado": "Bonferroni-8, |t|>2.73",
     "veredicto": "NO_CUMPLE",
     "artefacto": "data/cache/rr2_subperiodos_20260812_194031.txt",
-    "seccion_doc": "§15"
+    "seccion_doc": "§15",
+    "status": "COMPLETED"
   },
   {
     "id": "ma200_clusters",
@@ -173,7 +188,8 @@
     "umbral_aplicado": "Bonferroni-8, |t|>2.73; heterogeneidad = >=2 clusters signos opuestos",
     "veredicto": "NO_CUMPLE",
     "artefacto": "data/cache/diagnose_ma200_clusters_20260812_200228.txt",
-    "seccion_doc": "§16"
+    "seccion_doc": "§16",
+    "status": "COMPLETED"
   },
   {
     "id": "donchian",
@@ -184,7 +200,8 @@
     "umbral_aplicado": "|t|>2.0 (un solo factor)",
     "veredicto": "NO_CUMPLE",
     "artefacto": "data/cache/diagnose_donchian_intraday_20260812_201008.txt",
-    "seccion_doc": "§17"
+    "seccion_doc": "§17",
+    "status": "COMPLETED"
   },
   {
     "id": "ma200_beta_control",
@@ -195,7 +212,8 @@
     "umbral_aplicado": "Bonferroni-2, |t|>2.24",
     "veredicto": "CUMPLE",
     "artefacto": "data/cache/diagnose_ma200_beta_control_20260812_202125.txt",
-    "seccion_doc": "§18"
+    "seccion_doc": "§18",
+    "status": "COMPLETED"
   },
   {
     "id": "horizon_audit_5d_10d",
@@ -206,7 +224,8 @@
     "umbral_aplicado": "Bonferroni-6, |t|>2.64",
     "veredicto": "NO_CUMPLE",
     "artefacto": "data/cache/horizon_audit_20260813_173648.txt",
-    "seccion_doc": "§21"
+    "seccion_doc": "§21",
+    "status": "COMPLETED"
   },
   {
     "id": "horizon_largo_60d_125d",
@@ -217,7 +236,8 @@
     "umbral_aplicado": "Bonferroni-12, |t|>2.87",
     "veredicto": "NO_CUMPLE",
     "artefacto": "data/cache/horizon_largo_20260813_181002.txt",
-    "seccion_doc": "§21.1"
+    "seccion_doc": "§21.1",
+    "status": "COMPLETED"
   },
   {
     "id": "regime_basket_remeasure",
@@ -228,7 +248,8 @@
     "umbral_aplicado": "|t-NW|>2 por regimen",
     "veredicto": "NO_CUMPLE",
     "artefacto": "data/cache/regime_basket_20260811_213437.txt",
-    "seccion_doc": "§11 regla 2"
+    "seccion_doc": "§11 regla 2",
+    "status": "COMPLETED"
   },
   {
     "id": "regime_vs_vol",
@@ -239,7 +260,8 @@
     "umbral_aplicado": "n>=200 y |t-NW|>2; corregido post-hoc a Bonferroni-4",
     "veredicto": "NO_CUMPLE",
     "artefacto": "data/cache/diagnose_regime_vol_20260812_064914.txt",
-    "seccion_doc": "§12"
+    "seccion_doc": "§12",
+    "status": "COMPLETED"
   },
   {
     "id": "evt_tails_diag",
@@ -250,7 +272,8 @@
     "umbral_aplicado": "gate: >=15/50 xi>0 sig (t>1.64) Y >=30% excesos >=1.5%",
     "veredicto": "CUMPLE",
     "artefacto": "data/cache/evt_tails_20260813_155237.txt",
-    "seccion_doc": "§19"
+    "seccion_doc": "§19",
+    "status": "COMPLETED"
   },
   {
     "id": "gap_reversion_costos",
@@ -261,7 +284,8 @@
     "umbral_aplicado": "n_dias>=100 Y media neta>0 con t-NW>=2.0",
     "veredicto": "NO_CUMPLE",
     "artefacto": "data/cache/backtest_gap_costs_20260812_173951.txt",
-    "seccion_doc": "§13.1"
+    "seccion_doc": "§13.1",
+    "status": "COMPLETED"
   },
   {
     "id": "c6_costos",
@@ -272,7 +296,8 @@
     "umbral_aplicado": "n_dias>=100 Y media neta>0 con t-NW>=2.0",
     "veredicto": "NO_CUMPLE",
     "artefacto": "data/cache/backtest_c6_costs_20260813_135830.txt",
-    "seccion_doc": "§18.1"
+    "seccion_doc": "§18.1",
+    "status": "COMPLETED"
   },
   {
     "id": "c6_hedgeado",
@@ -283,7 +308,8 @@
     "umbral_aplicado": "n_dias>=100 Y media neta>0 con t-NW>=2.0",
     "veredicto": "NO_CUMPLE",
     "artefacto": "data/cache/backtest_c6_hedge_20260813_154313.txt",
-    "seccion_doc": "§18.2"
+    "seccion_doc": "§18.2",
+    "status": "COMPLETED"
   },
   {
     "id": "rama_w2_cierre",
@@ -294,7 +320,8 @@
     "umbral_aplicado": "veredicto conjunto del gate W2/W3 (§8) + §9",
     "veredicto": "NO_CUMPLE",
     "artefacto": "data/cache/sector_clusters_20260811_170235.txt",
-    "seccion_doc": "§9"
+    "seccion_doc": "§9",
+    "status": "COMPLETED"
   },
   {
     "id": "fase06_retest_sentimiento",
@@ -306,7 +333,8 @@
     "veredicto": "NO_CUMPLE",
     "artefacto": "data/cache/fase06_retest_20260812_175055.txt",
     "seccion_doc": "§0.6.1",
-    "re_test_de": "trial_08_sentimiento"
+    "re_test_de": "trial_08_sentimiento",
+    "status": "COMPLETED"
   },
   {
     "id": "fase06_retest_fundamentales",
@@ -318,7 +346,8 @@
     "veredicto": "NO_CUMPLE",
     "artefacto": "data/cache/fase06_retest_20260812_175055.txt",
     "seccion_doc": "§0.6.1",
-    "re_test_de": "trial_09_fundamentales"
+    "re_test_de": "trial_09_fundamentales",
+    "status": "COMPLETED"
   },
   {
     "id": "lead_lag_diag",
@@ -329,7 +358,8 @@
     "umbral_aplicado": "Bonferroni-50, |t|>3.48, >=2 lags consecutivos SIG(+)",
     "veredicto": "NO_CUMPLE",
     "artefacto": "data/cache/lead_lag_20260816_090220.txt",
-    "seccion_doc": "§22"
+    "seccion_doc": "§22",
+    "status": "COMPLETED"
   },
   {
     "id": "triple_barrier_retest",
@@ -340,7 +370,8 @@
     "umbral_aplicado": "|t|>2.77 (Bonferroni-9, signo +1)",
     "veredicto": "NO_CUMPLE",
     "artefacto": "data/cache/retest_triple_barrier_20260816_091649.txt",
-    "seccion_doc": "§23"
+    "seccion_doc": "§23",
+    "status": "COMPLETED"
   },
   {
     "id": "trial_16_m2_abstencion",
@@ -351,7 +382,8 @@
     "umbral_aplicado": 0.9889,
     "veredicto": "NO_CUMPLE",
     "artefacto": "data/cache/trial16_m2_abstencion_20260817_100548.txt",
-    "seccion_doc": "PLAN_MEJORA_MATEMATICA.md §24"
+    "seccion_doc": "PLAN_MEJORA_MATEMATICA.md §24",
+    "status": "COMPLETED"
   },
   {
     "id": "adx_walkforward",
@@ -362,7 +394,8 @@
     "umbral_aplicado": "|t|>2.77 Bonferroni-9, >=2/3 ventanas",
     "veredicto": "NO_CUMPLE",
     "artefacto": "data/cache/trial_adx_walkforward_20260817_103916.txt",
-    "seccion_doc": "§25"
+    "seccion_doc": "§25",
+    "status": "COMPLETED"
   },
   {
     "id": "trial_17_m2_abstencion",
@@ -373,7 +406,8 @@
     "umbral_aplicado": 0.99,
     "veredicto": "NO_CUMPLE",
     "artefacto": "data/cache/trial17_m2_abstencion_20260817_104452.txt",
-    "seccion_doc": "PLAN_MEJORA_MATEMATICA.md §24.1"
+    "seccion_doc": "PLAN_MEJORA_MATEMATICA.md §24.1",
+    "status": "COMPLETED"
   },
   {
     "id": "weekly_indicators_2026",
@@ -384,7 +418,8 @@
     "umbral_aplicado": 0.99375,
     "veredicto": "NO_CUMPLE",
     "artefacto": "data/cache/weekly_indicators_20260817_105918.txt",
-    "seccion_doc": "26"
+    "seccion_doc": "26",
+    "status": "COMPLETED"
   },
   {
     "id": "finbert_sentiment_eventstudy",
@@ -395,7 +430,8 @@
     "umbral_aplicado": 0.9941176470588236,
     "veredicto": "NO_CUMPLE",
     "artefacto": "data/cache/trial_finbert_eventstudy_20260817_163512.txt",
-    "seccion_doc": "PLAN_MEJORA_MATEMATICA §27"
+    "seccion_doc": "PLAN_MEJORA_MATEMATICA §27",
+    "status": "COMPLETED"
   },
   {
     "id": "xsec_relative_and_aaii_timing",
@@ -406,7 +442,8 @@
     "umbral_aplicado": 0.9944444444444445,
     "veredicto": "NO_CUMPLE",
     "artefacto": "data/cache/trial_xsec_relative_20260817_184355.txt",
-    "seccion_doc": "PLAN_MEJORA_MATEMATICA §28"
+    "seccion_doc": "PLAN_MEJORA_MATEMATICA §28",
+    "status": "COMPLETED"
   },
   {
     "id": "trial_18_c6_costo_medido",
@@ -417,7 +454,8 @@
     "umbral_aplicado": 0.990909,
     "veredicto": "NO_CUMPLE",
     "artefacto": "data/cache/backtest_c6_hedge_costo_medido_20260819_155509.txt",
-    "seccion_doc": "PLAN_MEJORA_MATEMATICA.md §34"
+    "seccion_doc": "PLAN_MEJORA_MATEMATICA.md §34",
+    "status": "COMPLETED"
   },
   {
     "id": "trial_macd_bollinger",
@@ -428,7 +466,8 @@
     "umbral_aplicado": "|t|>3.008 (Bonferroni-19 bilateral, familia signal_diagnosis n=19) en >=2/3 ventanas (MACD); interaccion |dIC|>=0.05 (Bollinger-ii)",
     "veredicto": "NO_CUMPLE",
     "artefacto": "backend/data/cache/trial_macd_bollinger_20260820_174735.txt",
-    "seccion_doc": "PLAN_MEJORA_MATEMATICA.md §36"
+    "seccion_doc": "PLAN_MEJORA_MATEMATICA.md §36",
+    "status": "COMPLETED"
   },
   {
     "id": "trial_ofi_proxy",
@@ -439,7 +478,8 @@
     "umbral_aplicado": "Bonferroni-40 bilateral |t|>3.023 (n_trials=20 familia)",
     "veredicto": "NO_CUMPLE",
     "artefacto": "backend/data/cache/trial_ofi_proxy_20260820_184638.txt",
-    "seccion_doc": "PLAN_MEJORA_MATEMATICA.md §37"
+    "seccion_doc": "PLAN_MEJORA_MATEMATICA.md §37",
+    "status": "COMPLETED"
   },
   {
     "id": "trial_cvd_proxy",
@@ -450,7 +490,8 @@
     "umbral_aplicado": "Bonferroni-42 bilateral |t|>3.038 (n_trials=21 familia)",
     "veredicto": "NO_CUMPLE",
     "artefacto": "backend/data/cache/trial_cvd_proxy_20260820_185959.txt",
-    "seccion_doc": "PLAN_MEJORA_MATEMATICA.md §38"
+    "seccion_doc": "PLAN_MEJORA_MATEMATICA.md §38",
+    "status": "COMPLETED"
   },
   {
     "id": "pbo_cscv_mom_rsi",
@@ -461,7 +502,8 @@
     "umbral_aplicado": "PBO<0.10 (Bailey et al.)",
     "veredicto": "NO_CUMPLE",
     "artefacto": "data/cache/pbo_cscv_mom_rsi_20260822_093300.txt",
-    "seccion_doc": "PRE_REGISTRO_PBO_CSCV_MOM_RSI.md §4"
+    "seccion_doc": "PRE_REGISTRO_PBO_CSCV_MOM_RSI.md §4",
+    "status": "COMPLETED"
   },
   {
     "id": "validacion_oos_fresca_mom_rsi",
@@ -472,7 +514,8 @@
     "umbral_aplicado": "Sharpe_OOS>0 Y DSR>=0.95 (Bailey&LdP2014, N=ledger signal_diagnosis)",
     "veredicto": "NO_CUMPLE",
     "artefacto": "data/cache/validacion_oos_fresca_mom_rsi_20260822_155520.txt",
-    "seccion_doc": "PRE_REGISTRO_VALIDACION_OOS_FRESCA_MOM_RSI.md §5"
+    "seccion_doc": "PRE_REGISTRO_VALIDACION_OOS_FRESCA_MOM_RSI.md §5",
+    "status": "COMPLETED"
   },
   {
     "id": "regime_gating_p",
@@ -483,7 +526,8 @@
     "umbral_aplicado": "current_threshold(signal_diagnosis)=0.9958333333333333 (n=24) / m=9 -> |t|>z(0.99976852)=3.5013 bilateral",
     "veredicto": "NO_CUMPLE",
     "artefacto": "backend/data/cache/regime_gating_p_20260822_162628.txt",
-    "seccion_doc": "PLAN_MEJORA_MATEMATICA.md §42"
+    "seccion_doc": "PLAN_MEJORA_MATEMATICA.md §42",
+    "status": "COMPLETED"
   },
   {
     "id": "trial_frog_in_the_pan",
@@ -494,7 +538,8 @@
     "umbral_aplicado": "Bonferroni-46 bilateral deltaIC>0 |t|>3.065 (n_trials=23 familia), >=2/3 ventanas",
     "veredicto": "NO_CUMPLE",
     "artefacto": "backend/data/cache/trial_frog_in_the_pan_20260822_175302.txt",
-    "seccion_doc": "PLAN_MEJORA_MATEMATICA.md §41"
+    "seccion_doc": "PLAN_MEJORA_MATEMATICA.md §41",
+    "status": "COMPLETED"
   },
   {
     "id": "trial_kama_hma_supertrend",
@@ -505,7 +550,8 @@
     "umbral_aplicado": "Bonferroni m=9 |t|>3.5226 sobre current_threshold 0.9961538461538462 (consumido=25)",
     "veredicto": "NO_CUMPLE",
     "artefacto": "data/cache/trial_kama_hma_supertrend_20260823_152846.txt",
-    "seccion_doc": "§44"
+    "seccion_doc": "§44",
+    "status": "COMPLETED"
   },
   {
     "id": "trial_evt_stops_v2",
@@ -516,7 +562,8 @@
     "umbral_aplicado": "DSR>=current_threshold(motor_signal)=0.9916666666666667 (n=12) en >=2/3 ventanas, piso >=30 trades",
     "veredicto": "NO_CUMPLE",
     "artefacto": "data/cache/trial18_evt_stops_v2_20260824_200927.txt",
-    "seccion_doc": "§45"
+    "seccion_doc": "§45",
+    "status": "COMPLETED"
   },
   {
     "id": "trial_a5_buffett_alpha",
@@ -527,6 +574,7 @@
     "umbral_aplicado": "DSR>=th(motor_signal)=0.99231 (n=13) Y Sharpe_OOS_neto>0 en OOS fresco 2024-02..",
     "veredicto": "NO_CUMPLE",
     "artefacto": "data/cache/trial20_a5_buffett_alpha_20260825_211648.txt",
-    "seccion_doc": "§47"
+    "seccion_doc": "§47",
+    "status": "COMPLETED"
   }
 ]

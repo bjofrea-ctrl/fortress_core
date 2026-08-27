@@ -53,6 +53,11 @@ from app.config import settings
 from app.core.indicators import calculate_all_indicators
 from app.core.signal_engine import SignalEngine
 
+# Track B (paso 4b): logging best-effort de senales/ordenes para futura
+# reconciliacion pipeline-backtest (paso 4c, en 2-4 semanas).
+# FUDE: este import NO activa ninguna comparacion ni alerta — solo registra.
+from scripts.pipeline_signal_log import log_decision, log_execution  # noqa: E402
+
 CACHE_DIR = os.path.join("data", "cache")
 STATE_PATH = os.path.join(CACHE_DIR, "pipeline_state.json")
 DECISION_PREFIX = os.path.join(CACHE_DIR, "pipeline_decision_")
@@ -479,6 +484,8 @@ def phase_decide(dry_run: bool, inject_symbols: Optional[List[str]] = None) -> i
             "validar el tubo (orden+registro); NO usar como historial de señal.")
     today = dt.date.today()
     mk = today.strftime("%Y%m")
+    # Track B (paso 4b): log best-effort de senales decididas (FUDE: no decide nada).
+    log_decision(signals, today.isoformat(), mk, echo)
     payload = {"phase": "decide", "decision_date": today.isoformat(),
                "month_key": mk, "frozen_echo": echo, "stats": stats, "signals": signals,
                "checkpoint_notes": notes, "dry_run": dry_run}
@@ -593,6 +600,8 @@ def phase_enter(dry_run: bool, only_symbols: Optional[List[str]]) -> int:
     results = execute_plans(plans, state, dry_run, "enter", today,
                             client_factory=(None if dry_run else (lambda: client)),
                             ledger=ledger)
+    # Track B (paso 4b): log best-effort de ejecucion en enter (FUDE: no ejecuta nada).
+    log_execution("enter", results)
     state.setdefault("months", {}).setdefault(mk, {})["enter"] = (
         "dry_run" if dry_run else ("done" if all(r.get("status") != "error" for r in results) else "partial"))
     if not dry_run:
@@ -643,6 +652,8 @@ def phase_exit(dry_run: bool, only_symbols: Optional[List[str]]) -> int:
     results = execute_plans(plans, state, dry_run, "exit", dt.date.today(),
                             client_factory=(None if dry_run else _make_client_factory()),
                             ledger=ledger)
+    # Track B (paso 4b): log best-effort de ejecucion en exit (FUDE: no ejecuta nada).
+    log_execution("exit", results)
     if not dry_run:
         save_state(state)
     lines += ["", f"Resultados ({'DRY-RUN' if dry_run else 'REAL'}):"]
