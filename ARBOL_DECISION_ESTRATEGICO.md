@@ -236,6 +236,17 @@ vez no pasa DSR OOS (0.61 < 0.95) ni PBO (0.47, overfitting sustancial).
   candidatos, qué ventana de anticipación, cómo evitar lookahead) antes de
   poder correrse.
 
+  **Riesgo no discutido hasta ahora: propagación de error de M3 (crítica
+  de OpenCode, 2026-08-26, remarcado por Claude Code)**: tanto A6.1 como
+  A6.2 asumen implícitamente que la clasificación de régimen de M3 es
+  correcta — pero si M3 se equivoca de cuadrante o de régimen de
+  volatilidad, ese error se propaga silenciosamente a cualquier decisión
+  de A6.1 (timing de transición sobre un régimen mal leído) o A6.2
+  (cadencia condicionada a un régimen de vol mal leído). Ninguna de las
+  dos ramas tiene hoy un mecanismo para detectar o acotar ese error de
+  propagación — queda como riesgo abierto, a resolver antes de que
+  cualquiera de las dos ramas llegue a pre-registro, no solo A6.1.
+
   **Mecanismo concreto de por qué es difícil, y por dónde empezar (Boris,
   2026-08-26, analogía de la fiebre del oro)**: la escasez real de oro
   ocurre ANTES de que el mercado agregado lo sepa — hay un rezago de
@@ -331,6 +342,19 @@ vez no pasa DSR OOS (0.61 < 0.95) ni PBO (0.47, overfitting sustancial).
   momentum+RSI mejora con cadencia condicionada por beta vs. el mensual
   uniforme actual, y recién si hay señal, confirmación cara con el mismo
   rigor DSR/PBO.
+
+  **Requisito BLOQUEANTE antes de pre-registrar A6.2 (crítica de OpenCode,
+  2026-08-26, confirmado por Claude Code)**: la analogía "más lluvia →
+  abrir más paraguas" se rompe en un punto real — rebalancear más seguido
+  NO es gratis como abrir un paraguas. Cada rebalanceo extra paga costo
+  real (`COST_PER_SIDE=0.0005` por lado + slippage). El diseño de arriba
+  nunca calculó si el beneficio esperado de mayor cadencia para beta alta
+  supera ese costo incremental. Cualquier pre-registro de A6.2 debe
+  incluir el costo neto de la cadencia propuesta vs. la mensual actual
+  como parte del criterio de éxito — no solo si el IC mejora, sino si
+  mejora lo suficiente para pagar los rebalanceos extra. Mismo trato que
+  los bloqueantes B1-B4 que pararon el pre-registro de A6.3 hasta
+  corregirse.
 
   **A6.3 — Posición en la cadena de valor / "vendedor de palas" (Boris,
   2026-08-26) [capa fundamental — selección]**: patrón histórico real
@@ -643,15 +667,22 @@ existían.
   1. El ciclo de la "pala" (A6.3, mediano plazo, medible por compresión
      de margen) podría ser señal TEMPRANA de fase Nokia (largo plazo) —
      conecta un mecanismo medible con uno antes solo especulativo.
-  2. El pop especulativo de días (cemento post-terremoto) y el ciclo de
-     sobreoferta de años (la pala) son el mismo patrón — precio
-     adelantándose a la economía real y corrigiendo — repetido en
-     escalas de tiempo distintas, no fenómenos separados.
-  3. La velocidad de reemplazo de paradigma parece acelerarse (vela→
-     incandescente: décadas; touchscreen: ~5 años) — si es cierto, el
-     "largo plazo" de hoy se comporta como el "mediano plazo" de hace 50
-     años, y el riesgo de survivorship bias del universo estático madura
-     más rápido de lo esperable ingenuamente.
+  2. **Corregido tras crítica de OpenCode (2026-08-26)**: el pop
+     especulativo de días (cemento post-terremoto) y el ciclo de
+     sobreoferta de años (la pala) NO son "el mismo patrón" — son dos
+     mecanismos distintos (sobrerreacción de precio vs. ciclo real de
+     oferta/demanda) que comparten un parecido estructural (precio
+     adelantándose a la economía real y corrigiendo), no una identidad
+     probada. Decir que eran el mismo patrón fue sobre-vender la
+     conexión — queda como analogía útil, no como equivalencia.
+  3. **Corregido tras crítica de OpenCode (2026-08-26)**: la velocidad de
+     reemplazo de paradigma NO está establecida como tendencia — vela→
+     incandescente (décadas) vs. touchscreen (~5 años) son DOS ejemplos,
+     insuficiente para inferir aceleración. Queda como hipótesis sin
+     base suficiente, no como patrón confirmado; si es cierto tendría la
+     implicancia de que el riesgo de survivorship bias del universo
+     estático madura más rápido de lo esperable, pero el "si es cierto"
+     no está respaldado hoy.
 - **Límite honesto**: nada de esto es estadísticamente testeable hoy con
   el rigor DSR/PBO del proyecto — son hipótesis de marco conceptual, no
   trials. Lo único accionable y verificado en código: el ejemplo del
