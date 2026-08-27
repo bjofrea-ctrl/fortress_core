@@ -635,6 +635,18 @@ retail, que genera la sensación de estar por perder una oportunidad
 (FOMO). Aplicado a ruptura de máximos: **romper un máximo con vol BAJA =
 oportunidad; romper un máximo con vol ALTA = alto riesgo.**
 
+**Generalización (Boris, 2026-08-27, aclaración sobre lo de arriba)**: el
+punto no es solo hacia DÓNDE va el valor (la dirección, el objetivo/nivel
+que se alcanza), sino CÓMO se mueve el valor en relación a ese objetivo —
+la calidad/forma del camino (sigiloso y de baja volatilidad vs. errático
+y de alta volatilidad) es señal en sí misma, independiente de si el
+precio termina llegando al mismo destino. Dos movimientos que alcanzan el
+mismo objetivo (el mismo máximo roto, el mismo nivel) no son equivalentes
+si uno lo hizo con vol baja y el otro con vol alta — el CÓMO condiciona
+si es oportunidad genuina o anzuelo. Esto generaliza la hipótesis más
+allá de "ruptura de máximo" puntual: aplica a cualquier objetivo/nivel de
+precio, no solo a máximos históricos.
+
 **Relación con lo ya existente**: distinto de A6.2 (que usa
 `realized_vol_regime`, ratio vol20d/vol100d de `indicators.py`, para
 decidir CADENCIA de rebalanceo). Esta es una TERCERA aplicación del mismo
