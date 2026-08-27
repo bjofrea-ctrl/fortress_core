@@ -208,9 +208,12 @@ vez no pasa DSR OOS (0.61 < 0.95) ni PBO (0.47, overfitting sustancial).
 
   **A6.1 — Factores líderes de transición de cuadrante (Boris, 2026-08-26,
   conectado a M3/§46) [capa técnica — timing]**: verificado que M3
-  (`regime_gate.py`) ya construye
+  (`regime_gate.py::WalkForwardRegimeGate`, que orquesta
+  `regime_classifier.py::GlobalRegimeClassifier`) ya construye
   features de crecimiento (`growth_SPY/EFA/QQQ`), inflación
-  (`inflation_GLD/DBC/TIP`) y tasas (`rates_TLT/AGG`) + VIX — la misma
+  (`inflation_GLD/DBC/TIP`) y tasas (`rates_TLT/AGG`) + VIX (la
+  construcción real vive en `_extract_features()`, `regime_classifier.py`,
+  no en `regime_gate.py`) — la misma
   estructura growth×inflation del marco de Dalio (4 cuadrantes), clasificada
   vía HMM. Hoy M3 es **reactivo**: clasifica el régimen ya ocurrido (retornos
   trailing) y solo prende/apaga el motor entero según el cuadrante actual
@@ -370,6 +373,23 @@ vez no pasa DSR OOS (0.61 < 0.95) ni PBO (0.47, overfitting sustancial).
   propio de cada "pala" y distinto del ciclo macro que mide M3 — no se
   puede asumir que la ventaja de A6.3 dura para siempre solo por haberla
   identificado una vez.
+
+  **Dos objeciones de auditoría independiente (Cline, 2026-08-26) que hay
+  que incorporar antes de correr el screening**:
+  - **El propio ciclo de la pala socava el screening**: si el screening
+    (§ pre-registro) sale CUMPLE, eso mide la FASE actual del ciclo de
+    oferta/demanda de la pala (probablemente todavía escasa, per el
+    párrafo de arriba), NO una estructura durable. Un CUMPLE hoy no
+    garantiza que siga siendo CUMPLE cuando la pala entre en su fase de
+    sobre-stock — la compresión de margen debería entrar como variable
+    formal en cualquier lectura del resultado, no solo como advertencia
+    aparte.
+  - **Hindsight bias del etiquetado no declarado en ESTA sección** (ya
+    estaba en el pre-registro, pero no aquí): los 6 símbolos "pala" se
+    etiquetaron en 2026 sabiendo quiénes ganaron el boom de IA — el mismo
+    sesgo que este documento ya sabe detectar en el universo estático
+    (destrucción creativa, más abajo) aplica también al propio etiquetado
+    de A6.3.
 
   **Secuencia del colapso: ¿cae primero el oro o la pala? (Boris,
   2026-08-26)**: hipótesis con dos mecanismos concretos, ninguno testeado
@@ -594,8 +614,9 @@ marginal. Mismo principio que la lluvia y la uva: no hay regla fija
 vs. cosecha).
 
 **No es solo filosofía — ya está implementado en el proyecto**: M3
-(`regime_gate.py`) no aplica una regla fija, lee el régimen ACTUAL
-(growth/inflation/rates/vix) y condiciona el comportamiento a eso. A6.2
+(`regime_gate.py`, features vía `regime_classifier.py`) no aplica una
+regla fija, lee el régimen ACTUAL (growth/inflation/rates/vix) y
+condiciona el comportamiento a eso. A6.2
 (cadencia por volatilidad) es la misma idea aplicada a la cadencia. Este
 principio de condicionalidad al contexto es probablemente el más
 fundamental de todo el bloque A6.x — explica POR QUÉ M3 y A6.2 tienen
