@@ -623,6 +623,44 @@ construidos o diagnosticados, con estado real conocido (no supuesto):
   académico (factor value, Fama-French) — punto de partida si se retoma,
   no el punto más débil que fue el sentimiento/AAII de Fase 0.6.
 
+### A6.4 — Rupturas de máximos condicionadas por régimen de volatilidad
+### (Boris, 2026-08-27)
+
+**Hipótesis**: en fase alcista, las oportunidades reales de mediano/largo
+plazo son MÁS PROBABLES con volatilidad BAJA — el mercado "no quiere dar
+señales" de esa suba, es un movimiento sigiloso antes de que la masa lo
+note. La volatilidad ALTA es más peligrosa y NO necesariamente indica
+oportunidad de mediano/largo plazo — funciona más como anzuelo para el
+retail, que genera la sensación de estar por perder una oportunidad
+(FOMO). Aplicado a ruptura de máximos: **romper un máximo con vol BAJA =
+oportunidad; romper un máximo con vol ALTA = alto riesgo.**
+
+**Relación con lo ya existente**: distinto de A6.2 (que usa
+`realized_vol_regime`, ratio vol20d/vol100d de `indicators.py`, para
+decidir CADENCIA de rebalanceo). Esta es una TERCERA aplicación del mismo
+indicador — como filtro/condicionante de la CALIDAD de una ruptura de
+máximo (breakout), no de la cadencia ni de la predicción de vol futura
+(esa ya se descartó, §A6.2 arriba: predijo débil solo W1). El punto de
+partida técnico (el indicador) ya existe y está diagnosticado
+(`RESUMEN_HURST_VOL_REGIME.md`) — falta diseñar el trial específico para
+esta pregunta puntual (definición de "ruptura de máximo", ventana de vol
+de referencia, ventanas W1/W2/W3 de evaluación).
+
+**Nota de rigor**: esto contradice una parte de la literatura clásica de
+TA que pide CONFIRMACIÓN por volumen/volatilidad en rupturas (breakout
+con volumen alto = válido) — la hipótesis de Boris es la lectura inversa.
+Se parece EN ESPÍRITU a la fase de acumulación silenciosa de Wyckoff
+(acumulación de baja volatilidad antes del markup, vs. clímax de volumen/
+volatilidad en tops especulativos), pero esa cita no fue verificada
+contra la fuente original en esta sesión — se anota como intuición
+emparentada, no como respaldo académico confirmado (regla #5
+ONBOARDING.md: no citar sin verificar).
+
+**Estado**: hipótesis de marco conceptual, NO trial — igual que el resto
+del bloque A6.x de esta sección. No se corre nada sin pre-registro +
+decisión explícita de Boris (regla #1 ONBOARDING.md). Falta definir el
+diseño exacto del test antes de poder pre-registrarlo.
+
 ### Principio raíz: el valor es condicional al contexto actual, no fijo
 ### (Boris, 2026-08-26, ejemplo RAM/agua en el desierto)
 
@@ -786,6 +824,12 @@ solo el orden de la cola)**:
    "próximo oro" (reference class forecasting, necesidad estable vs.
    producto transitorio) — estos últimos son de horizonte largo, el
    proyecto no opera ahí todavía.
+4. **A6.4 (nuevo, 2026-08-27)** — rupturas de máximos condicionadas por
+   régimen de volatilidad (baja vol = oportunidad, alta vol = riesgo/
+   anzuelo retail). Reutiliza `realized_vol_regime` ya construido, pero
+   todavía NO tiene diseño de trial — no se puede pre-registrar hasta
+   definir "ruptura de máximo" con precisión mecánica. Prioridad relativa
+   a decidir por Boris cuando el diseño esté listo.
 
 ## Integración con el ensamble de paper trading (Boris, 2026-08-25)
 
