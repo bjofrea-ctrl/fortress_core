@@ -7,18 +7,30 @@ Cubren el contrato del modulo:
 - un registro corrupto o incompleto falla ruidosamente, no en silencio
 """
 import json
+import subprocess
+from datetime import date, timedelta
 
 import pytest
 from app.core.trial_registry import (
     BASE_THRESHOLD,
+    RESERVATION_TTL_DAYS,
+    STATUS_COMPLETED,
+    STATUS_EXPIRED,
+    STATUS_RESERVED,
     TrialRegistryError,
     _validate_cross_entries,
     _validate_entry,
     all_trials,
+    complete_trial,
     consumed_budget,
     current_threshold,
+    effective_status,
+    expire_stale_reservations,
+    extract_umbral_aplicado,
     register_trial,
+    register_trial_reservation,
     trials_by_family,
+    validate_umbral_aplicado,
 )
 
 FAMILIA = "motor_signal"
@@ -67,7 +79,11 @@ def test_register_and_reload_preserves_data(tmp_path):
     register_trial(entry, path=str(path))
     reloaded = all_trials(path=str(path))
     assert len(reloaded) == 1
-    assert reloaded[0] == entry
+    # Track A: al releer, la entrada trae status explicito (registro post-hoc
+    # sin status declarado -> COMPLETED).
+    esperado = dict(entry)
+    esperado["status"] = "COMPLETED"
+    assert reloaded[0] == esperado
 
 
 def test_register_append_multiple(tmp_path):
@@ -302,3 +318,238 @@ def test_ruta8_backfill_trials_pasan_validacion():
             )
         ids_vistos.add(entry["id"])
     _validate_cross_entries(TRIALS)
+
+
+# ==================== Track A: estados de reserva ====================
+
+HOY = date.today()
+
+
+def _reservation(id_suffix="res", familia=FAMILIA, fecha=None, n=1, **overrides):
+    entry = {
+        "id": f"trial_{id_suffix}",
+        "fecha": fecha or HOY.isoformat(),
+        "familia": familia,
+        "hipotesis": "hipotesis aprobada por Boris, trial sin correr",
+        "n_trials_consumidos": n,
+        "umbral_aplicado": "DSR>=0.90 2/3 ventanas",
+        "seccion_doc": "§track-a-test",
+    }
+    entry.update(overrides)
+    return entry
+
+
+def test_reserva_cuenta_presupuesto(tmp_path):
+    """El slot se ocupa AL RESERVAR: consumed_budget sube con la reserva sola."""
+    path = str(tmp_path / "registry.json")
+    antes = consumed_budget(FAMILIA, path=path)
+    register_trial_reservation(_reservation("r1"), path=path)
+    assert consumed_budget(FAMILIA, path=path) == antes + 1
+    # y el umbral se endurece igual que con un trial ya corrido
+    assert current_threshold(FAMILIA, path=path) < BASE_THRESHOLD + 0.0999
+
+
+def test_completar_no_duplica_presupuesto(tmp_path):
+    """RESERVED -> COMPLETED deja el conteo en 1 (mismo slot, no dos)."""
+    path = str(tmp_path / "registry.json")
+    register_trial_reservation(_reservation("c1"), path=path)
+    assert consumed_budget(FAMILIA, path=path) == 1
+    complete_trial("trial_c1", veredicto="NO_CUMPLE",
+                   artefacto="data/cache/art.txt", path=path)
+    assert consumed_budget(FAMILIA, path=path) == 1
+    entrada = all_trials(path=path)[0]
+    assert entrada["status"] == STATUS_COMPLETED
+    assert entrada["veredicto"] == "NO_CUMPLE"
+
+
+def test_expirar_libera_presupuesto(tmp_path):
+    """Reserva vencida (> TTL dias) deja de contar; se materializa EXPIRED."""
+    path = str(tmp_path / "registry.json")
+    vieja = HOY - timedelta(days=RESERVATION_TTL_DAYS + 1)
+    register_trial_reservation(
+        _reservation("vieja", fecha=vieja.isoformat()), path=path)
+    register_trial_reservation(_reservation("fresca"), path=path)
+    # la vencida NO cuenta aunque el campo fisico diga RESERVED
+    entradas = {e["id"]: e for e in all_trials(path=path)}
+    assert effective_status(entradas["trial_vieja"]) == STATUS_EXPIRED
+    vivas = [e for e in entradas.values() if effective_status(e) == STATUS_RESERVED]
+    assert len(vivas) == 1  # solo la fresca
+    n_expiradas = expire_stale_reservations(path=path)
+    assert n_expiradas == 1
+    estados = {e["id"]: e["status"] for e in all_trials(path=path)}
+    assert estados["trial_vieja"] == STATUS_EXPIRED
+
+
+def test_no_se_puede_completar_lo_que_no_esta_reserved(tmp_path):
+    """complete_trial falla para inexistentes, completadas y expiradas."""
+    path = str(tmp_path / "registry.json")
+    register_trial(_entry("ya"), path=str(path))
+    with pytest.raises(TrialRegistryError, match="inexistente"):
+        complete_trial("trial_fantasma", "CUMPLE", "a.txt", path=path)
+    # doble completion
+    register_trial_reservation(_reservation("doble"), path=path)
+    complete_trial("trial_doble", "CUMPLE", "a.txt", path=path)
+    with pytest.raises(TrialRegistryError, match="ya fue completado"):
+        complete_trial("trial_doble", "NO_CUMPLE", "b.txt", path=path)
+    # expirada: libero su slot; completarla atras es doble uso del mismo intento
+    vieja_date = HOY - timedelta(days=RESERVATION_TTL_DAYS + 5)
+    register_trial_reservation(
+        _reservation("old", fecha=vieja_date.isoformat()), path=path)
+    expire_stale_reservations(path=path)
+    with pytest.raises(TrialRegistryError, match="expiro"):
+        complete_trial("trial_old", "CUMPLE", "c.txt", path=path)
+
+
+def test_veredicto_invalido_en_complete(tmp_path):
+    path = str(tmp_path / "registry.json")
+    register_trial_reservation(_reservation("v"), path=path)
+    with pytest.raises(TrialRegistryError, match="veredicto invalido"):
+        complete_trial("trial_v", "ZONA_GRIS", "a.txt", path=path)
+    with pytest.raises(TrialRegistryError, match="artefacto"):
+        complete_trial("trial_v", "CUMPLE", "   ", path=path)
+
+
+def test_reserva_no_lleva_veredicto_ni_artefacto():
+    with pytest.raises(TrialRegistryError, match="no puede llevar"):
+        _validate_entry(
+            _reservation("conV", status=STATUS_RESERVED, veredicto="CUMPLE"))
+    with pytest.raises(TrialRegistryError, match="no puede llevar"):
+        _validate_entry(
+            _reservation("conA", status=STATUS_RESERVED, artefacto="x.txt"))
+
+
+def test_reserva_requiere_slot_y_no_aplica_a_re_test():
+    # n=0 se rechaza (una reserva ES un slot): el chequeo general de "cero solo
+    # legal en re_test" o el especifico de reserva pueden disparar primero.
+    with pytest.raises(TrialRegistryError, match="solo es legal en familia|n>=1"):
+        _validate_entry(_reservation("cero", status=STATUS_RESERVED, n=0))
+    reserva_retest = {
+        "id": "trial_rt_res", "fecha": HOY.isoformat(), "familia": "re_test",
+        "re_test_de": "trial_x", "hipotesis": "h", "n_trials_consumidos": 1,
+        "umbral_aplicado": "u", "seccion_doc": "s", "status": STATUS_RESERVED,
+    }
+    with pytest.raises(TrialRegistryError, match="re_test"):
+        _validate_entry(reserva_retest)
+
+
+def test_register_trial_post_hoc_default_completed(tmp_path):
+    """register_trial sigue aceptando el formato viejo: default COMPLETED."""
+    path = str(tmp_path / "registry.json")
+    register_trial_reservation(_reservation("mix"), path=path)
+    register_trial(_entry("post"), path=str(path))  # formato legacy completo
+    statuses = {e["id"]: e["status"] for e in all_trials(path=path)}
+    assert statuses["trial_mix"] == STATUS_RESERVED
+    assert statuses["trial_post"] == STATUS_COMPLETED
+
+
+def test_current_threshold_con_reserva_y_expiracion(tmp_path):
+    """Umbral Bonferroni responde a reservas vivas y se libera con expiracion."""
+    path = str(tmp_path / "registry.json")
+    vigente = 1.0 - (1 - BASE_THRESHOLD) / 1
+    assert current_threshold(FAMILIA, path=path) == pytest.approx(vigente)
+    register_trial_reservation(_reservation("t1"), path=path)
+    con_un_slot = 1.0 - (1 - BASE_THRESHOLD) / 2  # consumo 1 -> n=2
+    assert current_threshold(FAMILIA, path=path) == pytest.approx(con_un_slot)
+    expire_stale_reservations(path=path, today=HOY + timedelta(days=99))
+    assert consumed_budget(FAMILIA, path=path) == 0
+    assert current_threshold(FAMILIA, path=path) == pytest.approx(vigente)
+
+
+# ==================== Track A: disciplina ejecutable minima ====================
+PREREGISTRO_MD = """
+## 4. Criterio de éxito / fracaso
+
+| Resultado | Veredicto |
+|---|---|
+| PALA > RESTO ... | CUMPLE |
+
+### 4.4 Binario
+- umbral_aplicado: `DSR_PALA>0.50 Y Sharpe_PALA>Sharpe_RESTO en >=2/3 ventanas`
+"""
+
+
+def test_extract_umbral_linea_clave_valor():
+    assert extract_umbral_aplicado(PREREGISTRO_MD).startswith("DSR_PALA>0.50")
+
+
+def test_extract_umbral_fila_tabla_markdown():
+    md = "| umbral aplicado (registro) | `\"DSR>=0.90 en 2 de 3 ventanas\"` |"
+    assert extract_umbral_aplicado(md) == "DSR>=0.90 en 2 de 3 ventanas"
+
+
+def test_validate_umbral_coincidente_pasa_y_mismatch_falla_ruidoso():
+    devuelto = validate_umbral_aplicado(
+        PREREGISTRO_MD, "dsr_pala>0.50 y sharpe_pala>sharpe_resto EN >=2/3 ventanas"
+    )
+    assert devuelto.startswith("DSR_PALA")  # normalizacion case-insensitive pasa
+    with pytest.raises(TrialRegistryError, match="DISCIPLINA EJECUTABLE VIOLADA"):
+        validate_umbral_aplicado(PREREGISTRO_MD, "DSR>=0.95 despues lo afloje")
+
+
+def test_pre_registro_sin_umbral_no_se_puede_validar():
+    with pytest.raises(TrialRegistryError, match="extrai"):
+        validate_umbral_aplicado("# documento sin criterio\nnada aqui", "x")
+
+
+def test_reserva_con_preregistro_mismatch_no_registra(tmp_path):
+    path = str(tmp_path / "registry.json")
+    reserva = _reservation("disc", umbral_aplicado="DSR>=0.50 distinto al doc")
+    with pytest.raises(TrialRegistryError, match="DISCIPLINA EJECUTABLE VIOLADA"):
+        register_trial_reservation(reserva, path=path, preregistro=PREREGISTRO_MD)
+    assert all_trials(path=path) == []  # nada quedo escrito
+
+
+# ==================== Track A: reconciliacion git contra origin/main ====================
+
+
+def _git_local(args, cwd):
+    r = subprocess.run(["git"] + args, cwd=str(cwd), capture_output=True, text=True)
+    if r.returncode != 0:
+        raise RuntimeError(r.stderr.strip() or "git error: " + " ".join(args))
+    return r
+
+
+def test_reconciliacion_git_detecta_desync_origin_main(tmp_path):
+    """El guard de reconciliacion compara contra origin/main (NO @{u}) y falla
+    ruidoso cuando origin/main avanzo el ledger sin que el local lo tenga.
+
+    Regresion del bug que el revisor detecto: usar @{u} (upstream del branch)
+    fallaba en silencio en worktrees sin tracking, dejando el drift 25-vs-26
+    sin detectar. Este test levanta un mini-repo con remote origin y un
+    segundo clon que avanza main — el primer repo debe bloquear registrar.
+    """
+    try:
+        _git_local(["--version"], tmp_path)
+    except Exception:
+        pytest.skip("git no disponible")
+    bare = tmp_path / "origin.git"
+    repo = tmp_path / "repo"
+    (repo / "backend" / "data").mkdir(parents=True)
+    _git_local(["init", "--bare", "-q", str(bare)], tmp_path)
+    _git_local(["init", "-q"], repo)
+    _git_local(["config", "user.email", "t@t"], repo)
+    _git_local(["config", "user.name", "t"], repo)
+    _git_local(["checkout", "-q", "-b", "main"], repo)
+    ledger = repo / "backend/data/trial_registry.json"
+    ledger.write_text(json.dumps([_entry("seed")]), encoding="utf-8")
+    _git_local(["add", "-A"], repo)
+    _git_local(["commit", "-q", "-m", "seed"], repo)
+    _git_local(["remote", "add", "origin", str(bare)], repo)
+    _git_local(["push", "-q", "origin", "main"], repo)
+
+    # otro agente avanza origin/main con una entrada nueva (el drift 25-vs-26)
+    other = tmp_path / "other"
+    _git_local(["clone", "-q", str(bare), str(other)], tmp_path)
+    other_file = other / "backend/data/trial_registry.json"
+    _git_local(["config", "user.email", "t@t"], other)
+    _git_local(["config", "user.name", "t"], other)
+    otros = json.loads(other_file.read_text(encoding="utf-8"))
+    otros.append(_entry("b", veredicto="CUMPLE"))
+    other_file.write_text(json.dumps(otros), encoding="utf-8")
+    _git_local(["add", "-A"], other)
+    _git_local(["commit", "-q", "-m", "otro"], other)
+    _git_local(["push", "-q", "origin", "main"], other)
+
+    # el repo local no trae esa entrada; registrar debe fallar ruidoso
+    with pytest.raises(TrialRegistryError, match="LEDGER DESINCRONIZADO"):
+        register_trial(_entry("z"), path=str(ledger))
