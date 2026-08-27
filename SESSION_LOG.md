@@ -1,5 +1,43 @@
 # Fortress Core — Memoria de Sesiones (Última sesión resumida)
 
+## 2026-08-27 — Fix data_ingestion gap >7 (bug infra)
+
+**Bug**: `backend/app/core/data_ingestion.py::download_data()` usaba `if (gap).days > 7` en backfill (~línea 31) y refresh (~línea 42) — el updater diario (launchd nightly `scripts/data_updater.sh` 22:00) **nunca refrescaba hasta superar una semana**. Cache quedaba 0-8 días stale, invisible porque `rc=0` y los dos estados "no había nada que bajar (fin de semana)" vs "no intenté" eran indistinguibles. Confirmado: `AAPL.parquet` clavado en 2026-08-21 en 3 corridas nocturnas 24,25,26/08 con `rc=0` sin errores. Reportado por Boris como bug real de infra.
+
+**Causa**: umbral `>7` silencia al updater diario; `data_updater.log` no distinguía intento vacío de no-intento; sin señal, 3 noches `rc=0` pasaron como OK.
+
+**Fix sólido (no parche mínimo) en `backend/app/core/data_ingestion.py` (151 líneas ahora)**:
+- Umbrales corregidos **AMBOS** de `>7` a `>=1` con justificación en comentario (líneas 43-51, 87-89): updater diario debe intentar cuando `gap >=1` día calendario. `>0` y `>=1` equivalentes para entero `.days`, pero `>=1` lee intención "al menos un día completo atrás" y alinea con cron nightly. Gap=1 en fin de semana donde yfinance vacío es OK — se loguea intento vacío en vez de suprimir.
+- Señal explícita en log/return para cada rama: `print(f"[data_ingestion] ...")` visible en `scripts/data_updater.log` (capturado vía `>> "$LOG" 2>&1`):
+  * `gap >=1` → `gap Xd (cache ... -> end ...), attempting download ...`
+  * `yfinance empty` → `attempted but yfinance returned empty (weekend/holiday or no data), cache remains ...` (distinto de no-intento)
+  * `dedup empty` → `attempted but no new rows after dedup (all overlapping)`
+  * éxito → `refreshed N rows (new_min -> new_max, cache before -> after)`
+  * `gap <1` → `no refresh/backfill needed, gap 0d (cache up-to-date ...)` — distinto
+  * `cache miss / empty` → `cache miss / cache empty, full download ...`
+- Manejo edge `df.empty` como miss (evita IndexError).
+- API intacta: `download_data(ticker,start,end)->DataFrame`.
+
+**Test que habría atrapado**: `backend/tests/test_data_ingestion.py` NUEVO, **11 tests**, usa `tmp_path` + `monkeypatch CACHE_DIR` + mock `yf.download`, sin red:
+- `test_refresh_gap_2_triggers_download_would_have_been_skipped_with_old_gt7` (gap 2 debe llamar, con >7 se saltaba)
+- `test_refresh_gap_1_triggers`, `test_refresh_gap_0_no_call` con `capsys` verifica `no refresh needed`
+- `test_refresh_attempted_but_empty_logs_distinct_signal`, `test_refresh_attempted_but_no_new_rows_after_dedup`
+- backfill simétricos 3 tests
+- `test_cache_miss_full_download`, `test_empty_cache_treated_as_miss`
+- Suite: **467 tests collected**. Full `pytest -q` timeout >600s (heavy tests `test_backtest_engine` 216s + `test_config_registry` 295s), pero batched 5 lotes = **467 passed 0 failed** (Batch1-fast 88, 1-BE 6, 1-CR 10, Batch2 112 incl. nuevos 11, Batch3 98, Batch4 73, Batch5 80). Sin regresión; tests que monkeypatchean `download_data` siguen pasando.
+
+**Verificación viva real 27/08**:
+- Antes: `AAPL.parquet` 2026-08-21 2926 filas
+- `.venv/bin/python -c "from app.core.data_ingestion import download_data; download_data('AAPL')"` → `[data_ingestion] backfill 1827d ... refreshed 1258 rows (2010-01-04->2014-12-31)` + `refresh gap 6d ... refreshed 3 rows (2026-08-24->2026-08-26, cache 2026-08-21->2026-08-26)` → 4187 filas, last 2026-08-26 (último hábil). Gap 6 antes nunca habría disparado.
+- Segunda corrida gap 1 → `attempted but no new rows after dedup` / `attempted but yfinance returned empty` — señal explícita distinta de `no refresh needed` (gap 0).
+
+**Estado**: diff pendiente, **NO commiteado** per gate — `git status` debe mostrar `M backend/app/core/data_ingestion.py` + `?? backend/tests/test_data_ingestion.py` para revisión. No se tocó `data_updater.sh`.
+
+**Archivos**:
+- `backend/app/core/data_ingestion.py` modificado (diff pendiente, NO commitear)
+- `backend/tests/test_data_ingestion.py` nuevo (untracked, 11 tests)
+- `scripts/data_updater.log` / `scripts/pipeline_diario.log` como logs canónicos (sin cambios de código)
+
 ## 2026-08-26 — Garantías anti-evasión Bonferroni familia re_test (H3.1, Cline — espera merge)
 
 **Asignación**: Boris aprobó implementar §4.1+4.2+4.3 de `ANALISIS_RE_TEST_BONFERRONI.md` (segunda mirada independiente vs Kilo). Infraestructura del ledger, trabajo directo SIN pre-registro.
