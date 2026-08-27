@@ -658,6 +658,18 @@ partida técnico (el indicador) ya existe y está diagnosticado
 esta pregunta puntual (definición de "ruptura de máximo", ventana de vol
 de referencia, ventanas W1/W2/W3 de evaluación).
 
+**Tercer componente (Boris, 2026-08-27)**: patrón específico de entrada —
+después de una volatilidad MUY alta (un shock), si esa volatilidad
+empieza a REDUCIRSE mientras el precio SUBE, eso es una oportunidad de
+compra fuerte. No es el shock en sí (eso es la fase de alto riesgo de
+arriba) ni el estado de vol baja sostenida (eso es la fase "sigilosa" de
+arriba) — es la TRANSICIÓN entre ambos: vol contrayéndose + precio ya
+confirmando dirección alcista. Mecánicamente medible con lo mismo que ya
+existe: `realized_vol_regime` (vol20d/vol100d) cayendo mientras el precio
+hace nuevos máximos o sube sostenido — misma familia de indicador que el
+resto de A6.4, un tercer patrón concreto a especificar en el mismo futuro
+diseño de trial.
+
 **Nota de rigor**: esto contradice una parte de la literatura clásica de
 TA que pide CONFIRMACIÓN por volumen/volatilidad en rupturas (breakout
 con volumen alto = válido) — la hipótesis de Boris es la lectura inversa.
