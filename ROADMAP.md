@@ -10,56 +10,54 @@ Code, Cline, OpenCode), leer este documento primero. Al cerrar, actualizarlo ant
 — marcar lo que se cerró, agregar lo que apareció nuevo. Ningún ítem se da por cerrado sin
 marcarlo acá, aunque se haya resuelto "de pasada" en otra conversación.
 
-Última actualización: 2026-08-27 (noche).
+Última actualización: 2026-08-28 (mañana).
 
 ## PENDIENTE AHORA — chequear primero, antes de leer el resto
 
 Coordinación multi-agente vía Orca (Claude Code como coordinador; Kilo Code, OpenCode,
 Cline como implementadores). Verificar contra `git log --oneline -10`,
-`ps aux | grep screening_palas` y las ramas de cada worktree antes de asumir estado —
-esta sección se reescribió completa el 2026-08-27 noche, lo de antes ya cerró.
+`ps aux | grep screening_palas` y las ramas de cada worktree antes de asumir estado.
 
-1. **A6.3 — screening PALA/RESTO/POOLED** (Kilo Code, worktree `test-kilo-orca`,
-   PID a verificar con `ps aux | grep screening_palas`) — 🟡 EN CURSO, corriendo
-   TODA LA NOCHE sin supervisión (aprobado por Boris 2026-08-27). Pre-registro
-   `PRE_REGISTRO_SCREENING_PALAS.md` (ya en `main`). Al arrancar la sesión:
-   verificar si terminó (`backend/data/cache/screening_palas_*.txt` en el
-   worktree de Kilo) y aplicar el veredicto MECÁNICO de la §4 del pre-registro
-   — no interpretar. **NO cerrar la terminal de Kilo mientras el proceso siga
-   vivo** — el backtest es hijo directo del proceso de Kilo, se muere con él.
+1. **A6.3 — screening PALA/RESTO/POOLED** (worktree `test-kilo-orca`, PID
+   verificar con `ps aux | grep screening_palas`) — 🟡 EN CURSO, RELANZADO
+   28/08 ~07:17 AM **como proceso detached (PPID 1, independiente de
+   cualquier CLI de agente)**, con checkpoint por ventana
+   (`screening_palas_checkpoint.json`) — si se corta, retoma donde quedó, no
+   pierde todo. La corrida de la noche del 27/08 murió sin completar
+   (proceso hijo de la sesión de Kilo, se cayó junto con ella — causa real:
+   el disco se llenó, ver ítem 8) tras completar 6-7/9 ventanas sin
+   checkpoint, se perdió ese cómputo. Pre-registro
+   `PRE_REGISTRO_SCREENING_PALAS.md` (en `main`). Al terminar: aplicar el
+   veredicto MECÁNICO de la §4 del pre-registro, no interpretar. **Ya NO
+   depende de ninguna terminal de agente — se puede cerrar Kilo sin miedo.**
 2. **Motor de fundamentales automatizado** (Cline, rama
-   `bjofrea-ctrl/fundamentales-automatizado`, NO mergeada a `main`) — 🟡 EN
-   CURSO. Plan completo en `PLAN_MOTOR_FUNDAMENTALES_AUTOMATIZADO.md`.
-   - Fase 1 (ingesta FMP+Finnhub) — 🟢 CERRADA, commit `fedd600` en su rama.
-   - Fase 2 (Piotroski/Altman/Beneish/EV-EBIT/Fair Value) — 🟢 CERRADA, commit
-     `fcaf5f1`, validada contra AAPL FY22 real.
-   - Fase 3 (3 tribunales, `fundamentals_screen.py`) — 🔴 **BLOQUEADA, NO
-     COMMITEAR AÚN**: el test de paridad obligatorio (§3 del plan) contra el
-     motor canónico real sobre las 1000 empresas del fixture Excel dio
-     resultados DISTINTOS (Cline: 9 Deep Dive/31 Watchlist/236 Neutral/724
-     Descartada vs. motor real: 13/23/207/557) — Cline lo llamó "esperado y
-     explicable" sin causa raíz concreta, se le pidió NO cerrar así. Al
-     retomar: pedir la causa raíz exacta (comparar 2-3 empresas campo por
-     campo) antes de aceptar la Fase 3.
-   - Necesita `FMP_API_KEY`/`FINNHUB_API_KEY` reales para `Configurar-Claves-
-     Fundamentales.command` y correr `scripts/verify_finnhub_mapping.py`
-     (el FinnhubClient viejo del 7/08 nunca se validó contra key real).
+   `bjofrea-ctrl/fundamentales-automatizado`, NO mergeada a `main`) — 🟢
+   Fases 1-3 CERRADAS y verificadas independientemente (63 tests, paridad
+   bit-a-bit 1000/1000 con el motor real). Plan en
+   `PLAN_MOTOR_FUNDAMENTALES_AUTOMATIZADO.md`. Pendiente: Fase 4
+   (integración — endpoint + cron + pestaña dashboard vía iframe), a
+   coordinar con Boris antes de arrancar. Sigue necesitando
+   `FMP_API_KEY`/`FINNHUB_API_KEY` reales para `verify_finnhub_mapping.py`.
 3. **Bug data_ingestion.py umbral >7 días** — 🟢 CERRADO (OpenCode, commit
-   `b4a6797`): umbral incremental corregido a `>=1`, 11 tests nuevos, verificado
-   en vivo. Ver detalle en la tabla maestra.
+   `b4a6797`).
 4. **Launchd pipeline diario (com.fortresscore.pipeline)** — 🟢 verificado
-   27/08 (orden invertido vs. plan, documentado, no bloqueante). Ver fila en
-   tabla maestra.
-5. **Cron nuevo: `com.fortresscore.bovedabackup`** (diario 23:30) — 🟢
-   INSTALADO 27/08: copia `~/Desktop/BOVEDA-CLAVES-*.md.enc` a
-   `/Volumes/EMPRESA` sin descifrar nunca nada.
-6. **Limpieza de procesos huérfanos** (27/08 noche): se encontraron y mataron
-   2 procesos `opencode` huérfanos del worktree `test-opencode-orca` que
-   llevaban **5 días** (desde 22/08) consumiendo ~92% CPU cada uno sin hacer
-   nada — no relacionado con el trabajo de hoy, probablemente de una sesión
-   vieja cuya terminal se cerró sin matar el proceso. Revisar periódicamente
-   con `ps aux | sort -rk3 | head` si la Mac se siente lenta.
-7. **Dashboard — pestaña AAI + inversiones sintéticas** — 🔴 SIN EMPEZAR
+   27/08 (orden invertido vs. plan, documentado, no bloqueante).
+5. **Cron: `com.fortresscore.bovedabackup`** (diario 23:30) — 🟢 INSTALADO
+   27/08.
+6. **Limpieza de procesos huérfanos** (27/08 noche): 2 procesos `opencode`
+   huérfanos de 5 días (~92% CPU c/u) encontrados y matados.
+7. **DISCO LLENO — resuelto 28/08 AM, causa real encontrada**: la Mac quedó
+   con 53MB libres de 234GB (100% de capacidad) — culpable:
+   `~/.cline/data/db/hub-events-hub-production.db`, **95GB en un log
+   interno de telemetría de Cline que nunca se poda** (bug de Cline, no del
+   proyecto). Borrado + matado el proceso "hub" (PID 98427, separado de
+   cualquier terminal de trabajo) que lo tenía abierto → **97GB libres
+   ahora**. Esto explica el crash de Kilo de la noche anterior (no fue el
+   proveedor del modelo, fue ENOSPC). Candidatos de limpieza NO urgentes
+   que quedaron sin tocar: `~/.colima` (23GB, VM de Docker aparentemente sin
+   uso) y `~/.cache` (17GB, cache genérico recreable) — revisar si `.cline`
+   vuelve a crecer así con el tiempo, puede repetirse.
+8. **Dashboard — pestaña AAI + inversiones sintéticas** — 🔴 SIN EMPEZAR
    todavía en código (Fase 4 del plan de fundamentales cubre esto: iframe del
    dashboard ya generado, no rediseñar). Empezar cuando cierre Fase 3.
 
