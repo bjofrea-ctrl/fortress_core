@@ -201,6 +201,13 @@ en `PLAN_MEJORA_MATEMATICA.md`. No son sugerencias de estilo.
   no bloqueante). `com.fortresscore.bovedabackup.plist` está INSTALADO (2026-08-27, diario
   23:30): copia `~/Desktop/BOVEDA-CLAVES-*.md.enc` a `/Volumes/EMPRESA` sin descifrar
   nunca nada — mismo principio que `backup_db()`. Log `scripts/boveda_backup.log`.
+  `com.fortresscore.diskhealth.plist` está INSTALADO (2026-08-28, cada 4h): avisa en
+  `scripts/disk_health.log` si el disco libre baja de 15GB o si `~/.cline`/`.kilo`/
+  `.opencode`/`.claude` supera 5GB — nunca borra nada solo. Nació del incidente real
+  del 27-28/08: `~/.cline/data/db/hub-events-hub-production.db` (log interno de
+  Cline nunca podado) creció a 95GB y dejó la Mac en 53MB libres, tumbando una
+  corrida de Kilo a mitad de noche. Es un bug de Cline, no de este proyecto — puede
+  repetirse, este chequeo solo avisa temprano.
 - El universo base de símbolos es consistente entre scripts: `SPY, QQQ, AAPL, MSFT, GOOGL,
   AMZN, NVDA` + `NEW_UNIVERSE` (definido en `backend/scripts/fetch_universe_data.py`).
 
