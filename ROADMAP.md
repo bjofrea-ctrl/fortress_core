@@ -10,44 +10,58 @@ Code, Cline, OpenCode), leer este documento primero. Al cerrar, actualizarlo ant
 — marcar lo que se cerró, agregar lo que apareció nuevo. Ningún ítem se da por cerrado sin
 marcarlo acá, aunque se haya resuelto "de pasada" en otra conversación.
 
-Última actualización: 2026-08-27.
+Última actualización: 2026-08-27 (noche).
 
 ## PENDIENTE AHORA — chequear primero, antes de leer el resto
 
 Coordinación multi-agente vía Orca (Claude Code como coordinador; Kilo Code, OpenCode,
-Cline como implementadores), 2026-08-23/24. Verificar contra `git log --oneline -10` y
-`backend/data/cache/` antes de asumir estado:
+Cline como implementadores). Verificar contra `git log --oneline -10`,
+`ps aux | grep screening_palas` y las ramas de cada worktree antes de asumir estado —
+esta sección se reescribió completa el 2026-08-27 noche, lo de antes ya cerró.
 
-1. **Tarea M** (KAMA/HMA/Supertrend, §44) — 🟢 CERRADA (Kilo Code, 2026-08-23,
-   commit `1721a1e`): NO_CUMPLE 0/9. Ver fila propia en la tabla maestra.
-2. **PBO/CSCV de fidelidad completa** (§43) — 🟡 EN CURSO (OpenCode, worktree
-   `orca/workspaces/fortress_core/test-opencode-orca`). Pre-registro completo ya
-   escrito en `PLAN_MEJORA_MATEMATICA.md §43` (9 configs ejecutables reales vía
-   `backend_engine.run()`, no vecinos de parámetros — reemplaza el proxy de §40).
-   Corrida completa lanzada bajo mandato explícito de autonomía de Boris (Claude
-   Code coordinador estuvo temporalmente sin crédito) — el paso formal `--timing`/
-   forecast de §43.6 no se completó antes de lanzar, documentado como tal. Al
-   cerrar: verificar los 5 checks de fidelidad de §43.5 y aplicar el criterio de
-   §43.4 mecánicamente antes de aceptar el veredicto.
-3. **Auditoría técnica sincronizada** (Cline, 2026-08-23, commit `5edfe6e`) — 🟢
-   CERRADA, `AUDITORIA_TECNICA.md` puesto al día contra el código real.
-4. **§45 Trial #18 EVT-stops v2** (Kilo Code, 2026-08-24) — 🟢 CERRADO con
-   auto-cierre autorizado: NO_CUMPLE 0/3 con F7 de activación al 100% (ver fila
-   propia en la tabla maestra). Ledger motor_signal 11→12, próximo umbral
-   0.99231. Incluye hallazgo de código sizing-vs-trigger pendiente de decisión
-   de producto (ver §45.1).
-5. **Brecha 5 auditoría externa — cierre superficie API** (Cline, 2026-08-24) — 🟢
-   CERRADA POR VERIFICACIÓN: la escritura ya estaba 2/2 con auth (cierre P0
-   2026-08-12); SECRET_KEY validator vigente. Aportación real: test de invariante
-   `test_api_write_auth.py` (3 tests). Ver fila en la tabla maestra y §6 de
-   AUDITORIA_TECNICA.md.
-6. **Dashboard — visual de inversiones sintéticas** (pedido por Boris, 2026-08-26)
-   — 🔴 SIN EMPEZAR. Objetivo: acceso visual en el dashboard a cómo evolucionan
-   las posiciones de paper trading (Frente 2, `signal_ledger`/`monthly_report`)
-   — abiertas, cerradas, pnl_r acumulado. Empezar cuando cierren los frentes en
-   curso ahora mismo (Checkpoint Semana 1, H3.1/A3, integración OpenRouter de la
-   tríada) — no antes, así no compite por foco con lo que ya está en vuelo.
-7. **Pipeline diario launchd (com.fortresscore.pipeline) — Frente 2** — 🟢 INSTALADO 26/08 16:42 · VERIFICADO 27/08 11:34 — ORDEN INVERTIDO vs plan. Instalado 26/08 16:42 (auto-backup 52c20a4, `scripts/com.fortresscore.pipeline.plist` mtime 16:35:57 → instalado 16:42:25 diff idéntico) ANTES de checkpoint Semana 1 verificado 27/08 (ciclo MSFT 52 shares fill 497.69→497.848 pnl_r −0.00168 + idempotencia/health; previo 26/08 AAPL solo mecanismo). Quiebra `PLAN_MAESTRO_FASE_PRODUCCION.md` que exige checkpoint antes de instalar cron — S2 `.pending-merge.md` aún figura como pendiente. Kickstart `launchctl kickstart -k gui/501/com.fortresscore.pipeline` 27/08 11:33:57 → runs 0→1 LastExit 0, Fase health (fuera de ventanas 09:35/15:40/22:10), artefacto `pipeline_run_health_20260827_113404` (105 B), `pipeline_diario.log` 2541→3300 B rc=0, `pipeline_launchd.log` 0 B BY DESIGN (todo redirige a `pipeline_diario.log` vía `>> "$LOG" 2>&1`, mismo patrón que `data_updater`; mtime 2026-08-26 22:10:04). Cache 6d at limit (último 21/08). Verificado end-to-end; no bloquea Semana 2 pero rastro corrige orden. Log canónico: `scripts/pipeline_diario.log` (no `pipeline_launchd.log`).
+1. **A6.3 — screening PALA/RESTO/POOLED** (Kilo Code, worktree `test-kilo-orca`,
+   PID a verificar con `ps aux | grep screening_palas`) — 🟡 EN CURSO, corriendo
+   TODA LA NOCHE sin supervisión (aprobado por Boris 2026-08-27). Pre-registro
+   `PRE_REGISTRO_SCREENING_PALAS.md` (ya en `main`). Al arrancar la sesión:
+   verificar si terminó (`backend/data/cache/screening_palas_*.txt` en el
+   worktree de Kilo) y aplicar el veredicto MECÁNICO de la §4 del pre-registro
+   — no interpretar. **NO cerrar la terminal de Kilo mientras el proceso siga
+   vivo** — el backtest es hijo directo del proceso de Kilo, se muere con él.
+2. **Motor de fundamentales automatizado** (Cline, rama
+   `bjofrea-ctrl/fundamentales-automatizado`, NO mergeada a `main`) — 🟡 EN
+   CURSO. Plan completo en `PLAN_MOTOR_FUNDAMENTALES_AUTOMATIZADO.md`.
+   - Fase 1 (ingesta FMP+Finnhub) — 🟢 CERRADA, commit `fedd600` en su rama.
+   - Fase 2 (Piotroski/Altman/Beneish/EV-EBIT/Fair Value) — 🟢 CERRADA, commit
+     `fcaf5f1`, validada contra AAPL FY22 real.
+   - Fase 3 (3 tribunales, `fundamentals_screen.py`) — 🔴 **BLOQUEADA, NO
+     COMMITEAR AÚN**: el test de paridad obligatorio (§3 del plan) contra el
+     motor canónico real sobre las 1000 empresas del fixture Excel dio
+     resultados DISTINTOS (Cline: 9 Deep Dive/31 Watchlist/236 Neutral/724
+     Descartada vs. motor real: 13/23/207/557) — Cline lo llamó "esperado y
+     explicable" sin causa raíz concreta, se le pidió NO cerrar así. Al
+     retomar: pedir la causa raíz exacta (comparar 2-3 empresas campo por
+     campo) antes de aceptar la Fase 3.
+   - Necesita `FMP_API_KEY`/`FINNHUB_API_KEY` reales para `Configurar-Claves-
+     Fundamentales.command` y correr `scripts/verify_finnhub_mapping.py`
+     (el FinnhubClient viejo del 7/08 nunca se validó contra key real).
+3. **Bug data_ingestion.py umbral >7 días** — 🟢 CERRADO (OpenCode, commit
+   `b4a6797`): umbral incremental corregido a `>=1`, 11 tests nuevos, verificado
+   en vivo. Ver detalle en la tabla maestra.
+4. **Launchd pipeline diario (com.fortresscore.pipeline)** — 🟢 verificado
+   27/08 (orden invertido vs. plan, documentado, no bloqueante). Ver fila en
+   tabla maestra.
+5. **Cron nuevo: `com.fortresscore.bovedabackup`** (diario 23:30) — 🟢
+   INSTALADO 27/08: copia `~/Desktop/BOVEDA-CLAVES-*.md.enc` a
+   `/Volumes/EMPRESA` sin descifrar nunca nada.
+6. **Limpieza de procesos huérfanos** (27/08 noche): se encontraron y mataron
+   2 procesos `opencode` huérfanos del worktree `test-opencode-orca` que
+   llevaban **5 días** (desde 22/08) consumiendo ~92% CPU cada uno sin hacer
+   nada — no relacionado con el trabajo de hoy, probablemente de una sesión
+   vieja cuya terminal se cerró sin matar el proceso. Revisar periódicamente
+   con `ps aux | sort -rk3 | head` si la Mac se siente lenta.
+7. **Dashboard — pestaña AAI + inversiones sintéticas** — 🔴 SIN EMPEZAR
+   todavía en código (Fase 4 del plan de fundamentales cubre esto: iframe del
+   dashboard ya generado, no rediseñar). Empezar cuando cierre Fase 3.
 
 Si alguna de estas cambió de estado cuando leas esto, actualizá esta sección
 (borrala o marcá cerrado) — no la dejes desactualizada.

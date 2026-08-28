@@ -2882,3 +2882,21 @@ Nota: proceso trial18 intento-1 ya muerto (abortado >13h, documentado en ROADMAP
 6. Tests: test_monthly_report.py 11 tests contra fixtures; suite amplia (monthly+paper_trading+barrier_labeling) 43 passed; ruff limpio.
 
 **Limitación documentada**: Sharpe por-oficio ≠ Sharpe cartera mensual del backtest hasta acumular meses; el mecanismo se vuelve más fiel con historial. Pendiente para OpenCode: etiquetar factors_json["variant"] cuando el ensamble sume variantes.
+
+## 2026-08-27 — Coordinación multi-agente: A6.3 lanzado, fix caché, motor de fundamentales nuevo (Claude Code coordinador)
+
+**A6.3 (screening PALA/RESTO/POOLED)**: Boris aprobó el pre-registro `PRE_REGISTRO_SCREENING_PALAS.md` (traído a `main` desde worktree stale de OpenCode). Asignado a Kilo por ser dueño de Frente 1. Corriendo desde ~11:25 AM, sigue vivo a la noche (9 corridas: 3 ventanas × PALA/RESTO/POOLED), estimado 9-12h más — RESTO/POOLED (44-50 símbolos) son mucho más lentos que PALA (6). Sin intervención, revisar mañana.
+
+**Bug real encontrado y corregido**: `data_ingestion.py::download_data()` tenía umbral `>7 días` en ambos chequeos incrementales (backfill y refresh) — el updater diario nunca refrescaba hasta que la brecha superaba una semana, dejando el cache perpetuamente entre 0-8 días atrasado pese a correr todas las noches sin error. Corregido a `>=1` por OpenCode, 11 tests nuevos, verificado en vivo (commit `b4a6797`).
+
+**Launchd pipeline diario**: se descubrió que `com.fortresscore.pipeline.plist` se instaló el 26/08 16:42, UN DÍA ANTES de que se verificara el Checkpoint Semana 1 (27/08) — orden invertido respecto a `PLAN_MAESTRO_FASE_PRODUCCION.md`. Checkpoint verificado igual (ciclo MSFT completo con `OVERRIDE_MECANISMO` explícito, idempotencia probada). No bloqueante, documentado.
+
+**Proyecto nuevo — Motor de fundamentales automatizado**: Boris pidió remover el cuello de botella manual de la skill `aai-screening-acciones` (export de InvestingPro). Plan en `PLAN_MOTOR_FUNDAMENTALES_AUTOMATIZADO.md`, dedicado a Cline en rama aislada `bjofrea-ctrl/fundamentales-automatizado` (Kilo y OpenCode no se tocan). Decisión de diseño explícita: NO rediseñar el Excel/dashboard de AAI — se reutilizan `generar_excel()`/`generar_dashboard()` tal cual. Fase 1 (ingesta FMP+Finnhub, reutiliza `FinnhubClient` viejo del 7/08) y Fase 2 (Piotroski/Altman/Beneish/EV-EBIT/Fair Value, validado contra AAPL FY22 real) cerradas y verificadas independientemente (16 y 35 tests, más suite completa del backend 479 passed). **Fase 3 (los 3 tribunales) quedó BLOQUEADA**: el test de paridad obligatorio contra el motor real sobre las 1000 empresas del fixture dio resultados distintos (9 vs 13 Deep Dive) sin causa raíz identificada — Cline lo declaró "esperado" sin evidencia suficiente, se le pidió no cerrar así. Pendiente retomar con la causa raíz concreta antes de aceptar la fase.
+
+**Infraestructura de claves**: se armaron 2 scripts de conveniencia (`Configurar-Claves-Fundamentales.command`, `Actualizar-Boveda-FortressCore.command`) para que Boris cargue/actualice API keys y la bóveda cifrada sin que los valores pasen nunca por el chat ni por el contexto de ningún agente. Cron nuevo `com.fortresscore.bovedabackup` (diario 23:30) respalda las bóvedas cifradas al disco externo sin descifrar nunca nada.
+
+**Limpieza de procesos huérfanos**: se encontraron y mataron 2 procesos `opencode` huérfanos (worktree `test-opencode-orca`) corriendo hace 5 días (desde 22/08) consumiendo ~92% CPU cada uno sin hacer nada — explicaba buena parte de la carga alta del sistema (load average 22-27). No relacionado con el trabajo de hoy.
+
+**Bug de infraestructura separado**: el `.venv` de `fortress_core` tenía `pip` apuntando a python3.14 mientras `python` apuntaba a 3.9 — instalaciones vía `pip install` se iban al lugar equivocado en silencio. Usar `python -m pip install` en ese venv de ahora en más.
+
+**Cierre de la noche**: Kilo sigue corriendo A6.3 sin supervisión (no cerrar su terminal). Cline en pausa esperando la investigación de la paridad de Fase 3. OpenCode libre, sin tarea.
