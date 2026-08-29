@@ -1,0 +1,117 @@
+# Plan — Motor de fundamentales automatizado (reemplazo del export manual de AAI)
+
+Arquitectura acordada con Boris (2026-08-27). Proyecto nuevo, en paralelo a lo que
+Kilo y OpenCode ya vienen haciendo — rama/worktree propia, cero archivos compartidos
+hasta la integración final. Nada de esto consume presupuesto Bonferroni (es
+infraestructura, no investigación de trading) ni toca `signal_engine.py`.
+
+## Motivación
+
+La skill `aai-screening-acciones` depende de un export manual (.xlsx) del screener de
+InvestingPro — Boris es el cuello de botella obligatorio de cada corrida. Este plan
+construye una fuente de datos y un motor de cálculo PROPIOS, para que el screening
+corra solo, sin exportar nada nunca más.
+
+## Principio rector — no reemplazamos InvestingPro, reconstruimos las fórmulas
+
+Piotroski F-Score (2000), Altman Z-Score (1968) y Beneish M-Score (1999) son papers
+académicos publicados — InvestingPro los CALCULA a partir de estados financieros, no
+los inventó. La estrategia es: bajar los mismos estados financieros crudos de una
+fuente con API legítima (nunca scraping de una plataforma paga — riesgo real de baneo
+de cuenta, no solo cosmético) y calcular las mismas fórmulas con código propio,
+testeado y verificado.
+
+**Fuentes de datos elegidas** (verificadas reales 2026-08-27, no citas sin chequear):
+- **Financial Modeling Prep (FMP)** — primaria. 250 llamadas/día gratis, cobertura de
+  income statement / balance sheet / cash flow / price targets de analistas.
+- **Finnhub** — respaldo y cruce (60 llamadas/minuto gratis, sin tope diario). Mismo
+  patrón que ya usa el proyecto en `execution_costs.py`: nunca una sola fuente sin
+  verificar contra otra.
+- Requiere `FMP_API_KEY` y `FINNHUB_API_KEY` — variables de entorno, nunca en código
+  ni en el chat. Boris las obtiene registrándose gratis en cada servicio.
+
+## Fases
+
+### Fase 1 — Ingesta de datos crudos
+
+- Módulo nuevo `backend/app/core/fundamentals_ingestion.py`: cliente FMP (income
+  statement, balance sheet, cash flow, profile, price target consensus) + cliente
+  Finnhub como respaldo/cruce, mismo patrón de cache incremental que
+  `data_ingestion.py` (con el umbral correcto esta vez — no repetir el bug de los
+  7 días, corregido 2026-08-27 en `main`, commit `b4a6797`).
+- **No construir un cliente Finnhub desde cero**: ya existe
+  `backend/app/core/fundamentals_client.py` (2026-08-07, `FinnhubClient`), pensado
+  originalmente para reemplazar los tickers hardcodeados de `predict.py`. Reutilizarlo/
+  extenderlo. **Advertencia propia del docstring**: su `FIELD_MAP` nunca se validó
+  contra una key real — correr `scripts/verify_finnhub_mapping.py` con
+  `FINNHUB_API_KEY` real ANTES de confiar en la calibración.
+- Tests contra fixtures (nunca red real en la suite, mismo estándar del proyecto).
+
+### Fase 2 — Reimplementar las 3 fórmulas + EV/EBIT + Fair Value propio
+
+- Módulo `backend/app/core/fundamentals_scores.py`: Piotroski F-Score, Altman
+  Z-Score, Beneish M-Score, EV/EBIT (EV = market cap + deuda total − caja), y una
+  versión propia de "Fair Value Label" (bargain/undervalued/overvalued) basada en
+  upside vs. consenso de analistas.
+- **Test de validación obligatorio antes de dar la fase por cerrada**: correr cada
+  fórmula contra un caso público conocido (ej. un Altman Z-Score ya publicado de una
+  empresa real) y verificar que el número coincide — no alcanza con que "compile".
+
+### Fase 3 — Reimplementar el motor de 3 tribunales
+
+- El criterio de CALIDAD → SALUD FINANCIERA → PRECIO ya está documentado en texto
+  plano en `~/.claude/skills/aai-screening-acciones/SKILL.md` y en el código de
+  `motor_screening.py` — no es una caja negra. Reimplementar la misma lógica de
+  umbrales sobre los datos propios de Fase 1+2.
+- Verificación cruzada: correr ambos motores (el original de AAI sobre un export
+  manual, y el nuevo sobre las mismas empresas vía API) y confirmar que clasifican
+  igual antes de confiar en el nuevo.
+- **No rediseñar el Excel ni el dashboard HTML** (pedido explícito de Boris,
+  2026-08-27 — le gustó el diseño y no quiere perderlo). `generar_excel()` (línea
+  268) y `generar_dashboard()` (línea 665) de `motor_screening.py` reciben datos YA
+  evaluados (`filas`, `hmap`, `evals`, `orden`, etc.) — el trabajo de Fase 1-3 es
+  producir esa misma estructura desde la API, y reutilizar/adaptar esas funciones
+  tal cual para la salida. Logo, colores, tribunales, "cómo leer este informe":
+  todo se hereda sin tocar.
+
+### Fase 4 — Integración
+
+- Endpoint nuevo en el backend (solo lectura) que expone el resultado del screening
+  automático.
+- Cron diario/semanal (mismo patrón que `com.fortresscore.dataupdater.plist`).
+- Pestaña nueva del dashboard institucional: empotrar (iframe) el mismo HTML que ya
+  genera `generar_dashboard()`, en vez de reimplementar el diseño visual en React —
+  preserva el trabajo de diseño ya hecho sin duplicar esfuerzo.
+- Pestaña nueva en el dashboard institucional (acordado con Boris 2026-08-27) que
+  muestra el resultado más reciente — sin necesitar ningún export manual.
+
+## Aislamiento — cero colisión con Kilo/OpenCode
+
+Rama/worktree dedicada (`feature/fundamentales-automatizado` o equivalente), archivos
+nuevos exclusivamente (`fundamentals_ingestion.py`, `fundamentals_scores.py`, tests
+propios) — no se toca nada de lo que Kilo (A6.3) ni OpenCode (pipeline diario) están
+tocando ahora mismo. Se integra a `main` recién cuando las 4 fases estén cerradas y
+verificadas, no antes.
+
+## Gate de aprobación (vigente, sin cambios)
+
+Mismo protocolo que el resto del proyecto (`PLAN_HANDOVER_48H.md` §1.1): preparar
+completo, `.pending-merge.md`, aprobación de Claude Code antes del commit final a
+`main`.
+
+## Qué NO cambia
+
+- No reemplaza la skill `aai-screening-acciones` — sigue existiendo para uso manual/
+  otros contextos (Claude.ai, otras cuentas). Esto es una fuente adicional para
+  `fortress_core` específicamente.
+- No consume presupuesto Bonferroni — es infraestructura, no un trial de
+  investigación.
+- Ningún trial de investigación nuevo sin pre-registro (ONBOARDING.md #1) — esto no
+  aplica acá porque no hay reclamo estadístico de edge, es reconstrucción de fórmulas
+  públicas ya validadas académicamente.
+- No se conecta a broker real ni cambia nada de la ejecución de órdenes.
+
+## Sin fecha de cierre fija
+
+Boris confirmó que no hay apuro — se cierra fase por fase, con verificación real
+entre cada una, no se apura ninguna fase para "terminar rápido".

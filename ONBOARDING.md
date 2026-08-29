@@ -192,7 +192,22 @@ en `PLAN_MEJORA_MATEMATICA.md`. No son sugerencias de estilo.
   `com.fortresscore.daily_notify.plist` vive en `scripts/` pero NO está instalado
   (requiere TELEGRAM/SMTP configurados — hoy vacíos, notificación desactivada). `backup.sh`
   es el backup manual/forzado. Los snapshots de `fortress_core_backups/snapshots/` son
-  manuales y viejos — el espejo vigente es `current/`.
+  manuales y viejos — el espejo vigente es `current/`. `com.fortresscore.pipeline.plist`
+  está INSTALADO (2026-08-26 16:42): ventanas 09:35/15:40/22:10 ET (ENTER/EXIT/DECIDE del
+  pipeline diario de paper trading), fuera de ventana corre fase `health`. Log canónico
+  `scripts/pipeline_diario.log` (NO `pipeline_launchd.log`, que queda en 0 bytes por
+  diseño — todo se redirige al primero). Checkpoint Semana 1 verificado 27/08 (orden
+  invertido vs. el plan original, que pedía verificar antes de instalar — documentado,
+  no bloqueante). `com.fortresscore.bovedabackup.plist` está INSTALADO (2026-08-27, diario
+  23:30): copia `~/Desktop/BOVEDA-CLAVES-*.md.enc` a `/Volumes/EMPRESA` sin descifrar
+  nunca nada — mismo principio que `backup_db()`. Log `scripts/boveda_backup.log`.
+  `com.fortresscore.diskhealth.plist` está INSTALADO (2026-08-28, cada 4h): avisa en
+  `scripts/disk_health.log` si el disco libre baja de 15GB o si `~/.cline`/`.kilo`/
+  `.opencode`/`.claude` supera 5GB — nunca borra nada solo. Nació del incidente real
+  del 27-28/08: `~/.cline/data/db/hub-events-hub-production.db` (log interno de
+  Cline nunca podado) creció a 95GB y dejó la Mac en 53MB libres, tumbando una
+  corrida de Kilo a mitad de noche. Es un bug de Cline, no de este proyecto — puede
+  repetirse, este chequeo solo avisa temprano.
 - El universo base de símbolos es consistente entre scripts: `SPY, QQQ, AAPL, MSFT, GOOGL,
   AMZN, NVDA` + `NEW_UNIVERSE` (definido en `backend/scripts/fetch_universe_data.py`).
 

@@ -10,43 +10,95 @@ Code, Cline, OpenCode), leer este documento primero. Al cerrar, actualizarlo ant
 — marcar lo que se cerró, agregar lo que apareció nuevo. Ningún ítem se da por cerrado sin
 marcarlo acá, aunque se haya resuelto "de pasada" en otra conversación.
 
-Última actualización: 2026-08-25.
+Última actualización: 2026-08-28 (noche).
 
 ## PENDIENTE AHORA — chequear primero, antes de leer el resto
 
 Coordinación multi-agente vía Orca (Claude Code como coordinador; Kilo Code, OpenCode,
-Cline como implementadores), 2026-08-23/24. Verificar contra `git log --oneline -10` y
-`backend/data/cache/` antes de asumir estado:
+Cline como implementadores). Verificar contra `git log --oneline -10`,
+`ps aux | grep screening_palas` y las ramas de cada worktree antes de asumir estado.
 
-1. **Tarea M** (KAMA/HMA/Supertrend, §44) — 🟢 CERRADA (Kilo Code, 2026-08-23,
-   commit `1721a1e`): NO_CUMPLE 0/9. Ver fila propia en la tabla maestra.
-2. **PBO/CSCV de fidelidad completa** (§43) — 🟡 EN CURSO (OpenCode, worktree
-   `orca/workspaces/fortress_core/test-opencode-orca`). Pre-registro completo ya
-   escrito en `PLAN_MEJORA_MATEMATICA.md §43` (9 configs ejecutables reales vía
-   `backend_engine.run()`, no vecinos de parámetros — reemplaza el proxy de §40).
-   Corrida completa lanzada bajo mandato explícito de autonomía de Boris (Claude
-   Code coordinador estuvo temporalmente sin crédito) — el paso formal `--timing`/
-   forecast de §43.6 no se completó antes de lanzar, documentado como tal. Al
-   cerrar: verificar los 5 checks de fidelidad de §43.5 y aplicar el criterio de
-   §43.4 mecánicamente antes de aceptar el veredicto.
-3. **Auditoría técnica sincronizada** (Cline, 2026-08-23, commit `5edfe6e`) — 🟢
-   CERRADA, `AUDITORIA_TECNICA.md` puesto al día contra el código real.
-4. **§45 Trial #18 EVT-stops v2** (Kilo Code, 2026-08-24) — 🟢 CERRADO con
-   auto-cierre autorizado: NO_CUMPLE 0/3 con F7 de activación al 100% (ver fila
-   propia en la tabla maestra). Ledger motor_signal 11→12, próximo umbral
-   0.99231. Incluye hallazgo de código sizing-vs-trigger pendiente de decisión
-   de producto (ver §45.1).
-5. **Brecha 5 auditoría externa — cierre superficie API** (Cline, 2026-08-24) — 🟢
-   CERRADA POR VERIFICACIÓN: la escritura ya estaba 2/2 con auth (cierre P0
-   2026-08-12); SECRET_KEY validator vigente. Aportación real: test de invariante
-   `test_api_write_auth.py` (3 tests). Ver fila en la tabla maestra y §6 de
-   AUDITORIA_TECNICA.md.
-6. **Dashboard — visual de inversiones sintéticas** (pedido por Boris, 2026-08-26)
-   — 🔴 SIN EMPEZAR. Objetivo: acceso visual en el dashboard a cómo evolucionan
-   las posiciones de paper trading (Frente 2, `signal_ledger`/`monthly_report`)
-   — abiertas, cerradas, pnl_r acumulado. Empezar cuando cierren los frentes en
-   curso ahora mismo (Checkpoint Semana 1, H3.1/A3, integración OpenRouter de la
-   tríada) — no antes, así no compite por foco con lo que ya está en vuelo.
+1. **A6.3 — screening PALA/RESTO/POOLED** — 🟡 NO_INTERPRETABLE el 28/08
+   AM, **causa raíz encontrada y NO es bug**: `baseline_clean_20260811`
+   corrió sin pasar commission/slippage (defaults viejos = 0.15%/lado);
+   `screening_palas.py` usa el costo vigente aprobado §33 (19/08) =
+   0.10%/lado — de ahí que POOLED salga sistemáticamente mejor ahora.
+   **Recálculo de `baseline_clean` con costo vigente EN CURSO** (worktree
+   `test-kilo-orca`, PID verificar con `ps aux | grep
+   backtest_baseline_clean_20260828`, proceso detached, arrancado 28/08
+   ~19:30, corriendo 50 símbolos completos 2019-2026 — puede tardar
+   varias horas más). Al terminar: actualizar el check de sanidad de
+   `PRE_REGISTRO_SCREENING_PALAS.md` con los números nuevos y re-evaluar
+   si A6.3 pasa (el criterio primario PALA-vs-RESTO ya está calculado,
+   solo el check POOLED-vs-baseline había fallado). No confundir con el
+   otro archivo `screening_palas.py` con checkpoint por ventana — ese ya
+   corrió completo y dio el NO_INTERPRETABLE, no hace falta re-correrlo.
+2. **Motor de fundamentales automatizado** (Cline, rama
+   `bjofrea-ctrl/fundamentales-automatizado`, NO mergeada a `main`) — 🟢
+   Fases 1-3 CERRADAS y verificadas independientemente (63 tests, paridad
+   bit-a-bit 1000/1000 con el motor real). Fase 4 (integración: endpoint
+   solo-lectura + cron diario 22:00 mismo patrón que dataupdater + pestaña
+   dashboard vía iframe de `generar_dashboard()`) — decisiones cerradas
+   28/08 tarde: universo completo (50 símbolos) corrida diaria (~250/250
+   llamadas FMP, sin margen — por eso se pidió procesar en lotes de 5 con
+   checkpoint parcial y reintento al día siguiente, no el mismo día), y
+   dashboard cacheado del último cron (NUNCA recalculado on-demand, para
+   no quemar cuota con cada vista). Cline comiteó Fase 4 28/08 noche, primer intento (`22b8618`) tenía 11/25
+   tests skipped (`TestClient` incompatible con el venv real); devuelto,
+   reescrito con el patrón del repo (`asyncio.run` directo a la corutina,
+   igual que `test_advisor_api.py`) — commit `14f4eae`, 25 passed 0
+   skipped. **PERO Fase 4 NO está cerrada** (revisión 29/08 AM; anoche la
+   di por cerrada mirando sólo los tests — error mío, los tests verdes no
+   prueban que las piezas existan). Lo que falta de verdad:
+   - **El cron NO existe.** La docstring del router dice que los
+     artefactos los genera `scripts/fundamentals_screen_daily.sh` — ese
+     archivo no está en el repo, y no hay ningún `.plist` (ni en el repo
+     ni instalado en `~/Library/LaunchAgents`). Sin cron nada corre solo:
+     los endpoints devolverían 503 para siempre.
+   - **El dashboard y el Excel nunca se generan.** Nadie llama a
+     `generar_dashboard()` ni a `generar_excel()` — sólo hay comentarios
+     "listo para que lo consuma". El job runner escribe únicamente
+     `screen_<date>.json` y `state.json`. Esto responde el pendiente de
+     Boris: no es que salgan distintos al original, es que no se producen.
+   - **La paridad 1000/1000 de Fase 3 ya no es reproducible**: el fixture
+     `/Users/boris/Downloads/fortress core - Market View - 2026-08-27
+     (2).xlsx` no existe más (se borró en la limpieza de disco del 28/08).
+     El test se SALTEA en silencio en vez de fallar, y apunta a
+     `~/Downloads` — el lugar menos estable de la Mac para lo que es la
+     evidencia central de la fase. Guardar ese Excel en un lugar estable
+     (o versionarlo) y hacer que el skip sea ruidoso.
+   - Contaminación de tokens del modelo (MiniMax M3): caracteres chinos
+     `收益` en un comentario de `app/api/routes/fundamentals_screen.py:25`.
+   Patrón de fondo a vigilar: **los tests verifican al lector, no al
+   escritor** — el endpoint se testea con fixtures que fabrican el HTML,
+   así que nada detecta que nadie lo produce. Mismo tipo de agujero que
+   los 11 tests skipped de anoche. **PENDIENTE VERIFICAR ANTES DE DAR POR BUENO**:
+   que el dashboard nuevo y el Excel que genera queden visualmente iguales
+   al original de AAI, no solo que los números cierren (pedido explícito
+   de Boris 28/08). Sigue necesitando `FMP_API_KEY`/`FINNHUB_API_KEY`
+   reales para `verify_finnhub_mapping.py`.
+3. **Bug data_ingestion.py umbral >7 días** — 🟢 CERRADO (OpenCode, commit
+   `b4a6797`).
+4. **Launchd pipeline diario (com.fortresscore.pipeline)** — 🟢 verificado
+   27/08 (orden invertido vs. plan, documentado, no bloqueante).
+5. **Cron: `com.fortresscore.bovedabackup`** (diario 23:30) — 🟢 INSTALADO
+   27/08.
+6. **Limpieza de procesos huérfanos** (27/08 noche): 2 procesos `opencode`
+   huérfanos de 5 días (~92% CPU c/u) encontrados y matados.
+7. **DISCO LLENO — resuelto 28/08 AM, causa real encontrada**: la Mac quedó
+   con 53MB libres de 234GB (100% de capacidad) — culpable:
+   `~/.cline/data/db/hub-events-hub-production.db`, **95GB en un log
+   interno de telemetría de Cline que nunca se poda** (bug de Cline, no del
+   proyecto). Borrado + matado el proceso "hub" (PID 98427, separado de
+   cualquier terminal de trabajo) que lo tenía abierto → **97GB libres
+   ahora**. Esto explica el crash de Kilo de la noche anterior (no fue el
+   proveedor del modelo, fue ENOSPC). Candidatos de limpieza NO urgentes
+   que quedaron sin tocar: `~/.colima` (23GB, VM de Docker aparentemente sin
+   uso) y `~/.cache` (17GB, cache genérico recreable) — revisar si `.cline`
+   vuelve a crecer así con el tiempo, puede repetirse.
+8. **Dashboard — pestaña AAI + inversiones sintéticas** — 🔴 SIN EMPEZAR
+   todavía en código (Fase 4 del plan de fundamentales cubre esto: iframe del
+   dashboard ya generado, no rediseñar). Empezar cuando cierre Fase 3.
 
 Si alguna de estas cambió de estado cuando leas esto, actualizá esta sección
 (borrala o marcá cerrado) — no la dejes desactualizada.
@@ -359,7 +411,8 @@ gantt
 | Instrumento | Tarea D — Curva de costo por tamaño qty=10/50 (Ronda 2026-08-19, Kilo Code + OpenCode) | 🟢 cerrada (2026-08-19) | — | Código: `backend/scripts/measure_execution_costs.py` (parametrizado `--qty`) + `execution_costs.py`, 21 tests costs (incl. 6 de Tarea E). **Pre-registro + resultado: PLAN_MEJORA_MATEMATICA §30**. Bloqueo real diagnosticado: el 403 NO era permisos — era `insufficient buying power` (la corrida qty=10 de la mañana entró en 18 símbolos, $81k, cash −$56k, BP 0). Se liquidaron los residuos (paper) → BP $100k y se corrió la medición completa (mercado abierto 12:13–12:14 ET): qty=10 (7 BASE_SYMBOLS buy+sell) y qty=50 (SPY+QQQ buy+sell; AAPL 50 falló por BP → fallback previsto en Enmienda 1). **Curva real (156 órdenes, fórmula contrato M4, size=1 verificado idéntico al artefacto 18/08)**: qty=1 p50 0.000122/p95 0.000519 (n=120); qty=10 p50 0.000116/p95 0.000417 (n=32); qty=50 p50 0.000029/p95 0.000098 (n=4). **VEREDICTO: curva plana/decreciente — impacto de mercado NO medible en rango 1→50; qty=1 es representativo (0.019%/lado)**. `COST_PER_SIDE` actualizado a **0.0005** (2026-08-19, §33, decisión del usuario) — ver fila M4. Endpoint `/api/costs/current` ya expone la curva (sizes 1/10/50) sin cambios de contrato |
 | Producto | **Frente 2 S1 — Conector ejecución paper + ledger de órdenes** (PLAN_MAESTRO_FASE_PRODUCCION, Cline) | 🟢 hecho (2026-08-25) | Pipeline diario (OpenCode) | `AlpacaPaperClient.get_account()` (GET /v2/account) y `.get_positions()` (GET /v2/positions; símbolos `BRK.B`→`BRK-B` al formato interno, misma convención de `last_trade_price`) siguiendo el patrón de submit_market_order/last_trade_price. `SignalLedger` extendido ADITIVAMENTE (migración robusta por PRAGMA, NO rompe el record() T1.6 sobre DB pre-migrada — cubierto por test): columnas `status/open_fill_price/close_fill_price/qty` + métodos `open_order()`/`close_order()`/`open_orders()`. Nuevo `app/core/paper_trading.py::PaperTrader`: abrir orden→fila `open`; cerrar→completa pnl_r+close_fill_price; `reconcile_open_positions()` cierra órdenes contra el estado real del papel (fallback a último trade). **FIX de tests**: record() tenía COALESCE(columna,...) dentro del VALUES del INSERT OR REPLACE — SQLite NO resuelve columnas en VALUES (`no such column`); reescrito como upsert `ON CONFLICT DO UPDATE` que además preserva los fills al re-etiquetar. 6 tests nuevos contra fakes (jamás red); suites relacionadas 53 passed; ruff limpio. Motor de decisión y signal_engine.py INTACTOS |
 | Producto | **Frente 2 S2 — Mecanismo del reporte mensual por variante** (PLAN_MAESTRO_FASE_PRODUCCION, Cline) | 🟢 hecho (2026-08-26) — listo, espera historial real | Pipeline diario con datos (OpenCode) | Construcción pura: NO toca trial_registry.json, NO consume presupuesto Bonferroni, sin pre-registro. `app/core/monthly_report.py::MonthlyReporter`: agrupa filas CERRADAS del signal_ledger por MES DE CIERRE × VARIANTE (de `factors_json["variant"]`, default `mom_rsi_congelada` — hoy el pipeline corre esa única definición), calcula Sharpe REALIZADO nativo por-oficio (mean/std ddof=1 de pnl_r; anualizado solo como referencia) y lo compara contra la EXPECTATIVA de la validación OOS congelada (`backend/config/expected_sharpe.json`, semilla: Sharpe mensual 0.3838 / anualizado 1.3296 de validacion_oos_fresca_20260822). Veredictos: EN_CALIBRACION (≥ umbral×esperado, umbral parametrizable default 0.5), DEBAJO_ESPERADO, NEGATIVO, SIN_DATOS (<2 oficios), DEGENERADO (std=0), ESPERADO_NO_DEFINIDO + diagnóstico liviano de una línea. Bitácora ACUMULADA en tabla propia `monthly_report_log` (fortress.db, upsert idempotente por variante+mes). Runner CLI `scripts/monthly_report.py`. Limitación documentada en el docstring: Sharpe por-oficio ≠ Sharpe cartera mensual hasta acumular meses. Smoke end-to-end verificado con DB sembrada (3 meses → 3 veredictos + bitácora); 11 tests nuevos contra fixtures, suite amplia 43 passed, ruff limpio |
-
+| Infraestructura | **Frente 2 — Pipeline diario launchd (com.fortresscore.pipeline)** | 🟢 instalado 26/08 16:42 · verificado 27/08 11:34 — ORDEN INVERTIDO vs plan (ver detalle) | — | Instalado 26/08 16:42 (auto-backup 52c20a4) ANTES de checkpoint Semana 1 verificado 27/08 — quiebra PLAN_MAESTRO_FASE_PRODUCCION.md que exige checkpoint antes de instalar cron. Kickstart `launchctl kickstart -k gui/501/com.fortresscore.pipeline` 27/08 11:33:57 → runs 0→1 LastExit 0, Fase health (fuera de ventanas), artefacto pipeline_run_health_20260827_113404, pipeline_diario.log 2541→3300 B rc=0, pipeline_launchd.log 0 B BY DESIGN (todo redirige a pipeline_diario.log, mismo patrón que data_updater). Cache 6d at limit (último 21/08). Verificado end-to-end; no bloquea Semana 2 pero rastro corrige orden. Logs: scripts/pipeline_diario.log (canónico) + backend/data/cache/pipeline_run_*. |
+| Infraestructura | **Bug data_ingestion gap >7 — cache stale 6d invisible** | 🟡 fix listo para revisión 27/08 (NO mergeado, pendiente gate) — 2 umbrales corregidos + señal explícita + 11 tests | Gate de aprobación antes de merge a main | `data_ingestion.py:31,42` `>7`→`>=1` (backfill y refresh, justificación daily updater, >=1 lee intención mejor que >0) + logs `[data_ingestion]` distinguen `attempting`/`attempted but empty`/`no new rows`/`no refresh needed`/`cache miss` (edge df.empty). Test `test_data_ingestion.py` 11 tests (gap 2 habría sido saltado con >7, gap1/0, empty/dedup). Suite 467 collected, batched 467 passed (full run >600s por heavy tests, batched OK). Vivo: AAPL 2026-08-21→2026-08-26 (3 filas 24-26, 2926→4187 con backfill 1258) tras fix; 2da corrida gap1 log distinto. Diff pendiente, no commiteado. |
 | Infraestructura | **Garantías anti-evasión Bonferroni familia `re_test`** (H3.1 auditoría GLM, Cline) | 🟡 hecho en worktree — espera merge (2026-08-26) | Aprobado por Boris (2026-08-26): implementar §4.1+4.2+4.3 del análisis (`ANALISIS_RE_TEST_BONFERRONI.md`) | `trial_registry.py`: (1) `re_test_de` obligatorio cuando `familia=re_test` — objetivo existente y ANTERIOR en el registro, veredicto NO_CUMPLE, familia de investigación (no `producto`, no cadenas re_test); (2) tope `MAX_RETESTS_PER_TARGET=2` por objetivo (subirlo = decisión explícita visible en diff); (3) `n_trials_consumidos=0` solo legal en `re_test` (cierra el vector real: cero libre en cualquier familia). Invariante cruzado corriendo tanto en `register_trial()` como en carga completa (`_load_raw`) — un JSON editado a mano también explota. Backfill actualizado: las 2 entradas históricas citan su objetivo real (`fase06_retest_sentimiento`→`trial_08_sentimiento`, `fase06_retest_fundamentales`→`trial_09_fundamentales`, existencia verificada antes de escribir). Tests: 8 rutas pedidas + 2 existentes ajustadas al contrato nuevo; suite completa **420 passed**, ruff limpio. Verificado sobre copia en /tmp: ledger sin migrar falla ruidoso; con las 2 líneas migradas carga completo (47 entradas). **PENDIENTE AL MERGEAR**: migrar el `trial_registry.json` de producción agregando los 2 campos `re_test_de` (2 líneas, sin más), porque el código nuevo rechaza el archivo sin ellos POR DISEÑO |
 
 
