@@ -1,0 +1,23 @@
+SCREENING VENDEDOR DE PALAS (A6.3) — resultado
+ts=20260828_071737  PALA=['NVDA', 'AVGO', 'QCOM', 'MSFT', 'ORCL', 'CSCO']  N_PALA=6  N_RESTO=44
+
+                             W1                     W2                     W3
+PALA      S= 0.2726 D=0.2114 n= 43  S=-0.2683 D=0.0591 n= 12  S= 0.6176 D=0.4349 n= 31
+RESTO     S= 0.7678 D=0.4627 n= 98  S= 0.5306 D=0.3299 n= 43  S= 0.0358 D=0.1281 n=108
+POOLED    S= 0.4967 D=0.3138 n=110  S= 0.2888 D=0.2164 n= 51  S= 0.7074 D=0.4886 n=114
+
+--- Criterio primario (PALA > RESTO en Sharpe Y DSR, >=2/3 ventanas) ---
+  W1: PALA NO gana (S_PALA=0.2726<=S_RESTO=0.7678, D_PALA=0.2114<=D_RESTO=0.4627)
+  W2: PALA NO gana (n=12<30, S_PALA=-0.2683<=S_RESTO=0.5306, D_PALA=0.0591<=D_RESTO=0.3299)
+  W3: PALA gana (S 0.6176>0.0358, D 0.4349>0.1281, n=31)
+  ventanas_evaluables=2  victorias_PALA=1  requerido=2
+  DSR_PALA>0.50 en victorias=False
+
+--- Check sanidad POOLED vs baseline_clean ---
+  W1: POOLED S=0.4967 D=0.3138 | baseline S=0.2562 D=0.0714 | dS=0.2405(tol 0.15) dD=0.2424(tol 0.05) FUERA
+  W2: POOLED S=0.2888 D=0.2164 | baseline S=-0.0542 D=0.0284 | dS=0.3430(tol 0.15) dD=0.1880(tol 0.05) FUERA
+  W3: POOLED S=0.7074 D=0.4886 | baseline S=0.5299 D=0.1727 | dS=0.1775(tol 0.15) dD=0.3159(tol 0.05) FUERA
+  ventanas_dentro_tolerancia=0/3  -> FUERA -> NO_INTERPRETABLE
+
+VEREDICTO: NO_CUMPLE
+Nota: NO_INTERPRETABLE: POOLED fuera de tolerancia vs baseline en >=2 ventanas (posible bug de implementacion)
