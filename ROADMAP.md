@@ -18,21 +18,22 @@ Coordinación multi-agente vía Orca (Claude Code como coordinador; Kilo Code, O
 Cline como implementadores). Verificar contra `git log --oneline -10`,
 `ps aux | grep screening_palas` y las ramas de cada worktree antes de asumir estado.
 
-1. **A6.3 — screening PALA/RESTO/POOLED** — 🟡 NO_INTERPRETABLE el 28/08
-   AM, **causa raíz encontrada y NO es bug**: `baseline_clean_20260811`
-   corrió sin pasar commission/slippage (defaults viejos = 0.15%/lado);
-   `screening_palas.py` usa el costo vigente aprobado §33 (19/08) =
-   0.10%/lado — de ahí que POOLED salga sistemáticamente mejor ahora.
-   **Recálculo de `baseline_clean` con costo vigente EN CURSO** (worktree
-   `test-kilo-orca`, PID verificar con `ps aux | grep
-   backtest_baseline_clean_20260828`, proceso detached, arrancado 28/08
-   ~19:30, corriendo 50 símbolos completos 2019-2026 — puede tardar
-   varias horas más). Al terminar: actualizar el check de sanidad de
-   `PRE_REGISTRO_SCREENING_PALAS.md` con los números nuevos y re-evaluar
-   si A6.3 pasa (el criterio primario PALA-vs-RESTO ya está calculado,
-   solo el check POOLED-vs-baseline había fallado). No confundir con el
-   otro archivo `screening_palas.py` con checkpoint por ventana — ese ya
-   corrió completo y dio el NO_INTERPRETABLE, no hace falta re-correrlo.
+1. **A6.3 — screening PALA/RESTO/POOLED** — 🟢 **CERRADO** (29/08): trial
+   completado en el ledger (`COMPLETED`, `veredicto: NO_CUMPLE`, artefacto
+   `screening_palas_20260828_071737.txt`). Apéndice de resultado en
+   `PRE_REGISTRO_SCREENING_PALAS.md` §12. Causa del NO_INTERPRETABLE
+   (check de sanidad §4.2) investigada a fondo: el recálculo del baseline
+   con costo vigente (0.10%/lado, `baseline_clean_20260828_183624.txt`)
+   convergió el Sharpe pero **no el DSR** — investigado por OpenCode
+   (verificador independiente): el DSR usa `N_TRIALS` distinto entre
+   scripts (baseline=17, heredado de la familia `universe50`; A6.3=5,
+   propio de `signal_diagnosis`) — **no son comparables sin igualar, no
+   es bug**. Igualando N_TRIALS solo para el check: W1/W2 pasan, W3 sigue
+   fuera (se descartó el rango de fechas como causa, delta trades=0; W3
+   sin explicar). **Propuesta de saneamiento del check redactada**:
+   `PRE_REGISTRO_SANEAMIENTO_CHECK_A63.md` — pendiente de aprobación
+   explícita de Boris, nada ejecutado. No confunde con el veredicto
+   NO_CUMPLE ya sellado (ese no se reabre).
 2. **Motor de fundamentales automatizado** (Cline, rama
    `bjofrea-ctrl/fundamentales-automatizado`, NO mergeada a `main`) — 🟢
    Fases 1-3 CERRADAS y verificadas independientemente (63 tests, paridad
