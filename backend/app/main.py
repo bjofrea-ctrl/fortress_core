@@ -10,6 +10,7 @@ from app.api.routes import (
     costs,
     decision,
     decision_history,
+    fundamentals_screen,
     governance,
     live,
     market,
@@ -53,6 +54,7 @@ app.include_router(decision_history.router)
 app.include_router(advisor.router)
 app.include_router(costs.router)
 app.include_router(ranking.router)
+app.include_router(fundamentals_screen.router)
 
 
 @app.middleware("http")
