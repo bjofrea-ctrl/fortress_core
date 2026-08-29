@@ -10,7 +10,7 @@ Code, Cline, OpenCode), leer este documento primero. Al cerrar, actualizarlo ant
 — marcar lo que se cerró, agregar lo que apareció nuevo. Ningún ítem se da por cerrado sin
 marcarlo acá, aunque se haya resuelto "de pasada" en otra conversación.
 
-Última actualización: 2026-08-28 (mañana).
+Última actualización: 2026-08-28 (noche).
 
 ## PENDIENTE AHORA — chequear primero, antes de leer el resto
 
@@ -18,26 +18,39 @@ Coordinación multi-agente vía Orca (Claude Code como coordinador; Kilo Code, O
 Cline como implementadores). Verificar contra `git log --oneline -10`,
 `ps aux | grep screening_palas` y las ramas de cada worktree antes de asumir estado.
 
-1. **A6.3 — screening PALA/RESTO/POOLED** (worktree `test-kilo-orca`, PID
-   verificar con `ps aux | grep screening_palas`) — 🟡 EN CURSO, RELANZADO
-   28/08 ~07:17 AM **como proceso detached (PPID 1, independiente de
-   cualquier CLI de agente)**, con checkpoint por ventana
-   (`screening_palas_checkpoint.json`) — si se corta, retoma donde quedó, no
-   pierde todo. La corrida de la noche del 27/08 murió sin completar
-   (proceso hijo de la sesión de Kilo, se cayó junto con ella — causa real:
-   el disco se llenó, ver ítem 8) tras completar 6-7/9 ventanas sin
-   checkpoint, se perdió ese cómputo. Pre-registro
-   `PRE_REGISTRO_SCREENING_PALAS.md` (en `main`). Al terminar: aplicar el
-   veredicto MECÁNICO de la §4 del pre-registro, no interpretar. **Ya NO
-   depende de ninguna terminal de agente — se puede cerrar Kilo sin miedo.**
+1. **A6.3 — screening PALA/RESTO/POOLED** — 🟡 NO_INTERPRETABLE el 28/08
+   AM, **causa raíz encontrada y NO es bug**: `baseline_clean_20260811`
+   corrió sin pasar commission/slippage (defaults viejos = 0.15%/lado);
+   `screening_palas.py` usa el costo vigente aprobado §33 (19/08) =
+   0.10%/lado — de ahí que POOLED salga sistemáticamente mejor ahora.
+   **Recálculo de `baseline_clean` con costo vigente EN CURSO** (worktree
+   `test-kilo-orca`, PID verificar con `ps aux | grep
+   backtest_baseline_clean_20260828`, proceso detached, arrancado 28/08
+   ~19:30, corriendo 50 símbolos completos 2019-2026 — puede tardar
+   varias horas más). Al terminar: actualizar el check de sanidad de
+   `PRE_REGISTRO_SCREENING_PALAS.md` con los números nuevos y re-evaluar
+   si A6.3 pasa (el criterio primario PALA-vs-RESTO ya está calculado,
+   solo el check POOLED-vs-baseline había fallado). No confundir con el
+   otro archivo `screening_palas.py` con checkpoint por ventana — ese ya
+   corrió completo y dio el NO_INTERPRETABLE, no hace falta re-correrlo.
 2. **Motor de fundamentales automatizado** (Cline, rama
    `bjofrea-ctrl/fundamentales-automatizado`, NO mergeada a `main`) — 🟢
    Fases 1-3 CERRADAS y verificadas independientemente (63 tests, paridad
-   bit-a-bit 1000/1000 con el motor real). Plan en
-   `PLAN_MOTOR_FUNDAMENTALES_AUTOMATIZADO.md`. Pendiente: Fase 4
-   (integración — endpoint + cron + pestaña dashboard vía iframe), a
-   coordinar con Boris antes de arrancar. Sigue necesitando
-   `FMP_API_KEY`/`FINNHUB_API_KEY` reales para `verify_finnhub_mapping.py`.
+   bit-a-bit 1000/1000 con el motor real). Fase 4 (integración: endpoint
+   solo-lectura + cron diario 22:00 mismo patrón que dataupdater + pestaña
+   dashboard vía iframe de `generar_dashboard()`) — decisiones cerradas
+   28/08 tarde: universo completo (50 símbolos) corrida diaria (~250/250
+   llamadas FMP, sin margen — por eso se pidió procesar en lotes de 5 con
+   checkpoint parcial y reintento al día siguiente, no el mismo día), y
+   dashboard cacheado del último cron (NUNCA recalculado on-demand, para
+   no quemar cuota con cada vista). Cline reportó Fase 4 lista (job + API
+   + 25 tests, sin tocar predictive_engine/notifier) y quedó autorizada a
+   commitear 28/08 noche — **verificar que el commit exista al retomar**
+   (`git log` en esa rama). **PENDIENTE VERIFICAR ANTES DE DAR POR BUENO**:
+   que el dashboard nuevo y el Excel que genera queden visualmente iguales
+   al original de AAI, no solo que los números cierren (pedido explícito
+   de Boris 28/08). Sigue necesitando `FMP_API_KEY`/`FINNHUB_API_KEY`
+   reales para `verify_finnhub_mapping.py`.
 3. **Bug data_ingestion.py umbral >7 días** — 🟢 CERRADO (OpenCode, commit
    `b4a6797`).
 4. **Launchd pipeline diario (com.fortresscore.pipeline)** — 🟢 verificado
