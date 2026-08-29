@@ -576,5 +576,15 @@
     "artefacto": "data/cache/trial20_a5_buffett_alpha_20260825_211648.txt",
     "seccion_doc": "§47",
     "status": "COMPLETED"
+  },
+  {
+    "id": "screening_palas",
+    "fecha": "2026-08-27",
+    "familia": "signal_diagnosis",
+    "hipotesis": "Screening vendedor de palas: subconjunto habilitador IA (NVDA/AVGO/QCOM/MSFT/ORCL/CSCO) vs resto (44) vs pooled (50) bajo momentum+RSI congelado. n_trials=5 (default motor, gate laxo por diseño escalon 1).",
+    "n_trials_consumidos": 1,
+    "umbral_aplicado": "DSR_PALA>0.50 Y Sharpe_PALA>Sharpe_RESTO en >=2/3 ventanas (screening barato, escalon 1 embudo)",
+    "seccion_doc": "PRE_REGISTRO_SCREENING_PALAS.md §4",
+    "status": "RESERVED"
   }
 ]
