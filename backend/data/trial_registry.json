@@ -585,6 +585,9 @@
     "n_trials_consumidos": 1,
     "umbral_aplicado": "DSR_PALA>0.50 Y Sharpe_PALA>Sharpe_RESTO en >=2/3 ventanas (screening barato, escalon 1 embudo)",
     "seccion_doc": "PRE_REGISTRO_SCREENING_PALAS.md §4",
-    "status": "RESERVED"
+    "status": "COMPLETED",
+    "veredicto": "NO_CUMPLE",
+    "artefacto": "data/cache/screening_palas_20260828_071737.txt",
+    "fecha_completado": "2026-08-29"
   }
 ]
