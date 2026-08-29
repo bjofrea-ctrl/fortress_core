@@ -43,16 +43,13 @@ Cline como implementadores). Verificar contra `git log --oneline -10`,
    llamadas FMP, sin margen — por eso se pidió procesar en lotes de 5 con
    checkpoint parcial y reintento al día siguiente, no el mismo día), y
    dashboard cacheado del último cron (NUNCA recalculado on-demand, para
-   no quemar cuota con cada vista). Cline comiteó Fase 4 28/08 noche (`22b8618`) pero **no está realmente
-   cerrado**: verifiqué corriendo los tests yo mismo y los 11 de
-   `test_fundamentals_screen_api.py` (los 4 endpoints HTTP, el corazón de
-   la fase) salen TODOS skipped -- usó `TestClient`, que es incompatible
-   con las versiones instaladas (httpx 0.28.1/starlette 0.35.1) en el
-   venv real del proyecto. El patrón correcto YA EXISTE en el repo
-   (`test_advisor_api.py`/`test_costs_api.py`: llamar al router
-   directamente con `asyncio.run()`, comentario explícito de por qué).
-   Devuelto a Cline para reescribir con ese patrón. **Al retomar: verificar
-   que los 11 tests corran de verdad (no skipped) antes de aceptar Fase 4.** **PENDIENTE VERIFICAR ANTES DE DAR POR BUENO**:
+   no quemar cuota con cada vista). Cline comiteó Fase 4 28/08 noche, primer intento (`22b8618`) tenía 11/25
+   tests skipped (`TestClient` incompatible con el venv real); devuelto,
+   reescrito con el patrón del repo (`asyncio.run` directo a la corutina,
+   igual que `test_advisor_api.py`) — commit `14f4eae`. **Verificado por
+   mí, corriendo los tests de verdad: 25 passed, 0 skipped.** Fase 4
+   CERRADA. Falta: `FMP_API_KEY`/`FINNHUB_API_KEY` reales para probar en
+   vivo, y el chequeo pendiente de abajo (dashboard/Excel vs. original). **PENDIENTE VERIFICAR ANTES DE DAR POR BUENO**:
    que el dashboard nuevo y el Excel que genera queden visualmente iguales
    al original de AAI, no solo que los números cierren (pedido explícito
    de Boris 28/08). Sigue necesitando `FMP_API_KEY`/`FINNHUB_API_KEY`
