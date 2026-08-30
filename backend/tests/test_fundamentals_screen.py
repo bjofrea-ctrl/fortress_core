@@ -335,15 +335,71 @@ def test_to_pct_helper():
     assert _to_pct(0) == 0
 
 
-def test_screen_handles_all_none_gracefully():
-    pass
-
+# ============================================================================
+# Fixture canónico de paridad (export real de InvestingPro vía explorer)
+# ============================================================================
+# El test de paridad PLAN §3 es OBLIGATORIO si el export real existe. El
+# fixture NO vive en ~/Downloads (directorio volátil donde se borró y dejó
+# el test en skip silencioso por semanas): vive DENTRO del repo en
+# backend/tests/fixtures/canon/, donde "está si está, y se nota si no".
+#
+# Para regenerarlo cuando Boris re-exporte:
+#   mkdir -p backend/tests/fixtures/canon
+#   cp "~/Downloads/fortress core - Market View - <fecha>.xlsx" \
+#      backend/tests/fixtures/canon/market_view_export.xlsx
+#
+# El path por defecto se puede override con REAL_EXCEL_FIXTURE env.
 import os
+import warnings
 
-_CANON_XLSX = os.environ.get(
-    "REAL_EXCEL_FIXTURE",
-    "/Users/boris/Downloads/fortress core - Market View - 2026-08-27 (2).xlsx",
+_CANON_FIXTURE_DIR = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "fixtures", "canon"
 )
+_DEFAULT_CANON_XLSX = os.path.join(_CANON_FIXTURE_DIR, "market_view_export.xlsx")
+_CANON_XLSX = os.environ.get("REAL_EXCEL_FIXTURE", _DEFAULT_CANON_XLSX)
+
+
+@pytest.fixture
+def canon_xlsx():
+    """Fixture RUIDOSO: si el export real falta, SKIP explícito con motivo
+    visible (nunca silencioso). Si REQUIRE_PARIDAD=1 (CI / gate de merge),
+    FALLA en lugar de skip — la paridad de Fase 3 no se puede dar por
+    verificada sin fixture."""
+    if os.path.exists(_CANON_XLSX):
+        return _CANON_XLSX
+    msg = (
+        f"PARIDAD NO VERIFICADA: falta el export real InvestingPro en "
+        f"{_CANON_XLSX}. Re-exportá desde el screener (ver docstring de "
+        f"este archivo) y copialo al fixtures/canon/. Sin él, la paridad "
+        f"bit-a-bit de Fase 3 no se puede confirmar."
+    )
+    if os.environ.get("REQUIRE_PARIDAD") == "1":
+        pytest.fail(msg)
+    warnings.warn(f"⚠️  {msg}", stacklevel=2)
+    pytest.skip(msg)
+
+
+@pytest.fixture
+def canon_fixture_dir():
+    return _CANON_FIXTURE_DIR
+
+
+def test_paridad_fixture_requerido_en_ci(canon_fixture_dir):
+    """GUARDIA de paridad para CI/gate de merge.
+
+    Sin REQUIRE_PARIDAD=1 este test solo informa. Con REQUIRE_PARIDAD=1 (el
+    gate que Boris/CI usan antes de aprobar un merge de Fase 3+), FALLA en
+    rojo si el fixture real falta: la paridad no se puede dar por verificada
+    en silencio. El mensaje dice exactamente cómo regenerar el fixture."""
+    if os.environ.get("REQUIRE_PARIDAD") != "1":
+        pytest.skip("REQUIRE_PARIDAD != 1 — guardia de CI inactiva (informa)")
+    if not os.path.exists(_CANON_XLSX):
+        pytest.fail(
+            f"GUARDIA PARIDAD: falta {_CANON_XLSX}. "
+            f"Re-exportá el Market View de InvestingPro y copialo a "
+            f"{canon_fixture_dir}/market_view_export.xlsx (o setéá "
+            f"REAL_EXCEL_FIXTURE) antes de cerrar la fase."
+        )
 
 
 def _read_canon_results(xlsx_path):
@@ -403,15 +459,14 @@ def _txt(row, j):
     return v
 
 
-@pytest.mark.skipif(
-    not os.path.exists(_CANON_XLSX),
-    reason="Excel fixture real no presente; test de paridad opcional",
-)
-def test_paridad_estructura_export_cubre_surface_indicators():
+def test_paridad_estructura_export_cubre_surface_indicators(canon_xlsx):
     """El export real (canónico) tiene TODAS las columnas que `screen()`
     lee. Garantiza que el motor canónico y el nuevo pueden consumir el mismo
-    export sin perder información."""
-    hmap, _ = _read_canon_results(_CANON_XLSX)
+    export sin perder información.
+
+    RUIDOSO: si el fixture falta, hace pytest.skip() con motivo visible
+    (nunca pasa desapercibido como antes)."""
+    hmap, _ = _read_canon_results(canon_xlsx)
     surface = [
         "Name", "Ticker", "Price, Current",
         "Piotroski Score", "Altman Z-Score", "Beneish M-Score",
@@ -439,11 +494,7 @@ def test_screen_handles_all_none_gracefully():
     assert "Datos insuficientes" in out["alertas"]
 
 
-@pytest.mark.skipif(
-    not os.path.exists(_CANON_XLSX),
-    reason="Excel fixture real no presente",
-)
-def test_paridad_motor_canonico_sobre_export_completo():
+def test_paridad_motor_canonico_sobre_export_completo(canon_xlsx):
     """El test de paridad OBLIGATORIO del PLAN §3.
 
     Para cada empresa del export real con campos núcleo, armamos `indicators`
@@ -454,8 +505,11 @@ def test_paridad_motor_canonico_sobre_export_completo():
 
     Umbral de paridad: la diferencia entre mi distribución y la del canon
     debe ser <5% en cada balde. Si pasa, la lógica de umbrales es equivalente.
-    Diferencias grandes (>10%) indican bug de umbrales o de exclusion."""
-    hmap, data = _read_canon_results(_CANON_XLSX)
+    Diferencias grandes (>10%) indican bug de umbrales o de exclusion.
+
+    RUIDOSO: el fixture `canon_xlsx` hace skip con motivo visible si el
+    export no está — nunca skip silencioso (bug histórico del ~/Downloads)."""
+    hmap, data = _read_canon_results(canon_xlsx)
 
     balde_counts = {"Deep Dive": 0, "Watchlist": 0, "Neutral": 0, "Descartada": 0, "Omitida": 0}
     cal_counts = {"EXCELENTE": 0, "BUENA": 0, "DÉBIL": 0, "N/D": 0}

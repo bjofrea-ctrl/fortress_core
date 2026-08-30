@@ -4,11 +4,19 @@
 #
 # Cierra la brecha del screening manual: antes el motor corría con un
 # export manual de InvestingPro (cada corrida requería que el operador
-# bajara el xlsx). Ahora corre solo al cierre del mercado US (22:00 local,
-# ~16:00 ET en verano / ~17:00 ET en invierno), después de dataupdater.
+# bajara el xlsx). Ahora corre solo al cierre del mercado US (22:30 local,
+# ~16:30 ET en verano / ~17:30 ET en invierno), después de dataupdater.
+#
+# Qué produce este job (todo en data/cache_fundamentals_screen/):
+#   - screen_<fecha>.json          → endpoint /api/fundamentals/screen
+#   - dashboard_<fecha>.html       → endpoint /screen/dashboard.html
+#   - Screening_AAI_<fecha>.xlsx   → endpoint /screen/export.xlsx
+#   - state.json                    → estado del job (resume / cuota)
+# El Excel y el HTML los genera el motor canónico real (vendorizado en
+# app/core/motor_canonico/) vía run_fundamentals_screen.py → render_artifacts.
 #
 # Política de cuota FMP (free tier, 250/día, 5 endpoints/ticker):
-#   - El job corre una vez por día a las 22:00. Si falla a mitad, NO
+#   - El job corre una vez por día a las 22:30. Si falla a mitad, NO
 #     se reintenta el mismo día (eso quemaría la cuota del día siguiente
 #     y los datos no van a aparecer hoy de todos modos).
 #   - Al día siguiente, con --resume, retoma desde el último símbolo
@@ -17,7 +25,7 @@
 #
 # Orden del orquestador (cron decide; este script sólo invoca):
 #   1. dataupdater (22:00) — refresca precios del universo 50
-#   2. fundamentals_screen (22:30 o 23:00) — ingesta FMP + screening
+#   2. fundamentals_screen (22:30) — ingesta FMP + screening + render
 #      El gap de 30min deja que yfinance termine primero y no compitan
 #      por CPU/red.
 #

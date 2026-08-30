@@ -64,8 +64,6 @@ BATCH_SIZE = int(os.environ.get("FUNDAMENTALS_BATCH_SIZE", "5"))
 # (300/min en free tier) si algo se atrasó; casi imperceptible al operador.
 BATCH_PAUSE_SECONDS = int(os.environ.get("FUNDAMENTALS_BATCH_PAUSE", "5"))
 
-# Margen de 10 calls sobre el límite real (250) para no chocar con rate limit.
-
 
 def _load_universe_from_settings() -> List[str]:
     env = os.environ.get("FUNDAMENTALS_UNIVERSE", "").strip()
@@ -257,6 +255,26 @@ def main(argv: Optional[List[str]] = None) -> int:
     }
     _atomic_write_json(out_path, artifact)
 
+    # Artefactos del motor canónico (Excel + dashboard HTML). Este paso es
+    # OBLIGATORIO: el cron no está completo sin el dashboard, y el endpoint
+    # /screen/dashboard.html sirve el .html que esto genera. Si el render
+    # falla (motor canónico roto, openpyxl ausente, etc.) NO se reporta la
+    # corrida como exitosa: rc=3 es un estado distinto de "todo OK" (0) y de
+    # "falló sin tocar red" (2). El test end-to-end lo ve en rojo.
+    try:
+        from app.core.fundamentals_artifacts import render_artifacts
+        render_artifacts(results, run_date, CACHE_DIR)
+    except Exception as e:
+        logger.exception(
+            "fundamentals_screen_render_failed",
+            extra={"date": run_date, "error": str(e)[:200]},
+        )
+        print(
+            f"ERROR: screening completado ({len(results)} símbolos) pero "
+            f"falló la generación del dashboard/Excel: {e}"
+        )
+        return 3
+
     state["last_run_finished"] = datetime.now(timezone.utc).isoformat()
     if not state.get("last_successful_date"):
         state["last_successful_date"] = run_date
@@ -272,4 +290,3 @@ def main(argv: Optional[List[str]] = None) -> int:
 
 if __name__ == "__main__":
     sys.exit(main())
-DAILY_FMP_BUDGET = int(os.environ.get("FMP_DAILY_BUDGET", "240"))

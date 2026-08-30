@@ -22,8 +22,8 @@ leen. El endpoint NO toca la red — siempre lee de disco.
 Política de cuota FMP (250/día free tier, 5 endpoints por ticker):
     Si el job falla a mitad, se guarda el progreso parcial y se retoma al
     día siguiente desde donde quedó. NO se reintenta el mismo día — eso
-    quemaría la cuota del día siguiente y los reintentos tienen收益 cero
-    (los datos no van a aparecer en el mismo día en FMP).
+    quemaría la cuota del día siguiente y los reintentos tienen rendimiento
+    cero (los datos no van a aparecer en el mismo día en FMP).
 
 Convención de estilo: copiada de `app/api/routes/market.py` y `ranking.py`
 (APIRouter + HTTPException, sin auth — los endpoints de solo-lectura
@@ -138,11 +138,11 @@ async def get_dashboard_html(
 ) -> Any:
     """Sirve el HTML estático del dashboard para embeber en iframe.
 
-    Decisión de diseño PENDIENTE (esperando Boris): ¿se genera en el cron o
-    on-demand? El esqueleto asume que el cron lo genera. Si en la práctica
-    se quiere on-demand, este endpoint se conecta al motor canónico
-    (~/claude/skills/aai-screening-acciones/scripts/motor_screening.py
-    generar_dashboard) y agrega un import nuevo.
+    El HTML lo genera el job runner (`scripts/run_fundamentals_screen.py` →
+    `fundamentals_artifacts.render_artifacts`) usando el motor canónico real
+    (`app/core/motor_canonico/scripts/motor_screening.py` → `generar_dashboard`).
+    El cron lo produce cada noche; este endpoint solo lee el archivo de disco.
+    Si el cron nunca corrió o falló el render, 503/404.
 
     El parámetro `date` es opcional (default: último disponible). No se
     valida con Query(pattern) porque la fecha con formato inválido no
@@ -169,6 +169,40 @@ async def get_dashboard_html(
         return HTMLResponse(f.read())
 
 
+@router.get("/screen/export.xlsx", response_class=None)
+async def get_export_xlsx(
+    date: Optional[str] = None,  # type: ignore[assignment]
+) -> Any:
+    """Sirve el Excel enriquecido generado por el motor canónico.
+
+    El archivo `Screening_AAI_<fecha>.xlsx` lo produce el job runner
+    (vía `fundamentals_artifacts.render_artifacts` → `generar_excel`).
+    `date` opcional: default al más reciente disponible.
+    """
+    if date is not None and not _DATE_RE.fullmatch(date):
+        raise HTTPException(
+            status_code=422,
+            detail=f"Formato de fecha inválido: {date!r}. Esperado YYYY-MM-DD.",
+        )
+    if date is None:
+        dates = _list_available_dates()
+        if not dates:
+            raise HTTPException(status_code=503, detail="No hay export disponible todavía.")
+        date = dates[0]
+    path = os.path.join(_CACHE_DIR, f"Screening_AAI_{date}.xlsx")
+    if not os.path.exists(path):
+        raise HTTPException(
+            status_code=404,
+            detail=f"No hay Excel para {date}. El job debe haberlo generado.",
+        )
+    from fastapi.responses import FileResponse
+    return FileResponse(
+        path,
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        filename=f"Screening_AAI_{date}.xlsx",
+    )
+
+
 @router.get("/screen/state")
 async def get_state() -> Dict[str, Any]:
     """Estado del job: última corrida exitosa, símbolos pendientes/fallidos,
@@ -185,4 +219,3 @@ async def get_state() -> Dict[str, Any]:
             return json.load(f)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error leyendo {path}: {e}")
-    return sorted(dates, reverse=True)

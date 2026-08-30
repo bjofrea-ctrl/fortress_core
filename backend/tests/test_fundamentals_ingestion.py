@@ -220,11 +220,14 @@ COLS_NUCLEO = [
 ]
 
 # Ruta por defecto al export real del screener de InvestingPro (reference).
+# Vive DENTRO del repo (no en ~/Downloads, directorio volátil donde se perdió
+# y dejó este test en skip silencioso). Path relativo al archivo de test.
 # Sobrescribible por env REAL_EXCEL_FIXTURE para otros equipos/CI.
-REAL_EXCEL = os.environ.get(
-    "REAL_EXCEL_FIXTURE",
-    "/Users/boris/Downloads/fortress core - Market View - 2026-08-27 (2).xlsx",
+_CANON_FIXTURE_DIR = os.path.join(
+    os.path.dirname(os.path.abspath(__file__)), "fixtures", "canon"
 )
+_DEFAULT_CANON_XLSX = os.path.join(_CANON_FIXTURE_DIR, "market_view_export.xlsx")
+REAL_EXCEL = os.environ.get("REAL_EXCEL_FIXTURE", _DEFAULT_CANON_XLSX)
 
 
 def _load_excel_headers(path):
@@ -247,14 +250,24 @@ def _load_excel_headers(path):
     return [h for h in header_row if h]
 
 
-@pytest.mark.skipif(
-    not os.path.exists(REAL_EXCEL),
-    reason="Excel fixture real no presente en el equipo; test de referencia opcional",
-)
 def test_excel_fixture_covers_motor_core_columns():
     """El export real cubre las columnas núcleo y esenciales del motor canónico.
     Garantiza que la surface de datos de Fase 1+2 puede rellenar TODAS las
-    columnas que el motor espera (hmap), sin re-diseñar nada."""
+    columnas que el motor espera (hmap), sin re-diseñar nada.
+
+    RUIDOSO: si el fixture falta, skip con advertencia visible (nunca
+    silencioso). Con REQUIRE_PARIDAD=1, falla en rojo."""
+    if not os.path.exists(REAL_EXCEL):
+        msg = (
+            f"PARIDAD NO VERIFICADA: falta el export real en {REAL_EXCEL}. "
+            f"Re-exportá desde InvestingPro y copialo a "
+            f"{_CANON_FIXTURE_DIR}/market_view_export.xlsx."
+        )
+        if os.environ.get("REQUIRE_PARIDAD") == "1":
+            pytest.fail(msg)
+        import warnings
+        warnings.warn(f"⚠️  {msg}", stacklevel=2)
+        pytest.skip(msg)
     headers = _load_excel_headers(REAL_EXCEL)
     for col in COLS_ESENCIALES + COLS_NUCLEO:
         assert col in headers, f"columna núcleo ausente en export real: {col}"
