@@ -106,6 +106,52 @@ Si alguna de estas cambió de estado cuando leas esto, actualizá esta sección
 
 ---
 
+## Backlog futuro — NO AHORA, sólo después de cerrar lo de arriba
+
+### 9. Estrategia de scalping MTF (video de YouTube) — comparación futura, NO desarrollar todavía
+
+Boris trajo un prompt (generado por otra IA a partir de un video de YouTube de un
+influencer de trading, "Alex Ruiz") para programar un bot de scalping multi-temporal
+(H4/H1 sesgo, M5 estructura+Fibonacci, M1 gatillo por ruptura de "diagonal"+volumen) más
+un motor de `RiskManager`/`CostAndRiskEngine`. **Decisión (29/08): queda en espera, se
+retoma como desarrollo posterior — una vez cerrado el trabajo actual — para comparar
+contra la estrategia propia del proyecto, NO para reemplazarla ni mezclarse con el
+ledger existente.**
+
+Reservas técnicas ya planteadas, para no perderlas cuando se retome:
+
+- El gatillo central ("ruptura de diagonal" en M1) es una línea de tendencia dibujada a
+  mano en el video — inherentemente subjetiva. Cualquier implementación algorítmica
+  (ZigZag, regresión lineal) es una *aproximación inventada*, no la estrategia original.
+  Cualquier backtest futuro estaría validando esa aproximación, no la estrategia del video.
+- Es scalping M1: la categoría más sensible a costos que existe (spread+slippage pueden
+  comerse la esperanza matemática por completo — el propio material del video lo admite).
+  No tomar en serio ningún resultado de backtest sin costos realistas modelados desde el
+  primer día (no como ajuste posterior).
+- Requiere infraestructura que este proyecto no tiene hoy: datos M1/M5/H1 de forex/índices/
+  cripto (MT5, ccxt, IB — no hay conexión a ninguno), y un motor de backtesting distinto
+  (`backtrader`/`vectorbt`, no `BacktestEngine` existente). Es un proyecto de infraestructura
+  aparte, no una tarea dentro del código actual.
+- Si se retoma: tratar como sandbox aislado (worktree propio, sin tocar `trial_registry.json`
+  de producción), con pre-registro previo igual que cualquier otra hipótesis nueva, y con el
+  nivel de escepticismo más alto posible dado el origen (video, no investigación).
+
+### 10. Timeframes según horizonte — swing vs. intradía (nota de referencia)
+
+Pedido de Boris: documentar qué mirar en cada caso, para tenerlo presente al comparar
+estrategias de distinto horizonte (útil cuando se retome el ítem 9).
+
+| | **Swing trading** (días–semanas) | **Intradía / scalping** (minutos–horas, cierra el mismo día) |
+|---|---|---|
+| Timeframe de decisión | Diario (D1), a veces 4H para afinar entradas | M1–M15 |
+| Timeframe de contexto/sesgo | Semanal (W1) para tendencia macro | H1/H4 para sesgo intradía |
+| Sensibilidad a costos (spread/slippage/comisión) | **Baja** — el costo es una fracción chica del movimiento esperado por trade. Es justo por esto que el enfoque diario actual de `fortress_core` es viable con costos de 0.05-0.10%/lado. | **Muy alta** — el costo puede ser una fracción grande (o mayor) del movimiento esperado. La estrategia vive o muere en la ejecución real, no en el backtest histórico. |
+| Tamaño de muestra necesario | Pocos trades por año → hace falta **muchos años** de historia para significancia estadística (de ahí DSR, Bonferroni, ventanas de varios años como en A6.3). | Muchos trades por año → significancia en cantidad de trades se alcanza rápido, pero el riesgo de sobreajuste a un régimen de volatilidad específico es mayor. |
+| Riesgo estructural propio | Gaps overnight/fin de semana. | Liquidez que se seca en rupturas, ejecución a peor precio (slippage) justo cuando la señal es más fuerte. |
+| Infraestructura necesaria | Datos EOD alcanzan (lo que ya tiene el proyecto). | Datos intradía/tick, feed cercano a tiempo real, conexión a broker — nada de esto existe hoy en `fortress_core`. |
+
+---
+
 ## Plan de implementación consolidado (2026-08-12) — para ejecutar en tandas
 
 El usuario pidió cerrar todo lo pendiente, no sólo lo más urgente. Se secuencia en tandas
