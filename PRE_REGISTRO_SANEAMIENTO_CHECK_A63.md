@@ -91,8 +91,11 @@ dio 0 comparando ambos rangos. La causa de W3 queda **sin explicar**.
 - [x] Ninguna corrida nueva se lanzó para producir este documento.
 - [x] El veredicto NO_CUMPLE de `screening_palas` (ya en el ledger, `COMPLETED`)
       no se toca ni se reabre.
-- [ ] **Aprobación explícita de Boris** antes de tocar el check o reservar un
-      trial nuevo.
+- [x] **Aprobación explícita de Boris** — 2026-08-29, en conversación con Claude
+      Code ("Si apenas apruebo tu medida" / confirmado tras pedir aclaración
+      por mensaje cortado). Autoriza únicamente lo descrito en §4: igualar
+      N_TRIALS solo en la comparación del check §4.2, sin tocar defaults de
+      ningún script ni reabrir el veredicto sellado.
 
 ---
 
