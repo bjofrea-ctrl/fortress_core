@@ -589,5 +589,15 @@
     "veredicto": "NO_CUMPLE",
     "artefacto": "data/cache/screening_palas_20260828_071737.txt",
     "fecha_completado": "2026-08-29"
+  },
+  {
+    "id": "screening_palas_saneada_a63",
+    "fecha": "2026-08-29",
+    "familia": "signal_diagnosis",
+    "hipotesis": "Screening vendedor de palas — rerun paralelo PALA/RESTO/POOLED con check de sanidad §4.2 corregido: POOLED vs baseline_clean_20260828_183624.txt (costo 0.10% vigente) con N_TRIALS=17 ad-hoc para comparacion puntual (DSR real de PALA/RESTO/POOLED sigue en n_trials=5, familia signal_diagnosis).",
+    "n_trials_consumidos": 1,
+    "umbral_aplicado": "DSR_PALA>0.50 Y Sharpe_PALA>Sharpe_RESTO en >=2/3 ventanas (screening barato, escalon 1 embudo)",
+    "seccion_doc": "PRE_REGISTRO_SANEAMIENTO_CHECK_A63.md §4",
+    "status": "RESERVED"
   }
 ]
