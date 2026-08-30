@@ -10,7 +10,7 @@ Code, Cline, OpenCode), leer este documento primero. Al cerrar, actualizarlo ant
 — marcar lo que se cerró, agregar lo que apareció nuevo. Ningún ítem se da por cerrado sin
 marcarlo acá, aunque se haya resuelto "de pasada" en otra conversación.
 
-Última actualización: 2026-08-27.
+Última actualización: 2026-08-29.
 
 ## PENDIENTE AHORA — chequear primero, antes de leer el resto
 
@@ -415,6 +415,8 @@ gantt
 
 | Investigación | **§46 Trial #19 — Compuerta M3 STANDALONE sobre el motor (Brecha 2)** (Kilo Code, auto-cierre autorizado) | ⚪ **cerrado — NO INTERPRETABLE mecánico (piso insuficiente), sin consumo de slot** (2026-08-25) | Re-intento requiere pre-registro nuevo con piso alcanzable — decisión de Boris | Pre-registro §46 APROBADO por coordinador antes de correr; primera medición REAL de M3 como compuerta de operación (vs §42 condicionante diagnóstico): ALWAYS vs GATED intra-corrida, GOLDILOCKS-rezagado 21b cubre solo **28.7%** de días → GATED n=17/19/51 contra piso 30 → solo W3 computable (<2/3) → **NO registra NI consume** (motor_signal sigue 12, th 0.99231). Desglose exploratorio: mejora riesgo-retorno cuando GOLD es escaso (W1 Sharpe 0.69 vs 0.32, maxDD −1.5% vs −5.3%) y lo destruye cuando abunda (W3 0.16 vs 0.48) — el filtro vale para EVITAR malos, no para certificar buenos; pista, no evidencia. Fidelidad OK×6 (F9 identity-cache bit-idéntico, gate 34 recalibs, suite 370 pre-corrida; señales 75.7% bloqueadas). Script `backend/scripts/trial_m3_gate_standalone.py`; artefacto `trial_m3_gate_standalone_20260825_164832.txt`(+json+parquet); §46+§46.1 PLAN_MEJORA_MATEMATICA.md. Producción intacta. |
 | Investigación | **§47 Trial #20 — "Buffett's Alpha" sistemático (Quality + Value + Low-Beta), A5** (Kilo Code) | 🟢 **cerrado — NO_CUMPLE mecánico (Sharpe_OOS 0.886>0, DSR 0.361<0.99231), consume 1 slot** (2026-08-25) | Si se mejora cobertura/definición de valor, el re-test corresponde a A4 (no re-abrir A5) | Pre-registro §47 aprobado por coordinador. Fase 0 (panel EDGAR point-in-time 47/48, coverage-gate 97.9%/100% PASS) + trial único (`trial_a5_buffett_alpha.py`). OOS 31m: **Sharpe neto 0.886>0, DSR 0.361 (n=13) → NO_CUMPLE binario**. Hallazgo: control equal-weight OOS Sharpe **1.50 > factor 0.886** — el composite no bate al universo naive. Familia motor_signal consume **12→13** (th vigente 0.992857). Sin promoción al ensamble. §47+§47.1 PLAN_MEJORA_MATEMATICA.md. |
+
+| Instrumento | **Fase 4 — Screening automatizado de fundamentales** (Cline, Fase 4 del PLAN_MOTOR_FUNDAMENTALES_AUTOMATIZADO.md) | 🟢 **cerrado (2026-08-29, commit `67109a6`)** — 4 bugs de auditoría (cron faltante, dashboard/excel nunca generados, fixture en ~/Downloads perdido, token chino 收益). Resueltos: cron `.sh`+`.plist` (22:30), `render_artifacts()` con motor vendorizado (hash `84abe308`), tests e2e (4/4), fixture estable con skip ruidoso. 44 passed, 1 skipped. | — | `fundamentals_artifacts.py` (nuevo), `motor_canonico/` (vendor), `test_fundamentals_screen_e2e.py` (nuevo), `fundamentals_screen_daily.sh`+`.plist`. Endpoints: `/api/fundamentals/screen/latest`, `/screen/dashboard.html`, `/screen/export.xlsx`. Lo NO probado en vivo: job vs FMP real (requiere key). |
 
 **Leyenda**: 🔴 crítico/sin empezar · 🟡 en curso/parcial · ⚪ parqueado, sin decisión de producto · 🟢 cerrado
 

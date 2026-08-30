@@ -1,5 +1,30 @@
 # Fortress Core — Memoria de Sesiones (Última sesión resumida)
 
+## 2026-08-29 — Fase 4 screening automatizado: auditoría, fix, commit
+
+**Auditoría de Boris**: 4 bugs en Fase 4 (antes de esta sesión, los 25 tests pasaban pero verificaban al lector, no al escritor):
+1. **Cron no existía** — docstring prometía `fundamentals_screen_daily.sh` pero no estaba versionado.
+2. **Dashboard/Excel nunca se generaban** — `generar_dashboard()` / `generar_excel()` solo en comentarios, cero llamadas reales.
+3. **Paridad Fase 3 irrepducible** — `_CANON_XLSX` apuntaba a `~/Downloads/archivo_perdido.xlsx`.
+4. **Token chino** — `收益` en comentario del route.
+
+**Fixes implementados**:
+- Cron real: `fundamentals_screen_daily.sh` + `com.fortresscore.fundamentals_screen.plist` (22:30), versionados.
+- `fundamentals_artifacts.py` (nuevo): llama `motor.generar_excel()` y `motor.generar_dashboard()` del motor canónico vendorizado (`motor_canonico/`, hash `84abe308` = skill r13).
+- Job runner wireado: `render_artifacts()` invocado después del screening, rc=3 si falla.
+- Tests e2e (4): job completo → verifica `screen_.json`, `dashboard_.html`, `Screening_AAI_.xlsx`. Falla en rojo si no genera HTML.
+- Fixture estable: `backend/tests/fixtures/canon/market_view_export.xlsx`. Skip ruidoso + `REQUIRE_PARIDAD=1`.
+- Referencia hermana en `test_fundamentals_ingestion.py:224` actualizada (mismo path + patrón).
+- `.gitignore`: `fixtures/canon/` y `cache_fundamentals_screen/` excluidos.
+
+**Verificación final**: 44 passed, 1 skipped. Endpoints sirven artefactos. Artefactos en disco: `Screening_AAI_2026-08-29.xlsx` (28KB), `dashboard_2026-08-29.html` (31KB).
+
+**Commit**: `67109a6` — push a `bjofrea-ctrl/fundamentales-automatizado`.
+
+**Lo NO probado en vivo**: job vs FMP real (requiere API key, no está en el repo por diseño).
+
+---
+
 ## 2026-08-27 — Fix data_ingestion gap >7 (bug infra)
 
 **Bug**: `backend/app/core/data_ingestion.py::download_data()` usaba `if (gap).days > 7` en backfill (~línea 31) y refresh (~línea 42) — el updater diario (launchd nightly `scripts/data_updater.sh` 22:00) **nunca refrescaba hasta superar una semana**. Cache quedaba 0-8 días stale, invisible porque `rc=0` y los dos estados "no había nada que bajar (fin de semana)" vs "no intenté" eran indistinguibles. Confirmado: `AAPL.parquet` clavado en 2026-08-21 en 3 corridas nocturnas 24,25,26/08 con `rc=0` sin errores. Reportado por Boris como bug real de infra.

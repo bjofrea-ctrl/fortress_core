@@ -61,13 +61,29 @@ testeado y verificado.
   manual, y el nuevo sobre las mismas empresas vía API) y confirmar que clasifican
   igual antes de confiar en el nuevo.
 
-### Fase 4 — Integración
+### Fase 4 — Integración 🟢 CERRADA (2026-08-29, commit `67109a6`)
 
 - Endpoint nuevo en el backend (solo lectura) que expone el resultado del screening
-  automático.
-- Cron diario/semanal (mismo patrón que `com.fortresscore.dataupdater.plist`).
-- Pestaña nueva en el dashboard institucional (acordado con Boris 2026-08-27) que
-  muestra el resultado más reciente — sin necesitar ningún export manual.
+  automático: `/api/fundamentals/screen/latest`, `/screen/dashboard.html`,
+  `/screen/export.xlsx`, `/screen/state`. Todos sirven artefactos de disco.
+- Cron diario (`scripts/fundamentals_screen_daily.sh` + `.plist` 22:30 local),
+  versionado en repo. Sigue el patrón de `data_updater.sh`.
+- **Generación real de artefactos**: `fundamentals_artifacts.py` llama
+  `motor.generar_excel()` y `motor.generar_dashboard()` del motor canónico
+  vendorizado (`motor_canonico/scripts/motor_screening.py`, hash `84abe308...`
+  byte-a-byte del skill r13). El job runner devuelve rc=3 si el render falla.
+- **Tests e2e** (4 tests): corren el job completo contra fixtures FMP y verifican
+  que produce `screen_<date>.json`, `dashboard_<date>.html`,
+  `Screening_AAI_<date>.xlsx`. Si el job no genera el HTML, fallan en rojo.
+- **Fixture de paridad estable**: `_CANON_XLSX` apunta a
+  `backend/tests/fixtures/canon/market_view_export.xlsx` (no `~/Downloads`).
+  Skip ruidoso con `REQUIRE_PARIDAD=1` como gate de merge. Referencia hermana en
+  `test_fundamentals_ingestion.py` actualizada al mismo path.
+- **`.gitignore`**: `fixtures/canon/` (1.28MB) y `cache_fundamentals_screen/`
+  excluidos (artefactos regenerables).
+- Verificado: 44 passed, 1 skipped. Endpoints sirven artefactos via async call.
+- **Lo NO probado en vivo**: job contra FMP real (requiere API key, no está en el
+  repo por diseño). Con clave ficticia FMP rechaza → rc=2 limpio.
 
 ## Aislamiento — cero colisión con Kilo/OpenCode
 
