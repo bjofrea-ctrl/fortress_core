@@ -415,6 +415,25 @@ vez no pasa DSR OOS (0.61 < 0.95) ni PBO (0.47, overfitting sustancial).
     (destrucción creativa, más abajo) aplica también al propio etiquetado
     de A6.3.
 
+  **Etiquetado incompleto + principio de mapeo de cadena de valor (Boris,
+  2026-08-27)**: el etiquetado manual de 6 símbolos usado en el screening
+  YA CORRIENDO (arriba) quedó corto — faltan los fabricantes de
+  almacenamiento (discos duros/SSD tipo Western Digital, SanDisk) que
+  también proveen componentes a los centros de datos de IA, la misma
+  categoría "habilitador" que semiconductores/nube/networking. Más
+  general: la cadena de "palas" tiene niveles — hay empresas que
+  CONSTRUYEN los centros de datos que son stakeholders/socios de nubes
+  como Oracle, y así sucesivamente hacia atrás en la cadena. Principio de
+  Boris: **"saber es poder"** — mapear quién es socio/proveedor/stakeholder
+  de quién importa más que adivinar la categoría por el nombre del
+  sector. **No se aplica retroactivamente al screening que ya está
+  corriendo** (el criterio de `PRE_REGISTRO_SCREENING_PALAS.md` está
+  congelado — regla de oro, no se edita post-hoc) — queda como insumo
+  para un v2 del etiquetado A6.3 cuando se pre-registre esa expansión,
+  con el mapeo de cadena de valor completo (fabricantes de storage,
+  constructores de datacenters, y sus relaciones de stakeholder) antes de
+  correr nada nuevo.
+
   **Secuencia del colapso: ¿cae primero el oro o la pala? (Boris,
   2026-08-26)**: hipótesis con dos mecanismos concretos, ninguno testeado
   todavía (no hubo busto de IA en este ciclo — queda documentado, no
@@ -623,6 +642,68 @@ construidos o diagnosticados, con estado real conocido (no supuesto):
   académico (factor value, Fama-French) — punto de partida si se retoma,
   no el punto más débil que fue el sentimiento/AAII de Fase 0.6.
 
+### A6.4 — Rupturas de máximos condicionadas por régimen de volatilidad
+### (Boris, 2026-08-27)
+
+**Hipótesis**: en fase alcista, las oportunidades reales de mediano/largo
+plazo son MÁS PROBABLES con volatilidad BAJA — el mercado "no quiere dar
+señales" de esa suba, es un movimiento sigiloso antes de que la masa lo
+note. La volatilidad ALTA es más peligrosa y NO necesariamente indica
+oportunidad de mediano/largo plazo — funciona más como anzuelo para el
+retail, que genera la sensación de estar por perder una oportunidad
+(FOMO). Aplicado a ruptura de máximos: **romper un máximo con vol BAJA =
+oportunidad; romper un máximo con vol ALTA = alto riesgo.**
+
+**Generalización (Boris, 2026-08-27, aclaración sobre lo de arriba)**: el
+punto no es solo hacia DÓNDE va el valor (la dirección, el objetivo/nivel
+que se alcanza), sino CÓMO se mueve el valor en relación a ese objetivo —
+la calidad/forma del camino (sigiloso y de baja volatilidad vs. errático
+y de alta volatilidad) es señal en sí misma, independiente de si el
+precio termina llegando al mismo destino. Dos movimientos que alcanzan el
+mismo objetivo (el mismo máximo roto, el mismo nivel) no son equivalentes
+si uno lo hizo con vol baja y el otro con vol alta — el CÓMO condiciona
+si es oportunidad genuina o anzuelo. Esto generaliza la hipótesis más
+allá de "ruptura de máximo" puntual: aplica a cualquier objetivo/nivel de
+precio, no solo a máximos históricos.
+
+**Relación con lo ya existente**: distinto de A6.2 (que usa
+`realized_vol_regime`, ratio vol20d/vol100d de `indicators.py`, para
+decidir CADENCIA de rebalanceo). Esta es una TERCERA aplicación del mismo
+indicador — como filtro/condicionante de la CALIDAD de una ruptura de
+máximo (breakout), no de la cadencia ni de la predicción de vol futura
+(esa ya se descartó, §A6.2 arriba: predijo débil solo W1). El punto de
+partida técnico (el indicador) ya existe y está diagnosticado
+(`RESUMEN_HURST_VOL_REGIME.md`) — falta diseñar el trial específico para
+esta pregunta puntual (definición de "ruptura de máximo", ventana de vol
+de referencia, ventanas W1/W2/W3 de evaluación).
+
+**Tercer componente (Boris, 2026-08-27)**: patrón específico de entrada —
+después de una volatilidad MUY alta (un shock), si esa volatilidad
+empieza a REDUCIRSE mientras el precio SUBE, eso es una oportunidad de
+compra fuerte. No es el shock en sí (eso es la fase de alto riesgo de
+arriba) ni el estado de vol baja sostenida (eso es la fase "sigilosa" de
+arriba) — es la TRANSICIÓN entre ambos: vol contrayéndose + precio ya
+confirmando dirección alcista. Mecánicamente medible con lo mismo que ya
+existe: `realized_vol_regime` (vol20d/vol100d) cayendo mientras el precio
+hace nuevos máximos o sube sostenido — misma familia de indicador que el
+resto de A6.4, un tercer patrón concreto a especificar en el mismo futuro
+diseño de trial.
+
+**Nota de rigor**: esto contradice una parte de la literatura clásica de
+TA que pide CONFIRMACIÓN por volumen/volatilidad en rupturas (breakout
+con volumen alto = válido) — la hipótesis de Boris es la lectura inversa.
+Se parece EN ESPÍRITU a la fase de acumulación silenciosa de Wyckoff
+(acumulación de baja volatilidad antes del markup, vs. clímax de volumen/
+volatilidad en tops especulativos), pero esa cita no fue verificada
+contra la fuente original en esta sesión — se anota como intuición
+emparentada, no como respaldo académico confirmado (regla #5
+ONBOARDING.md: no citar sin verificar).
+
+**Estado**: hipótesis de marco conceptual, NO trial — igual que el resto
+del bloque A6.x de esta sección. No se corre nada sin pre-registro +
+decisión explícita de Boris (regla #1 ONBOARDING.md). Falta definir el
+diseño exacto del test antes de poder pre-registrarlo.
+
 ### Principio raíz: el valor es condicional al contexto actual, no fijo
 ### (Boris, 2026-08-26, ejemplo RAM/agua en el desierto)
 
@@ -786,6 +867,12 @@ solo el orden de la cola)**:
    "próximo oro" (reference class forecasting, necesidad estable vs.
    producto transitorio) — estos últimos son de horizonte largo, el
    proyecto no opera ahí todavía.
+4. **A6.4 (nuevo, 2026-08-27)** — rupturas de máximos condicionadas por
+   régimen de volatilidad (baja vol = oportunidad, alta vol = riesgo/
+   anzuelo retail). Reutiliza `realized_vol_regime` ya construido, pero
+   todavía NO tiene diseño de trial — no se puede pre-registrar hasta
+   definir "ruptura de máximo" con precisión mecánica. Prioridad relativa
+   a decidir por Boris cuando el diseño esté listo.
 
 ## Integración con el ensamble de paper trading (Boris, 2026-08-25)
 

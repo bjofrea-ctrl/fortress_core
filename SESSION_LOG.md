@@ -1,5 +1,43 @@
 # Fortress Core — Memoria de Sesiones (Última sesión resumida)
 
+## 2026-08-27 — Fix data_ingestion gap >7 (bug infra)
+
+**Bug**: `backend/app/core/data_ingestion.py::download_data()` usaba `if (gap).days > 7` en backfill (~línea 31) y refresh (~línea 42) — el updater diario (launchd nightly `scripts/data_updater.sh` 22:00) **nunca refrescaba hasta superar una semana**. Cache quedaba 0-8 días stale, invisible porque `rc=0` y los dos estados "no había nada que bajar (fin de semana)" vs "no intenté" eran indistinguibles. Confirmado: `AAPL.parquet` clavado en 2026-08-21 en 3 corridas nocturnas 24,25,26/08 con `rc=0` sin errores. Reportado por Boris como bug real de infra.
+
+**Causa**: umbral `>7` silencia al updater diario; `data_updater.log` no distinguía intento vacío de no-intento; sin señal, 3 noches `rc=0` pasaron como OK.
+
+**Fix sólido (no parche mínimo) en `backend/app/core/data_ingestion.py` (151 líneas ahora)**:
+- Umbrales corregidos **AMBOS** de `>7` a `>=1` con justificación en comentario (líneas 43-51, 87-89): updater diario debe intentar cuando `gap >=1` día calendario. `>0` y `>=1` equivalentes para entero `.days`, pero `>=1` lee intención "al menos un día completo atrás" y alinea con cron nightly. Gap=1 en fin de semana donde yfinance vacío es OK — se loguea intento vacío en vez de suprimir.
+- Señal explícita en log/return para cada rama: `print(f"[data_ingestion] ...")` visible en `scripts/data_updater.log` (capturado vía `>> "$LOG" 2>&1`):
+  * `gap >=1` → `gap Xd (cache ... -> end ...), attempting download ...`
+  * `yfinance empty` → `attempted but yfinance returned empty (weekend/holiday or no data), cache remains ...` (distinto de no-intento)
+  * `dedup empty` → `attempted but no new rows after dedup (all overlapping)`
+  * éxito → `refreshed N rows (new_min -> new_max, cache before -> after)`
+  * `gap <1` → `no refresh/backfill needed, gap 0d (cache up-to-date ...)` — distinto
+  * `cache miss / empty` → `cache miss / cache empty, full download ...`
+- Manejo edge `df.empty` como miss (evita IndexError).
+- API intacta: `download_data(ticker,start,end)->DataFrame`.
+
+**Test que habría atrapado**: `backend/tests/test_data_ingestion.py` NUEVO, **11 tests**, usa `tmp_path` + `monkeypatch CACHE_DIR` + mock `yf.download`, sin red:
+- `test_refresh_gap_2_triggers_download_would_have_been_skipped_with_old_gt7` (gap 2 debe llamar, con >7 se saltaba)
+- `test_refresh_gap_1_triggers`, `test_refresh_gap_0_no_call` con `capsys` verifica `no refresh needed`
+- `test_refresh_attempted_but_empty_logs_distinct_signal`, `test_refresh_attempted_but_no_new_rows_after_dedup`
+- backfill simétricos 3 tests
+- `test_cache_miss_full_download`, `test_empty_cache_treated_as_miss`
+- Suite: **467 tests collected**. Full `pytest -q` timeout >600s (heavy tests `test_backtest_engine` 216s + `test_config_registry` 295s), pero batched 5 lotes = **467 passed 0 failed** (Batch1-fast 88, 1-BE 6, 1-CR 10, Batch2 112 incl. nuevos 11, Batch3 98, Batch4 73, Batch5 80). Sin regresión; tests que monkeypatchean `download_data` siguen pasando.
+
+**Verificación viva real 27/08**:
+- Antes: `AAPL.parquet` 2026-08-21 2926 filas
+- `.venv/bin/python -c "from app.core.data_ingestion import download_data; download_data('AAPL')"` → `[data_ingestion] backfill 1827d ... refreshed 1258 rows (2010-01-04->2014-12-31)` + `refresh gap 6d ... refreshed 3 rows (2026-08-24->2026-08-26, cache 2026-08-21->2026-08-26)` → 4187 filas, last 2026-08-26 (último hábil). Gap 6 antes nunca habría disparado.
+- Segunda corrida gap 1 → `attempted but no new rows after dedup` / `attempted but yfinance returned empty` — señal explícita distinta de `no refresh needed` (gap 0).
+
+**Estado**: diff pendiente, **NO commiteado** per gate — `git status` debe mostrar `M backend/app/core/data_ingestion.py` + `?? backend/tests/test_data_ingestion.py` para revisión. No se tocó `data_updater.sh`.
+
+**Archivos**:
+- `backend/app/core/data_ingestion.py` modificado (diff pendiente, NO commitear)
+- `backend/tests/test_data_ingestion.py` nuevo (untracked, 11 tests)
+- `scripts/data_updater.log` / `scripts/pipeline_diario.log` como logs canónicos (sin cambios de código)
+
 ## 2026-08-26 — Garantías anti-evasión Bonferroni familia re_test (H3.1, Cline — espera merge)
 
 **Asignación**: Boris aprobó implementar §4.1+4.2+4.3 de `ANALISIS_RE_TEST_BONFERRONI.md` (segunda mirada independiente vs Kilo). Infraestructura del ledger, trabajo directo SIN pre-registro.
@@ -2844,3 +2882,29 @@ Nota: proceso trial18 intento-1 ya muerto (abortado >13h, documentado en ROADMAP
 6. Tests: test_monthly_report.py 11 tests contra fixtures; suite amplia (monthly+paper_trading+barrier_labeling) 43 passed; ruff limpio.
 
 **Limitación documentada**: Sharpe por-oficio ≠ Sharpe cartera mensual del backtest hasta acumular meses; el mecanismo se vuelve más fiel con historial. Pendiente para OpenCode: etiquetar factors_json["variant"] cuando el ensamble sume variantes.
+
+## 2026-08-27 — Coordinación multi-agente: A6.3 lanzado, fix caché, motor de fundamentales nuevo (Claude Code coordinador)
+
+**A6.3 (screening PALA/RESTO/POOLED)**: Boris aprobó el pre-registro `PRE_REGISTRO_SCREENING_PALAS.md` (traído a `main` desde worktree stale de OpenCode). Asignado a Kilo por ser dueño de Frente 1. Corriendo desde ~11:25 AM, sigue vivo a la noche (9 corridas: 3 ventanas × PALA/RESTO/POOLED), estimado 9-12h más — RESTO/POOLED (44-50 símbolos) son mucho más lentos que PALA (6). Sin intervención, revisar mañana.
+
+**Bug real encontrado y corregido**: `data_ingestion.py::download_data()` tenía umbral `>7 días` en ambos chequeos incrementales (backfill y refresh) — el updater diario nunca refrescaba hasta que la brecha superaba una semana, dejando el cache perpetuamente entre 0-8 días atrasado pese a correr todas las noches sin error. Corregido a `>=1` por OpenCode, 11 tests nuevos, verificado en vivo (commit `b4a6797`).
+
+**Launchd pipeline diario**: se descubrió que `com.fortresscore.pipeline.plist` se instaló el 26/08 16:42, UN DÍA ANTES de que se verificara el Checkpoint Semana 1 (27/08) — orden invertido respecto a `PLAN_MAESTRO_FASE_PRODUCCION.md`. Checkpoint verificado igual (ciclo MSFT completo con `OVERRIDE_MECANISMO` explícito, idempotencia probada). No bloqueante, documentado.
+
+**Proyecto nuevo — Motor de fundamentales automatizado**: Boris pidió remover el cuello de botella manual de la skill `aai-screening-acciones` (export de InvestingPro). Plan en `PLAN_MOTOR_FUNDAMENTALES_AUTOMATIZADO.md`, dedicado a Cline en rama aislada `bjofrea-ctrl/fundamentales-automatizado` (Kilo y OpenCode no se tocan). Decisión de diseño explícita: NO rediseñar el Excel/dashboard de AAI — se reutilizan `generar_excel()`/`generar_dashboard()` tal cual. Fase 1 (ingesta FMP+Finnhub, reutiliza `FinnhubClient` viejo del 7/08) y Fase 2 (Piotroski/Altman/Beneish/EV-EBIT/Fair Value, validado contra AAPL FY22 real) cerradas y verificadas independientemente (16 y 35 tests, más suite completa del backend 479 passed). **Fase 3 (los 3 tribunales) quedó BLOQUEADA**: el test de paridad obligatorio contra el motor real sobre las 1000 empresas del fixture dio resultados distintos (9 vs 13 Deep Dive) sin causa raíz identificada — Cline lo declaró "esperado" sin evidencia suficiente, se le pidió no cerrar así. Pendiente retomar con la causa raíz concreta antes de aceptar la fase.
+
+**Infraestructura de claves**: se armaron 2 scripts de conveniencia (`Configurar-Claves-Fundamentales.command`, `Actualizar-Boveda-FortressCore.command`) para que Boris cargue/actualice API keys y la bóveda cifrada sin que los valores pasen nunca por el chat ni por el contexto de ningún agente. Cron nuevo `com.fortresscore.bovedabackup` (diario 23:30) respalda las bóvedas cifradas al disco externo sin descifrar nunca nada.
+
+**Limpieza de procesos huérfanos**: se encontraron y mataron 2 procesos `opencode` huérfanos (worktree `test-opencode-orca`) corriendo hace 5 días (desde 22/08) consumiendo ~92% CPU cada uno sin hacer nada — explicaba buena parte de la carga alta del sistema (load average 22-27). No relacionado con el trabajo de hoy.
+
+**Bug de infraestructura separado**: el `.venv` de `fortress_core` tenía `pip` apuntando a python3.14 mientras `python` apuntaba a 3.9 — instalaciones vía `pip install` se iban al lugar equivocado en silencio. Usar `python -m pip install` en ese venv de ahora en más.
+
+**Cierre de la noche**: Kilo sigue corriendo A6.3 sin supervisión (no cerrar su terminal). Cline en pausa esperando la investigación de la paridad de Fase 3. OpenCode libre, sin tarea.
+
+## 2026-08-28 (mañana) — Disco lleno resuelto, Fase 3 fundamentales cerrada, A6.3 relanzado detached (Claude Code coordinador)
+
+**Disco lleno — emergencia real resuelta**: la Mac amaneció con 53MB libres de 234GB (100% capacidad) — bloqueó literalmente toda herramienta (Bash, Edit) que necesitara escribir un archivo temporal. Causa encontrada: `~/.cline/data/db/hub-events-hub-production.db`, un log interno de telemetría de Cline (no del proyecto) de **95GB**, nunca podado — bug de la herramienta, no del código de `fortress_core`. Se borró el archivo y se mató el proceso "hub" (PID 98427) que lo tenía abierto (el espacio no se liberaba hasta soltar el file handle). Resultado: 97GB libres. Esto explica retroactivamente por qué la sesión de Kilo murió la noche del 27/08 sin traceback — no fue el proveedor del modelo, fue ENOSPC.
+
+**A6.3 (screening PALA/RESTO/POOLED)**: la corrida overnight del 27/08 murió junto con la sesión de Kilo (proceso hijo, sin checkpoint) tras completar 6-7/9 ventanas — se perdió ese cómputo. Se le agregó checkpointing por ventana a `screening_palas.py` (robustez de ejecución, no toca metodología/umbrales) y se relanzó como **proceso completamente detached** (`nohup` + `disown`, PPID 1) — ya no depende de que ninguna terminal de agente siga viva. Si vuelve a cortarse, retoma donde quedó.
+
+**Motor de fundamentales — Fase 3 cerrada**: Cline encontró y corrigió 3 bugs reales durante la investigación de paridad que se le pidió (no aceptar "esperado y explicable" sin causa raíz): (1) faltaba la exclusión sectorial (200 empresas mal clasificadas), (2) bug en su propio test (`_cell()` convertía un string a float mal), (3) bug real de lógica — el pilar SEG del AQR ignoraba `Overall Health Label` en zona gris de Altman. Con los 3 corregidos, paridad bit-a-bit perfecta contra el motor real (1000/1000 empresas). 63/63 tests, verificado independientemente. Commit `badea57` en su rama (`bjofrea-ctrl/fundamentales-automatizado`, aún sin mergear a `main`). Fases 1-3 completas; Fase 4 (integración) pendiente de coordinar.
