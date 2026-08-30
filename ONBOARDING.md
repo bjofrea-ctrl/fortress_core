@@ -208,6 +208,17 @@ en `PLAN_MEJORA_MATEMATICA.md`. No son sugerencias de estilo.
   Cline nunca podado) creció a 95GB y dejó la Mac en 53MB libres, tumbando una
   corrida de Kilo a mitad de noche. Es un bug de Cline, no de este proyecto — puede
   repetirse, este chequeo solo avisa temprano.
+  `com.fortresscore.backupdatos.plist` está INSTALADO (2026-08-29, diario 23:00):
+  respalda a `/Volumes/EMPRESA/FortressCore_Fuentes/` todo lo VALIOSO que git NO
+  versiona y que por lo tanto **no viaja a GitHub** — `backend/fortress.db`,
+  `backend/data/*.json` (knowledge_repo, memorias, backtest_results), los `*.parquet`
+  (precios y trades) y `data/`, más los artefactos de corridas largas del worktree de
+  investigación. Log `scripts/backup_datos.log`. **Nunca borra nada**: el rsync va sin
+  `--delete` a propósito, así un borrado accidental en el origen no se propaga al
+  respaldo. Si el disco externo no está montado, omite la corrida sin error. Nació del
+  mismo incidente del 28/08: el fixture Excel de la prueba de paridad vivía sólo en
+  `~/Downloads`, se borró en la limpieza de emergencia, y el test que dependía de él
+  pasó a saltearse en silencio en vez de fallar.
 - El universo base de símbolos es consistente entre scripts: `SPY, QQQ, AAPL, MSFT, GOOGL,
   AMZN, NVDA` + `NEW_UNIVERSE` (definido en `backend/scripts/fetch_universe_data.py`).
 

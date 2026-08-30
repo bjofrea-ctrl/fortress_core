@@ -255,3 +255,14 @@ La tabla de salida tiene 3 filas × 3 columnas:
 ---
 
 *Fin del pre-registro — borrador para aprobación de Boris, no ejecutado. Próxima edición: solo para agregar el artefacto y el veredicto mecánico cuando se corra con aprobación explícita; el criterio de §4 no se toca.*
+
+---
+
+## 12. Apéndice — resultado de la corrida (agregado post-ejecución, criterio de §4 sin modificar)
+
+- **Corrida**: 2026-08-28, artefacto `data/cache/screening_palas_20260828_071737.txt` (+ `.json`).
+- **Veredicto mecánico de §4.1**: PALA gana en 1/3 ventanas evaluables (W1 no, W2 no, W3 sí) → **NO_CUMPLE**.
+- **Check de sanidad de §4.2 (POOLED vs baseline)**: **NO_INTERPRETABLE** — 3/3 ventanas fuera de tolerancia. Causa investigada (no bug): `baseline_clean_20260811_150643` corrió con costo 0.15%/lado (default viejo, N_TRIALS=17); la corrida usó costo vigente §33 (0.10%/lado) y n_trials=5 de la familia `signal_diagnosis`. Comparación inválida por desalineación metodológica, no error de implementación.
+- **Registrado en el ledger** (`trial_registry.json`, 2026-08-29): `COMPLETED`, `veredicto: NO_CUMPLE`, nota NO_INTERPRETABLE en `hipotesis`. Consume 1 trial de la familia `signal_diagnosis` — no se re-abre esa reserva.
+- **Investigación de la divergencia** (OpenCode, 2026-08-29, verificador independiente — no escribió `screening_palas.py`): recalculando el check con `N_TRIALS=17` (igualando al del baseline) en vez de `n_trials=5`: **W1 y W2 quedan dentro de tolerancia en Sharpe Y DSR** (2/3 ventanas — cumpliría el gate de §4.2 si se adoptara esa alineación). **W3 sigue fuera en ambas métricas** incluso corregido; se descartó como causa el rango de fechas distinto entre scripts (delta de trades = 0, verificado con datos crudos). Causa de W3 no resuelta — requiere investigación independiente (ventanas independientes vs. continuo + warmup del HMM) **antes de cualquier re-corrida**.
+- **Siguiente paso propuesto (NO ejecutado, pendiente aprobación explícita de Boris)**: nuevo pre-registro que congele `N_TRIALS=17` como metodología correcta para este check y declare W3 fuera de alcance hasta su propia investigación — no se reabre ni se reinterpreta este pre-registro ni su veredicto NO_CUMPLE ya sellado.
