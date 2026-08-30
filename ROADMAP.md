@@ -44,40 +44,36 @@ Cline como implementadores). Verificar contra `git log --oneline -10`,
    llamadas FMP, sin margen — por eso se pidió procesar en lotes de 5 con
    checkpoint parcial y reintento al día siguiente, no el mismo día), y
    dashboard cacheado del último cron (NUNCA recalculado on-demand, para
-   no quemar cuota con cada vista). Cline comiteó Fase 4 28/08 noche, primer intento (`22b8618`) tenía 11/25
-   tests skipped (`TestClient` incompatible con el venv real); devuelto,
-   reescrito con el patrón del repo (`asyncio.run` directo a la corutina,
-   igual que `test_advisor_api.py`) — commit `14f4eae`, 25 passed 0
-   skipped. **PERO Fase 4 NO está cerrada** (revisión 29/08 AM; anoche la
-   di por cerrada mirando sólo los tests — error mío, los tests verdes no
-   prueban que las piezas existan). Lo que falta de verdad:
-   - **El cron NO existe.** La docstring del router dice que los
-     artefactos los genera `scripts/fundamentals_screen_daily.sh` — ese
-     archivo no está en el repo, y no hay ningún `.plist` (ni en el repo
-     ni instalado en `~/Library/LaunchAgents`). Sin cron nada corre solo:
-     los endpoints devolverían 503 para siempre.
-   - **El dashboard y el Excel nunca se generan.** Nadie llama a
-     `generar_dashboard()` ni a `generar_excel()` — sólo hay comentarios
-     "listo para que lo consuma". El job runner escribe únicamente
-     `screen_<date>.json` y `state.json`. Esto responde el pendiente de
-     Boris: no es que salgan distintos al original, es que no se producen.
-   - **La paridad 1000/1000 de Fase 3 ya no es reproducible**: el fixture
-     `/Users/boris/Downloads/fortress core - Market View - 2026-08-27
-     (2).xlsx` no existe más (se borró en la limpieza de disco del 28/08).
-     El test se SALTEA en silencio en vez de fallar, y apunta a
-     `~/Downloads` — el lugar menos estable de la Mac para lo que es la
-     evidencia central de la fase. Guardar ese Excel en un lugar estable
-     (o versionarlo) y hacer que el skip sea ruidoso.
-   - Contaminación de tokens del modelo (MiniMax M3): caracteres chinos
-     `收益` en un comentario de `app/api/routes/fundamentals_screen.py:25`.
-   Patrón de fondo a vigilar: **los tests verifican al lector, no al
-   escritor** — el endpoint se testea con fixtures que fabrican el HTML,
-   así que nada detecta que nadie lo produce. Mismo tipo de agujero que
-   los 11 tests skipped de anoche. **PENDIENTE VERIFICAR ANTES DE DAR POR BUENO**:
-   que el dashboard nuevo y el Excel que genera queden visualmente iguales
-   al original de AAI, no solo que los números cierren (pedido explícito
-   de Boris 28/08). Sigue necesitando `FMP_API_KEY`/`FINNHUB_API_KEY`
-   reales para `verify_finnhub_mapping.py`.
+   no quemar cuota con cada vista). **Fase 4 CERRADA de verdad el 29/08
+   noche** (commit `67109a6`), tras dos rondas de auditoría real (no
+   confiar en "tests en verde" ni en "listo" sin correr todo yo mismo —
+   pasó dos veces en 24h, ver SESSION_LOG):
+   - Cron real instalado y versionado (`fundamentals_screen_daily.sh` +
+     `com.fortresscore.fundamentals_screen.plist`, 22:30).
+   - Dashboard/Excel se generan de verdad — `render_artifacts()` llama a
+     `generar_excel()`/`generar_dashboard()` del motor canónico
+     **vendorizado** en `backend/app/core/motor_canonico/` (decisión: un
+     cron que corre solo a las 22:00 no puede depender de un path fuera
+     del repo). Hash verificado byte-a-byte contra el zip oficial r13 de
+     la skill (`84abe308e7e8e710f2cf2e7649bd9d6074c1e7de1ab8c7dd0f26f3b51768995d`).
+   - Fixture de paridad recuperado (Boris re-exportó el Excel el 29/08) y
+     estabilizado en `backend/tests/fixtures/canon/` (dentro del repo, no
+     en `~/Downloads`) — el skip ahora es ruidoso (`REQUIRE_PARIDAD=1`
+     hace fallar en vez de saltear en silencio) y quedó un guard-rail:
+     una segunda referencia al mismo fixture en `test_fundamentals_ingestion.py`
+     seguía apuntando al path viejo perdido — encontrado en la auditoría
+     final, corregido antes de aceptar el commit.
+   - Contaminación de tokens del modelo (caracteres chinos) limpiada.
+   - Verificado por mí, corriendo todo de cero: 93 passed, 0 skipped
+     (suite completa + paridad estricta), tamaños/hashes de los artefactos
+     en disco coinciden exacto con lo reportado.
+   - **PENDIENTE VERIFICAR** (pedido explícito de Boris, no cerrado
+     todavía): que el dashboard/Excel generados se *vean* iguales al
+     original de AAI (formato/layout), no solo que los tests pasen —
+     abrir los artefactos reales y mirarlos.
+   Sigue necesitando `FMP_API_KEY`/`FINNHUB_API_KEY` reales para probar
+   contra la red de verdad (hasta ahora todo probado con mocks, declarado
+   así explícitamente, no ocultado).
 3. **Bug data_ingestion.py umbral >7 días** — 🟢 CERRADO (OpenCode, commit
    `b4a6797`).
 4. **Launchd pipeline diario (com.fortresscore.pipeline)** — 🟢 verificado
