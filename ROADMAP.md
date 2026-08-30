@@ -100,6 +100,18 @@ Cline como implementadores). Verificar contra `git log --oneline -10`,
 8. **Dashboard — pestaña AAI + inversiones sintéticas** — 🔴 SIN EMPEZAR
    todavía en código (Fase 4 del plan de fundamentales cubre esto: iframe del
    dashboard ya generado, no rediseñar). Empezar cuando cierre Fase 3.
+9. **Activar modo real del pipeline diario (`pipeline_daily_signal.py`)** —
+   🟡 PRIORIDAD, para después de A6.3/Fase 4 (decisión de Boris 29/08). El
+   pipeline corre 3x/día (9:35/15:40/22:10) hace 3 días seguidos sin fallar,
+   pero el log de señales (`pipeline_signal_log.jsonl`) solo tiene 4 líneas,
+   todas con `checkpoint_override=True` — validación mecánica del tubo
+   (orden+registro), NO señal real todavía. Falta apagar el modo checkpoint
+   para que empiece a acumular historial prospectivo real, comparable contra
+   el backtest. **NO activar sin confirmación explícita e inequívoca de
+   Boris** — implica órdenes/señales reales, es difícil de revertir. El
+   29/08 se le preguntó A) anotar para después vs B) activar ya, y la
+   respuesta ("Sí" repetido dos veces sin elegir) no alcanzó ese umbral —
+   se optó por A) hasta tener una confirmación sin ambigüedad.
 
 Si alguna de estas cambió de estado cuando leas esto, actualizá esta sección
 (borrala o marcá cerrado) — no la dejes desactualizada.
