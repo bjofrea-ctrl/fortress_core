@@ -38,7 +38,13 @@ testeado y verificado.
   statement, balance sheet, cash flow, profile, price target consensus) + cliente
   Finnhub como respaldo/cruce, mismo patrón de cache incremental que
   `data_ingestion.py` (con el umbral correcto esta vez — no repetir el bug de los
-  7 días).
+  7 días, corregido 2026-08-27 en `main`, commit `b4a6797`).
+- **No construir un cliente Finnhub desde cero**: ya existe
+  `backend/app/core/fundamentals_client.py` (2026-08-07, `FinnhubClient`), pensado
+  originalmente para reemplazar los tickers hardcodeados de `predict.py`. Reutilizarlo/
+  extenderlo. **Advertencia propia del docstring**: su `FIELD_MAP` nunca se validó
+  contra una key real — correr `scripts/verify_finnhub_mapping.py` con
+  `FINNHUB_API_KEY` real ANTES de confiar en la calibración.
 - Tests contra fixtures (nunca red real en la suite, mismo estándar del proyecto).
 
 ### Fase 2 — Reimplementar las 3 fórmulas + EV/EBIT + Fair Value propio
@@ -60,6 +66,13 @@ testeado y verificado.
 - Verificación cruzada: correr ambos motores (el original de AAI sobre un export
   manual, y el nuevo sobre las mismas empresas vía API) y confirmar que clasifican
   igual antes de confiar en el nuevo.
+- **No rediseñar el Excel ni el dashboard HTML** (pedido explícito de Boris,
+  2026-08-27 — le gustó el diseño y no quiere perderlo). `generar_excel()` (línea
+  268) y `generar_dashboard()` (línea 665) de `motor_screening.py` reciben datos YA
+  evaluados (`filas`, `hmap`, `evals`, `orden`, etc.) — el trabajo de Fase 1-3 es
+  producir esa misma estructura desde la API, y reutilizar/adaptar esas funciones
+  tal cual para la salida. Logo, colores, tribunales, "cómo leer este informe":
+  todo se hereda sin tocar.
 
 ### Fase 4 — Integración 🟢 CERRADA (2026-08-29, commit `67109a6`)
 
@@ -86,7 +99,9 @@ testeado y verificado.
   (fetch → 200 muestra iframe, 503/red caída muestra mensaje accionable sobre
   el cron). Tab "Fundamentos" en `Layout.tsx`, code splitting (chunk 1.92 kB).
   5 tests de degradación graceful. Verificado: 46 passed, build tsc+vite OK,
-  endpoint vivo HTTP 200 (31KB).
+  endpoint vivo HTTP 200 (31KB). Realiza la decisión de diseño acordada:
+  empotrar (iframe) el mismo HTML de `generar_dashboard()` en vez de
+  reimplementar el diseño visual en React.
 - Verificado: 44 passed, 1 skipped. Endpoints sirven artefactos via async call.
 - **Lo NO probado en vivo**: job contra FMP real (requiere API key, no está en el
   repo por diseño). Con clave ficticia FMP rechaza → rc=2 limpio.

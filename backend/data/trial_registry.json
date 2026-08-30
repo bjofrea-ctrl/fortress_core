@@ -576,5 +576,18 @@
     "artefacto": "data/cache/trial20_a5_buffett_alpha_20260825_211648.txt",
     "seccion_doc": "§47",
     "status": "COMPLETED"
+  },
+  {
+    "id": "screening_palas",
+    "fecha": "2026-08-27",
+    "familia": "signal_diagnosis",
+    "hipotesis": "Screening vendedor de palas: subconjunto habilitador IA (NVDA/AVGO/QCOM/MSFT/ORCL/CSCO) vs resto (44) vs pooled (50) bajo momentum+RSI congelado. n_trials=5 (default motor, gate laxo por diseño escalon 1). | NO_INTERPRETABLE: check de sanidad POOLED vs baseline_clean fuera de tolerancia en 3/3 ventanas (causa: baseline_clean_20260811 corrio con costo 0.15%/lado viejo y N_TRIALS=17, screening con costo 0.10% y n_trials=5 -- comparacion invalida, no bug de implementacion. Investigacion completa en pre-registro nuevo antes de re-correr).",
+    "n_trials_consumidos": 1,
+    "umbral_aplicado": "DSR_PALA>0.50 Y Sharpe_PALA>Sharpe_RESTO en >=2/3 ventanas (screening barato, escalon 1 embudo)",
+    "seccion_doc": "PRE_REGISTRO_SCREENING_PALAS.md §4",
+    "status": "COMPLETED",
+    "veredicto": "NO_CUMPLE",
+    "artefacto": "data/cache/screening_palas_20260828_071737.txt",
+    "fecha_completado": "2026-08-29"
   }
 ]

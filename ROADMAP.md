@@ -18,22 +18,37 @@ Coordinación multi-agente vía Orca (Claude Code como coordinador; Kilo Code, O
 Cline como implementadores). Verificar contra `git log --oneline -10`,
 `ps aux | grep screening_palas` y las ramas de cada worktree antes de asumir estado.
 
-1. **A6.3 — screening PALA/RESTO/POOLED** — 🟢 **CERRADO** (29/08): trial
-   completado en el ledger (`COMPLETED`, `veredicto: NO_CUMPLE`, artefacto
-   `screening_palas_20260828_071737.txt`). Apéndice de resultado en
-   `PRE_REGISTRO_SCREENING_PALAS.md` §12. Causa del NO_INTERPRETABLE
-   (check de sanidad §4.2) investigada a fondo: el recálculo del baseline
-   con costo vigente (0.10%/lado, `baseline_clean_20260828_183624.txt`)
-   convergió el Sharpe pero **no el DSR** — investigado por OpenCode
-   (verificador independiente): el DSR usa `N_TRIALS` distinto entre
-   scripts (baseline=17, heredado de la familia `universe50`; A6.3=5,
-   propio de `signal_diagnosis`) — **no son comparables sin igualar, no
-   es bug**. Igualando N_TRIALS solo para el check: W1/W2 pasan, W3 sigue
-   fuera (se descartó el rango de fechas como causa, delta trades=0; W3
-   sin explicar). **Propuesta de saneamiento del check redactada**:
-   `PRE_REGISTRO_SANEAMIENTO_CHECK_A63.md` — pendiente de aprobación
-   explícita de Boris, nada ejecutado. No confunde con el veredicto
-   NO_CUMPLE ya sellado (ese no se reabre).
+1. **A6.3 — screening PALA/RESTO/POOLED** — 🟢 trial original CERRADO
+   (29/08, `COMPLETED`/`NO_CUMPLE`, ver §12 de `PRE_REGISTRO_SCREENING_PALAS.md`).
+   **Saneamiento del check APROBADO por Boris (29/08) y EN CURSO**: Kilo
+   implementó el check corregido (N_TRIALS igualado a 17 SOLO para la
+   comparación, sin tocar el default de ningún script) y reservó un
+   trial nuevo (`screening_palas_saneada_a63`, `RESERVED` en el ledger,
+   familia `signal_diagnosis`). Corre como 3 procesos detached
+   (PALA/RESTO/POOLED) desde el 29/08 22:25 — PALA terminó esa misma
+   noche, **RESTO y POOLED seguían corriendo al 30/08 mediodía** (fueron
+   más lentos de lo esperado, probablemente por el sleep de la Mac
+   overnight). Al terminar: revisar la salida cruda ANTES de llamar
+   `complete_trial()` — instrucción explícita a Kilo de no auto-completar.
+   **W3 investigado a fondo (OpenCode, 30/08,
+   `INVESTIGACION_W3_A63_20260830.md` en worktree `test-opencode-orca`,
+   spot-check verificado por mí)**: no es un parámetro mal puesto — es
+   una diferencia ESTRUCTURAL real entre los dos scripts. El baseline
+   corre continuo (una sola pasada 2019→2026 troceada en ventanas
+   después) con estado que se arrastra entre ventanas: posiciones
+   abiertas cruzando fronteras, equity compuesto, HMM con ~20 refits
+   walk-forward acumulados hacia 2024 y 5 años de evidencia bayesiana.
+   El screening corre PALA/RESTO/POOLED como 3 `BacktestEngine`
+   independientes (equity=25000 fresco, sin posiciones, HMM fiteado de
+   una sola vez sobre 9 años de historia de golpe). Esa diferencia
+   genera +28-46% más trades en W3 del screening vs. el baseline — cifra
+   verificada, no inferida. Se descartaron rango de fechas (delta
+   trades=0) y costo (empeora, no explica) como causas. Aislar la causa
+   exacta requiere un experimento controlado nuevo — **es un trial
+   nuevo, necesita pre-registro y aprobación de Boris**, no se ejecuta
+   solo. `PRE_REGISTRO_SANEAMIENTO_CHECK_A63.md` sigue siendo la
+   referencia del saneamiento aprobado; no confundir con el veredicto
+   NO_CUMPLE ya sellado del trial original (ese no se reabre).
 2. **Motor de fundamentales automatizado** (Cline, rama
    `bjofrea-ctrl/fundamentales-automatizado`, NO mergeada a `main`) — 🟢
    Fases 1-3 CERRADAS y verificadas independientemente (63 tests, paridad
@@ -93,9 +108,11 @@ Cline como implementadores). Verificar contra `git log --oneline -10`,
    que quedaron sin tocar: `~/.colima` (23GB, VM de Docker aparentemente sin
    uso) y `~/.cache` (17GB, cache genérico recreable) — revisar si `.cline`
    vuelve a crecer así con el tiempo, puede repetirse.
-8. **Dashboard — pestaña AAI + inversiones sintéticas** — 🔴 SIN EMPEZAR
-   todavía en código (Fase 4 del plan de fundamentales cubre esto: iframe del
-   dashboard ya generado, no rediseñar). Empezar cuando cierre Fase 3.
+8. **Dashboard — pestaña AAI** — 🟢 CERRADO (30/08, Cline, commit `483024f`):
+   `FundamentalsPage.tsx`, iframe del endpoint de Fase 4 con manejo de
+   503/404/red caída. Verificado por mí: typecheck limpio, 5/5 tests
+   propios pasan. Queda pendiente el ítem de inversiones sintéticas
+   (no cubierto, separado de esto).
 9. **Activar modo real del pipeline diario (`pipeline_daily_signal.py`)** —
    🟡 PRIORIDAD, para después de A6.3/Fase 4 (decisión de Boris 29/08). El
    pipeline corre 3x/día (9:35/15:40/22:10) hace 3 días seguidos sin fallar,
