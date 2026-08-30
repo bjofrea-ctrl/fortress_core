@@ -11,8 +11,9 @@ const MesaPage = lazy(() => import("./views/MesaPage"));
 const DetailPage = lazy(() => import("./views/DetailPage"));
 const PortfolioPage = lazy(() => import("./views/PortfolioPage"));
 const GovernancePage = lazy(() => import("./views/GovernancePage"));
+const FundamentalsPage = lazy(() => import("./views/FundamentalsPage"));
 
-type View = "mesa" | "portfolio" | "gobernanza";
+type View = "mesa" | "portfolio" | "gobernanza" | "fundamentos";
 
 function PageLoader() {
   return (
@@ -47,6 +48,7 @@ export default function Layout() {
                 ["mesa", "Mesa de decisión"],
                 ["portfolio", "Portfolio"],
                 ["gobernanza", "Gobernanza"],
+                ["fundamentos", "Fundamentos"],
               ] as [View, string][]
             ).map(([v, label]) => (
               <button
@@ -93,6 +95,7 @@ export default function Layout() {
           )}
           {view === "portfolio" && <PortfolioPage />}
           {view === "gobernanza" && <GovernancePage selectedSymbol={selectedSymbol} />}
+          {view === "fundamentos" && <FundamentalsPage />}
         </Suspense>
       </main>
 

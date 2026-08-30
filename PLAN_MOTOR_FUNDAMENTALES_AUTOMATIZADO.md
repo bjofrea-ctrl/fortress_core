@@ -81,6 +81,12 @@ testeado y verificado.
   `test_fundamentals_ingestion.py` actualizada al mismo path.
 - **`.gitignore`**: `fixtures/canon/` (1.28MB) y `cache_fundamentals_screen/`
   excluidos (artefactos regenerables).
+- **Pestaña frontend** (item 8 ROADMAP, 2026-08-30): `FundamentalsPage.tsx`
+  embebe el dashboard vía iframe con verificación previa de disponibilidad
+  (fetch → 200 muestra iframe, 503/red caída muestra mensaje accionable sobre
+  el cron). Tab "Fundamentos" en `Layout.tsx`, code splitting (chunk 1.92 kB).
+  5 tests de degradación graceful. Verificado: 46 passed, build tsc+vite OK,
+  endpoint vivo HTTP 200 (31KB).
 - Verificado: 44 passed, 1 skipped. Endpoints sirven artefactos via async call.
 - **Lo NO probado en vivo**: job contra FMP real (requiere API key, no está en el
   repo por diseño). Con clave ficticia FMP rechaza → rc=2 limpio.
