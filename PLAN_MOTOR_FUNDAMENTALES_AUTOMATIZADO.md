@@ -106,6 +106,22 @@ testeado y verificado.
 - **Lo NO probado en vivo**: job contra FMP real (requiere API key, no está en el
   repo por diseño). Con clave ficticia FMP rechaza → rc=2 limpio.
 
+### Pendiente post-merge (verificado 2026-08-30, NO hacer antes del merge)
+
+1. **Instalar el cron**: `com.fortresscore.fundamentals_screen.plist` está versionado
+   en `scripts/` pero NO instalado en `~/Library/LaunchAgents/`. NO instalar todavía:
+   el `.sh` apunta a `REPO=/Users/boris/Desktop/fortress_core` (main), que NO tiene
+   el código de fundamentales (verificado: `fundamentals_screen.py`,
+   `fundamentals_artifacts.py`, `motor_canonico/` ausentes de main al 30/08). Si se
+   instala ahora, el job de 22:30 falla todas las noches con ModuleNotFoundError.
+   Secuencia correcta: (a) merge de esta rama a main → (b) `cp
+   scripts/com.fortresscore.fundamentals_screen.plist ~/Library/LaunchAgents/ && launchctl
+   load ~/Library/LaunchAgents/com.fortresscore.fundamentals_screen.plist` →
+   (c) verificar con `launchctl list | grep fundamentals` + corrida manual del `.sh`.
+2. **Corrida end-to-end contra FMP real**: requiere `FMP_API_KEY` real en el `.env`
+   del repo principal. Hasta entonces, lo único probado es el flujo con mocks (e2e)
+   y el motor canónico con fixtures.
+
 ## Aislamiento — cero colisión con Kilo/OpenCode
 
 Rama/worktree dedicada (`feature/fundamentales-automatizado` o equivalente), archivos
