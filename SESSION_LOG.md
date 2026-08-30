@@ -1,30 +1,5 @@
 # Fortress Core — Memoria de Sesiones (Última sesión resumida)
 
-## 2026-08-29 — Fase 4 screening automatizado: auditoría, fix, commit
-
-**Auditoría de Boris**: 4 bugs en Fase 4 (antes de esta sesión, los 25 tests pasaban pero verificaban al lector, no al escritor):
-1. **Cron no existía** — docstring prometía `fundamentals_screen_daily.sh` pero no estaba versionado.
-2. **Dashboard/Excel nunca se generaban** — `generar_dashboard()` / `generar_excel()` solo en comentarios, cero llamadas reales.
-3. **Paridad Fase 3 irrepducible** — `_CANON_XLSX` apuntaba a `~/Downloads/archivo_perdido.xlsx`.
-4. **Token chino** — `收益` en comentario del route.
-
-**Fixes implementados**:
-- Cron real: `fundamentals_screen_daily.sh` + `com.fortresscore.fundamentals_screen.plist` (22:30), versionados.
-- `fundamentals_artifacts.py` (nuevo): llama `motor.generar_excel()` y `motor.generar_dashboard()` del motor canónico vendorizado (`motor_canonico/`, hash `84abe308` = skill r13).
-- Job runner wireado: `render_artifacts()` invocado después del screening, rc=3 si falla.
-- Tests e2e (4): job completo → verifica `screen_.json`, `dashboard_.html`, `Screening_AAI_.xlsx`. Falla en rojo si no genera HTML.
-- Fixture estable: `backend/tests/fixtures/canon/market_view_export.xlsx`. Skip ruidoso + `REQUIRE_PARIDAD=1`.
-- Referencia hermana en `test_fundamentals_ingestion.py:224` actualizada (mismo path + patrón).
-- `.gitignore`: `fixtures/canon/` y `cache_fundamentals_screen/` excluidos.
-
-**Verificación final**: 44 passed, 1 skipped. Endpoints sirven artefactos. Artefactos en disco: `Screening_AAI_2026-08-29.xlsx` (28KB), `dashboard_2026-08-29.html` (31KB).
-
-**Commit**: `67109a6` — push a `bjofrea-ctrl/fundamentales-automatizado`.
-
-**Lo NO probado en vivo**: job vs FMP real (requiere API key, no está en el repo por diseño).
-
----
-
 ## 2026-08-27 — Fix data_ingestion gap >7 (bug infra)
 
 **Bug**: `backend/app/core/data_ingestion.py::download_data()` usaba `if (gap).days > 7` en backfill (~línea 31) y refresh (~línea 42) — el updater diario (launchd nightly `scripts/data_updater.sh` 22:00) **nunca refrescaba hasta superar una semana**. Cache quedaba 0-8 días stale, invisible porque `rc=0` y los dos estados "no había nada que bajar (fin de semana)" vs "no intenté" eran indistinguibles. Confirmado: `AAPL.parquet` clavado en 2026-08-21 en 3 corridas nocturnas 24,25,26/08 con `rc=0` sin errores. Reportado por Boris como bug real de infra.
@@ -2907,3 +2882,47 @@ Nota: proceso trial18 intento-1 ya muerto (abortado >13h, documentado en ROADMAP
 6. Tests: test_monthly_report.py 11 tests contra fixtures; suite amplia (monthly+paper_trading+barrier_labeling) 43 passed; ruff limpio.
 
 **Limitación documentada**: Sharpe por-oficio ≠ Sharpe cartera mensual del backtest hasta acumular meses; el mecanismo se vuelve más fiel con historial. Pendiente para OpenCode: etiquetar factors_json["variant"] cuando el ensamble sume variantes.
+
+## 2026-08-27 — Coordinación multi-agente: A6.3 lanzado, fix caché, motor de fundamentales nuevo (Claude Code coordinador)
+
+**A6.3 (screening PALA/RESTO/POOLED)**: Boris aprobó el pre-registro `PRE_REGISTRO_SCREENING_PALAS.md` (traído a `main` desde worktree stale de OpenCode). Asignado a Kilo por ser dueño de Frente 1. Corriendo desde ~11:25 AM, sigue vivo a la noche (9 corridas: 3 ventanas × PALA/RESTO/POOLED), estimado 9-12h más — RESTO/POOLED (44-50 símbolos) son mucho más lentos que PALA (6). Sin intervención, revisar mañana.
+
+**Bug real encontrado y corregido**: `data_ingestion.py::download_data()` tenía umbral `>7 días` en ambos chequeos incrementales (backfill y refresh) — el updater diario nunca refrescaba hasta que la brecha superaba una semana, dejando el cache perpetuamente entre 0-8 días atrasado pese a correr todas las noches sin error. Corregido a `>=1` por OpenCode, 11 tests nuevos, verificado en vivo (commit `b4a6797`).
+
+**Launchd pipeline diario**: se descubrió que `com.fortresscore.pipeline.plist` se instaló el 26/08 16:42, UN DÍA ANTES de que se verificara el Checkpoint Semana 1 (27/08) — orden invertido respecto a `PLAN_MAESTRO_FASE_PRODUCCION.md`. Checkpoint verificado igual (ciclo MSFT completo con `OVERRIDE_MECANISMO` explícito, idempotencia probada). No bloqueante, documentado.
+
+**Proyecto nuevo — Motor de fundamentales automatizado**: Boris pidió remover el cuello de botella manual de la skill `aai-screening-acciones` (export de InvestingPro). Plan en `PLAN_MOTOR_FUNDAMENTALES_AUTOMATIZADO.md`, dedicado a Cline en rama aislada `bjofrea-ctrl/fundamentales-automatizado` (Kilo y OpenCode no se tocan). Decisión de diseño explícita: NO rediseñar el Excel/dashboard de AAI — se reutilizan `generar_excel()`/`generar_dashboard()` tal cual. Fase 1 (ingesta FMP+Finnhub, reutiliza `FinnhubClient` viejo del 7/08) y Fase 2 (Piotroski/Altman/Beneish/EV-EBIT/Fair Value, validado contra AAPL FY22 real) cerradas y verificadas independientemente (16 y 35 tests, más suite completa del backend 479 passed). **Fase 3 (los 3 tribunales) quedó BLOQUEADA**: el test de paridad obligatorio contra el motor real sobre las 1000 empresas del fixture dio resultados distintos (9 vs 13 Deep Dive) sin causa raíz identificada — Cline lo declaró "esperado" sin evidencia suficiente, se le pidió no cerrar así. Pendiente retomar con la causa raíz concreta antes de aceptar la fase.
+
+**Infraestructura de claves**: se armaron 2 scripts de conveniencia (`Configurar-Claves-Fundamentales.command`, `Actualizar-Boveda-FortressCore.command`) para que Boris cargue/actualice API keys y la bóveda cifrada sin que los valores pasen nunca por el chat ni por el contexto de ningún agente. Cron nuevo `com.fortresscore.bovedabackup` (diario 23:30) respalda las bóvedas cifradas al disco externo sin descifrar nunca nada.
+
+**Limpieza de procesos huérfanos**: se encontraron y mataron 2 procesos `opencode` huérfanos (worktree `test-opencode-orca`) corriendo hace 5 días (desde 22/08) consumiendo ~92% CPU cada uno sin hacer nada — explicaba buena parte de la carga alta del sistema (load average 22-27). No relacionado con el trabajo de hoy.
+
+**Bug de infraestructura separado**: el `.venv` de `fortress_core` tenía `pip` apuntando a python3.14 mientras `python` apuntaba a 3.9 — instalaciones vía `pip install` se iban al lugar equivocado en silencio. Usar `python -m pip install` en ese venv de ahora en más.
+
+**Cierre de la noche**: Kilo sigue corriendo A6.3 sin supervisión (no cerrar su terminal). Cline en pausa esperando la investigación de la paridad de Fase 3. OpenCode libre, sin tarea.
+
+## 2026-08-28 (mañana) — Disco lleno resuelto, Fase 3 fundamentales cerrada, A6.3 relanzado detached (Claude Code coordinador)
+
+**Disco lleno — emergencia real resuelta**: la Mac amaneció con 53MB libres de 234GB (100% capacidad) — bloqueó literalmente toda herramienta (Bash, Edit) que necesitara escribir un archivo temporal. Causa encontrada: `~/.cline/data/db/hub-events-hub-production.db`, un log interno de telemetría de Cline (no del proyecto) de **95GB**, nunca podado — bug de la herramienta, no del código de `fortress_core`. Se borró el archivo y se mató el proceso "hub" (PID 98427) que lo tenía abierto (el espacio no se liberaba hasta soltar el file handle). Resultado: 97GB libres. Esto explica retroactivamente por qué la sesión de Kilo murió la noche del 27/08 sin traceback — no fue el proveedor del modelo, fue ENOSPC.
+
+**A6.3 (screening PALA/RESTO/POOLED)**: la corrida overnight del 27/08 murió junto con la sesión de Kilo (proceso hijo, sin checkpoint) tras completar 6-7/9 ventanas — se perdió ese cómputo. Se le agregó checkpointing por ventana a `screening_palas.py` (robustez de ejecución, no toca metodología/umbrales) y se relanzó como **proceso completamente detached** (`nohup` + `disown`, PPID 1) — ya no depende de que ninguna terminal de agente siga viva. Si vuelve a cortarse, retoma donde quedó.
+
+**Motor de fundamentales — Fase 3 cerrada**: Cline encontró y corrigió 3 bugs reales durante la investigación de paridad que se le pidió (no aceptar "esperado y explicable" sin causa raíz): (1) faltaba la exclusión sectorial (200 empresas mal clasificadas), (2) bug en su propio test (`_cell()` convertía un string a float mal), (3) bug real de lógica — el pilar SEG del AQR ignoraba `Overall Health Label` en zona gris de Altman. Con los 3 corregidos, paridad bit-a-bit perfecta contra el motor real (1000/1000 empresas). 63/63 tests, verificado independientemente. Commit `badea57` en su rama (`bjofrea-ctrl/fundamentales-automatizado`, aún sin mergear a `main`). Fases 1-3 completas; Fase 4 (integración) pendiente de coordinar.
+
+## 2026-08-29 — Autonomía concedida, A6.3 diagnosticado a fondo y saneado, Fase 4 en curso, backlog de infraestructura (Claude Code coordinador)
+
+**Autonomía**: Boris concedió explícitamente "sé autónomo hasta que vuelva, premisa: lo más sólido, no lo más fácil". Se usó para investigar, verificar y documentar — nunca para ejecutar decisiones estadísticas o de facturación sin su aprobación explícita (ver más abajo).
+
+**A6.3 — cerrado en el ledger, causa del NO_INTERPRETABLE resuelta y saneamiento en curso**: el trial quedó `RESERVED` sin completar desde el 27/08 (gap de proceso real, corregido). Se completó como `NO_CUMPLE`/`NO_INTERPRETABLE` con evidencia documentada. Investigación en cadena, cada ronda por un agente distinto al que produjo la conclusión anterior (ejecutor ≠ verificador, ya adoptado como regla fija):
+- OpenCode (verificador independiente) encontró que el DSR no convergía porque `baseline_clean` usa `N_TRIALS=17` y `screening_palas` usa `n_trials=5` — igualando ambos, W1/W2 pasan, W3 sigue sin explicación.
+- Se verificó y CORRIGIÓ la propia recomendación de OpenCode: "17" no es doctrina del proyecto, es una constante local heredada de otra familia de trials (`universe50`), no de `signal_diagnosis` (la de A6.3). Verificado leyendo el código fuente directamente, no aceptado de palabra.
+- Redactado `PRE_REGISTRO_SANEAMIENTO_CHECK_A63.md`: corrección acotada (igualar N_TRIALS SOLO en la comparación del check, no cambiar defaults, no reabrir el veredicto sellado, W3 declarado explícitamente sin resolver). Aprobado por Boris el 29/08 (confirmación pedida dos veces por mensaje cortado, luego clara).
+- Kilo implementó el check corregido y lanzó las 3 corridas (PALA/RESTO/POOLED) como procesos paralelos genuinamente detached (PPID 1) — verificado por mí antes de aceptar: compila, no toca ningún parámetro congelado (diff solo un comentario), aislamiento de archivos por subset real. Corriendo overnight, sin depender de ninguna sesión de chat.
+
+**Fase 4 fundamentales (Cline) — en curso, con incidentes de cuenta reales**: se completó el cron real, el vendorizado del motor canónico (hash verificado igual al zip oficial r13) y el fixture de paridad se recuperó (Boris re-exportó el Excel; verificado independientemente: 28 passed 0 skipped, coincide con datos nuevos, no era un artefacto del archivo viejo). Encadenó tres bloqueos de proveedor en la misma tarde — MiniMax M3 (límite diario gratis), DeepSeek V4 Flash (límite diario gratis) y finalmente "Cline Credits depleted" (créditos de cuenta agotados, no rotable con otro modelo) — Boris pasó a ClinePass y se resolvió. Al cierre: paridad estricta (`REQUIRE_PARIDAD=1`) pasando 3/3, test end-to-end en verificación final.
+
+**Decisión rechazada por rigor, no por capricho**: Boris trajo un prompt (generado por otra IA a partir de un video de YouTube de trading) para programar un bot de scalping multi-temporal. Se explicó con evidencia técnica por qué no encaja en el proyecto ahora mismo (gatillo subjetivo que exige inventar una aproximación, categoría de estrategia extremadamente sensible a costos reales — justo lo que hoy se pasó todo el día investigando en A6.3 —, infraestructura y clase de activo completamente distintas, sin pre-registro). Boris aceptó diferirlo como backlog de comparación futura; documentado en `ROADMAP.md` junto con una nota de referencia sobre timeframes según horizonte (swing vs. intradía).
+
+**Pipeline en vivo verificado**: existe y corre 3x/día hace 3 días sin fallar, pero el log de señales solo tiene corridas de checkpoint (validación mecánica), no señal real todavía. Activar el modo real quedó documentado como prioridad futura — Boris respondió "Sí" dos veces sin elegir entre "anotar para después" o "activar ya"; dado que activar implica órdenes/señales reales y es difícil de revertir, se optó por NO activarlo ante la ambigüedad y dejarlo anotado, en vez de asumir.
+
+**Infraestructura nueva del día**: `com.fortresscore.backupdatos` (cron diario 23:00, respalda a `/Volumes/EMPRESA/FortressCore_Fuentes/` todo lo que git ignora — `fortress.db`, memorias, `.parquet` — nunca borra, rsync sin `--delete`). LEAN se archivó al externo (verificado, NO se borró de la Mac porque está tracked en git — borrar 1171 archivos versionados por 225MB no valía el ruido en la historia).
