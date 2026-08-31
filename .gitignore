@@ -26,6 +26,10 @@ pythonenv*
 # Se trackea SIEMPRE; el resto de *.json de backend/data/ sigue ignorado.
 !backend/data/trial_registry.json
 backend/data/*.json
+# Track A (2026-08-26): el trial_registry NO es un .json desechable — es el
+# ledger canónico en version control (presupuesto Bonferroni multi-agente).
+# Se trackea SIEMPRE; el resto de *.json de backend/data/ sigue ignorado.
+!backend/data/trial_registry.json
 backend/data/cache/*.json
 backend/data/cache/edgar/
 /data/
