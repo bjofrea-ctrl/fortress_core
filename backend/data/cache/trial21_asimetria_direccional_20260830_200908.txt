@@ -1,0 +1,28 @@
+==============================================================================
+PRE_REGISTRO_ASIMETRIA_DIRECCIONAL §2-§11 — Trial #21 (slot 28, signal_diagnosis)
+Congelado 2026-08-30 | corrida única 2026-08-30 20:09:08 | seed 42 | cache-only
+Etiquetado §2: ret_impulso=P(t-1)/P(t-1-63)-1, UP≥+10%, DOWN≤-10% | outcome h=20d | factor alineado f(i,t-1) §4.1
+Umbrales scipy congelados §6: confirmatorio |t|>2.50 (B4 bilateral), RMT |t|>2.74 (B8 bilateral), |Δ|≥0.05
+Gate cobertura §5: ≥75 fechas ambos lados, ≥10 símb/lado (mediana)
+Ventanas: W1 2020-01-01->2021-12-31, W2 2022-01-01->2023-12-31, W3 2024-01-01->2026-08-04
+==============================================================================
+
+Cargando panel diario (indicadores del motor, etiqueta §2, RMT estático §3.2)...
+Panel: 95350 filas | 1907 fechas | 50 símbolos
+Rango: 2019-01-02 -> 2026-08-04
+Etiqueta dir: NEUTRO=52780, UP=30229, DOWN=12341
+
+==============================================================================
+GATE DE COBERTURA PRE-RESULTADO (§5) — sin IC antes de este cuadro
+ventana    fechas  UP(med) DOWN(med) interpretable
+W1              1     19.0       2.0 NO INTERPRETABLE
+W2             24     10.0       6.0 NO INTERPRETABLE
+W3             81     16.0       5.0 NO INTERPRETABLE
+
+Ventanas interpretables: 0/3 (regla §5: 1 sola → GRIS automático)
+
+VEREDICTO MECÁNICO: GRIS — ninguna ventana interpretable (cobertura §5).
+Nada se integra. Decisión de Boris (§7 GRIS-a).
+
+Out: data/cache/trial21_asimetria_direccional_20260830_200908.txt
+Out: data/cache/trial21_asimetria_direccional_20260830_200908.json

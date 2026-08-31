@@ -18,22 +18,58 @@ Coordinación multi-agente vía Orca (Claude Code como coordinador; Kilo Code, O
 Cline como implementadores). Verificar contra `git log --oneline -10`,
 `ps aux | grep screening_palas` y las ramas de cada worktree antes de asumir estado.
 
-1. **A6.3 — screening PALA/RESTO/POOLED** — 🟢 **CERRADO** (29/08): trial
-   completado en el ledger (`COMPLETED`, `veredicto: NO_CUMPLE`, artefacto
-   `screening_palas_20260828_071737.txt`). Apéndice de resultado en
-   `PRE_REGISTRO_SCREENING_PALAS.md` §12. Causa del NO_INTERPRETABLE
-   (check de sanidad §4.2) investigada a fondo: el recálculo del baseline
-   con costo vigente (0.10%/lado, `baseline_clean_20260828_183624.txt`)
-   convergió el Sharpe pero **no el DSR** — investigado por OpenCode
-   (verificador independiente): el DSR usa `N_TRIALS` distinto entre
-   scripts (baseline=17, heredado de la familia `universe50`; A6.3=5,
-   propio de `signal_diagnosis`) — **no son comparables sin igualar, no
-   es bug**. Igualando N_TRIALS solo para el check: W1/W2 pasan, W3 sigue
-   fuera (se descartó el rango de fechas como causa, delta trades=0; W3
-   sin explicar). **Propuesta de saneamiento del check redactada**:
-   `PRE_REGISTRO_SANEAMIENTO_CHECK_A63.md` — pendiente de aprobación
-   explícita de Boris, nada ejecutado. No confunde con el veredicto
-   NO_CUMPLE ya sellado (ese no se reabre).
+1. **A6.3 — screening PALA/RESTO/POOLED** — 🟢 trial original CERRADO
+   (29/08, `COMPLETED`/`NO_CUMPLE`, ver §12 de `PRE_REGISTRO_SCREENING_PALAS.md`).
+   **Saneamiento del check APROBADO por Boris (29/08) y EN CURSO**: Kilo
+   implementó el check corregido (N_TRIALS igualado a 17 SOLO para la
+   comparación, sin tocar el default de ningún script) y reservó un
+   trial nuevo (`screening_palas_saneada_a63`, `RESERVED` en el ledger,
+   familia `signal_diagnosis`). Corre como 3 procesos detached
+   (PALA/RESTO/POOLED) desde el 29/08 22:25 — PALA terminó esa misma
+   noche, **RESTO y POOLED seguían corriendo al 30/08 mediodía** (fueron
+   más lentos de lo esperado, probablemente por el sleep de la Mac
+   overnight). Al terminar: revisar la salida cruda ANTES de llamar
+   `complete_trial()` — instrucción explícita a Kilo de no auto-completar.
+   **W3 investigado a fondo (OpenCode, 30/08,
+   `INVESTIGACION_W3_A63_20260830.md` en worktree `test-opencode-orca`,
+   spot-check verificado por mí)**: no es un parámetro mal puesto — es
+   una diferencia ESTRUCTURAL real entre los dos scripts. El baseline
+   corre continuo (una sola pasada 2019→2026 troceada en ventanas
+   después) con estado que se arrastra entre ventanas: posiciones
+   abiertas cruzando fronteras, equity compuesto, HMM con ~20 refits
+   walk-forward acumulados hacia 2024 y 5 años de evidencia bayesiana.
+   El screening corre PALA/RESTO/POOLED como 3 `BacktestEngine`
+   independientes (equity=25000 fresco, sin posiciones, HMM fiteado de
+   una sola vez sobre 9 años de historia de golpe). Esa diferencia
+   genera +28-46% más trades en W3 del screening vs. el baseline — cifra
+   verificada, no inferida. Se descartaron rango de fechas (delta
+   trades=0) y costo (empeora, no explica) como causas. Aislar la causa
+   exacta requiere un experimento controlado nuevo — **es un trial
+   nuevo, necesita pre-registro y aprobación de Boris**, no se ejecuta
+   solo. `PRE_REGISTRO_SANEAMIENTO_CHECK_A63.md` sigue siendo la
+   referencia del saneamiento aprobado; no confundir con el veredicto
+   NO_CUMPLE ya sellado del trial original (ese no se reabre).
+
+1b. **Trial #21 — Asimetría direccional de factores** (OpenCode, 30/08) —
+   🟢 **CERRADO — GRIS por cobertura: 0/3 ventanas interpretables**
+   (registrado NO_CUMPLE con nota; ledger `signal_diagnosis` 27→28, slot
+   consumido por reserva Track A). Diseño de Cline aprobado por Boris
+   30/08 → pre-registro formal `PRE_REGISTRO_ASIMETRIA_DIRECCIONAL.md`
+   congelado ANTES de correr (enmiendas pre-congelación: slot 23→28 por
+   conteo ledger real, umbrales scipy 2.50/2.74). Script
+   `backend/scripts/diagnose_asimetria_direccional.py` (ruff limpio,
+   etiquetado §2 verificado con test unitario), corrida ÚNICA 20:09,
+   artefacto `trial21_asimetria_direccional_20260830_200908.txt`. **El
+   gate de cobertura §5 (≥75 fechas con ambos lados Y ≥10 símb/lado) falló
+   en las 3 ventanas: el lado DOWN es estructuralmente escaso en el
+   universo 50 large-cap (mediana DOWN por fecha = 4 global; fechas con
+   DOWN≥10: solo 21%).** El estudio NO refutó la asimetría — nunca
+   alcanzó evidencia; la hipótesis queda no-resuelta-por-insuficiencia.
+   Lo que sí se aprende: cualquier trial futuro que necesite el lado DOWN
+   con piso ≥10/lado sobre este universo debe ampliar universo (100+
+   con small/mid caps) o recalibrar X por pre-registro NUEVO (slot 29) —
+   jamás edición retroactiva de este. Ver `PLAN_MEJORA_MATEMATICA.md
+   §48/§48.1`.
 2. **Motor de fundamentales automatizado** (Cline, rama
    `bjofrea-ctrl/fundamentales-automatizado`, NO mergeada a `main`) — 🟢
    Fases 1-3 CERRADAS y verificadas independientemente (63 tests, paridad
@@ -44,40 +80,36 @@ Cline como implementadores). Verificar contra `git log --oneline -10`,
    llamadas FMP, sin margen — por eso se pidió procesar en lotes de 5 con
    checkpoint parcial y reintento al día siguiente, no el mismo día), y
    dashboard cacheado del último cron (NUNCA recalculado on-demand, para
-   no quemar cuota con cada vista). Cline comiteó Fase 4 28/08 noche, primer intento (`22b8618`) tenía 11/25
-   tests skipped (`TestClient` incompatible con el venv real); devuelto,
-   reescrito con el patrón del repo (`asyncio.run` directo a la corutina,
-   igual que `test_advisor_api.py`) — commit `14f4eae`, 25 passed 0
-   skipped. **PERO Fase 4 NO está cerrada** (revisión 29/08 AM; anoche la
-   di por cerrada mirando sólo los tests — error mío, los tests verdes no
-   prueban que las piezas existan). Lo que falta de verdad:
-   - **El cron NO existe.** La docstring del router dice que los
-     artefactos los genera `scripts/fundamentals_screen_daily.sh` — ese
-     archivo no está en el repo, y no hay ningún `.plist` (ni en el repo
-     ni instalado en `~/Library/LaunchAgents`). Sin cron nada corre solo:
-     los endpoints devolverían 503 para siempre.
-   - **El dashboard y el Excel nunca se generan.** Nadie llama a
-     `generar_dashboard()` ni a `generar_excel()` — sólo hay comentarios
-     "listo para que lo consuma". El job runner escribe únicamente
-     `screen_<date>.json` y `state.json`. Esto responde el pendiente de
-     Boris: no es que salgan distintos al original, es que no se producen.
-   - **La paridad 1000/1000 de Fase 3 ya no es reproducible**: el fixture
-     `/Users/boris/Downloads/fortress core - Market View - 2026-08-27
-     (2).xlsx` no existe más (se borró en la limpieza de disco del 28/08).
-     El test se SALTEA en silencio en vez de fallar, y apunta a
-     `~/Downloads` — el lugar menos estable de la Mac para lo que es la
-     evidencia central de la fase. Guardar ese Excel en un lugar estable
-     (o versionarlo) y hacer que el skip sea ruidoso.
-   - Contaminación de tokens del modelo (MiniMax M3): caracteres chinos
-     `收益` en un comentario de `app/api/routes/fundamentals_screen.py:25`.
-   Patrón de fondo a vigilar: **los tests verifican al lector, no al
-   escritor** — el endpoint se testea con fixtures que fabrican el HTML,
-   así que nada detecta que nadie lo produce. Mismo tipo de agujero que
-   los 11 tests skipped de anoche. **PENDIENTE VERIFICAR ANTES DE DAR POR BUENO**:
-   que el dashboard nuevo y el Excel que genera queden visualmente iguales
-   al original de AAI, no solo que los números cierren (pedido explícito
-   de Boris 28/08). Sigue necesitando `FMP_API_KEY`/`FINNHUB_API_KEY`
-   reales para `verify_finnhub_mapping.py`.
+   no quemar cuota con cada vista). **Fase 4 CERRADA de verdad el 29/08
+   noche** (commit `67109a6`), tras dos rondas de auditoría real (no
+   confiar en "tests en verde" ni en "listo" sin correr todo yo mismo —
+   pasó dos veces en 24h, ver SESSION_LOG):
+   - Cron real instalado y versionado (`fundamentals_screen_daily.sh` +
+     `com.fortresscore.fundamentals_screen.plist`, 22:30).
+   - Dashboard/Excel se generan de verdad — `render_artifacts()` llama a
+     `generar_excel()`/`generar_dashboard()` del motor canónico
+     **vendorizado** en `backend/app/core/motor_canonico/` (decisión: un
+     cron que corre solo a las 22:00 no puede depender de un path fuera
+     del repo). Hash verificado byte-a-byte contra el zip oficial r13 de
+     la skill (`84abe308e7e8e710f2cf2e7649bd9d6074c1e7de1ab8c7dd0f26f3b51768995d`).
+   - Fixture de paridad recuperado (Boris re-exportó el Excel el 29/08) y
+     estabilizado en `backend/tests/fixtures/canon/` (dentro del repo, no
+     en `~/Downloads`) — el skip ahora es ruidoso (`REQUIRE_PARIDAD=1`
+     hace fallar en vez de saltear en silencio) y quedó un guard-rail:
+     una segunda referencia al mismo fixture en `test_fundamentals_ingestion.py`
+     seguía apuntando al path viejo perdido — encontrado en la auditoría
+     final, corregido antes de aceptar el commit.
+   - Contaminación de tokens del modelo (caracteres chinos) limpiada.
+   - Verificado por mí, corriendo todo de cero: 93 passed, 0 skipped
+     (suite completa + paridad estricta), tamaños/hashes de los artefactos
+     en disco coinciden exacto con lo reportado.
+   - **PENDIENTE VERIFICAR** (pedido explícito de Boris, no cerrado
+     todavía): que el dashboard/Excel generados se *vean* iguales al
+     original de AAI (formato/layout), no solo que los tests pasen —
+     abrir los artefactos reales y mirarlos.
+   Sigue necesitando `FMP_API_KEY`/`FINNHUB_API_KEY` reales para probar
+   contra la red de verdad (hasta ahora todo probado con mocks, declarado
+   así explícitamente, no ocultado).
 3. **Bug data_ingestion.py umbral >7 días** — 🟢 CERRADO (OpenCode, commit
    `b4a6797`).
 4. **Launchd pipeline diario (com.fortresscore.pipeline)** — 🟢 verificado
@@ -97,12 +129,72 @@ Cline como implementadores). Verificar contra `git log --oneline -10`,
    que quedaron sin tocar: `~/.colima` (23GB, VM de Docker aparentemente sin
    uso) y `~/.cache` (17GB, cache genérico recreable) — revisar si `.cline`
    vuelve a crecer así con el tiempo, puede repetirse.
-8. **Dashboard — pestaña AAI + inversiones sintéticas** — 🔴 SIN EMPEZAR
-   todavía en código (Fase 4 del plan de fundamentales cubre esto: iframe del
-   dashboard ya generado, no rediseñar). Empezar cuando cierre Fase 3.
+8. **Dashboard — pestaña AAI** — 🟢 CERRADO (30/08, Cline, commit `483024f`):
+   `FundamentalsPage.tsx`, iframe del endpoint de Fase 4 con manejo de
+   503/404/red caída. Verificado por mí: typecheck limpio, 5/5 tests
+   propios pasan. Queda pendiente el ítem de inversiones sintéticas
+   (no cubierto, separado de esto).
+9. **Activar modo real del pipeline diario (`pipeline_daily_signal.py`)** —
+   🟡 PRIORIDAD, para después de A6.3/Fase 4 (decisión de Boris 29/08). El
+   pipeline corre 3x/día (9:35/15:40/22:10) hace 3 días seguidos sin fallar,
+   pero el log de señales (`pipeline_signal_log.jsonl`) solo tiene 4 líneas,
+   todas con `checkpoint_override=True` — validación mecánica del tubo
+   (orden+registro), NO señal real todavía. Falta apagar el modo checkpoint
+   para que empiece a acumular historial prospectivo real, comparable contra
+   el backtest. **NO activar sin confirmación explícita e inequívoca de
+   Boris** — implica órdenes/señales reales, es difícil de revertir. El
+   29/08 se le preguntó A) anotar para después vs B) activar ya, y la
+   respuesta ("Sí" repetido dos veces sin elegir) no alcanzó ese umbral —
+   se optó por A) hasta tener una confirmación sin ambigüedad.
 
 Si alguna de estas cambió de estado cuando leas esto, actualizá esta sección
 (borrala o marcá cerrado) — no la dejes desactualizada.
+
+---
+
+## Backlog futuro — NO AHORA, sólo después de cerrar lo de arriba
+
+### 9. Estrategia de scalping MTF (video de YouTube) — comparación futura, NO desarrollar todavía
+
+Boris trajo un prompt (generado por otra IA a partir de un video de YouTube de un
+influencer de trading, "Alex Ruiz") para programar un bot de scalping multi-temporal
+(H4/H1 sesgo, M5 estructura+Fibonacci, M1 gatillo por ruptura de "diagonal"+volumen) más
+un motor de `RiskManager`/`CostAndRiskEngine`. **Decisión (29/08): queda en espera, se
+retoma como desarrollo posterior — una vez cerrado el trabajo actual — para comparar
+contra la estrategia propia del proyecto, NO para reemplazarla ni mezclarse con el
+ledger existente.**
+
+Reservas técnicas ya planteadas, para no perderlas cuando se retome:
+
+- El gatillo central ("ruptura de diagonal" en M1) es una línea de tendencia dibujada a
+  mano en el video — inherentemente subjetiva. Cualquier implementación algorítmica
+  (ZigZag, regresión lineal) es una *aproximación inventada*, no la estrategia original.
+  Cualquier backtest futuro estaría validando esa aproximación, no la estrategia del video.
+- Es scalping M1: la categoría más sensible a costos que existe (spread+slippage pueden
+  comerse la esperanza matemática por completo — el propio material del video lo admite).
+  No tomar en serio ningún resultado de backtest sin costos realistas modelados desde el
+  primer día (no como ajuste posterior).
+- Requiere infraestructura que este proyecto no tiene hoy: datos M1/M5/H1 de forex/índices/
+  cripto (MT5, ccxt, IB — no hay conexión a ninguno), y un motor de backtesting distinto
+  (`backtrader`/`vectorbt`, no `BacktestEngine` existente). Es un proyecto de infraestructura
+  aparte, no una tarea dentro del código actual.
+- Si se retoma: tratar como sandbox aislado (worktree propio, sin tocar `trial_registry.json`
+  de producción), con pre-registro previo igual que cualquier otra hipótesis nueva, y con el
+  nivel de escepticismo más alto posible dado el origen (video, no investigación).
+
+### 10. Timeframes según horizonte — swing vs. intradía (nota de referencia)
+
+Pedido de Boris: documentar qué mirar en cada caso, para tenerlo presente al comparar
+estrategias de distinto horizonte (útil cuando se retome el ítem 9).
+
+| | **Swing trading** (días–semanas) | **Intradía / scalping** (minutos–horas, cierra el mismo día) |
+|---|---|---|
+| Timeframe de decisión | Diario (D1), a veces 4H para afinar entradas | M1–M15 |
+| Timeframe de contexto/sesgo | Semanal (W1) para tendencia macro | H1/H4 para sesgo intradía |
+| Sensibilidad a costos (spread/slippage/comisión) | **Baja** — el costo es una fracción chica del movimiento esperado por trade. Es justo por esto que el enfoque diario actual de `fortress_core` es viable con costos de 0.05-0.10%/lado. | **Muy alta** — el costo puede ser una fracción grande (o mayor) del movimiento esperado. La estrategia vive o muere en la ejecución real, no en el backtest histórico. |
+| Tamaño de muestra necesario | Pocos trades por año → hace falta **muchos años** de historia para significancia estadística (de ahí DSR, Bonferroni, ventanas de varios años como en A6.3). | Muchos trades por año → significancia en cantidad de trades se alcanza rápido, pero el riesgo de sobreajuste a un régimen de volatilidad específico es mayor. |
+| Riesgo estructural propio | Gaps overnight/fin de semana. | Liquidez que se seca en rupturas, ejecución a peor precio (slippage) justo cuando la señal es más fuerte. |
+| Infraestructura necesaria | Datos EOD alcanzan (lo que ya tiene el proyecto). | Datos intradía/tick, feed cercano a tiempo real, conexión a broker — nada de esto existe hoy en `fortress_core`. |
 
 ---
 

@@ -599,5 +599,18 @@
     "umbral_aplicado": "DSR_PALA>0.50 Y Sharpe_PALA>Sharpe_RESTO en >=2/3 ventanas (screening barato, escalon 1 embudo)",
     "seccion_doc": "PRE_REGISTRO_SANEAMIENTO_CHECK_A63.md §4",
     "status": "RESERVED"
+  },
+  {
+    "id": "trial21_asimetria_direccional",
+    "fecha": "2026-08-30",
+    "familia": "signal_diagnosis",
+    "hipotesis": "Asimetria direccional (design DISENO_ASIMETRIA_DIRECCIONAL_20260830 de Cline, pre-registro congelado 2026-08-30): el rank IC de los factores del motor y de los 8 RMT es distinto bajo impulso de alza (UP, ret_63d>=+10%) que bajo baja (DOWN, <=-10%), y la diferencia rescata señal que el pooling destruye. Test primario UNA estadistica por factor: Δ_f=IC_up−IC_down, Newey-West L=4.",
+    "n_trials_consumidos": 1,
+    "umbral_aplicado": "Δ_f = IC_up − IC_down con |t_NW|>2.50 (confirmatorio) / >2.74 (RMT) en ≥2/3 ventanas interpretables, signo pre-declarado, |Δ_f|≥0.05, cobertura ≥75 fechas y ≥10 símbolos/lado",
+    "seccion_doc": "PRE_REGISTRO_ASIMETRIA_DIRECCIONAL.md §7 / PLAN_MEJORA_MATEMATICA.md §48",
+    "status": "COMPLETED",
+    "veredicto": "NO_CUMPLE",
+    "artefacto": "data/cache/trial21_asimetria_direccional_20260830_200908.txt",
+    "fecha_completado": "2026-08-30"
   }
 ]
