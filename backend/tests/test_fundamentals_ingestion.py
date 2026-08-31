@@ -30,11 +30,11 @@ def _load(name):
 def _fmp_responses():
     """Mapa endpoint -> fixture para la inyección (sin tocar red)."""
     return {
-        "income-statement/AAPL": _load("fmp_income_statement_aapl.json"),
-        "balance-sheet-statement/AAPL": _load("fmp_balance_sheet_aapl.json"),
-        "cash-flow-statement/AAPL": _load("fmp_cash_flow_aapl.json"),
-        "profile/AAPL": _load("fmp_profile_aapl.json"),
-        "price-target-consensus/AAPL": _load("fmp_price_target_aapl.json"),
+        "income-statement": _load("fmp_income_statement_aapl.json"),
+        "balance-sheet-statement": _load("fmp_balance_sheet_aapl.json"),
+        "cash-flow-statement": _load("fmp_cash_flow_aapl.json"),
+        "profile": _load("fmp_profile_aapl.json"),
+        "price-target-consensus": _load("fmp_price_target_aapl.json"),
     }
 
 
@@ -83,17 +83,18 @@ def test_fmp_not_available_without_key(monkeypatch):
     monkeypatch.setattr("app.core.fundamentals_ingestion.settings.FMP_API_KEY", "")
     c = FmpClient()
     assert c.is_available() is False
-    assert c._fetch("income-statement/AAPL") is None
+    assert c._fetch("income-statement") is None
 
 
 def test_fmp_endpoints_pass_correct_path():
     c = FmpClient(api_key="fake")
     c._fetch = lambda ep, p=None: ep  # sin tocar red
-    assert c.income_statement("AAPL") == "income-statement/AAPL"
-    assert c.balance_sheet("AAPL") == "balance-sheet-statement/AAPL"
-    assert c.cash_flow("AAPL") == "cash-flow-statement/AAPL"
-    assert c.profile("AAPL") == "profile/AAPL"
-    assert c.price_target_consensus("AAPL") == "price-target-consensus/AAPL"
+    # Formato /stable: endpoint base, símbolo viaja como query param
+    assert c.income_statement("AAPL") == "income-statement"
+    assert c.balance_sheet("AAPL") == "balance-sheet-statement"
+    assert c.cash_flow("AAPL") == "cash-flow-statement"
+    assert c.profile("AAPL") == "profile"
+    assert c.price_target_consensus("AAPL") == "price-target-consensus"
 
 
 def _make(tmp_path):
@@ -157,7 +158,7 @@ def test_refresh_empty_preserves_stale(tmp_path, capsys):
     old = time.time() - (TTL_DAYS + 1) * 86400
     os.utime(path, (old, old))
     # simular que en este refresh FMP no devuelve statements
-    fake.empty = {"income-statement/AAPL", "cash-flow-statement/AAPL"}
+    fake.empty = {"income-statement", "cash-flow-statement"}
 
     payload = ing.ingest_symbol("AAPL")
     # conserva el cache previo marcado stale, nunca lo borra

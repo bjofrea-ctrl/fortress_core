@@ -52,12 +52,19 @@ TTL_DAYS = int(os.environ.get("FUNDAMENTALS_TTL_DAYS", "90"))
 # margen para ratios de crecimiento 5y.
 FMP_STATEMENT_LIMIT = 6
 class FmpClient:
-    """Cliente mínimo de Financial Modeling Prep (API v3, free tier).
+    """Cliente mínimo de Financial Modeling Prep (API stable, free tier).
 
     Sólo listas de endpoints específicos; los tests pinchan `_fetch`.
+
+    NOTA DE MIGRACIÓN (2026-08-30): FMP movió los endpoints legacy `/api/v3/...`
+    (símbolo en el path) a la API `/stable/...` (símbolo como query param). Con
+    claves nuevas, `/api/v3` responde 403 Forbidden mientras `/stable` responde
+    200 con el mismo esquema de campos — verificado en vivo con AAPL (probe de
+    los 5 endpoints). El formato legacy habría hecho fallar el cron nocturno
+    con `fmp_bad_response` en los 5 endpoints de cada símbolo.
     """
 
-    BASE_URL = "https://financialmodelingprep.com/api/v3"
+    BASE_URL = "https://financialmodelingprep.com/stable"
 
     def __init__(self, api_key: Optional[str] = None):
         # api_key="" explícito NO debe caer al default de Settings (mismo patrón
@@ -104,21 +111,24 @@ class FmpClient:
             return None
 
     # ------------------------------- endpoints --------------------------------
+    # Formato /stable (2026-08-30): símbolo como QUERY PARAM, no en el path.
+    # /api/v3 responde 403 con claves nuevas; /stable/{endpoint}?symbol=X → 200.
+    # Los 5 endpoints verificados en vivo (HTTP 200 con datos reales AAPL).
 
     def income_statement(self, symbol: str, limit: int = FMP_STATEMENT_LIMIT):
-        return self._fetch(f"income-statement/{symbol}", {"limit": limit})
+        return self._fetch("income-statement", {"symbol": symbol, "limit": limit})
 
     def balance_sheet(self, symbol: str, limit: int = FMP_STATEMENT_LIMIT):
-        return self._fetch(f"balance-sheet-statement/{symbol}", {"limit": limit})
+        return self._fetch("balance-sheet-statement", {"symbol": symbol, "limit": limit})
 
     def cash_flow(self, symbol: str, limit: int = FMP_STATEMENT_LIMIT):
-        return self._fetch(f"cash-flow-statement/{symbol}", {"limit": limit})
+        return self._fetch("cash-flow-statement", {"symbol": symbol, "limit": limit})
 
     def profile(self, symbol: str):
-        return self._fetch(f"profile/{symbol}")
+        return self._fetch("profile", {"symbol": symbol})
 
     def price_target_consensus(self, symbol: str):
-        return self._fetch(f"price-target-consensus/{symbol}")
+        return self._fetch("price-target-consensus", {"symbol": symbol})
 
 class FundamentalsIngestion:
     """Orquesta la ingesta cruda con cache incremental (TTL 90d) + cruce Finnhub."""
