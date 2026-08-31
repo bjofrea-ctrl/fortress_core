@@ -4091,3 +4091,71 @@ crudo ya refutado y del ranking de A4; el dato (panel 47/48) ya no es la limitac
 limitación es que el factor no bate al universo. Conexión con A4: si se mejora cobertura/
 definición de valor, el re-test corresponde a A4, no re-abrir A5.
 
+
+## 48. TRIAL #21 — Asimetría direccional de factores (impulso alza vs. baja) — PRE-REGISTRO congelado 2026-08-30, slot 28 signal_diagnosis
+
+**Origen**: diseño de Cline `DISENO_ASIMETRIA_DIRECCIONAL_20260830.md` (worktree
+fundamentales-automatizado), aprobado por Boris 2026-08-30 ("realizar lo más sólido y
+mejor para el proyecto, no necesariamente lo más fácil"). Pre-registro formal:
+`PRE_REGISTRO_ASIMETRIA_DIRECCIONAL.md`. Enmiendas al congelar (antes de correr, §12):
+slot 23→28 (ledger real 27 consumidos, diseño citaba conteo viejo), umbrales scipy
+2.4977→2.50 / 2.7344→2.74 (redondeo conservador).
+
+**Hipótesis (una línea)**: el rank IC de los factores es distinto bajo impulso de alza
+(UP: ret_63d≥+10%) que bajo baja (DOWN: ≤−10%), y Δ_f = IC_up − IC_down (Newey-West L=4,
+mismo estimador §0.5a) basta (|t|>2.50 B4, |Δ|≥0.05, ≥2/3 ventanas) para que condicionar
+por dirección rescate señal que el pooling destruye. Confirmatorios con signo
+pre-declarado: volume_shock (Δ>0), rsi_14 (Δ>0, degeneración §9.3), momentum_12_1 (Δ>0,
+circularidad declarada §9.2), adx_14 (Δ≈0 simetría — sorpresa si ≠0). Exploratorio: 8
+factores RMT (loadings in-sample del artefacto rmt_mp_20260811_150849, score estático
+por símbolo), umbral |t|>2.74, veredicto acotado a candidato OOS. Gate de cobertura
+pre-resultado §5: ≥75 fechas con ambos lados Y ≥10 símb/lado (mediana).
+
+### 48.1 RESULTADO (apéndice post-corrida, 2026-08-30 20:09) — corrida única, **GRIS por cobertura: 0/3 ventanas interpretables**
+
+Artefacto: `backend/data/cache/trial21_asimetria_direccional_20260830_200908.txt` (+.json).
+Script: `backend/scripts/diagnose_asimetria_direccional.py` (ruff limpio, etiquetado §2
+verificado con test unitario P(t−1)/P(t−1−63)−1 exacto).
+
+```
+GATE DE COBERTURA PRE-RESULTADO (§5):
+ventana    fechas  UP(med) DOWN(med) interpretable
+W1              1     19.0       2.0 NO INTERPRETABLE
+W2             24     10.0       6.0 NO INTERPRETABLE
+W3             81     16.0       5.0 NO INTERPRETABLE
+→ 0/3: ninguna ventana con ≥75 fechas de AMBOS lados Y ≥10 símb/lado
+```
+
+Diagnóstico de la cobertura (post-gate, audit del mecanismo — NO es re-test): el lado
+DOWN es estructuralmente escaso en este universo 50 large-cap. Sobre 1907 fechas
+2019-2026: mediana global de símbolos DOWN por fecha = **4** (p25=2, p75=8, p90=17);
+fechas con DOWN≥10: 404/1907 (21%). Por ventana: W1 DOWN med=2 (59/505 fechas ≥10),
+W2 DOWN med=6 (189/501), W3 DOWN med=5 (144/649). El gate de §5 (≥10 DOWN/lado en
+mediana) era inalcanzable por diseño del universo: la estimación a priori del diseño
+(§2.4: "~15-25 símbolos por lado") resultó optimista para DOWN — exactamente el caso de
+no-interpretabilidad que §5 pre-escribió (lección #17: cobertura fuera de rango
+invalida, no "cuenta como cero").
+
+**Veredicto mecánico (§5→§7)**: GRIS automático — ninguna ventana interpretable por
+cobertura. **Registrado como NO_CUMPLE con nota** (el ledger solo acepta
+CUMPLE|NO_CUMPLE; el slot 28 ya estaba consumido por la reserva Track A — el matiz GRIS
+vive en el artefacto y acá). signal_diagnosis: **27→28**.
+
+**Lectura honesta**: el estudio NO refutó la asimetría — nunca alcanzó evidencia. El
+universo 50 large-cap rara vez tiene ≥10 símbolos en impulso bajista simultáneo, y con
+<X el panel pierde el piso de ambas condiciones a la vez. La hipótesis de asimetría
+direccional queda **no-resuelta-por-insuficiencia**, no refutada. Lo que SÍ se aprende:
+(i) el etiquetado UP/DOWN ±10%/63d sobre este universo produce un panel DOWN
+estructuralmente delgado (mediana 4-6) — cualquier trial futuro que necesite el lado
+DOWN con piso ≥10/lado debe o relajar X, o ampliar universo, o aceptar medir DOWN con
+IC menos preciso; (ii) la regla del diseño de registrar GRIS→NO_CUMPLE con nota
+funcionó como estaba escrita — no se ajustó nada post-hoc.
+
+**Condicional §8 aplicado (GRIS)**: nada se integra; lo que falta para desempatar está
+listado: el mismo diseño con universo ampliado (p.ej. 100+ símbolos con small/mid caps
+donde los impulsos bajistas son más frecuentes) o con X recalibrado POR PRE-REGISTRO
+NUEVO (slot 29) — jamás edición de este. La línea queda aparcada por decisión de Boris.
+
+**Registrado**: id `trial21_asimetria_direccional`, familia `signal_diagnosis`,
+n_trials_consumidos=1, veredicto `NO_CUMPLE` (nota GRIS-cobertura), artefacto
+`data/cache/trial21_asimetria_direccional_20260830_200908.txt`, §48/§48.1.

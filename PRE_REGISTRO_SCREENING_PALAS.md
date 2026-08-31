@@ -119,7 +119,7 @@ La tabla de salida tiene 3 filas × 3 columnas:
 
 ### 4.2. Criterios secundarios (informativos, NO gate)
 
-- **POOLED vs baseline histórico (check de sanidad con tolerancia numérica)**: la corrida POOLED debe replicar aproximadamente el baseline_clean (`DSR 0.0714/0.0284/0.1727`, `Sharpe 0.2562/-0.0542/0.5299` en W1/W2/W3). Para distinguir bug de ruido muestral, las tolerancias son:
+- **POOLED vs baseline histórico (check de sanidad con tolerancia numérica)**: la corrida POOLED (costo vigente 0.10%/lado = commission 0.0005 + slippage 0.0005, recálculo 2026-08-28, `baseline_clean_20260828_183624.txt`) debe replicar aproximadamente el baseline_clean (`DSR 0.1508/0.0900/0.0932`, `Sharpe 0.5586/0.3478/0.3085` en W1/W2/W3). El baseline anterior `baseline_clean_20260811_150643.txt` (costo 0.15%/lado) queda como referencia histórica del costo viejo y **NO** debe usarse para este check — su divergencia era la causa raíz del NO_INTERPRETABLE de screening_palas (costo y datos de agosto-11, no bug). Para distinguir bug de ruido muestral, las tolerancias son:
 
   | Métrica | Tolerancia vs baseline_clean (por ventana) |
   |---|---|
@@ -153,7 +153,8 @@ La tabla de salida tiene 3 filas × 3 columnas:
 |---|---|---|
 | `backend/data/cache/*.parquet` | OHLC diario 50 símbolos, 2019-01-01 → 2026-08-14 | Existente (updater estancado en 2026-08-14, reportado aparte — NO se descarga nada nuevo) |
 | `backend/app/api/routes/opportunities_universe.SYMBOLS` | Lista 50 símbolos canónicos | Existente |
-| `backend/data/cache/baseline_clean_20260811_150643.*` | Corrida pooled de referencia | Existente |
+| `backend/data/cache/baseline_clean_20260811_150643.*` | Corrida pooled de referencia **histórica** (costo 0.15%/lado, 11/08) | Existente |
+| `backend/data/cache/baseline_clean_20260828_183624.*` | Corrida pooled de referencia **vigente** (costo 0.10%/lado, recálculo 28/08) — usa esta para el check de sanidad §4.2 | Existente |
 
 **No requiere**: nuevas fuentes, nuevos símbolos, APIs externas, descargas. Todo está en el cache existente.
 
