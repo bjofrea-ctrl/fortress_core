@@ -49,6 +49,27 @@ Cline como implementadores). Verificar contra `git log --oneline -10`,
    solo. `PRE_REGISTRO_SANEAMIENTO_CHECK_A63.md` sigue siendo la
    referencia del saneamiento aprobado; no confundir con el veredicto
    NO_CUMPLE ya sellado del trial original (ese no se reabre).
+
+1b. **Trial #21 — Asimetría direccional de factores** (OpenCode, 30/08) —
+   🟢 **CERRADO — GRIS por cobertura: 0/3 ventanas interpretables**
+   (registrado NO_CUMPLE con nota; ledger `signal_diagnosis` 27→28, slot
+   consumido por reserva Track A). Diseño de Cline aprobado por Boris
+   30/08 → pre-registro formal `PRE_REGISTRO_ASIMETRIA_DIRECCIONAL.md`
+   congelado ANTES de correr (enmiendas pre-congelación: slot 23→28 por
+   conteo ledger real, umbrales scipy 2.50/2.74). Script
+   `backend/scripts/diagnose_asimetria_direccional.py` (ruff limpio,
+   etiquetado §2 verificado con test unitario), corrida ÚNICA 20:09,
+   artefacto `trial21_asimetria_direccional_20260830_200908.txt`. **El
+   gate de cobertura §5 (≥75 fechas con ambos lados Y ≥10 símb/lado) falló
+   en las 3 ventanas: el lado DOWN es estructuralmente escaso en el
+   universo 50 large-cap (mediana DOWN por fecha = 4 global; fechas con
+   DOWN≥10: solo 21%).** El estudio NO refutó la asimetría — nunca
+   alcanzó evidencia; la hipótesis queda no-resuelta-por-insuficiencia.
+   Lo que sí se aprende: cualquier trial futuro que necesite el lado DOWN
+   con piso ≥10/lado sobre este universo debe ampliar universo (100+
+   con small/mid caps) o recalibrar X por pre-registro NUEVO (slot 29) —
+   jamás edición retroactiva de este. Ver `PLAN_MEJORA_MATEMATICA.md
+   §48/§48.1`.
 2. **Motor de fundamentales automatizado** (Cline, rama
    `bjofrea-ctrl/fundamentales-automatizado`, NO mergeada a `main`) — 🟢
    Fases 1-3 CERRADAS y verificadas independientemente (63 tests, paridad
