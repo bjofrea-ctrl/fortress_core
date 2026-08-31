@@ -564,5 +564,53 @@
     "artefacto": "data/cache/trial18_evt_stops_v2_20260824_200927.txt",
     "seccion_doc": "§45",
     "status": "COMPLETED"
+  },
+  {
+    "id": "trial_a5_buffett_alpha",
+    "fecha": "2026-08-25",
+    "familia": "motor_signal",
+    "hipotesis": "Buffett's Alpha sistemático (calidad+valor+bajo-beta+apalancamiento moderado) como portafolio cross-sectional long top-quintile mejora Sharpe OOS neto y DSR del ensamble",
+    "n_trials_consumidos": 1,
+    "umbral_aplicado": "DSR>=th(motor_signal)=0.99231 (n=13) Y Sharpe_OOS_neto>0 en OOS fresco 2024-02..",
+    "veredicto": "NO_CUMPLE",
+    "artefacto": "data/cache/trial20_a5_buffett_alpha_20260825_211648.txt",
+    "seccion_doc": "§47",
+    "status": "COMPLETED"
+  },
+  {
+    "id": "screening_palas",
+    "fecha": "2026-08-27",
+    "familia": "signal_diagnosis",
+    "hipotesis": "Screening vendedor de palas: subconjunto habilitador IA (NVDA/AVGO/QCOM/MSFT/ORCL/CSCO) vs resto (44) vs pooled (50) bajo momentum+RSI congelado. n_trials=5 (default motor, gate laxo por diseño escalon 1). | NO_INTERPRETABLE: check de sanidad POOLED vs baseline_clean fuera de tolerancia en 3/3 ventanas (causa: baseline_clean_20260811 corrio con costo 0.15%/lado viejo y N_TRIALS=17, screening con costo 0.10% y n_trials=5 -- comparacion invalida, no bug de implementacion. Investigacion completa en pre-registro nuevo antes de re-correr).",
+    "n_trials_consumidos": 1,
+    "umbral_aplicado": "DSR_PALA>0.50 Y Sharpe_PALA>Sharpe_RESTO en >=2/3 ventanas (screening barato, escalon 1 embudo)",
+    "seccion_doc": "PRE_REGISTRO_SCREENING_PALAS.md §4",
+    "status": "COMPLETED",
+    "veredicto": "NO_CUMPLE",
+    "artefacto": "data/cache/screening_palas_20260828_071737.txt",
+    "fecha_completado": "2026-08-29"
+  },
+  {
+    "id": "screening_palas_saneada_a63",
+    "fecha": "2026-08-29",
+    "familia": "signal_diagnosis",
+    "hipotesis": "Screening vendedor de palas — rerun paralelo PALA/RESTO/POOLED con check de sanidad §4.2 corregido: POOLED vs baseline_clean_20260828_183624.txt (costo 0.10% vigente) con N_TRIALS=17 ad-hoc para comparacion puntual (DSR real de PALA/RESTO/POOLED sigue en n_trials=5, familia signal_diagnosis).",
+    "n_trials_consumidos": 1,
+    "umbral_aplicado": "DSR_PALA>0.50 Y Sharpe_PALA>Sharpe_RESTO en >=2/3 ventanas (screening barato, escalon 1 embudo)",
+    "seccion_doc": "PRE_REGISTRO_SANEAMIENTO_CHECK_A63.md §4",
+    "status": "RESERVED"
+  },
+  {
+    "id": "trial21_asimetria_direccional",
+    "fecha": "2026-08-30",
+    "familia": "signal_diagnosis",
+    "hipotesis": "Asimetria direccional (design DISENO_ASIMETRIA_DIRECCIONAL_20260830 de Cline, pre-registro congelado 2026-08-30): el rank IC de los factores del motor y de los 8 RMT es distinto bajo impulso de alza (UP, ret_63d>=+10%) que bajo baja (DOWN, <=-10%), y la diferencia rescata señal que el pooling destruye. Test primario UNA estadistica por factor: Δ_f=IC_up−IC_down, Newey-West L=4.",
+    "n_trials_consumidos": 1,
+    "umbral_aplicado": "Δ_f = IC_up − IC_down con |t_NW|>2.50 (confirmatorio) / >2.74 (RMT) en ≥2/3 ventanas interpretables, signo pre-declarado, |Δ_f|≥0.05, cobertura ≥75 fechas y ≥10 símbolos/lado",
+    "seccion_doc": "PRE_REGISTRO_ASIMETRIA_DIRECCIONAL.md §7 / PLAN_MEJORA_MATEMATICA.md §48",
+    "status": "COMPLETED",
+    "veredicto": "NO_CUMPLE",
+    "artefacto": "data/cache/trial21_asimetria_direccional_20260830_200908.txt",
+    "fecha_completado": "2026-08-30"
   }
 ]

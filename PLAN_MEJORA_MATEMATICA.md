@@ -3949,4 +3949,213 @@ Conexión natural con Brecha 3: más meses OOS del updater suben n por ventana.
 
 ---
 
+## 47. TRIAL #20 — PRE-REGISTRO: "Buffett's Alpha" sistemático (Quality + Value + Low-Beta), Camino A / A5
 
+> **Estado**: REDACTADO por Kilo (2026-08-25) por directiva explícita de Boris
+> ("pasá a A5 ... pre-registro nuevo, misma disciplina", ARBOL_DECISION_ESTRATEGICO.md
+> A5 / PLAN_MAESTRO_FASE_PRODUCCION.md Frente 1). Pendiente de aprobación y merge vía
+> `.pending-merge.md` (PLAN_HANDOVER_48H.md §1.1). Se sella ANTES de correr; el script
+> se escribe para coincidir literalmente con esta definición.
+
+**Pregunta**: ¿un portafolio cross-sectional sistemático "Buffett's Alpha" — calidad
+(rentabilidad + estabilidad de ganancias) + valor (P/E, P/B, EV/EBITDA) + bajo-beta +
+apalancamiento moderado, sobre el universo 50 US large-cap — forma una fuente de retorno
+genuina y no correlacionada con Sharpe OOS neto > 0 y DSR ≥ umbral Bonferroni, que
+justifique sumarla al ensamble multivariante (BayesianOnlineUpdater)?
+
+**Por qué es inédita (verificado)**: el test de fundamentales previo (FUND, backfill
+trial) era ranking cross-sectional CRUDO de 15 ratios EDGAR con **5/50 cobertura** →
+refutado por cobertura, no por señal. A4 = revivir ESE ranking si mejora cobertura.
+A5 = la descomposición de Frazzini/Kabiller/Pedersen ("Buffett's Alpha", 2018): calidad,
+valor, bajo-beta, apalancamiento moderado — **nunca probada acá con ese diseño** (ARBOL
+A5, líneas 60-69). El componente bajo-beta (de precio, cobertura 50/50) es novedoso y
+libre del problema de cobertura EDGAR. Es independiente de A1/§46 (hipótesis distinta,
+mismo ledger, sin competir con Frente 2 de construcción).
+
+**Diseño (congelado, CERO re-optimización; el script lee estas definiciones literalmente)**:
+
+- Universo 50 (SYMBOLS canónicos de `app.api.routes.opportunities_universe`), daily, cache-only.
+- Por cada fecha de rebalance mensual `t` (último hábil del mes), para cada símbolo:
+  - **Calidad (panel EDGAR point-in-time `fundamentals_panel.parquet`, as-of ≤ t, ffilled)**:
+    - rentabilidad_z = media z(roe), z(roa), z(gross_margin), z(fcf_yield) — z cross-sectional en t.
+    - estabilidad_z = z(−std(eps_ttm rol 504d, mín 126)) — menor volatilidad de utilidad = mayor calidad.
+    - quality_z = media(rentabilidad_z, estabilidad_z), z cross-sectional en t.
+  - **Valor (panel EDGAR)**: value_z = media(z(−pe_ratio winsor [5,60]), z(−pb_ratio winsor [0.5,10]),
+    z(−ev_ebitda winsor [3,30])) — menor múltiplo = más barato; winsor a los rangos de `_FUND_SPECS`
+    del motor. Invertido porque value = barato.
+  - **Bajo-beta (PRICE-ONLY, cobertura 50/50)**: beta = cov(ret_stk, ret_SPY, 126d)/var(ret_SPY, 126d);
+    lowbeta_z = z(−beta) cross-sectional en t. (Componente novedoso, sin EDGAR.)
+  - **Apalancamiento moderado (EDGAR)**: lev_z = z(−|debt_equity − 1.0|) (cerca de 1.0 = óptimo, ni
+    bajo ni alto extremo); peso menor (0.5).
+  - **composite_t = quality_z + value_z + lowbeta_z + 0.5·lev_z**, normalizado z cross-sectional
+    (equal-weight de los 3 núcleos + 0.5 leverage).
+  - **Selección**: long top quintile (top 20%, mín 5 símbolos con datos completos), equal-weight.
+    SIN short (fiel al libro largo de Buffett y desplegable como fuente LONG del ensamble).
+- **Rebalanceo mensual**, hold hasta próximo rebalance. Timing fiel a `validacion_oos_fresca_mom_rsi`:
+  señal al cierre del último hábil de m (solo datos ≤ t), entrada OPEN primer hábil m+1 (lag 1),
+  salida CLOSE último hábil m+1. Costos config: 0.0005+0.0005/side → 0.002 ida-vuelta/mes con posiciones.
+- **IS/OOS**: corte 2023-12-31; embargo ene-2024 (≈20 ruedas, CALIBRATION_HORIZON_DAYS); último mes
+  parcial del cache excluido. OOS = 2024-02 → borde de cache.
+
+**Umbral (ledger EN runtime, 2026-08-25)**: familia `motor_signal`. §46 fue NO INTERPRETABLE →
+NO consumió slot → consumido=12 al redactar → n=13 → `current_threshold("motor_signal")` =
+**0.9923076923076923** (= 1 − 0.10/13). n=13 alimenta el Deflated Sharpe. El script re-lee en
+runtime; artefacto cita el efectivo. A5 CONSUME 1 slot (n_trials_consumidos=1) sea CUMPLE o
+NO_CUMPLE interpretable; NO INTERPRETABLE (coverage-gate/fidelidad) → NO consume.
+
+**CRITERIO DE ÉXITO (binario, sin zona gris, pre-registrado)**: **CUMPLE** si (a) Sharpe_OOS_neto
+anualizado > 0 Y (b) **DSR ≥ th vigente (n=13)**, con fidelidad OK y coverage-gate OK. **NO_CUMPLE**
+cualquier otra cosa (mecánico). **NO_INTERPRETABLE** si coverage-gate falla (<90% universo / <80%
+fechas OOS con quality+value computables) o aborto por fidelidad → NO registra ni consume slot.
+
+**Diagnósticos secundarios (pre-declarados, descriptivos — NO veredicto)**: retorno long-short
+(top−bottom quintile) como contraste académico; correlación del composite con momentum (declarar
+ortogonalidad al ensamble); fracción de días en mercado; nombres top-quintile estables por ventana;
+Sharpe/CAGR/maxDD del portafolio vs universo equal-weight (control); descomposición de contribución
+quality/value/lowbeta al IC.
+
+**Checks de fidelidad**: F1 universo 50 cargado; F2 coverage-gate reportado (EDGAR ≥90% universo,
+≥80% fechas OOS) — gate de interpretabilidad; F3 determinismo seed 42 (desempates rank + beta);
+F4 low-beta sanity (beta finita y >0 para los 50; correlación(β, retorno mercado)>0); F5 no-lookahead
+del panel: assert que todo valor de ratio usado en t tiene filing_date ≤ t (vía index del panel),
+aborto si no; F6 suite completa backend verde ANTES de correr; F7 control: portafolio universo
+equal-weight produce Sharpe OOS finito (la maquinaria funciona); F8 DSR vía
+`backtest_engine.calculate_metrics` (V[SR_n] proxy Fase 0b, comparable a W1/W2/W3 históricos);
+F9 timing fiel (señal cierre m → OPEN m+1 → CLOSE m+1, lag 1); F10 costos aplicados (0.002/round-trip/mes).
+
+**Riesgos declarados**: (1) Cobertura EDGAR es el riesgo central — hoy 0 panel (`data/cache/edgar/`
+vacío; FUND previo 5/50). Fase 0 (abajo) lo construye; si no alcanza el gate → NO INTERPRETABLE
+documentado, no se corre el trial principal. (2) Calidad/valor escasos para algunas acciones aunque
+haya panel (EPS negativo → pe NaN): composite usa componentes disponibles con winsorización;
+documentado. (3) DSR con n=13 exigentísimo → resultado honesto más probable: "dirección positiva
+pero NO_CUMPLE absoluto" → documentado sin zona gris. (4) Universos de 50 large-caps actuales tienen
+lookahead de membresía (compartido por todo el proyecto; limitación heredada, no de A5). (5) Bajo-beta
+price-based puede solaparse con momentum; NO se ortogonaliza en primario (fidelidad a la mezcla de
+Buffett); correlación reportada como diagnóstico. (6) Fase 0 requiere descarga de companyfacts EDGAR
+(red, rate-limit ~10/s) para 50 símbolos — acumulación única, cache después; el trial en sí es cache-only.
+
+**Fase 0 (prerrequisito, NO consume slot)**: extender `build_fundamentals_panel.py` SYMBOLS a los 50
+del universo canónico; descargar companyfacts SEC EDGAR (`data/cache/edgar/*.json`); construir
+`fundamentals_panel.parquet` point-in-time. Verificar coverage-gate (F2) ANTES de correr el trial. Si
+F2 falla → NO INTERPRETABLE, no se corre el principal. Esto es "empezar a acumular el histórico hoy"
+(doctrina Boris), no un trial — no consume presupuesto DSR.
+
+**Script**: `backend/scripts/trial_a5_buffett_alpha.py` (nuevo; reutiliza `deflated_sharpe` de
+`validacion_oos_fresca_mom_rsi`, `edgar_fundamentals.get_edgar_fundamentals`/`compute_fundamental_score_series`
+extendido a specs A5, y la maquinaria de rebalanceo mensual OOS). Python 3.9 real; el trial corre SOLO
+sobre cache (panel ya construido en Fase 0). No toca producción. Ventanas canónicas W1/W2/W3;
+START=2015-01-02; DATA_END=borde de cache ≤7 días. Artefacto:
+`backend/data/cache/trial20_a5_buffett_alpha_<ts>.txt` (+json +parquet equity/positions). Corrida ÚNICA.
+
+**Ledger (AL CIERRE, manual, solo si interpretable)**: `register_trial(id="trial_a5_buffett_alpha",
+familia="motor_signal", n_trials_consumidos=1,
+umbral_aplicado="DSR>=th(motor_signal)=0.99231 (n=13) Y Sharpe_OOS_neto>0 en OOS fresco",
+veredicto=mecánico, seccion_doc="§47")`. Regla: interpretable REGISTRA sea CUMPLE o NO_CUMPLE;
+NO INTERPRETABLE (coverage-gate/fidelidad) NO registra ni consume slot — mismo contrato de §45/§46.
+
+### 47.1 RESULTADO (apéndice post-corrida, 2026-08-25) — corrida única 21:16, **NO_CUMPLE mecánico (DSR<umbral), interpretable, consume 1 slot**
+
+**Fase 0 ejecutada y verificada**: panel EDGAR point-in-time construido para **47/48** empresas
+operativas (una sin filings parseables quedó fuera; universo 97.9% ≥90%). `build_fundamentals_panel.py`
+extendido a las 48 (excluye SPY/QQQ ETF) y se añadió `eps_ttm` al panel para la estabilidad
+de ganancias. 48 companyfacts descargados de SEC EDGAR (43 nuevos + 5 cacheados).
+
+Corrida única (`scripts/trial_a5_buffett_alpha.py`, artefacto
+`trial20_a5_buffett_alpha_20260825_211648.txt`+json, ~2min). Umbral efectivo = el del
+pre-registro: consumido=12 → n=13 → th=0.9923076923.
+
+**Fidelidad OK**: F1 universo 48/48 precios; F2 coverage-gate universo **0.979** / fechas OOS
+**1.000** (PASS); F4 low-beta rolling 126d vs SPY para 48; F7 control equal-weight OOS
+Sharpe **1.50** (maquinaria sana).
+
+**Resultado OOS** (31 meses, 2024-02→borde de cache, embargo ene-2024):
+- Sharpe_OOS neto anualizado = **0.8856** (>0)
+- DSR (Bailey&LdP2014, n=13) = **0.3610**
+- Criterio binario: Sharpe>0 Y DSR≥0.99231 → **NO_CUMPLE mecánico** (DSR lejos del umbral;
+  el Bonferroni n=13 es exigente — mismo patrón que §39/§45).
+
+**Lectura honesta**: el composite "Buffett's Alpha" long-only top-quintile **NO supera al
+universo naive** — el control equal-weight da Sharpe OOS 1.50, por encima del 0.886 del factor.
+La prima quality+value+lowbeta, tal como se implementó (selección cross-sectional mensual,
+equal-weight, sin ortogonalizar a momentum), no añade valor en esta ventana OOS y el DSR
+penalizado por n=13 queda muy por debajo del umbral. Consistente con el patrón del proyecto:
+señal de EXISTENCIA posible (Sharpe>0) pero no de GRADO promocionable (DSR<umbral). **Nada se
+promueve al ensamble.**
+
+**Registrado**: id `trial_a5_buffett_alpha`, familia `motor_signal`, `n_trials_consumidos=1`,
+veredicto `NO_CUMPLE`. motor_signal consumido **12→13** (th vigente **0.992857** para el
+próximo). Espejado en ledger real (`backend/data/trial_registry.json`) por ser gitignored.
+
+**Estado de la línea**: A5 cerrado con evidencia. El diseño era genuinamente distinto del FUND
+crudo ya refutado y del ranking de A4; el dato (panel 47/48) ya no es la limitación — la
+limitación es que el factor no bate al universo. Conexión con A4: si se mejora cobertura/
+definición de valor, el re-test corresponde a A4, no re-abrir A5.
+
+
+## 48. TRIAL #21 — Asimetría direccional de factores (impulso alza vs. baja) — PRE-REGISTRO congelado 2026-08-30, slot 28 signal_diagnosis
+
+**Origen**: diseño de Cline `DISENO_ASIMETRIA_DIRECCIONAL_20260830.md` (worktree
+fundamentales-automatizado), aprobado por Boris 2026-08-30 ("realizar lo más sólido y
+mejor para el proyecto, no necesariamente lo más fácil"). Pre-registro formal:
+`PRE_REGISTRO_ASIMETRIA_DIRECCIONAL.md`. Enmiendas al congelar (antes de correr, §12):
+slot 23→28 (ledger real 27 consumidos, diseño citaba conteo viejo), umbrales scipy
+2.4977→2.50 / 2.7344→2.74 (redondeo conservador).
+
+**Hipótesis (una línea)**: el rank IC de los factores es distinto bajo impulso de alza
+(UP: ret_63d≥+10%) que bajo baja (DOWN: ≤−10%), y Δ_f = IC_up − IC_down (Newey-West L=4,
+mismo estimador §0.5a) basta (|t|>2.50 B4, |Δ|≥0.05, ≥2/3 ventanas) para que condicionar
+por dirección rescate señal que el pooling destruye. Confirmatorios con signo
+pre-declarado: volume_shock (Δ>0), rsi_14 (Δ>0, degeneración §9.3), momentum_12_1 (Δ>0,
+circularidad declarada §9.2), adx_14 (Δ≈0 simetría — sorpresa si ≠0). Exploratorio: 8
+factores RMT (loadings in-sample del artefacto rmt_mp_20260811_150849, score estático
+por símbolo), umbral |t|>2.74, veredicto acotado a candidato OOS. Gate de cobertura
+pre-resultado §5: ≥75 fechas con ambos lados Y ≥10 símb/lado (mediana).
+
+### 48.1 RESULTADO (apéndice post-corrida, 2026-08-30 20:09) — corrida única, **GRIS por cobertura: 0/3 ventanas interpretables**
+
+Artefacto: `backend/data/cache/trial21_asimetria_direccional_20260830_200908.txt` (+.json).
+Script: `backend/scripts/diagnose_asimetria_direccional.py` (ruff limpio, etiquetado §2
+verificado con test unitario P(t−1)/P(t−1−63)−1 exacto).
+
+```
+GATE DE COBERTURA PRE-RESULTADO (§5):
+ventana    fechas  UP(med) DOWN(med) interpretable
+W1              1     19.0       2.0 NO INTERPRETABLE
+W2             24     10.0       6.0 NO INTERPRETABLE
+W3             81     16.0       5.0 NO INTERPRETABLE
+→ 0/3: ninguna ventana con ≥75 fechas de AMBOS lados Y ≥10 símb/lado
+```
+
+Diagnóstico de la cobertura (post-gate, audit del mecanismo — NO es re-test): el lado
+DOWN es estructuralmente escaso en este universo 50 large-cap. Sobre 1907 fechas
+2019-2026: mediana global de símbolos DOWN por fecha = **4** (p25=2, p75=8, p90=17);
+fechas con DOWN≥10: 404/1907 (21%). Por ventana: W1 DOWN med=2 (59/505 fechas ≥10),
+W2 DOWN med=6 (189/501), W3 DOWN med=5 (144/649). El gate de §5 (≥10 DOWN/lado en
+mediana) era inalcanzable por diseño del universo: la estimación a priori del diseño
+(§2.4: "~15-25 símbolos por lado") resultó optimista para DOWN — exactamente el caso de
+no-interpretabilidad que §5 pre-escribió (lección #17: cobertura fuera de rango
+invalida, no "cuenta como cero").
+
+**Veredicto mecánico (§5→§7)**: GRIS automático — ninguna ventana interpretable por
+cobertura. **Registrado como NO_CUMPLE con nota** (el ledger solo acepta
+CUMPLE|NO_CUMPLE; el slot 28 ya estaba consumido por la reserva Track A — el matiz GRIS
+vive en el artefacto y acá). signal_diagnosis: **27→28**.
+
+**Lectura honesta**: el estudio NO refutó la asimetría — nunca alcanzó evidencia. El
+universo 50 large-cap rara vez tiene ≥10 símbolos en impulso bajista simultáneo, y con
+<X el panel pierde el piso de ambas condiciones a la vez. La hipótesis de asimetría
+direccional queda **no-resuelta-por-insuficiencia**, no refutada. Lo que SÍ se aprende:
+(i) el etiquetado UP/DOWN ±10%/63d sobre este universo produce un panel DOWN
+estructuralmente delgado (mediana 4-6) — cualquier trial futuro que necesite el lado
+DOWN con piso ≥10/lado debe o relajar X, o ampliar universo, o aceptar medir DOWN con
+IC menos preciso; (ii) la regla del diseño de registrar GRIS→NO_CUMPLE con nota
+funcionó como estaba escrita — no se ajustó nada post-hoc.
+
+**Condicional §8 aplicado (GRIS)**: nada se integra; lo que falta para desempatar está
+listado: el mismo diseño con universo ampliado (p.ej. 100+ símbolos con small/mid caps
+donde los impulsos bajistas son más frecuentes) o con X recalibrado POR PRE-REGISTRO
+NUEVO (slot 29) — jamás edición de este. La línea queda aparcada por decisión de Boris.
+
+**Registrado**: id `trial21_asimetria_direccional`, familia `signal_diagnosis`,
+n_trials_consumidos=1, veredicto `NO_CUMPLE` (nota GRIS-cobertura), artefacto
+`data/cache/trial21_asimetria_direccional_20260830_200908.txt`, §48/§48.1.

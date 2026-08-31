@@ -45,9 +45,10 @@ no esta desincronizado del resto del equipo (lección del drift 25-vs-26 del
 1. Si el archivo tiene cambios SIN commitear (git status) -> TrialRegistryError
    pidiendo commitear/pull primero: cada escritura deja el ledger commiteado
    o no arranca.
-2. Si el blob en HEAD difiere del blob en el upstream (@{u}) -> el branch local
-   esta adelante (sin pushear) o atras (sin pulllear) respecto del remoto ->
-   TrialRegistryError pidiendo sincronizar.
+2. Si el blob del archivo en HEAD difiere del blob en `origin/main` (referencia
+   CANONICA fija, NO el @{u} del branch — los worktrees de este proyecto no
+   configuran tracking, @{u} fallaria en silencio) -> TrialRegistryError
+   pidiendo sincronizar.
 Ambos chequeos son best-effort: fuera de un repo git (ej. tmp_path en tests)
 o si git no esta disponible, no bloquean. Env FORTRESS_ALLOW_LOCAL_LEDGER=1
 los saltea (escape documentado, solo para recuperacion manual).

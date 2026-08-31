@@ -16,6 +16,8 @@ class Settings(BaseSettings):
     NVIDIA_NIM_API_KEY: str = ""
     NVIDIA_NIM_MODEL: str = "meta/llama-3.1-8b-instruct"
     NVIDIA_NIM_BASE_URL: str = "https://integrate.api.nvidia.com/v1"
+    OPENROUTER_API_KEY: str = ""
+    OPENROUTER_BASE_URL: str = "https://openrouter.ai/api/v1"
 
     # Fundamentales reales (free tier: https://finnhub.io/register) — sin
     # esto, get_fundamentals() sigue usando el sample hardcodeado de 6 tickers.

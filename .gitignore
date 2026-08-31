@@ -21,6 +21,10 @@ pythonenv*
 # pesados/regenerables — los .txt de diagnósticos en backend/data/cache/ SÍ se
 # trackean: son la evidencia verificable de cada trial (ver PLAN_MEJORA_MATEMATICA.md
 # §3.4 "todo número se verifica contra el artefacto").
+# Track A (2026-08-26): el trial_registry NO es un .json desechable — es el
+# ledger canónico en version control (presupuesto Bonferroni multi-agente).
+# Se trackea SIEMPRE; el resto de *.json de backend/data/ sigue ignorado.
+!backend/data/trial_registry.json
 backend/data/*.json
 # Track A (2026-08-26): el trial_registry NO es un .json desechable — es el
 # ledger canónico en version control (presupuesto Bonferroni multi-agente).

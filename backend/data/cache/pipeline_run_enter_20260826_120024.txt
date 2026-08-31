@@ -1,0 +1,8 @@
+Pipeline ENTER — compras equal-weight del decision file
+============================================================
+[info] cliente no construible (Faltan credenciales paper de Alpaca (ALPACA_PAPER_API_KEY / ALPACA_PAPER_SECRET_) -> fallback
+Senales: 1 | presupuesto 25000.0 (fallback) | tamanos: AAPLx80
+Open orders en ledger real: 0
+
+Resultados (REAL):
+  buy  AAPL  skipped [OVERRIDE_MECANISMO] [ya_registrado_en_estado]

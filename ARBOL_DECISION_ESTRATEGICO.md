@@ -68,9 +68,811 @@ vez no pasa DSR OOS (0.61 < 0.95) ni PBO (0.47, overfitting sustancial).
   Kilo) — son hipótesis independientes que alimentan el mismo ledger, no
   dos caminos separados.
 
-**Gate de salida de A**: cuando A1-A5 estén cerrados (o descartados con
+- **Marco organizador: fundamental vs. técnico (Boris, 2026-08-26)** — todo
+  A6 en adelante se separa en dos capas distintas, que hasta hoy el proyecto
+  no distinguía con claridad:
+  - **Fundamental = QUÉ activo plantar (selección)**: calidad del negocio,
+    posición en la cadena de valor, si encaja con la temporada/cuadrante
+    actual. Es sobre el activo en sí mismo, no sobre el momento de actuar.
+    A5 (Buffett's Alpha) y A6.3 (más abajo) son de esta capa.
+  - **Técnico = CUÁNDO sembrar y cosechar (timing)**: el momentum+RSI que ya
+    usa el motor congelado es 100% técnico — lee patrón de precio, no dice
+    nada sobre si la empresa es buena o mala como negocio. M3/A1 (régimen) y
+    A6.2 (cadencia por beta) son de esta capa.
+  Las dos capas son complementarias, no sustitutas — un activo fundamentalmente
+  bueno en el momento técnico equivocado, o un timing técnico perfecto sobre
+  un activo fundamentalmente débil, pierden valor igual. El motor actual solo
+  cubre la capa técnica; la capa fundamental está casi sin explorar (A5 fue
+  el único intento, y era un ranking crudo, no el enfoque de A6.3).
+
+- **A6 — Heterogeneidad sectorial/por tipo de activo (Boris, 2026-08-26)
+  [capa fundamental — selección]**:
+  hueco real, verificado — hasta ahora TODOS los trials (§13-§47) aplicaron
+  la señal de forma UNIFORME a los 50 nombres del universo, sin diferenciar
+  por sector o tipo de activo. El régimen macro (M3) condiciona el mercado
+  entero (temporada general), no la "temporada" específica de cada activo; la
+  estacionalidad de A4 es de calendario, no de comportamiento por tipo de
+  activo. Analogía de Boris: no todas las frutas se dan en la misma época ni
+  responden igual a la misma condición climática (una helada afecta distinto
+  a la uva que a la sandía) — un tech stock y una utility pueden responder
+  distinto al MISMO indicador porque tienen dinámicas de precio y
+  vulnerabilidades estructuralmente distintas. Hipótesis: con 50 nombres
+  heterogéneos tratados igual, una señal sectorial real podría diluirse en
+  el promedio — coherente con que el edge nunca superó DSR pese a IC pooled
+  positivo en varios factores. Prioriza profundidad (conocer a cabalidad el
+  comportamiento de un sector/activo) por sobre diversificar a ciegas.
+  Diseño pendiente de pre-registro: segmentar el universo por sector
+  (GICS o clasificación equivalente disponible) y medir si el factor
+  momentum+RSI (o algún otro ya probado) tiene IC/DSR distinto por segmento
+  en vez de uniforme — screening barato primero (rank IC por sector), antes
+  de comprometer presupuesto Bonferroni en confirmación cara.
+
+  **Aclaración de alcance (Boris, 2026-08-26) — esto es la versión FÁCIL,
+  no A6.1 más abajo**: no hace falta predecir cuándo cambia el régimen. La
+  pregunta es más simple — analogía de Boris: "es verano y hay poca lluvia
+  (dato YA conocido) — ¿plantarías uvas para buen vino, o manzanas?". M3 ya
+  clasifica el cuadrante ACTUAL de forma reactiva (funciona, ya probado en
+  §46) — lo que falta es la mitad más simple: dado que M3 ya dice en qué
+  cuadrante estamos HOY, decidir qué sector/activo favorecer en ESE
+  cuadrante conocido. Es abordable con lo que ya existe (M3 + universo de
+  50), no requiere pronóstico de nada — es la prioridad práctica antes que
+  A6.1.
+
+  **Extensión (Boris, 2026-08-26)** — dos dimensiones más de la misma
+  heterogeneidad, no cubiertas hoy:
+  - **Sensibilidad a liquidez**: el motor ya tiene `volume_ratio>=1.0` como
+    GATE binario (`signal_engine.py`), pero es un filtro de pasa/no-pasa,
+    no una segmentación — no distingue si el factor se comporta distinto
+    en régimen de liquidez abundante vs escasa dentro de los que sí pasan
+    el gate. Hipótesis: nombres más líquidos podrían absorber momentum de
+    forma distinta a los menos líquidos del mismo universo de 50.
+  - **Oferta/demanda y factores geopolíticos** (analogía de Boris: la
+    sandía en invierno es más cara por oferta escasa; el petróleo se mueve
+    por oferta/demanda + decisiones de gobiernos/cadenas de suministro).
+    Esto aplica con más fuerza a *commodities* que a las acciones del
+    universo actual (50 US large-cap) — más relevante si algún día se
+    evalúa Camino D (nueva fuente de datos/activo) que al Camino A tal
+    como está hoy. Para equities, el equivalente más cercano y ya
+    accesible sería sensibilidad sectorial a shocks de oferta (ej. energía/
+    materiales vs. sectores no expuestos a insumos físicos) — overlap
+    parcial con la segmentación sectorial de arriba, no una dimensión 100%
+    aparte.
+
+  **Ejemplo concreto con nombres reales del universo: shock exógeno tipo
+  terremoto (Boris, 2026-08-26)** — misma heterogeneidad sectorial de
+  arriba, esta vez con símbolos ya presentes en `NEW_UNIVERSE`
+  (`fetch_universe_data.py`), no solo especulación:
+  - **Suben** (patrón de reconstrucción): **CAT** (maquinaria pesada para
+    remoción de escombros/reconstrucción), **HD** (pico de ventas
+    post-desastre — patrón que retail ya rastrea después de huracanes en
+    EEUU). Fuera del universo pero conceptualmente relevante: generadores
+    (Generac), homebuilders, y reaseguradoras SIN exposición en la zona
+    (el mercado de seguros se endurece a nivel nacional después de un
+    evento grande, no solo en la zona afectada).
+  - **Bajan**: aseguradoras/reaseguradoras con exposición concentrada en
+    la zona (ninguna en el universo actual — no hay AIG/Travelers/Chubb,
+    queda conceptual); bancos regionales con hipotecas concentradas ahí
+    (JPM/BAC están en el universo pero demasiado diversificados
+    nacionalmente para que un sismo regional les pegue fuerte);
+    **semiconductoras si el sismo pega cerca de una planta de
+    fabricación** — conecta con A6.3 (riesgo geográfico de la capa
+    "pala," no documentado ahí todavía) — precedente real del mismo
+    mecanismo: terremotos en Taiwán interrumpieron producción de chips y
+    movieron acciones de semiconductoras globalmente. AVGO/QCOM/TXN están
+    en el universo actual y tienen exposición a fabricación.
+  - **Advertencia honesta — falacia de la ventana rota (Bastiat)**: que
+    CAT/HD suban no significa que el terremoto sea bueno para la
+    economía — es capital destruido siendo reemplazado, no riqueza
+    nueva. Para el modelo de trading es irrelevante (el precio sube
+    igual, eso es lo que se opera), pero no hay que confundir "sube el
+    precio" con "es positivo" al leer este ejemplo.
+  - **Movimiento especulativo vs. fundamental (Boris, 2026-08-26)**: el
+    salto de precio inicial (CAT/HD subiendo, aseguradoras cayendo) es
+    reacción a la narrativa, instantánea — el traspaso real del
+    costo/margen a las ganancias reportadas (**cost pass-through**,
+    concepto de economía industrial) es lento e incierto (contratos
+    vigentes, competencia, rigidez de precios). Si el traspaso no se
+    completa como el mercado asumió el día 1, el precio revierte —
+    patrón conocido en finanzas conductuales como **hipótesis de
+    sobrerreacción** (De Bondt & Thaler, 1985) / "comprá el rumor, vendé
+    la noticia." Es simétrico: aplica igual al ganador temporal
+    (cementera que sube y revierte) que al perdedor temporal (aseguradora
+    que cae de golpe y puede recuperar si la exposición real es menor a
+    la temida). Herramienta académica para medirlo de verdad si algún día
+    se pre-registra: **metodología de estudio de eventos** (Fama/
+    MacKinlay) — retorno anormal acumulado en ventanas día 0/día+5/día+20
+    para separar el "pop" de anuncio de la deriva fundamental posterior.
+  - **Marco epistémico que amarra todo lo de hoy**: no se predice el
+    futuro con certeza — se asigna un peso de probabilidad explícito
+    basado en mecanismo + clase de referencia, y se corrige cuando llega
+    evidencia nueva (**pronóstico calibrado**, término más citado:
+    Philip Tetlock, *Superforecasting*). Es el hilo común entre reference
+    class forecasting (próximo oro), destrucción creativa, y esta
+    distinción especulativo/fundamental.
+  - **Estructura de apuesta que captura ambos lados (Boris, 2026-08-26)**:
+    comprar cementera + shortear aseguradora en el mismo evento es una
+    operación **long/short basada en evento** (event-driven long/short),
+    específicamente un **pairs trade / relative value trade** — la
+    propiedad clave no es "ganar por los dos lados" sino quedar
+    **neutral al mercado**: la ganancia depende del SPREAD entre las dos
+    patas, no de si el mercado sube o baja en general, así que reduce
+    exposición al riesgo sistemático que sí tiene una posición long-only
+    simple. **Verificado en el código, no solo conceptual**: fortress_core
+    hoy es long-only — `execution_costs.py` y `pipeline_daily_signal.py`
+    solo generan `"buy"` para entradas; `"sell"` aparece únicamente como
+    cierre de una posición larga, nunca como apertura de un short
+    independiente. Esta estrategia de dos patas es conceptualmente sólida
+    pero NO ejecutable con la arquitectura actual sin agregar mecánica de
+    venta en corto — cambio estructural real, no un ajuste de parámetro,
+    y ninguna decisión de hacerlo sin definición explícita de Boris.
+
+  **A6.1 — Factores líderes de transición de cuadrante (Boris, 2026-08-26,
+  conectado a M3/§46) [capa técnica — timing]**: verificado que M3
+  (`regime_gate.py::WalkForwardRegimeGate`, que orquesta
+  `regime_classifier.py::GlobalRegimeClassifier`) ya construye
+  features de crecimiento (`growth_SPY/EFA/QQQ`), inflación
+  (`inflation_GLD/DBC/TIP`) y tasas (`rates_TLT/AGG`) + VIX (la
+  construcción real vive en `_extract_features()`, `regime_classifier.py`,
+  no en `regime_gate.py`) — la misma
+  estructura growth×inflation del marco de Dalio (4 cuadrantes), clasificada
+  vía HMM. Hoy M3 es **reactivo**: clasifica el régimen ya ocurrido (retornos
+  trailing) y solo prende/apaga el motor entero según el cuadrante actual
+  (probado como A1/§46, cerrado NO_INTERPRETABLE por piso insuficiente).
+  Propuesta de Boris: en vez de solo clasificar el cuadrante presente,
+  investigar qué factores empujan la transición ENTRE cuadrantes (subida y
+  bajada de crecimiento/inflación) — para usar eso como condición de
+  compra/venta/rebalanceo ANTES de que el cuadrante termine de confirmarse,
+  no después.
+
+  **Nota de honestidad metodológica**: esto es un salto de dificultad real
+  respecto a A6 (segmentación) — no es clasificar régimen, es *anticipar*
+  su transición, más cerca de pronóstico macro que de clasificación de
+  patrón. HMM por diseño es retrospectivo (ajusta estados a datos ya
+  ocurridos); encontrar factores líderes con poder predictivo genuino
+  (no sobreajustado) es un problema mucho más exigente, con su propio riesgo
+  de overfitting si no se pre-registra con el mismo rigor que todo lo
+  demás. Queda anotado como dirección de investigación futura, NO como
+  trial listo para pre-registrar — requiere diseño propio (qué factores
+  candidatos, qué ventana de anticipación, cómo evitar lookahead) antes de
+  poder correrse.
+
+  **Riesgo no discutido hasta ahora: propagación de error de M3 (crítica
+  de OpenCode, 2026-08-26, remarcado por Claude Code)**: tanto A6.1 como
+  A6.2 asumen implícitamente que la clasificación de régimen de M3 es
+  correcta — pero si M3 se equivoca de cuadrante o de régimen de
+  volatilidad, ese error se propaga silenciosamente a cualquier decisión
+  de A6.1 (timing de transición sobre un régimen mal leído) o A6.2
+  (cadencia condicionada a un régimen de vol mal leído). Ninguna de las
+  dos ramas tiene hoy un mecanismo para detectar o acotar ese error de
+  propagación — queda como riesgo abierto, a resolver antes de que
+  cualquiera de las dos ramas llegue a pre-registro, no solo A6.1.
+
+  **Mecanismo concreto de por qué es difícil, y por dónde empezar (Boris,
+  2026-08-26, analogía de la fiebre del oro)**: la escasez real de oro
+  ocurre ANTES de que el mercado agregado lo sepa — hay un rezago de
+  difusión de información, y mientras tanto la demanda de palas sigue
+  sostenida por sentimiento/inercia conductual (la gente sigue comprando
+  por hábito o esperanza, no por información nueva). Esto explica POR QUÉ
+  cualquier indicador basado en PRECIO (técnico) es, por construcción, un
+  eco rezagado del cambio fundamental — nunca lo detecta en el momento en
+  que realmente ocurre, solo el reflejo tardío cuando ya se difundió lo
+  suficiente. Consecuencia práctica: más sofisticación en patrones de
+  precio no resuelve A6.1 — la brecha entre "quién ya sabe" (dinero
+  informado) y "quién sigue actuando con información vieja" (dinero tardío)
+  es la variable real a buscar, y se aproxima con datos de FLUJO/
+  posicionamiento (institucional vs retail, dispersión de estimados de
+  analistas), no con más indicadores derivados del precio mismo.
+
+  **Traducción a diseño estadístico concreto (2026-08-26)** — toda la
+  filosofía de A6/A6.1 (frutas y estaciones, uva vs zanahoria frente a la
+  lluvia, cuadrantes de Dalio) se traduce a UNA idea estadística estándar:
+  el efecto de un factor (momentum+RSI) no es uniforme entre activos — está
+  modulado por (a) el régimen macro vigente (M3) y (b) la sensibilidad
+  estructural propia de cada activo a esos mismos factores macro. En
+  finanzas esto es un modelo de **cargas factoriales condicionadas
+  (interacción factor×régimen×activo)** — nada exótico, es la misma lógica
+  de un modelo multi-factor (estilo Fama-French) aplicada con el M3 que ya
+  existe. Tres piezas, escalando de barato a caro, sin descartar ninguna:
+
+  1. **Perfil de sensibilidad por activo (screening, barato, NO consume
+     Bonferroni — es perfilado, no trial)**: para cada uno de los 50
+     activos, regresión rolling de sus retornos contra los MISMOS factores
+     macro que M3 ya calcula (`growth_SPY/EFA/QQQ`, `inflation_GLD/DBC/TIP`,
+     `rates_TLT/AGG`, VIX). Da el "perfil de cultivo" de cada activo — cuánto
+     sufre o se beneficia cada uno de cada factor — con datos que el
+     proyecto ya carga para M3, sin fuente nueva.
+  2. **Rank IC condicionado, no agrupado (screening, barato)**: en vez de un
+     único IC de momentum+RSI pooled sobre los 50 (como todos los trials
+     hasta hoy), calcular el IC SEPARADO dentro de cada celda
+     (cuadrante M3 × bucket de sensibilidad del paso 1). Es la traducción
+     exacta de "uva vs zanahoria cuando llueve": mismo factor, folds
+     distintos según sensibilidad conocida. Si el IC condicionado es
+     sustancialmente distinto entre celdas, confirma que el pooled diluye
+     señal real — recién ahí vale la pena la confirmación cara.
+  3. **Backtest confirmatorio (caro, SÍ consume Bonferroni, pre-registro
+     obligatorio)**: solo si el paso 2 muestra heterogeneidad real, un
+     trial formal que rote hacia los activos de sensibilidad favorable
+     según el cuadrante M3 vigente, medido con el mismo rigor DSR/PBO de
+     siempre — mismo criterio de éxito binario, mismo umbral del ledger.
+
+  **Dónde encaja `BayesianOnlineUpdater` (verificado en código, no
+  hipotético)**: ya generaliza a esto sin construir nada nuevo —
+  `probabilistic_engine.py` mantiene pesos por CLAVE de texto arbitraria
+  (patrón ya en uso: `f"{regimen}_{factor}"` en `triad_agents.py`).
+  Extender la clave a `f"{regimen}_{sector}_{factor}"` le permitiría
+  aprender pesos regimen×sector online desde `pnl_r` real, sin tocar la
+  clase. **Limitación honesta**: cada clave aprende de forma INDEPENDIENTE
+  (Beta-Binomial simple, sin partial pooling/shrinkage entre celdas
+  relacionadas) — con 4 regímenes × ~11 sectores GICS sobre solo 50
+  activos, la mayoría de las celdas tendrían muy pocas observaciones para
+  aprender de forma confiable por sí solas. Un modelo jerárquico bayesiano
+  de verdad (que preste fuerza estadística entre sectores relacionados)
+  sería más robusto, pero eso sí es código nuevo, no una extensión de
+  nombres de clave — queda anotado como mejora futura si el paso 2 confirma
+  que vale la pena, no como parte del diseño mínimo.
+
+  **A6.2 — Beta/volatilidad determina la CADENCIA, no solo el activo (Boris,
+  2026-08-26) [capa técnica — timing]**: dimensión adicional real. Mayor
+  beta = mayor volatilidad =
+  más oportunidades de "cosecha" en ambas direcciones (sube y baja) en el
+  mismo período — no es lo mismo que llueva 4 veces al año (Coca-Cola, ~4%
+  anual, baja vol) que 2-3 veces al DÍA (NVIDIA, oscila varios % por
+  semana/día). La definición congelada hoy rebalancea **mensual para los 50
+  por igual** — el mismo problema de uniformidad de A6, pero en el eje
+  TIEMPO en vez del eje activo: un rebalanceo mensual puede promediar/perder
+  varios movimientos reales de un nombre de alta beta dentro del mismo mes,
+  mientras que para un nombre de baja beta esa cadencia puede sobrar (pocos
+  movimientos reales que capturar, mantenerse posicionado todo el período
+  captura mejor las pocas "lluvias" que caen). Pregunta de Boris respondida:
+  sí, la estrategia debería diferir — probablemente cadencia de
+  evaluación/rebalanceo más corta para beta alta, más larga (más cercana a
+  buy-and-hold dentro del universo) para beta baja.
+
+  **Límite importante, ya cerrado antes por otra razón — no confundir**:
+  esto NO reabre la discusión de ejecución intradía (§13, D2, explícitamente
+  NO priorizado por competencia de HFT/colocation). "Más frecuente que
+  mensual" tiene margen amplio dentro de la infraestructura diaria ya
+  existente (barras diarias de yfinance) — semanal, quincenal, cadencia
+  variable por beta — sin tocar microestructura ni datos intradía. Es una
+  pregunta de FRECUENCIA DE REBALANCEO condicionada por volatilidad, no de
+  velocidad de ejecución; distinta en su raíz de lo que §13 cerró.
+  Diseño pendiente de pre-registro: mismo funnel barato→caro que A6 arriba
+  — perfil de volatilidad realizada por activo (ya casi gratis, deriva del
+  mismo perfil de sensibilidad del paso 1), screening de si el IC de
+  momentum+RSI mejora con cadencia condicionada por beta vs. el mensual
+  uniforme actual, y recién si hay señal, confirmación cara con el mismo
+  rigor DSR/PBO.
+
+  **Requisito BLOQUEANTE antes de pre-registrar A6.2 (crítica de OpenCode,
+  2026-08-26, confirmado por Claude Code)**: la analogía "más lluvia →
+  abrir más paraguas" se rompe en un punto real — rebalancear más seguido
+  NO es gratis como abrir un paraguas. Cada rebalanceo extra paga costo
+  real (`COST_PER_SIDE=0.0005` por lado + slippage). El diseño de arriba
+  nunca calculó si el beneficio esperado de mayor cadencia para beta alta
+  supera ese costo incremental. Cualquier pre-registro de A6.2 debe
+  incluir el costo neto de la cadencia propuesta vs. la mensual actual
+  como parte del criterio de éxito — no solo si el IC mejora, sino si
+  mejora lo suficiente para pagar los rebalanceos extra. Mismo trato que
+  los bloqueantes B1-B4 que pararon el pre-registro de A6.3 hasta
+  corregirse.
+
+  **A6.3 — Posición en la cadena de valor / "vendedor de palas" (Boris,
+  2026-08-26) [capa fundamental — selección]**: patrón histórico real
+  (fiebre del oro: los vendedores de herramientas y suministros ganaron de
+  forma consistente mientras la inmensa mayoría de los mineros individuales
+  perdía o apenas empataba; los ferrocarriles tuvieron un patrón similar con
+  las empresas de rieles/acero). Distinción clave de Boris: no importa CUÁL
+  empresa específica gane dentro de una categoría (IA, robótica) — las
+  empresas "habilitadoras" (semiconductores, centros de datos, energía,
+  componentes) le venden a TODA la categoría por igual, diversificando el
+  riesgo de "apostar al ganador" entre cientos de clientes en vez de
+  concentrarlo en una sola apuesta. Es 100% capa FUNDAMENTAL — clasifica el
+  modelo de negocio del activo, no dice nada sobre cuándo comprar/vender
+  (eso lo sigue resolviendo la capa técnica, A1/A6.1/A6.2).
+
+  **Limitación honesta**: operacionalizar esto de verdad (revenue
+  diversificado entre clientes, posición en la cadena de valor) requiere
+  datos fundamentales/cualitativos — mismo obstáculo que ya mató el test de
+  fundamentales crudo (cobertura EDGAR 5/50). **Atajo barato disponible
+  sin esperar mejor cobertura**: el universo actual de 50 ya contiene
+  nombres que califican como "pala" para la ola de IA sin necesitar datos
+  nuevos — NVDA/AVGO/QCOM (semiconductores), MSFT/ORCL/CSCO (nube/
+  infraestructura) — etiquetado manual de un puñado de nombres, no
+  fundamentales sistemáticos de los 50. Diseño pendiente de pre-registro:
+  comparar el desempeño (Sharpe/DSR) de ese subconjunto "habilitador"
+  etiquetado a mano contra el resto del universo y contra el pooled actual
+  — screening barato, confirmación cara solo si hay separación real.
+
+  **La ventaja de "pala" no es estática — tiene su propio ciclo (Boris,
+  2026-08-26)**: al inicio de la fiebre, pocos vendedores + demanda
+  explosiva → precio/margen alto. Al final, la demanda de mineros nuevos se
+  seca Y la oferta de palas se disparó (entraron competidores viendo que el
+  negocio funcionaba, más mineros que abandonan y revenden sus palas
+  usadas) → **sobre-stock**, precio se derrumba al costo de una pala común.
+  Consecuencia: etiquetar "esto es una pala" UNA vez no alcanza — la
+  pregunta correcta es en qué momento del ciclo de oferta/demanda DE LA
+  PALA MISMA (no del oro/tema macro) está el activo hoy: ¿escasez de
+  competidores todavía, o ya se saturó de competencia y el margen se está
+  comprimiendo aunque la categoría (IA) siga creciendo? Este ciclo es
+  propio de cada "pala" y distinto del ciclo macro que mide M3 — no se
+  puede asumir que la ventaja de A6.3 dura para siempre solo por haberla
+  identificado una vez.
+
+  **Dos objeciones de auditoría independiente (Cline, 2026-08-26) que hay
+  que incorporar antes de correr el screening**:
+  - **El propio ciclo de la pala socava el screening**: si el screening
+    (§ pre-registro) sale CUMPLE, eso mide la FASE actual del ciclo de
+    oferta/demanda de la pala (probablemente todavía escasa, per el
+    párrafo de arriba), NO una estructura durable. Un CUMPLE hoy no
+    garantiza que siga siendo CUMPLE cuando la pala entre en su fase de
+    sobre-stock — la compresión de margen debería entrar como variable
+    formal en cualquier lectura del resultado, no solo como advertencia
+    aparte.
+  - **Hindsight bias del etiquetado no declarado en ESTA sección** (ya
+    estaba en el pre-registro, pero no aquí): los 6 símbolos "pala" se
+    etiquetaron en 2026 sabiendo quiénes ganaron el boom de IA — el mismo
+    sesgo que este documento ya sabe detectar en el universo estático
+    (destrucción creativa, más abajo) aplica también al propio etiquetado
+    de A6.3.
+
+  **Etiquetado incompleto + principio de mapeo de cadena de valor (Boris,
+  2026-08-27)**: el etiquetado manual de 6 símbolos usado en el screening
+  YA CORRIENDO (arriba) quedó corto — faltan los fabricantes de
+  almacenamiento (discos duros/SSD tipo Western Digital, SanDisk) que
+  también proveen componentes a los centros de datos de IA, la misma
+  categoría "habilitador" que semiconductores/nube/networking. Más
+  general: la cadena de "palas" tiene niveles — hay empresas que
+  CONSTRUYEN los centros de datos que son stakeholders/socios de nubes
+  como Oracle, y así sucesivamente hacia atrás en la cadena. Principio de
+  Boris: **"saber es poder"** — mapear quién es socio/proveedor/stakeholder
+  de quién importa más que adivinar la categoría por el nombre del
+  sector. **No se aplica retroactivamente al screening que ya está
+  corriendo** (el criterio de `PRE_REGISTRO_SCREENING_PALAS.md` está
+  congelado — regla de oro, no se edita post-hoc) — queda como insumo
+  para un v2 del etiquetado A6.3 cuando se pre-registre esa expansión,
+  con el mapeo de cadena de valor completo (fabricantes de storage,
+  constructores de datacenters, y sus relaciones de stakeholder) antes de
+  correr nada nuevo.
+
+  **Secuencia del colapso: ¿cae primero el oro o la pala? (Boris,
+  2026-08-26)**: hipótesis con dos mecanismos concretos, ninguno testeado
+  todavía (no hubo busto de IA en este ciclo — queda documentado, no
+  pre-registrado):
+  1. **Efecto bullwhip** (cadena de suministro): una desaceleración chica en
+     demanda final se amplifica río arriba porque los proveedores (palas)
+     operan con backlog/capacidad construida por adelantado — un enfriamiento
+     leve en monetización de IA puede traducirse en un frenazo brusco de
+     pedidos de chips/datacenters.
+  2. **Asimetría de visibilidad**: el capex de las palas es discrecional,
+     trimestral, con guidance público — se repriea rápido. El ingreso del
+     oro (contratos/suscripciones multianuales) es más opaco/gradual — tarda
+     más en mostrarse en resultados reportados. Consecuencia esperada: la
+     acción de la pala se mueve ANTES que la del oro, aunque el oro sea la
+     causa raíz.
+  Precedente parcial (no prueba, solo patrón histórico similar): la burbuja
+  .com — Cisco/Nortel/fibra óptica colapsaron con la misma dinámica de
+  sobre-oferta ya descrita arriba (entraron competidores, se construyó
+  capacidad de más, un enfriamiento leve de demanda produjo compresión de
+  margen brutal).
+
+  **Complemento — no es solo secuencia, es amplitud (Boris, 2026-08-26)**:
+  además de moverse ANTES, la pala se mueve MÁS que el oro con la misma
+  noticia, en las dos direcciones (alzas y caídas). Ejemplo: una noticia
+  negativa de Google genera una caída — pero genera una caída MAYOR en
+  semiconductoras/centros de datos. Dos mecanismos concretos, distintos
+  del bullwhip (que es sobre timing, no magnitud):
+  1. **Apalancamiento operativo**: las palas tienen costos fijos altos
+     (fábricas, capex) que no bajan aunque baje la demanda — un cambio
+     chico en expectativa de ingresos se amplifica en un cambio grande de
+     margen esperado, y por lo tanto en el precio.
+  2. **Concentración de clientes**: un recorte de capex de Google es un
+     % enorme de los ingresos de un proveedor de chips, pero un % chico
+     del negocio diversificado de Google (búsqueda, ads, nube, otras
+     apuestas) — la misma noticia es un shock proporcionalmente mucho
+     mayor para el proveedor puro que para el comprador diversificado.
+  Ninguno de los dos mecanismos está testeado — mismo estado que el resto
+  de esta sección: hipótesis documentada, no trial.
+
+  **El próximo oro (Boris, 2026-08-26)**: pregunta genuinamente especulativa,
+  no estadística — el universo actual de 50 large-caps no puede responderla
+  (la mayoría de los candidatos ni cotiza todavía). Lo reusable no es
+  predecir el ganador sino el MARCO: categoría con alta incertidumbre sobre
+  QUIÉN gana pero una dependencia física/de infraestructura común que TODOS
+  los competidores necesitan sin importar quién gane (igual que
+  semiconductores para IA). Candidatos que menciona el mercado hoy (no
+  predicción del proyecto, solo ejemplos del marco): robótica
+  (actuadores/sensores/motores), computación cuántica
+  (criogenia/materiales especializados), biotecnología/longevidad
+  (secuenciación/automatización de laboratorio), economía espacial, fusión.
+  Queda 100% conceptual — no hay pre-registro posible sin universo/datos.
+
+  **Método para asignar probabilidad sin certeza: razonamiento por clase de
+  referencia (Boris, 2026-08-26)**: cuando el caso es genuinamente nuevo (no
+  hay serie de tiempo que backtestear), la forma correcta de fundamentar una
+  probabilidad no es inventar una historia sobre ESE caso puntual (Kahneman/
+  Tversky lo llaman "inside view") sino compararlo contra la clase de casos
+  históricos/actuales que comparten su estructura ("outside view" /
+  *reference class forecasting*, formalizado por Flyvbjerg) y usar la tasa
+  base de esa clase. Es la versión cualitativa del mismo principio que
+  sostiene el backtest cuantitativo del proyecto — DISTINTA herramienta,
+  mismo espíritu: no confiar en la narrativa, confiar en el patrón repetido.
+  Ejemplo aplicado (robótica vs. jarrones de greda, ambos como candidatos a
+  "próximo oro"): robótica comparte con la clase de referencia de "oros"
+  exitosos (fiebre del oro, ferrocarriles, internet, IA) cuatro rasgos
+  verificables hoy — curva tecnológica en mejora exponencial (hereda los
+  avances de percepción/control de la IA ya validada), flujo de capital de
+  riesgo real y observable (Figure, Tesla Optimus, Unitree, plataformas de
+  NVIDIA), driver de demanda estructural creciente (escasez de mano de obra,
+  envejecimiento poblacional — datos demográficos verificables), y encaje en
+  la clase "tecnología de propósito general que abarata un costo
+  estructural" (abarata trabajo físico, igual que la IA abarató trabajo
+  cognitivo). Jarrones de greda no comparte ninguno de los cuatro. La
+  probabilidad más alta para robótica no es predicción del ganador — es que
+  la evidencia disponible la ubica dentro de la clase de referencia de
+  "oros" exitosos, y el otro candidato no está en ninguna clase relevante.
+
+  **El liderazgo de mercado rota — destrucción creativa (Boris, 2026-08-26,
+  ejemplos Nokia/Moderna)**: los 10 mejores activos de hoy no son los de
+  hace 10 años ni serán los de dentro de 10-20 años — patrón documentado en
+  economía como *destrucción creativa* (Schumpeter). Nokia y Moderna
+  ilustran DOS mecanismos distintos de rotación, no el mismo:
+  1. **Disrupción** (Nokia, "dilema del innovador" — Christensen): dominaba
+     optimizando su tecnología existente (Symbian) hasta que un paradigma
+     nuevo (touchscreen/iOS/Android) volvió obsoleta esa competencia
+     central. Cambian las reglas de la categoría entera, no es un ciclo de
+     oferta/demanda.
+  2. **Reversión a la media por catalizador** (Moderna): no la desplazó
+     tecnología nueva, la infló una demanda temporal (pandemia) que se
+     desvaneció — mismo mecanismo que el ciclo de la "pala" ya documentado
+     en A6.3 (escasez → sobreoferta → colapso de margen), aplicado a una
+     empresa completa en vez de una categoría de proveedores.
+
+  **Implicancia metodológica verificada en el código (no solo observación
+  económica)**: el universo de 50 símbolos del proyecto
+  (`backend/scripts/fetch_universe_data.py::NEW_UNIVERSE`) es una lista
+  **estática**, fijada una vez, sin refresco automático. Si algún día se
+  decide "actualizarla a los líderes actuales," eso mismo introduce el
+  riesgo clásico de sesgo de supervivencia (survivorship bias) en cualquier
+  backtest histórico corrido con esa nueva composición — construir el
+  universo con el conocimiento de HOY de quién ganó y correrlo hacia atrás.
+  No es una alarma para actuar ahora (cambiar el universo es decisión de
+  Boris, no automática) — queda documentado como riesgo metodológico
+  conocido, no algo a descubrir tarde.
+
+  **Horizonte de inversión como filtro de relevancia (Boris, 2026-08-26)**:
+  no todos los mecanismos de A6.x aplican en la misma escala de tiempo —
+  el horizonte determina cuáles pesan:
+  - **Corto plazo (días-semanas)** — horizonte en el que opera HOY el
+    proyecto (momentum 12-1 meses, entradas/salidas de checkpoint en el
+    orden de días): destrucción creativa tipo Nokia es prácticamente
+    irrelevante (tarda años en completarse). Pesan cadencia por
+    volatilidad (A6.2) y régimen macro actual (M3). Riesgo de universo
+    estático es bajo.
+  - **Mediano plazo (meses a 1-2 años)**: empieza a pesar el ciclo de la
+    "pala" (A6.3, reversión a la media estilo Moderna) — se completa en
+    esa ventana. El régimen macro de M3 rota varias veces en esta escala.
+  - **Largo plazo (años-décadas)**: se vuelve central la destrucción
+    creativa tipo Nokia y el riesgo de survivorship bias del universo
+    estático (arriba) — un "comprá y mantené" de 10-20 años sobre el
+    universo fijo de hoy apuesta a que ninguno de los 50 se vuelva el
+    próximo Nokia, sin mecanismo de reemplazo.
+  **Nota honesta de alcance**: el proyecto opera hoy en el primer tramo
+  (corto plazo) — la mayoría de lo discutido en A6.3/destrucción creativa/
+  próximo oro es relevante a un horizonte que el proyecto TODAVÍA no
+  opera. Vale como marco para el futuro, no como algo que deba cambiar la
+  operativa actual.
+
+  **Principio organizador: necesidad estable vs. producto transitorio
+  (Boris, 2026-08-26, ejemplo vela→LED)**: miopía del marketing (Theodore
+  Levitt, 1960, *Marketing Myopia*) — su ejemplo canónico son los
+  ferrocarriles, que creyeron estar en el "negocio de trenes" en vez del
+  "negocio de transporte," y por eso los desplazaron autos y aviones: no
+  porque el transporte dejó de ser necesario, sino porque se aferraron al
+  PRODUCTO en vez de a la NECESIDAD. Complemento moderno: *Jobs to be Done*
+  (Christensen) — el cliente "contrata" algo para resolver un trabajo
+  (job); el job es estable, lo que se contrata para resolverlo cambia.
+  Vela → filamento incandescente → LED: mismo job (ver en la oscuridad),
+  tres cadenas de suministro completamente distintas (cera/mecha vs.
+  tungsteno/vidrio vs. semiconductores) — el fabricante de velas que se
+  definía por el producto, no por la necesidad, no tenía mecanismo de
+  adaptación cuando llegó la electricidad; hoy la vela es casi decorativa.
+
+  **Reformula el marco del "próximo oro" (arriba)**: el punto de partida
+  correcto no es listar industrias candidatas (robótica, cuántica,
+  biotech) sino listar **necesidades humanas estables** que nunca
+  desaparecen — luz/visión, comunicación, movilidad, salud/longevidad,
+  energía, alimento, refugio, **amplificación de capacidad cognitiva** — y
+  preguntar qué solución tecnológica resuelve HOY cada una. La IA no es el
+  oro actual por ser IA — es el oro porque es la solución actual al need
+  de amplificar capacidad cognitiva, el mismo need que antes resolvieron
+  la calculadora, la computadora, internet.
+
+  **Ejemplo con cadena completa, no un solo salto (Boris, 2026-08-26)**:
+  movilidad — trenes (rieles/acero) → auto a combustión (motor/petróleo) →
+  auto eléctrico (batería/litio/semiconductores) → auto autónomo
+  (sensores/LIDAR/cómputo, especulativo) → dron personal (motores/
+  baterías/materiales livianos, especulativo). Mismo need resuelto por al
+  menos cinco cadenas de suministro distintas en menos de 150 años, cada
+  una con su propio "vendedor de palas" y su propio Nokia potencial —
+  confirma que el principio no es anecdótico de la luz, se repite need por
+  need.
+
+  **Advertencia honesta que le agrega a A6.3**: la lógica de "no importa
+  qué empresa de IA gane, vendele a todas" (diversificación por categoría)
+  protege DENTRO de un paradigma tecnológico — pero no protege si el
+  paradigma entero (chips de silicio) es reemplazado por otra forma de
+  resolver el mismo need (cómputo cuántico, fotónico, neuromórfico). Los
+  vendedores de semiconductores de hoy podrían ser las velas de mañana si
+  eso pasa — riesgo de nivel superior al de A6.3, no cubierto por su
+  propia lógica de diversificación.
+
+**Gate de salida de A**: cuando A1-A6 estén cerrados (o descartados con
 evidencia) y A3 confirme que el ledger cuenta bien, recién ahí se considera
 agotado el camino A — con evidencia, no por cansancio.
+
+### Indicadores ya existentes que conectan con A6/A6.1/A6.2/A6.3 (Boris,
+### 2026-08-26 — "revivir" candidatos de `DICCIONARIO_INDICADORES.md`)
+
+Antes de diseñar desde cero cualquier pieza de A6, revisar estos — ya están
+construidos o diagnosticados, con estado real conocido (no supuesto):
+
+- **A6.1 (rezago informativo / dinero informado vs. tardío)**: `market_structure.py`
+  (T1.3) ya implementa Smart Money Concepts (Order Blocks, Fair Value Gaps,
+  BOS/CHoCH, Liquidity Sweeps) — 18 tests + smoke real, pero **nunca
+  integrado como señal**, solo detecta zonas, no genera score. Aparte, OFI y
+  CVD (proxies de flujo de órdenes desde OHLCV) ya se testearon como factor
+  de score directo y salieron **NO_CUMPLE** (§37/§38, rank IC 0/3 ventanas)
+  — pero ese test midió si predicen retorno a 20 ruedas, no si sirven para
+  detectar la transición de cuadrante que pide A6.1, que es una pregunta de
+  diseño distinta sobre los mismos datos.
+- **A6.2 (cadencia por volatilidad/beta)**: `realized_vol_regime`
+  (`indicators.py`, ratio vol20d/vol100d) ya implementado y diagnosticado
+  (`RESUMEN_HURST_VOL_REGIME.md`) — predice débilmente el NIVEL de vol
+  futura (funcionó W1, no W2/W3), por eso no se promovió a señal. Pero A6.2
+  no necesita predecir vol futura — necesita el régimen de vol ACTUAL para
+  decidir cadencia de rebalanceo, un uso distinto del que se descartó.
+- **A6/A6.3 (heterogeneidad por activo)**: Hurst exponent (`indicators.py`,
+  mismo diagnóstico) mide persistencia vs. reversión a la media POR
+  SÍMBOLO — una "personalidad" cuantitativa por activo que podría
+  complementar el etiquetado manual de "palas" de A6.3 con algo medible en
+  vez de solo cualitativo.
+- **Si A4/A5 se revive con mejor cobertura de fundamentales**: `DICCIONARIO_
+  INDICADORES.md` Parte II ya señala que los múltiplos de valoración
+  (P/E, P/B, EV/EBITDA, FCF Yield) son el subgrupo con mejor respaldo
+  académico (factor value, Fama-French) — punto de partida si se retoma,
+  no el punto más débil que fue el sentimiento/AAII de Fase 0.6.
+
+### A6.4 — Rupturas de máximos condicionadas por régimen de volatilidad
+### (Boris, 2026-08-27)
+
+**Hipótesis**: en fase alcista, las oportunidades reales de mediano/largo
+plazo son MÁS PROBABLES con volatilidad BAJA — el mercado "no quiere dar
+señales" de esa suba, es un movimiento sigiloso antes de que la masa lo
+note. La volatilidad ALTA es más peligrosa y NO necesariamente indica
+oportunidad de mediano/largo plazo — funciona más como anzuelo para el
+retail, que genera la sensación de estar por perder una oportunidad
+(FOMO). Aplicado a ruptura de máximos: **romper un máximo con vol BAJA =
+oportunidad; romper un máximo con vol ALTA = alto riesgo.**
+
+**Generalización (Boris, 2026-08-27, aclaración sobre lo de arriba)**: el
+punto no es solo hacia DÓNDE va el valor (la dirección, el objetivo/nivel
+que se alcanza), sino CÓMO se mueve el valor en relación a ese objetivo —
+la calidad/forma del camino (sigiloso y de baja volatilidad vs. errático
+y de alta volatilidad) es señal en sí misma, independiente de si el
+precio termina llegando al mismo destino. Dos movimientos que alcanzan el
+mismo objetivo (el mismo máximo roto, el mismo nivel) no son equivalentes
+si uno lo hizo con vol baja y el otro con vol alta — el CÓMO condiciona
+si es oportunidad genuina o anzuelo. Esto generaliza la hipótesis más
+allá de "ruptura de máximo" puntual: aplica a cualquier objetivo/nivel de
+precio, no solo a máximos históricos.
+
+**Relación con lo ya existente**: distinto de A6.2 (que usa
+`realized_vol_regime`, ratio vol20d/vol100d de `indicators.py`, para
+decidir CADENCIA de rebalanceo). Esta es una TERCERA aplicación del mismo
+indicador — como filtro/condicionante de la CALIDAD de una ruptura de
+máximo (breakout), no de la cadencia ni de la predicción de vol futura
+(esa ya se descartó, §A6.2 arriba: predijo débil solo W1). El punto de
+partida técnico (el indicador) ya existe y está diagnosticado
+(`RESUMEN_HURST_VOL_REGIME.md`) — falta diseñar el trial específico para
+esta pregunta puntual (definición de "ruptura de máximo", ventana de vol
+de referencia, ventanas W1/W2/W3 de evaluación).
+
+**Tercer componente (Boris, 2026-08-27)**: patrón específico de entrada —
+después de una volatilidad MUY alta (un shock), si esa volatilidad
+empieza a REDUCIRSE mientras el precio SUBE, eso es una oportunidad de
+compra fuerte. No es el shock en sí (eso es la fase de alto riesgo de
+arriba) ni el estado de vol baja sostenida (eso es la fase "sigilosa" de
+arriba) — es la TRANSICIÓN entre ambos: vol contrayéndose + precio ya
+confirmando dirección alcista. Mecánicamente medible con lo mismo que ya
+existe: `realized_vol_regime` (vol20d/vol100d) cayendo mientras el precio
+hace nuevos máximos o sube sostenido — misma familia de indicador que el
+resto de A6.4, un tercer patrón concreto a especificar en el mismo futuro
+diseño de trial.
+
+**Nota de rigor**: esto contradice una parte de la literatura clásica de
+TA que pide CONFIRMACIÓN por volumen/volatilidad en rupturas (breakout
+con volumen alto = válido) — la hipótesis de Boris es la lectura inversa.
+Se parece EN ESPÍRITU a la fase de acumulación silenciosa de Wyckoff
+(acumulación de baja volatilidad antes del markup, vs. clímax de volumen/
+volatilidad en tops especulativos), pero esa cita no fue verificada
+contra la fuente original en esta sesión — se anota como intuición
+emparentada, no como respaldo académico confirmado (regla #5
+ONBOARDING.md: no citar sin verificar).
+
+**Estado**: hipótesis de marco conceptual, NO trial — igual que el resto
+del bloque A6.x de esta sección. No se corre nada sin pre-registro +
+decisión explícita de Boris (regla #1 ONBOARDING.md). Falta definir el
+diseño exacto del test antes de poder pre-registrarlo.
+
+### Principio raíz: el valor es condicional al contexto actual, no fijo
+### (Boris, 2026-08-26, ejemplo RAM/agua en el desierto)
+
+Paradoja del valor (Adam Smith, diamante/agua, sin resolverla) resuelta
+por la **revolución marginalista** (Menger/Jevons/Walras, 1870s, teoría de
+la utilidad marginal): el valor no es propiedad intrínseca del bien, es
+la utilidad de la PRÓXIMA unidad dado el estado actual del que valora.
+RAM vale más que agua en contexto normal (agua abundante, utilidad
+marginal de la próxima unidad ≈0); en el desierto el mismo vaso de agua
+vale más — no cambió el bien, cambió el contexto, y con él la utilidad
+marginal. Mismo principio que la lluvia y la uva: no hay regla fija
+"lluvia=bueno/malo," depende del estado actual de la planta (floración
+vs. cosecha).
+
+**No es solo filosofía — ya está implementado en el proyecto**: M3
+(`regime_gate.py`, features vía `regime_classifier.py`) no aplica una
+regla fija, lee el régimen ACTUAL (growth/inflation/rates/vix) y
+condiciona el comportamiento a eso. A6.2
+(cadencia por volatilidad) es la misma idea aplicada a la cadencia. Este
+principio de condicionalidad al contexto es probablemente el más
+fundamental de todo el bloque A6.x — explica POR QUÉ M3 y A6.2 tienen
+sentido en primer lugar, no es una idea nueva sino la raíz de las que ya
+existían.
+
+### Síntesis de cierre del bloque A6.x (Claude Code, 2026-08-26)
+
+- **Capa fundamental (QUÉ activo)**: la idea central que sostiene A6.3,
+  destrucción creativa y "próximo oro" es la MISMA — necesidad estable vs.
+  producto transitorio (Levitt). Nokia colapsó por aferrarse al producto
+  en vez de a la necesidad; eso ES por qué existe la destrucción creativa,
+  no una coincidencia entre secciones separadas.
+- **Capa técnica (CUÁNDO actuar)**: A6.1, A6.2 y la distinción
+  especulativo/fundamental son todas sobre timing, no sobre selección de
+  activo — la separación fruta-fundamental/fruta-técnico se mantuvo
+  consistente en todo el bloque sin contradicción.
+- **Metanivel**: nada de hoy predice — arma un método de pronóstico
+  calibrado (reference class forecasting + event study + sobrerreacción)
+  que asigna probabilidad por mecanismo, no por certeza. Reusable más
+  allá de hoy.
+- **Tres conexiones nuevas que solo aparecen al ver todo el bloque
+  junto**:
+  1. El ciclo de la "pala" (A6.3, mediano plazo, medible por compresión
+     de margen) podría ser señal TEMPRANA de fase Nokia (largo plazo) —
+     conecta un mecanismo medible con uno antes solo especulativo.
+  2. **Corregido tras crítica de OpenCode (2026-08-26)**: el pop
+     especulativo de días (cemento post-terremoto) y el ciclo de
+     sobreoferta de años (la pala) NO son "el mismo patrón" — son dos
+     mecanismos distintos (sobrerreacción de precio vs. ciclo real de
+     oferta/demanda) que comparten un parecido estructural (precio
+     adelantándose a la economía real y corrigiendo), no una identidad
+     probada. Decir que eran el mismo patrón fue sobre-vender la
+     conexión — queda como analogía útil, no como equivalencia.
+  3. **Corregido tras crítica de OpenCode (2026-08-26)**: la velocidad de
+     reemplazo de paradigma NO está establecida como tendencia — vela→
+     incandescente (décadas) vs. touchscreen (~5 años) son DOS ejemplos,
+     insuficiente para inferir aceleración. Queda como hipótesis sin
+     base suficiente, no como patrón confirmado; si es cierto tendría la
+     implicancia de que el riesgo de survivorship bias del universo
+     estático madura más rápido de lo esperable, pero el "si es cierto"
+     no está respaldado hoy.
+- **Límite honesto**: nada de esto es estadísticamente testeable hoy con
+  el rigor DSR/PBO del proyecto — son hipótesis de marco conceptual, no
+  trials. Lo único accionable y verificado en código: el ejemplo del
+  terremoto con nombres reales del universo (CAT/HD/AVGO/QCOM/TXN) y la
+  infraestructura de shorting/pairs trade — YA CONSTRUIDA, testeada
+  (12/12) y mergeada a main (`app/core/event_pairs.py`,
+  `scripts/event_pairs.py`) — disponible para uso discrecional de Boris
+  hoy mismo, no requiere pre-registro por ser herramienta, no trial.
+
+### Glosario de fundamentos del día (Boris, 2026-08-26 — "recabalas y
+### aplicalas")
+
+Catorce principios distintos aparecieron hoy, esparcidos en varios
+commits — se compilan acá con su fundamento y aplicación real, no solo
+como lista de nombres.
+
+**Economía / valor**
+- **Paradoja del valor / utilidad marginal** — Adam Smith (1776) la
+  planteó, la revolución marginalista (Menger/Jevons/Walras, 1871-74) la
+  resolvió. Aplicación: valor condicional al contexto actual — ya
+  implementado en M3 (lee régimen actual) y A6.2 (cadencia por vol
+  actual).
+- **Miopía del marketing** — Theodore Levitt, *Marketing Myopia*, 1960.
+  Aplicación: reformula "próximo oro" — buscar necesidades estables
+  (luz, movilidad, cognición), no industrias candidatas.
+- **Jobs to be Done** — Clayton Christensen. Aplicación: complementa lo
+  anterior, el cliente contrata un producto para resolver un job estable.
+- **Destrucción creativa** — Joseph Schumpeter, 1942. Aplicación:
+  Nokia/rotación de liderazgo — riesgo real y verificado (código) de
+  survivorship bias en el universo estático de 50.
+- **Dilema del innovador** — Clayton Christensen, 1997. Aplicación:
+  mecanismo específico de por qué cae un líder que optimiza tecnología
+  vieja en vez de adoptar el paradigma nuevo.
+- **Falacia de la ventana rota** — Frédéric Bastiat, 1850. Aplicación:
+  CAT/HD suben tras un terremoto, pero eso no es bueno para la economía
+  — no confundir precio con bienestar.
+
+**Finanzas conductuales / mercados**
+- **Efecto bullwhip** — Jay Forrester (1961), formalizado por Lee/
+  Padmanabhan/Whang (1997). Aplicación: por qué la "pala" cae primero y
+  más fuerte que el "oro" en un shock.
+- **Hipótesis de sobrerreacción** — De Bondt & Thaler, 1985. Aplicación:
+  pop especulativo de cementeras post-terremoto, revierte si el traspaso
+  no se completa.
+- **Cost pass-through** — concepto estándar de economía industrial, sin
+  autor único citable. Aplicación: por qué el traspaso de costo a margen
+  es lento e incierto — separa movimiento especulativo del fundamental.
+
+**Metodología probabilística/estadística**
+- **Reference class forecasting** — Kahneman & Tversky (1979),
+  formalizado por Flyvbjerg. Aplicación: robótica vs. jarrones de greda
+  — asignar probabilidad sin certeza.
+- **Pronóstico calibrado** — Philip Tetlock, *Superforecasting*, 2015.
+  Aplicación: marco epistémico que amarra todo el día.
+- **Event study methodology** — Fama/Fisher/Jensen/Roll (1969),
+  formalizado por MacKinlay (1997). Aplicación: cómo se mediría de
+  verdad el patrón especulativo/fundamental si se pre-registrara.
+
+**Trading práctico**
+- **Pairs trade / market-neutral** — técnica de trading (Morgan Stanley,
+  ~1980s), no ley académica. Aplicación: long CAT / short aseguradora —
+  capacidad de shorting ya construida, testeada (12/12) y mergeada a
+  main; disponible para uso discrecional hoy.
+
+**Nota honesta de rigor**: "asimetría de visibilidad" (capex discrecional
+vs. ingresos opacos, usada en la sección de secuencia oro/pala) NO tiene
+autor único citable — es inferencia razonada sobre disclosure
+corporativo, no una ley establecida como las de arriba. Separada acá para
+no mezclar peso académico donde no lo hay.
+
+### Próximos pasos: orden de prioridad y dos formas de aplicar (Claude
+### Code, 2026-08-26 — nada de esto se descarta, Boris pidió mantener
+### todo en cola)
+
+**Dos formas distintas de "aplicar" lo de hoy — no confundirlas**:
+1. **Uso discrecional, disponible YA, sin pre-registro**: la herramienta
+   de pairs trade (`event_pairs.py`) — Boris la invoca manualmente cuando
+   decide que un evento real lo amerita, usando razonamiento de clase de
+   referencia para elegir el par. No es un trial porque no hace un
+   reclamo estadístico sistemático de edge.
+2. **Uso sistemático, requiere pre-registro + decisión explícita de
+   Boris antes de correr nada** (regla #1 de `ONBOARDING.md`): convertir
+   cualquier idea de A6.x en una regla que el motor use automáticamente
+   (ej. "el motor prefiere sistemáticamente las palas etiquetadas de
+   A6.3"). Nada de hoy pasó por ese proceso todavía.
+
+**Orden de prioridad sugerido para pre-registrar (nada se descarta, es
+solo el orden de la cola)**:
+1. **A6.3** — screening barato de "palas" (NVDA/AVGO/QCOM/MSFT/ORCL/CSCO
+   etiquetados a mano vs. resto del universo vs. pooled, Sharpe/DSR).
+   Primero porque: testeable hoy sin datos nuevos, barato (primer
+   escalón del embudo, no backtest caro), respaldo fundamental real,
+   aplica a corto/mediano plazo (donde opera el proyecto hoy).
+2. **A6.2** — cadencia por régimen de volatilidad ACTUAL (uso distinto
+   al ya descartado de `realized_vol_regime` para predecir vol futura).
+3. **En cola, sin fecha, sin descartar**: A6.1 (rezago informativo /
+   factores líderes de transición de cuadrante — el hilo de los
+   cuadrantes de Dalio, ya estructuralmente presente en M3), A6 completo
+   (heterogeneidad de liquidez), destrucción creativa / riesgo de
+   survivorship bias del universo estático, y todo el bloque de
+   "próximo oro" (reference class forecasting, necesidad estable vs.
+   producto transitorio) — estos últimos son de horizonte largo, el
+   proyecto no opera ahí todavía.
+4. **A6.4 (nuevo, 2026-08-27)** — rupturas de máximos condicionadas por
+   régimen de volatilidad (baja vol = oportunidad, alta vol = riesgo/
+   anzuelo retail). Reutiliza `realized_vol_regime` ya construido, pero
+   todavía NO tiene diseño de trial — no se puede pre-registrar hasta
+   definir "ruptura de máximo" con precisión mecánica. Prioridad relativa
+   a decidir por Boris cuando el diseño esté listo.
 
 ## Integración con el ensamble de paper trading (Boris, 2026-08-25)
 
@@ -143,11 +945,12 @@ si aplica a lo específico que se propone.
 
 ```
 Camino A (actual, EN CURSO)
-├─ A1 Brecha 2 M3 standalone ........... Kilo, en curso
-├─ A2 Re-test sentimiento/macro×barreras  si A1 falla
-├─ A3 Verificar H3.1 (Bonferroni re_test) antes de cerrar A
+├─ A1 Brecha 2 M3 standalone ........... CERRADO, NO_INTERPRETABLE (§46, 2026-08-26)
+├─ A2 Re-test sentimiento/macro×barreras  si A1 falla (no aplica, A1 no fue NO_CUMPLE)
+├─ A3 Verificar H3.1 (Bonferroni re_test)  CERRADO, garantías implementadas (2026-08-26)
 ├─ A4 Extensiones baratas (estacionalidad, 52w-high, fundamentales mejor cobertura)
-└─ A5 Quality+Value sistemático (Buffett's Alpha) ... PARALELO a A1, mismo ledger
+├─ A5 Quality+Value sistemático (Buffett's Alpha) . CERRADO, NO_CUMPLE (§47, 2026-08-26)
+└─ A6 Heterogeneidad sectorial/por activo .......... pendiente de pre-registro (Boris, 2026-08-26)
         │
         ▼ (si A se agota con evidencia)
 Camino B (universo distinto, misma infra)

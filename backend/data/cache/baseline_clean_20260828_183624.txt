@@ -1,0 +1,62 @@
+========================================================================
+A6.3 / screening_palas — BASELINE RECALC (2026-08-28) con costo VIGENTE §33
+Universo: 50 símbolos | 2019-01-01 -> 2026-08-04 | costos 0.10%/lado (commission=0.0005, slippage=0.0005)
+Motor: producción tal cual (commit de corrida abajo en git describe)
+Ventanas: W1 2020-2021, W2 2022-2023, W3 2024-2026 | piso trades/ventana: 30
+Criterio de los trials que usarán este baseline: DSR OOS >= 0.90 | N_TRIALS=17
+========================================================================
+precios cargados: 50 símbolos
+AAII disponible en 2925/2925 días de trading
+
+Corriendo baseline (50 símbolos, sin V1)...
+Corriendo V1-ranking (50 símbolos, G2 con AAII)...
+
+--- W1 2020-2021 (baseline n=95, V1 n=93) ---
+    cagr                     0.0279       0.0173
+    sharpe_ratio             0.5586       0.3844
+    sortino_ratio            0.6939       0.4731
+    max_drawdown            -0.0582      -0.0464
+    calmar_ratio             0.4803       0.3728
+    win_rate                 0.6842       0.6559
+    profit_factor            1.6479       1.5073
+    total_trades            95.0000      93.0000
+    deflated_sharpe          0.1508       0.0997
+
+--- W2 2022-2023 (baseline n=50, V1 n=49) ---
+    cagr                     0.0075       0.0004
+    sharpe_ratio             0.3478       0.0281
+    sortino_ratio            0.3439       0.0298
+    max_drawdown            -0.0473      -0.0317
+    calmar_ratio             0.1581       0.0114
+    win_rate                 0.6400       0.5918
+    profit_factor            1.2130       0.9794
+    total_trades            50.0000      49.0000
+    deflated_sharpe          0.0900       0.0368
+
+--- W3 2024-2026 (baseline n=78, V1 n=89) ---
+    cagr                     0.0097       0.0057
+    sharpe_ratio             0.3085       0.1990
+    sortino_ratio            0.3669       0.2429
+    max_drawdown            -0.0547      -0.0547
+    calmar_ratio             0.1775       0.1050
+    win_rate                 0.6026       0.6067
+    profit_factor            1.2738       1.1839
+    total_trades            78.0000      89.0000
+    deflated_sharpe          0.0932       0.0663
+
+--- TRADES POR VENTANA (V1) ---
+  W1 2020-2021   trades= 93 wins= 61 win_rate=0.656 evaluable=True
+  W2 2022-2023   trades= 49 wins= 29 win_rate=0.592 evaluable=True
+  W3 2024-2026   trades= 89 wins= 54 win_rate=0.607 evaluable=True
+
+--- MONTE CARLO (bootstrap, V1) ---
+  mean=+2391.0 p5=-153.6 p95=+4808.8 prob_loss=0.065
+
+--- VEREDICTO vs CRITERIO (informativo; este script NO decide nada) ---
+  W1 2020-2021   n= 93 DSR=0.0997 no pasa
+  W2 2022-2023   n= 49 DSR=0.0368 no pasa
+  W3 2024-2026   n= 89 DSR=0.0663 no pasa
+
+  Ventanas que pasan: 0/3 -> criterio: NO CUMPLE
+
+Out: data/cache/baseline_clean_20260828_183624.txt

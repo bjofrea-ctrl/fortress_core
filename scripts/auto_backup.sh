@@ -57,29 +57,48 @@ cd "$PROJECT_DIR" || exit 1
 
 # Verificar si hay cambios
 CHANGES=$(git status --porcelain)
+TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
+
 if [ -z "$CHANGES" ]; then
-    # Sin cambios, solo verificar si hay commits locales sin pushear
+    # Sin cambios sin commitear. Los commits ya presentes en HEAD de main
+    # son trabajo YA REVISADO (Claude Code commitea+pushea directo tras
+    # revisión) — está bien pushearlos si por algún motivo quedaron sin
+    # sincronizar con el remoto.
     UNPUSHED=$(git log origin/main..HEAD --oneline 2>/dev/null | wc -l | tr -d ' ')
     if [ "$UNPUSHED" -gt 0 ]; then
-        echo "[$(date '+%Y-%m-%d %H:%M:%S')] Pushando $UNPUSHED commits pendientes..." >> "$LOG_FILE"
+        echo "[$TIMESTAMP] Pushando $UNPUSHED commits pendientes (ya revisados)..." >> "$LOG_FILE"
         git push origin main >> "$LOG_FILE" 2>&1
     fi
     exit 0
 fi
 
-# Hay cambios — hacer commit y push
-TIMESTAMP=$(date '+%Y-%m-%d %H:%M:%S')
-COMMIT_MSG="auto-backup: $TIMESTAMP"
-
-echo "[$TIMESTAMP] Detectados cambios, respaldando..." >> "$LOG_FILE"
+# Hay cambios SIN COMMITEAR/SIN REVISAR en el working tree de main. Esto
+# NUNCA debe avanzar la rama main (bypasea el gate de revisión de
+# .pending-merge.md) — en su lugar, se respalda como snapshot en una rama
+# dedicada (auto-backup-safety-net), sin tocar main ni el working tree.
+# Preserva el objetivo original (nada se pierde por corte de luz/internet/
+# créditos) sin la falla de seguridad de commitear código no revisado
+# directo a main (detectado 2026-08-26: bb3cb95/093940d commitearon a main
+# código de un worktree externo antes de la revisión de Claude Code).
+echo "[$TIMESTAMP] Detectados cambios sin revisar, respaldando a rama de seguridad (main NO se toca)..." >> "$LOG_FILE"
 git add -A >> "$LOG_FILE" 2>&1
-git commit -m "$COMMIT_MSG" >> "$LOG_FILE" 2>&1
+TREE=$(git write-tree)
+PARENT=$(git rev-parse HEAD)
+SNAPSHOT=$(git commit-tree "$TREE" -p "$PARENT" -m "auto-backup-safety-net: $TIMESTAMP")
+git update-ref refs/heads/auto-backup-safety-net "$SNAPSHOT"
+git reset --mixed HEAD >> "$LOG_FILE" 2>&1
 
-# Push a GitHub
-if git push origin main >> "$LOG_FILE" 2>&1; then
-    echo "[$TIMESTAMP] OK Push a GitHub exitoso" >> "$LOG_FILE"
+if git push origin auto-backup-safety-net --force >> "$LOG_FILE" 2>&1; then
+    echo "[$TIMESTAMP] OK Snapshot de seguridad respaldado en rama auto-backup-safety-net (main intacto)" >> "$LOG_FILE"
 else
-    echo "[$TIMESTAMP] WARN Push falló (sin internet?) - commit local guardado" >> "$LOG_FILE"
+    echo "[$TIMESTAMP] WARN Push del snapshot falló (sin internet?) - snapshot local en rama auto-backup-safety-net" >> "$LOG_FILE"
+fi
+
+# También pushear cualquier commit YA REVISADO que estuviera pendiente
+UNPUSHED=$(git log origin/main..HEAD --oneline 2>/dev/null | wc -l | tr -d ' ')
+if [ "$UNPUSHED" -gt 0 ]; then
+    echo "[$TIMESTAMP] Pushando $UNPUSHED commits pendientes (ya revisados)..." >> "$LOG_FILE"
+    git push origin main >> "$LOG_FILE" 2>&1
 fi
 
 # Backup al disco externo si está montado
