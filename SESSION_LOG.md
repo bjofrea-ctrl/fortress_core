@@ -1,5 +1,39 @@
 # Fortress Core — Memoria de Sesiones (Última sesión resumida)
 
+## 2026-09-01 — Verificación visual dashboard/Excel Fase 4 (CIERRE ítem 2 ROADMAP)
+
+**Qué**: se cerró el último punto abierto de la Fase 4 (ítem 2, "PENDIENTE VERIFICAR"):
+verificación visual del dashboard/Excel generados por `render_artifacts()` contra el
+export real de InvestingPro. Documento nuevo: `backend/VERIFICACION_VISUAL_DASHBOARD.md`
+(492 líneas). ROADMAP actualizado a CERRADO.
+
+**Cómo**: motor canónico vendorizado (`backend/app/core/motor_canonico/scripts/motor_screening.py`,
+hash byte-a-byte `84abe30...` verificado previamente) corrió directamente sobre
+`backend/tests/fixtures/canon/market_view_export.xlsx` (export real finbox.io que Boris
+re-subió el 29/08). Análisis estructural con openpyxl de ambos xlsx (metadatos, hojas,
+headers, estilos, fills, number formats, widths/heights, freeze panes, merged cells,
+conditional formatting, comentarios) + análisis del HTML (funnel, grid7, CSS vars,
+cards). Suite 32 passed, 1 skip (guard REQUIRE_PARIDAD).
+
+**Hallazgos**:
+- El export InvestingPro (input, 26 cols, 1 hoja `sheet`, header en fila 8) y el output
+  del motor (37 cols, 6 bandas de color, 2 hojas Screening+Instructivo, freeze E3,
+  DataBar `#63C384` en Price vs Fair Value, 15 tooltips, fills por balde/veredicto)
+  son formatos FUNDAMENTALMENTE distintos **por diseño** — el motor enriquece el export.
+- Diferencias intencionales documentadas: `Full Ticker` ausente del Excel output (solo
+  alimenta links del dashboard HTML), `Market Cap (Adjusted)` → `Market Cap (US$ B)`
+  con formato `#,##0.0` (motor_screening.py línea 389), filas de título del export
+  ("fortress core"/"Summary") ignoradas por el motor.
+- El motor inyecta el x14 dataBar por regex post-procesado; openpyxl emite un warning
+  benigno al releer (`Conditional Formatting extension is not supported`).
+- Distribución de baldes de esta corrida: DD 13 / WL 25 / Neutral 227 / Descartada 532 /
+  Omitidas 203 — consistente con el test de paridad PLAN §3.
+
+**Veredicto**: CERRADO. Commit `a387df0`, push a `bjofrea-ctrl/fundamentales-automatizado`,
+espejo en `/Volumes/EMPRESA/fortress_core_backups/current/`.
+
+---
+
 ## 2026-08-27 — Fix data_ingestion gap >7 (bug infra)
 
 **Bug**: `backend/app/core/data_ingestion.py::download_data()` usaba `if (gap).days > 7` en backfill (~línea 31) y refresh (~línea 42) — el updater diario (launchd nightly `scripts/data_updater.sh` 22:00) **nunca refrescaba hasta superar una semana**. Cache quedaba 0-8 días stale, invisible porque `rc=0` y los dos estados "no había nada que bajar (fin de semana)" vs "no intenté" eran indistinguibles. Confirmado: `AAPL.parquet` clavado en 2026-08-21 en 3 corridas nocturnas 24,25,26/08 con `rc=0` sin errores. Reportado por Boris como bug real de infra.
