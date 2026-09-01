@@ -75,7 +75,12 @@ class SimpleFin:
 # ----------------------------------------------------------- FmpClient
 
 
-def test_fmp_not_available_without_key():
+def test_fmp_not_available_without_key(monkeypatch):
+    # Aislar del .env real: en el repo principal puede existir una FMP_API_KEY
+    # cargada (post-merge 30/08), y este test verifica la rama "sin key"
+    # (FmpClient sin api_key -> is_available False -> _fetch None).
+    monkeypatch.delenv("FMP_API_KEY", raising=False)
+    monkeypatch.setattr("app.core.fundamentals_ingestion.settings.FMP_API_KEY", "")
     c = FmpClient()
     assert c.is_available() is False
     assert c._fetch("income-statement/AAPL") is None

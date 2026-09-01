@@ -24,7 +24,7 @@ Validadciones obligatorias antes de dar Fase 2 por cerrada (PLAN
   reciben ambos explícitamente para no asumir nada.
 """
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Optional
 
 # ============================================================================
 # Helpers de extracción robusta de campos FMP
@@ -87,7 +87,6 @@ def piotroski_f_score(
     ni_t = _g(income, "netIncome")
     ni_t1 = _g(income_prev, "netIncome")
     cfo_t = _g(cash_flow, "operatingCashFlow")
-    cfo_t1 = _g(cash_flow_prev, "operatingCashFlow")
 
     # 1) ROA positivo
     s1 = 1 if ni_t / ta_t > 0 else 0
@@ -200,21 +199,6 @@ def altman_z_score(
 
     return 1.2 * a + 1.4 * b + 3.3 * c + 0.6 * d + 1.0 * e
 
-    # 8) ΔGross Margin > 0
-    rev_t = _g(income, "revenue")
-    rev_t1 = _g(income_prev, "revenue")
-    gp_t = _g(income, "grossProfit")
-    gp_t1 = _g(income_prev, "grossProfit")
-    gm_t = gp_t / rev_t if rev_t else 0
-    gm_t1 = gp_t1 / rev_t1 if rev_t1 else 0
-    s8 = 1 if gm_t > gm_t1 else 0
-
-    # 9) ΔAsset Turnover > 0
-    at_t = rev_t / ta_t
-    at_t1 = rev_t1 / ta_t1
-    s9 = 1 if at_t > at_t1 else 0
-
-    return s1 + s2 + s3 + s4 + s5 + s6 + s7 + s8 + s9
 # ============================================================================
 # BENEISH M-SCORE (Beneish 1999)
 # ============================================================================
@@ -424,4 +408,3 @@ def compute_scores(payload: Dict[str, Any]) -> Dict[str, Any]:
             "price_target_consensus": target,
         },
     }
-    return default

@@ -41,10 +41,10 @@ _BACKEND = os.path.dirname(_HERE)
 if _BACKEND not in sys.path:
     sys.path.insert(0, _BACKEND)
 
-from app.config import settings
-from app.core.fundamentals_ingestion import FundamentalsIngestion
-from app.core.fundamentals_screen import screen_payload
-from app.utils.logging import logger
+from app.config import settings  # noqa: E402 (sys.path set above)
+from app.core.fundamentals_ingestion import FundamentalsIngestion  # noqa: E402 (sys.path set above)
+from app.core.fundamentals_screen import screen_payload  # noqa: E402 (sys.path set above)
+from app.utils.logging import logger  # noqa: E402 (sys.path set above)
 
 CACHE_DIR = os.path.join(_BACKEND, "data", "cache_fundamentals_screen")
 STATE_PATH = os.path.join(CACHE_DIR, "state.json")

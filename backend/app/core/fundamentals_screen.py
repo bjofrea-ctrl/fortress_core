@@ -27,7 +27,7 @@ resto — coherente con el motor canónico (que las trata como ausentes
 sin fallar).
 """
 
-from typing import Any, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional
 
 from app.core.fundamentals_scores import (
     _g,
@@ -37,7 +37,6 @@ from app.core.fundamentals_scores import (
     fair_value_label,
     piotroski_f_score,
 )
-
 
 # ============================================================================
 # Exclusión sectorial (Financieras / Utilities)

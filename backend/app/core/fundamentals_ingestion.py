@@ -27,10 +27,10 @@ críticas: aquí Finnhub se usa SOLO como cruce de proveniencia/disponibilidad
 incondicional es FMP, que ya está establecida y con contrato público.
 """
 
+import json
 import os
 import tempfile
 import time
-import json
 from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 
