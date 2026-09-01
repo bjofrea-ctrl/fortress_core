@@ -103,10 +103,15 @@ Cline como implementadores). Verificar contra `git log --oneline -10`,
    - Verificado por mí, corriendo todo de cero: 93 passed, 0 skipped
      (suite completa + paridad estricta), tamaños/hashes de los artefactos
      en disco coinciden exacto con lo reportado.
-   - **PENDIENTE VERIFICAR** (pedido explícito de Boris, no cerrado
-     todavía): que el dashboard/Excel generados se *vean* iguales al
-     original de AAI (formato/layout), no solo que los tests pasen —
-     abrir los artefactos reales y mirarlos.
+   - **VERIFICADO VISUALMENTE (01/09, `backend/VERIFICACION_VISUAL_DASHBOARD.md`)**:
+      el dashboard/Excel generados por `render_artifacts()` (motor vendorizado) se
+      compararon estructuralmente contra el export real de InvestingPro
+      (`market_view_export.xlsx`, fixture canon). El motor produce el formato canónico
+      correcto: 2 hojas (Screening + Instructivo), 37 columnas en 6 bandas de color,
+      freeze_panes E3, DataBar en Price vs Fair Value, 15 tooltips, fills por
+      balde/veredicto, dashboard HTML grid7 con funnel 13/25/227/532/203. Todas las
+      diferencias vs el export input son intencionales (el motor enriquece el export
+      con el sistema de bandas y clasificación propio). Veredicto: **CERRADO**.
    Sigue necesitando `FMP_API_KEY`/`FINNHUB_API_KEY` reales para probar
    contra la red de verdad (hasta ahora todo probado con mocks, declarado
    así explícitamente, no ocultado).
