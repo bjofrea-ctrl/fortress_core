@@ -28,12 +28,17 @@ echo "[$(date '+%Y-%m-%d %H:%M:%S')] data_updater: inicio" >> "$LOG"
 # ("data/cache" en app/core/data_ingestion.py) resuelven contra backend/. Sin este cd,
 # launchd (cwd fuera del repo) rompe el import con ModuleNotFoundError — bug que dejó
 # el cache de precios estancado entre 2026-08-15 y 2026-08-22 (detectado y fixeado).
-cd "$REPO/backend" || exit 1
-"$VENV" -c "
+# Resiliencia 2026-09-01: el paso de precios NUNCA queda silencioso — cualquier fallo
+# (cd, import, red, yfinance) deja "PRECIOS: ERROR" explícito en el log.
+if ! cd "$REPO/backend"; then
+  echo "[$(date '+%Y-%m-%d %H:%M:%S')] PRECIOS: ERROR - cd $REPO/backend falló" >> "$LOG"
+  RC_PRECIOS=1
+else
+  "$VENV" -c "
 from scripts.fetch_universe_data import NEW_UNIVERSE
 from app.core.data_ingestion import download_data
 universe = ['SPY','QQQ','AAPL','MSFT','GOOGL','AMZN','NVDA'] + list(NEW_UNIVERSE)
-import datetime
+import datetime, sys
 fails = 0
 for t in universe:
     try:
@@ -42,8 +47,16 @@ for t in universe:
     except Exception as e:
         fails += 1
         print(f'  {t:6s} ERROR: {e}')
+if fails:
+    print(f'PRECIOS: ERROR - {fails}/{len(universe)} símbolos fallaron (ver líneas ERROR arriba)')
+    sys.exit(1)
 print(f'precios: {len(universe)-fails}/{len(universe)} OK')
 " >> "$LOG" 2>&1
+  RC_PRECIOS=$?
+  if [ $RC_PRECIOS -ne 0 ]; then
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] PRECIOS: ERROR - paso precios rc=$RC_PRECIOS" >> "$LOG"
+  fi
+fi
 
 # 2) Sentimiento de earnings — acumulación incremental (dedup por accession en SQLite)
 cd "$REPO/backend" && "$VENV" -m scripts.accumulate_earnings_sentiment >> "$LOG" 2>&1
