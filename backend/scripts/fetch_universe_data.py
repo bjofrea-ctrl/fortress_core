@@ -10,11 +10,31 @@ import sys
 from app.core.data_ingestion import download_data
 
 NEW_UNIVERSE = [
+    # --- Bloque original (43, corte 2026-08, large/mega-cap) ---
     "META", "TSLA", "AVGO", "BRK-B", "LLY", "JPM", "WMT", "V", "UNH",
     "XOM", "MA", "ORCL", "PG", "COST", "HD", "JNJ", "ABBV", "BAC",
     "MRK", "CRM", "KO", "ADBE", "PEP", "AMD", "NFLX", "TMO", "CVX",
     "CSCO", "ACN", "MCD", "IBM", "LIN", "QCOM", "GE", "INTU", "PM",
     "CMCSA", "DIS", "TXN", "CAT", "AMGN", "PFE", "SPGI",
+    # --- Ampliación 2026-09-01 (52, propuesta corregida y verificada 2015) ---
+    # Tecnología / Software (10)
+    "SNPS", "CDNS", "TYL", "PTC", "AKAM", "FFIV", "EPAM", "CHKP", "PANW", "QLYS",
+    # Semiconductores / Hardware (6)
+    "MRVL", "SWKS", "QRVO", "MPWR", "AMAT", "LRCX",
+    # Salud / Biotech / Devices (7)
+    "DXCM", "ISRG", "VEEV", "ALGN", "BIIB", "REGN", "ZTS",
+    # Financieros / Fintech (6)
+    "PYPL", "BR", "STAG", "AXP", "SCHW", "BLK",
+    # Industrial / Transporte / Logística (6)
+    "UPS", "UNP", "DE", "ETN", "PH", "WM",
+    # Consumo discrecional / Retail (4)
+    "MAR", "SBUX", "RCL", "DRI",
+    # Energía / Materiales (5)
+    "SLB", "OKE", "VLO", "FCX", "NEM",
+    # Real Estate / Utilities (5)
+    "PLD", "EQIX", "DLR", "WELL", "XEL",
+    # Comunicación / Medios (3)
+    "TMUS", "CHTR", "EBAY",
 ]
 
 
