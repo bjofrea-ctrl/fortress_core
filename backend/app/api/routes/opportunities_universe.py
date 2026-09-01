@@ -29,9 +29,18 @@ except Exception:  # pragma: no cover - solo si scripts/ no está en el path
         "MRK", "CRM", "KO", "ADBE", "PEP", "AMD", "NFLX", "TMO", "CVX",
         "CSCO", "ACN", "MCD", "IBM", "LIN", "QCOM", "GE", "INTU", "PM",
         "CMCSA", "DIS", "TXN", "CAT", "AMGN", "PFE", "SPGI",
+        "SNPS", "CDNS", "TYL", "PTC", "AKAM", "FFIV", "EPAM", "CHKP", "PANW", "QLYS",
+        "MRVL", "SWKS", "QRVO", "MPWR", "AMAT", "LRCX",
+        "DXCM", "ISRG", "VEEV", "ALGN", "BIIB", "REGN", "ZTS",
+        "PYPL", "BR", "STAG", "AXP", "SCHW", "BLK",
+        "UPS", "UNP", "DE", "ETN", "PH", "WM",
+        "MAR", "SBUX", "RCL", "DRI",
+        "SLB", "OKE", "VLO", "FCX", "NEM",
+        "PLD", "EQIX", "DLR", "WELL", "XEL",
+        "TMUS", "CHTR", "EBAY",
     ]
 
-# Universo de decisión = 7 base + 43 expandidos = 50, sin duplicados.
+# Universo de decisión = 7 base + 95 expandidos = 102, sin duplicados (2026-09-01 ampliación §1b).
 SYMBOLS = list(dict.fromkeys(_BASE_SYMBOLS + list(NEW_UNIVERSE)))
 
 # Tickers de mercado para el clasificador de régimen (macro).
