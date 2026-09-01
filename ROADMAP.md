@@ -20,16 +20,13 @@ Cline como implementadores). Verificar contra `git log --oneline -10`,
 
 1. **A6.3 — screening PALA/RESTO/POOLED** — 🟢 trial original CERRADO
    (29/08, `COMPLETED`/`NO_CUMPLE`, ver §12 de `PRE_REGISTRO_SCREENING_PALAS.md`).
-   **Saneamiento del check APROBADO por Boris (29/08) y EN CURSO**: Kilo
-   implementó el check corregido (N_TRIALS igualado a 17 SOLO para la
-   comparación, sin tocar el default de ningún script) y reservó un
-   trial nuevo (`screening_palas_saneada_a63`, `RESERVED` en el ledger,
-   familia `signal_diagnosis`). Corre como 3 procesos detached
-   (PALA/RESTO/POOLED) desde el 29/08 22:25 — PALA terminó esa misma
-   noche, **RESTO y POOLED seguían corriendo al 30/08 mediodía** (fueron
-   más lentos de lo esperado, probablemente por el sleep de la Mac
-   overnight). Al terminar: revisar la salida cruda ANTES de llamar
-   `complete_trial()` — instrucción explícita a Kilo de no auto-completar.
+   **Saneamiento del check APROBADO por Boris (29/08) — 🟢 CERRADO (31/08)**:
+   Kilo implementó el check corregido (N_TRIALS igualado a 17 SOLO para la
+   comparación, sin tocar el default de ningún script), corrió los 3
+   procesos paralelos (PALA/RESTO/POOLED) y el ledger quedó
+   `screening_palas_saneada_a63` = `COMPLETED`/`NO_CUMPLE`
+   (artefacto `data/cache/screening_palas_parallel_raw_20260830_partial.txt`,
+   verificado por mí antes de commitear el cierre del ledger).
    **W3 investigado a fondo (OpenCode, 30/08,
    `INVESTIGACION_W3_A63_20260830.md` en worktree `test-opencode-orca`,
    spot-check verificado por mí)**: no es un parámetro mal puesto — es
