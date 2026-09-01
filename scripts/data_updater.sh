@@ -23,7 +23,7 @@ LOG="$REPO/scripts/data_updater.log"
 echo "=====================================================" >> "$LOG"
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] data_updater: inicio" >> "$LOG"
 
-# 1) Precios OHLCV del universo 50 (incremental: descarga solo desde el último día en cache)
+# 1) Precios OHLCV del universo dinámico (7 base + NEW_UNIVERSE desde fetch_universe_data.py, 102 símbolos actuales)
 # cwd=backend es OBLIGATORIO acá: `scripts.fetch_universe_data` y el CACHE_DIR relativo
 # ("data/cache" en app/core/data_ingestion.py) resuelven contra backend/. Sin este cd,
 # launchd (cwd fuera del repo) rompe el import con ModuleNotFoundError — bug que dejó
