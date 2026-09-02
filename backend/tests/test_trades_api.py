@@ -53,7 +53,12 @@ def ledger_db(tmp_path):
         ('p2','NVDA','2026-08-26','2026-08-26','TRAILING',-0.012,'{}',2,
          'closed',128.7,127.15,5),
         ('p3','MSFT','2026-08-27','2026-08-27','OPEN',0.0,'{}',0,
-         'open',430.1,NULL,8)
+         'open',430.1,NULL,8),
+        -- inyección de CHECKPOINT del mecanismo del tubo (NO es señal real):
+        -- el prefijo chkpt__ en signal_id debe excluirla de /combined.
+        ('chkpt__MSFT__2026-08-26','MSFT','2026-08-26','2026-08-27',
+         'OVERRIDE_MECANISMO — no es señal real',0.0,'{"checkpoint_override": true}',1,
+         'closed',410.0,415.0,5)
     """)
     conn.commit()
     conn.close()
@@ -135,6 +140,24 @@ def test_paginacion_default_y_skip(monkeypatch, results_file, ledger_db):
     body4 = asyncio.run(trades.get_combined_trades(skip=3, limit=200))
     assert len(body4["trades"]) == 60
     assert all(t["origin"] == "backtest" for t in body4["trades"])
+
+
+def test_excluye_checkpoint_override_de_operaciones_reales(monkeypatch, results_file, ledger_db):
+    """Las filas signal_ledger con signal_id prefijo chkpt__ (checkpoint_override
+    del mecanismo del tubo) NO aparecen en /combined ni cuentan en paper_total.
+    """
+    _setup(monkeypatch, results_file, ledger_db)
+    body = asyncio.run(trades.get_combined_trades(limit=0))
+    # La DB tiene 4 filas: 3 reales (p1/p2/p3) + 1 checkpoint (chkpt__MSFT__2026-08-26)
+    assert body["paper_total"] == 3, "checkpoint no debe contar en paper_total"
+    chkpt_signals = [
+        t["signal_id"] for t in body["trades"]
+        if t["signal_id"] and str(t["signal_id"]).startswith("chkpt__")
+    ]
+    assert len(chkpt_signals) == 0, f"aparecieron checkpoint: {chkpt_signals}"
+    # Verificar que las 3 reales SÍ están
+    real_ids = {t["signal_id"] for t in body["trades"] if t["origin"] == "paper"}
+    assert real_ids == {"p1", "p2", "p3"}
 
 
 def test_ledger_sin_tabla_devuelve_solo_backtest(monkeypatch, results_file, tmp_path):
