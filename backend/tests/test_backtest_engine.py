@@ -169,3 +169,70 @@ def test_update_bayesian_weights_sin_datos_de_riesgo_cae_a_signo():
     alpha, beta = engine.bayesian_updater.get_posterior("0_momentum")
     assert alpha == pytest.approx(2.0)
     assert beta == pytest.approx(1.0)
+
+
+# ── Tests F0.1 — bootstrap Monte Carlo reproducible (AUDITORIA_NIVEL_DIOS_20260902) ──
+
+class TestMonteCarloBootstrapReproducible:
+    """El bootstrap de `monte_carlo_simulation` debe ser determinístico con
+    el mismo seed (mismo patrón que `circular_block_bootstrap_ci` T2.2 en
+    probabilistic_engine.py:754). Antes del fix usaba `np.random.choice` que
+    dependía del global state — no reproducible entre corridas."""
+
+    def _make_trades(self, n=60):
+        rng = np.random.default_rng(0)
+        pnls = rng.normal(50, 200, n).tolist()
+        return [{"pnl": float(p)} for p in pnls]
+
+    def test_mismo_seed_mismo_resultado(self):
+        """Determinismo: dos llamadas con mismo seed dan mismo mean/p5/p95."""
+        bt = BacktestEngine()
+        trades = self._make_trades()
+        r1 = bt.monte_carlo_simulation(trades, n_sims=500, seed=42)["bootstrap"]
+        r2 = bt.monte_carlo_simulation(trades, n_sims=500, seed=42)["bootstrap"]
+        assert r1["mean"] == r2["mean"]
+        assert r1["p5"] == r2["p5"]
+        assert r1["p95"] == r2["p95"]
+        assert r1["prob_loss"] == r2["prob_loss"]
+
+    def test_seed_distinto_resultado_distinto(self):
+        """Sanity: cambiar el seed produce distribuciones distintas."""
+        bt = BacktestEngine()
+        trades = self._make_trades()
+        r1 = bt.monte_carlo_simulation(trades, n_sims=500, seed=42)["bootstrap"]
+        r3 = bt.monte_carlo_simulation(trades, n_sims=500, seed=99)["bootstrap"]
+        assert r1["mean"] != r3["mean"] or r1["p5"] != r3["p5"]
+
+    def test_seed_default_42_presente_en_respuesta(self):
+        """El seed usado debe quedar explícito en la respuesta para auditoría."""
+        bt = BacktestEngine()
+        trades = self._make_trades()
+        r = bt.monte_carlo_simulation(trades, n_sims=100, seed=42)["bootstrap"]
+        assert r["seed"] == 42
+
+    def test_seed_none_no_determinista_pero_registrado(self):
+        """`seed=None` produce resultados no deterministas, pero el campo
+        `seed` en la respuesta documenta que fue None (auditoría)."""
+        bt = BacktestEngine()
+        trades = self._make_trades()
+        r1 = bt.monte_carlo_simulation(trades, n_sims=100, seed=None)["bootstrap"]
+        r2 = bt.monte_carlo_simulation(trades, n_sims=100, seed=None)["bootstrap"]
+        assert r1["seed"] is None
+        assert r2["seed"] is None
+        # No determinismo — pero al menos uno de los cuantiles debe diferir
+        # (probabilidad de colisión exacta en 100 simulaciones ≈ 0)
+        assert r1["mean"] != r2["mean"] or r1["p5"] != r2["p5"]
+
+    def test_estructura_respuesta_intacta(self):
+        """Las 5 claves (mean, p5, p95, prob_loss, seed) están presentes."""
+        bt = BacktestEngine()
+        trades = self._make_trades()
+        r = bt.monte_carlo_simulation(trades, n_sims=100, seed=42)["bootstrap"]
+        for key in ("mean", "p5", "p95", "prob_loss", "seed"):
+            assert key in r, f"falta clave {key}"
+
+    def test_sin_trades_bootstrap_vacio(self):
+        """Si no hay trades, bootstrap queda {} sin crashear (compat)."""
+        bt = BacktestEngine()
+        r = bt.monte_carlo_simulation([], n_sims=100, seed=42)
+        assert r["bootstrap"] == {}
