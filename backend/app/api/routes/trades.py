@@ -19,6 +19,12 @@ router = APIRouter(prefix="/api/trades", tags=["trades"])
 RESULTS_FILE = "data/backtest_results.json"
 LEDGER_DB = "fortress.db"  # relativo a cwd=backend, misma convención que SignalLedger default
 
+# Convención del pipeline diario (scripts/pipeline_daily_signal.py:139). Las filas
+# con este prefijo en signal_id son inyecciones de CHECKPOINT para validar el
+# mecanismo del tubo (OVERRIDE_MECANISMO — no es señal real) y NUNCA se mezclan
+# con la vista de operaciones reales.
+CHECKPOINT_SID_PREFIX = "chkpt__"
+
 
 def _read_backtest_trades() -> List[Dict[str, Any]]:
     """Lee todos los trades del archivo de resultados del backtest.
@@ -35,6 +41,10 @@ def _read_backtest_trades() -> List[Dict[str, Any]]:
 
 def _read_ledger_trades() -> List[Dict[str, Any]]:
     """Lee trades del signal_ledger (paper trading real) desde fortress.db.
+
+    Excluye las filas con signal_id prefijo `chkpt__` (CHECKPOINT_SID_PREFIX):
+    son inyecciones de validación del mecanismo del tubo (OVERRIDE_MECANISMO),
+    NO señales reales, y jamás se mezclan con la vista de operaciones.
 
     Returns lista de filas como dicts, normalizadas al contrato común:
       signal_id, symbol, entry_date, exit_date, exit_reason, pnl_r,
@@ -58,7 +68,11 @@ def _read_ledger_trades() -> List[Dict[str, Any]]:
             "pnl_r, open_fill_price, close_fill_price, qty, status, "
             "regime_state, factors_json "
             "FROM signal_ledger "
-            "ORDER BY entry_date DESC"
+            # Excluir inyecciones de CHECKPOINT (validación del mecanismo del tubo,
+            # NO señales reales — convención chkpt__ de pipeline_daily_signal.py).
+            "WHERE signal_id NOT LIKE ? "
+            "ORDER BY entry_date DESC",
+            (CHECKPOINT_SID_PREFIX + "%",),
         ).fetchall()
         conn.close()
         return [dict(r) for r in rows]
