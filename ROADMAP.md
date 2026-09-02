@@ -18,6 +18,28 @@ Coordinación multi-agente vía Orca (Claude Code como coordinador; Kilo Code, O
 Cline como implementadores). Verificar contra `git log --oneline -10`,
 `ps aux | grep screening_palas` y las ramas de cada worktree antes de asumir estado.
 
+0. **REGLA VIGENTE — GATE DE 90 DÍAS (decisión de Boris, 2026-09-02, tras auditoría
+   `AUDITORIA_NIVEL_DIOS_20260902.md` + análisis externo GLM 5.3)** — 🔴 la más
+   importante de todo este documento, léela antes que cualquier otra cosa.
+   **Cero hipótesis nuevas, cero pilotos nuevos, cero frentes de investigación
+   nuevos hasta que el paper trading (con la contabilidad corregida de
+   `paper_trading.py`, commit `1466dcc`) acumule datos limpios.** Fecha de
+   evaluación: **2026-12-01** (90 días desde hoy). Criterio pre-declarado —
+   el mismo estándar que ya rige todos los trials formales del proyecto, no
+   uno nuevo más permisivo: **DSR≥0.90 en ≥2/3 ventanas**. Si a esa fecha
+   nada cruza el umbral: se decide CON DATOS entre (a) reducir el proyecto a
+   mantenimiento, (b) pivotar el frente de investigación, o (c) aceptarlo
+   como laboratorio personal sin aspiración de capital — no se seguirá
+   pateando la decisión sin condición de salida (esto es lo que el
+   pre-mortem señaló como causa real de burnout, no el código).
+   **Lo único permitido en paralelo mientras corre el gate** (mecánico,
+   ninguno depende de investigación nueva): F0 de la auditoría (bugs, no
+   decisiones), el colector intradía I3, telemetría de ejecución I9, y
+   cerrar lo que ya estaba abierto antes de esta regla (mapeo HMM B6,
+   inventario de series para el SPA, comparación PBO §39 vs §40 — pendiente
+   de decisión de Boris). Nada de esto consume el tiempo del gate; el gate
+   lo consume solo el paper trading corriendo solo, todos los días.
+
 1. **A6.3 — screening PALA/RESTO/POOLED** — 🟢 trial original CERRADO
    (29/08, `COMPLETED`/`NO_CUMPLE`, ver §12 de `PRE_REGISTRO_SCREENING_PALAS.md`).
    **Saneamiento del check APROBADO por Boris (29/08) — 🟢 CERRADO (31/08)**:
