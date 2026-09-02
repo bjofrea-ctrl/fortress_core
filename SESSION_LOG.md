@@ -1,5 +1,62 @@
 # Fortress Core — Memoria de Sesiones (Última sesión resumida)
 
+
+## 2026-09-02 — Diagnóstico y optimización de `GET /api/advisor/universe` con 102 símbolos (Cline)
+
+**Qué**: GET /api/advisor/universe tardaba ~18 min en frío (universo 102) y, dato clave
+aportado por Boris, **3:20 min en una segunda llamada que debía estar en cache caliente
+(TTL 5 min)**. Se perfiló dónde se va el tiempo, se diagnosticó la causa real y se
+implementó la optimización de bajo riesgo (sin tocar motor ni criterio de decisión).
+
+**Diagnóstico cerrado con la medición del usuario**: el 3:20 en caliente NO significa que
+el cache de contexto falle — de hecho es la prueba de que funciona: si el replay se
+hubiera re-ejecutado, la segunda llamada habría tardado otros ~18 min. El 3:20 es
+**exactamente el costo del loop de tickets que se recomputa en CADA request y no tenía
+cache** (224.6s medidos serial original ≈ 3:44; la diferencia es variación de máquina).
+El cache de contexto (TTL 300s) solo cachea `_load_context_sync` (precios, régimen,
+calibradores) — no el resultado del loop.
+
+**Cuellos medidos (perfilado real, 102 símbolos)**:
+1. **#1 replay de calibradores** — `_fit_calibrators` → `engine._build_calibration_dataset`
+   (replay walk-forward 20d × ~2 años) ≈ 11.7s/símbolo × 102 ≈ **~20 min** en frío.
+   Dominante en frío, pagado una vez por ventana TTL. **No se tocó** (decisión de motor/TTL).
+2. **#2 loop de tickets** — `generate_signal` llama `calculate_all_indicators` (~0.95s)
+   × 102 + `_compute_ticket` que en el código original volvía a llamar `generate_signal`
+   si sig=None (doble trabajo) + `calculate_all_indicators` duplicado para el payload
+   (`dist_ema50/200`). Total original **224.6s**; este es el costo de la llamada caliente.
+3. **#3 threads contraproducentes** — 8 workers: 278.1s vs 224.6s serial (**0.8x**) por el
+   GIL de CPython. Descartado definitivamente con evidencia.
+4. **No es I/O de red en el path caliente** — los precios vienen de parquets cacheados;
+   el yfinance visible es backfill/refresh de la carga de contexto (una vez por cache).
+
+**Implementado (todo bajo riesgo, en el worktree, listo para commit)**:
+1. `decision.py` — `_compute_ticket(..., sig_evaluated=True)`: evita regenerar
+   `generate_signal` cuando el caller ya lo computó (el criterio de decisión no cambia).
+2. `advisor.py` — loop serial en un solo `run_in_threadpool` (no bloquea event loop;
+   threads paralelos medidos como contraproducentes).
+3. `advisor.py` — `ema()` directo (~0.001s) para símbolos sin gate en vez de
+   `calculate_all_indicators` (~0.95s); identidad verificada (0 diferencias en los 102).
+   Loop optimizado: **174.5s (1.29x)**.
+4. `advisor.py` — **cache de tickets del universo** (`_get_tickets`): los tickets son
+   función pura del contexto, se cachean con el mismo TTL (300s) e invalidación por
+   generación de contexto (compara `ctx_gen` con `_context_cache_time` — robusto a
+   recargas durante el cómputo). Lock propio para no bloquear `/symbol`.
+
+**Verificación**:
+- Suite: **25/25 passed** (test_advisor_api.py 22 + test_opportunities_api.py 3).
+- Cache de tickets con 102 símbolos reales (repo Desktop, sin replay de calibración para
+  no esperar ~20 min): 1ra llamada **138.6s** → 2da **1.034s** (~134x), **payload idéntico
+  verificado** (`True`).
+- Cache reseteado en `ctx` fixture de tests para aislamiento.
+
+**Pendiente (decisión de Boris, NO implementado)**: cuello #1 — opción 4a subir
+`_CONTEXT_CACHE_TTL_SECONDS` 300s→6-24h (bajo riesgo, ~0 líneas de motor) u opción 4b
+paralelizar `_build_calibration_dataset` con `ProcessPoolExecutor` (toca motor, riesgo
+medio). Doc completo: `DIAGNOSTICO_PERF_ADVISOR_102.md`. Trabajo en rama
+`bjofrea-ctrl/fundamentales-automatizado`; copias temporales en repo Desktop revertidas
+(`git checkout --`).
+
+
 ## 2026-09-02 — Fix B6: regresión en 3 tests de lag, causa raíz y resolución (Cline)
 
 **Qué**: el commit `dd1d6c1` (fix B6, `_align_states` por VIX ascendente) rompió
