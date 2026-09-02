@@ -99,12 +99,15 @@ def _fit_calibrators(price_data, today) -> Tuple[ProbabilityCalibrator, Optional
 def _compute_ticket(symbol: str, df, regime_state: int, today, signal_engine: SignalEngine,
                     calibrator: ProbabilityCalibrator,
                     conformal: Optional[ConformalAbstentionEngine],
-                    sig: Optional[Dict] = None) -> Dict:
+                    sig: Optional[Dict] = None,
+                    sig_evaluated: bool = False) -> Dict:
     """Ticket de decisión completo para un activo: gate, win_prob, M2 y el
     veredicto compuesto con su razón. Sin lookahead: solo la última fila.
     `sig` permite pasar una señal ya calculada (endpoint por símbolo, que
-    además expone los indicadores crudos)."""
-    if sig is None:
+    además expone los indicadores crudos). `sig_evaluated=True` indica que
+    `sig` YA se computó (aunque sea None — fuera de gate) y NO debe
+    regenerarse dentro: evita el doble generate_signal en /universe."""
+    if sig is None and not sig_evaluated:
         sig = signal_engine.generate_signal(df, symbol, regime_state)
 
     win_prob = None
