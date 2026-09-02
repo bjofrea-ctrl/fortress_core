@@ -1,0 +1,2 @@
+ticker,indicador,horizonte,contexto,atlas_spread_q5_q1_bp,atlas_ic,atlas_n,atlas_media_q1_pct,atlas_media_q5_pct,kilo_high_mean_pct,kilo_high_n,kilo_low_mean_pct,kilo_low_n,kilo_spread_high_low_bp,match_direccional
+NVDA,momentum_12_1,20,TOTAL,306.391858756552,0.093733932628985,2600,3.5346179932196686,6.598536580785188,6.58,829,4.09,828,249.00000000000003,True
