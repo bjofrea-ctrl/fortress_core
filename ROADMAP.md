@@ -148,6 +148,30 @@ Cline como implementadores). Verificar contra `git log --oneline -10`,
    29/08 se le preguntó A) anotar para después vs B) activar ya, y la
    respuesta ("Sí" repetido dos veces sin elegir) no alcanzó ese umbral —
    se optó por A) hasta tener una confirmación sin ambigüedad.
+10. **ATLAS — Sistema de ingeniería inversa precio→indicador por ticker**
+    (`DISENO_ATLAS_INGENIERIA_INVERSA_20260901.md`, commit `23f4aee` →
+    implementación `0f2c798`) — 🟢 **CERRADO capa 1 (descriptiva)**, 01/09.
+    Origen: trabajo de Boris 30/08 con Kilo (worktree `test-kilo-orca`,
+    `INGENIERIA_INVERSA_POR_TICKER.md`) exploró NVDA/AAPL/EPAM/QLYS de forma
+    puntual; Boris pidió generalizar a un SISTEMA reutilizable sobre todo el
+    universo. Diseño (aprobado 01/09) propuso dos capas: ATLAS descriptivo
+    (cualquier celda, sin ledger) y GRADUACIÓN (pre-registro + deflactación
+    Bonferroni por conteo real de celdas — única vía a regla). Implementación
+    v1 (alcance declarado: universo 50 canónico, 3 ind, 3 horiz, W1/W2/W3/TOTAL,
+    9 celdas régimen sin h60 por §5.4): `backend/scripts/atlas_ticker.py`
+    (988 líneas, 8 funciones, offline, cache-only, sin tocar el motor).
+    Outputs: `atlas_celdas.csv`, `fichas/<TICKER>.md`, `resumen_arquetipos.md`,
+    `atlas_meta.json`, `kilo_validacion.csv` (con `--kilo-validacion`).
+    Tests: 5 grupos del §8.5 del diseño — sin look-ahead (x_t invariante a h),
+    gates cobertura (INSUFICIENTE cuando N<3), convención t−1→t+h, idempotencia,
+    conteo real de celdas. **13 tests passed, 1 skip, suite conjunta
+    41 passed** con `test_fundamentals_screen.py` (sin romper nada).
+    Validación cruzada Kilo (gratis): NVDA × momentum_12_1 × h20 × TOTAL →
+    atlas spread Q5−Q1 = +306bp, piloto Kilo spread high−low = +249bp,
+    **ambos positivos → match_direccional TRUE**. Hallazgo visual del piloto
+    2y/60d (NVDA reversionista) y 5y/60d (EPAM desplome) preservados como
+    celdas del atlas — heterogeneidad por ticker confirmada por construcción.
+    Capa 2 (graduación) NO implementada, esperando decisión de Boris.
 
 Si alguna de estas cambió de estado cuando leas esto, actualizá esta sección
 (borrala o marcá cerrado) — no la dejes desactualizada.
