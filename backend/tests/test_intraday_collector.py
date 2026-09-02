@@ -138,11 +138,16 @@ def test_collect_incremental_no_redescarga(tmp_path, monkeypatch):
 def test_collect_sin_credenciales_no_crash(tmp_path, monkeypatch):
     """Sin credenciales, el colector debe salir con código 1, no excepción no manejada."""
     import scripts.collect_intraday_1min as coll
+    from app.config import settings
 
     monkeypatch.setattr(coll, "CACHE_DIR", tmp_path)
-    # Vaciar env
+    # Vaciar env Y settings (settings carga backend/.env real; sin esto el
+    # fallback a settings.ALPACA_* encuentra la credencial real y el test
+    # nunca ve "sin credenciales" — mismo patron que test_execution_costs.py).
     monkeypatch.delenv("ALPACA_PAPER_API_KEY", raising=False)
     monkeypatch.delenv("ALPACA_PAPER_SECRET_KEY", raising=False)
+    monkeypatch.setattr(settings, "ALPACA_PAPER_API_KEY", "")
+    monkeypatch.setattr(settings, "ALPACA_PAPER_SECRET_KEY", "")
     # Forzar que AlpacaPaperClient falle sin credenciales
     try:
         AlpacaPaperClient(api_key="", secret_key="")
