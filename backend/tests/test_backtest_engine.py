@@ -9,6 +9,17 @@ Estos tests arman un panel sintético determinístico que dispara UNA señal un
 lunes conocido, le inyectan un gap overnight grande y verificado en el martes,
 y comprueban que el precio de entrada registrado es la apertura del día
 siguiente y NO el cierre del día de la señal.
+
+REGIMEN: estos tests verifican la MECÁNICA de ejecución con lag, no la
+clasificación de régimen. El market_data sintético usa el MISMO dataframe para
+los 9 tickers (features de retorno idénticas), así que el régimen HMM estimado
+sobre ese panel degenerado es arbitrario y puede reetiquetarse al cambiar el
+alineamiento semántico (FIX B6, MAPEO_ESTADOS_HMM.md): con VIX ascendente el
+día de la señal cae en DEFLATION y el gate de elegibilidad (regime_state==3 en
+signal_engine) lo bloquea — comportamiento CORRECTO del motor, irrelevante
+para la mecánica de lag que estos tests prueban. Por eso `_run` fija la
+entrada de régimen del motor a GOLDILOCKS (0). NO se tocan signal_engine ni el
+criterio de elegibilidad: solo se controla la entrada que el motor observa.
 """
 import numpy as np
 import pandas as pd
@@ -54,7 +65,26 @@ def _build_panel(n=1000, seed=1, base=100.0, slope=0.10, chop_amp=7.0, chop_freq
 
 
 def _run(price_data, market_data, lag):
+    """Corre el backtest sobre el panel sintético.
+
+    Fija la entrada de régimen del motor a GOLDILOCKS (0) parcheando
+    ``regime_classifier.predict_current_regime`` — ver nota REGIMEN arriba.
+    El fit HMM real sigue corriendo (camino de integración intacto); solo se
+    controla el estado semántico que el motor observa para aislar la mecánica
+    de ejecución con lag que estos tests verifican.
+    """
     engine = BacktestEngine(initial_capital=25000)
+    clf = engine.regime_classifier
+
+    def _fixed_regime(*args, **kwargs):
+        return {
+            "state": 0,
+            "state_name": clf.state_labels[0],
+            "allocation": clf.REGIME_ALLOCATION[0],
+            "confidence": 1.0,
+        }
+
+    clf.predict_current_regime = _fixed_regime
     return engine.run(
         price_data,
         market_data,
