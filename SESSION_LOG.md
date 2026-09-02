@@ -2995,3 +2995,25 @@ Nota: proceso trial18 intento-1 ya muerto (abortado >13h, documentado en ROADMAP
 **Pipeline en vivo verificado**: existe y corre 3x/día hace 3 días sin fallar, pero el log de señales solo tiene corridas de checkpoint (validación mecánica), no señal real todavía. Activar el modo real quedó documentado como prioridad futura — Boris respondió "Sí" dos veces sin elegir entre "anotar para después" o "activar ya"; dado que activar implica órdenes/señales reales y es difícil de revertir, se optó por NO activarlo ante la ambigüedad y dejarlo anotado, en vez de asumir.
 
 **Infraestructura nueva del día**: `com.fortresscore.backupdatos` (cron diario 23:00, respalda a `/Volumes/EMPRESA/FortressCore_Fuentes/` todo lo que git ignora — `fortress.db`, memorias, `.parquet` — nunca borra, rsync sin `--delete`). LEAN se archivó al externo (verificado, NO se borró de la Mac porque está tracked en git — borrar 1171 archivos versionados por 225MB no valía el ruido en la historia).
+
+## 2026-09-01 — Vista unificada de trades: backtest histórico + paper real (Cline)
+
+**Alcance**: feature mecánica sobre infraestructura existente — motor de decisión, signal_engine.py, paper_trading.py y signal_ledger.py INTACTOS. Todo aditivo.
+
+### Contexto que explica el diseño
+- `TradesTable.tsx` leía `/api/backtest/trades`, que cortaba en los últimos 50 trades de UNA corrida backtest estática (`data/backtest_results.json`).
+- Las operaciones REALES del paper se registran en `signal_ledger` (fortress.db) pero NADA las exponía al dashboard.
+- `backtest_results.json` YA tiene profundidad suficiente: 303 trades, 2019-12-02 → 2024-11-04 (~5 años, supera el piso de 3 años pedido). No hizo falta regenerar ni cachear una corrida nueva.
+
+### Qué se construyó
+1. **`backend/app/api/routes/trades.py` (nuevo router `/api/trades`)**: endpoint `GET /api/trades/combined` — lee TODOS los trades del backtest (sin el corte de 50), lee el signal_ledger de fortress.db (solo si la tabla existe; hoy el pipeline es dry-run y no hay filas), combina ambas fuentes y devuelve cada fila con **`origin: 'backtest' | 'paper'`** explícito. Orden descendente por entry_date, paginación `skip`/`limit` (default 200, 0 = todos). Totales separados: `total` / `backtest_total` / `paper_total`.
+2. **Contrato unificado por fila**: symbol, entry_date, exit_date, entry_price, exit_price, shares, pnl (USD absoluto), pnl_r (relativo, el backtest no lo tenía → se calcula), exit_reason, status, signal_id. **Órdenes paper abiertas** (`status='open'`) devuelven exit_price/pnl/pnl_r = null — NO se fabrica P&L ficticio con close_fill_price NULL (bug detectado en validación).
+3. **`TradesTable.tsx`**: fetch a `/api/trades/combined`; columna **Origen** con badge BT/PAPER; columna P&L %; leyenda con conteos por origen; filas open renderizan "abierta"/"—".
+4. **`main.py`**: `trades.router` registrado. El endpoint legacy `/api/backtest/trades` queda INTACTO (TradeDistribution lo consume).
+5. **Tests**: `test_trades_api.py` NUEVO (8) contra tmp_path (nunca al runtime real): sin archivo ni DB, sirve >50 sin cortar, combina con origin explícito, orden desc, paper cerrado trae fills/pnl, paper abierto no fabrica pnl, paginación, DB sin tabla → solo backtest. **8/8 passed**; suites relacionadas (backtest_api + trades_api + paper_trading) 22 passed; ruff limpio.
+
+### Estado real del ledger (verificado)
+Ninguna fortress.db del repo tiene hoy la tabla `signal_ledger` — el pipeline diario corrió en dry-run y nunca escribió paper real. La vista mostrará "0 paper" hasta que el pipeline active el modo real (decisión pendiente de Boris documentada más arriba).
+
+### Docs
+README.md tabla de endpoints actualizada con `/api/trades/combined`.

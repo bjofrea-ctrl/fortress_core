@@ -57,7 +57,8 @@ fortress_core/
 | GET | `/api/backtest/results` | Resultados del último backtest |
 | GET | `/api/backtest/metrics` | Métricas agregadas del backtest |
 | GET | `/api/backtest/equity-curve` | Curva de equity |
-| GET | `/api/backtest/trades` | Trades del backtest |
+| GET | `/api/backtest/trades` | Últimos 50 trades del backtest (contrato legacy) |
+| GET | `/api/trades/combined` | Trades de backtest + paper trading real (signal_ledger), cada fila con `origin: 'backtest' \| 'paper'` |
 | GET | `/api/backtest/monte-carlo` | Simulaciones Monte Carlo |
 | GET | `/api/market/symbols` | Símbolos disponibles |
 | GET | `/api/market/prices/{symbol}` | Precios históricos |
