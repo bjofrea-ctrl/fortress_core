@@ -31,6 +31,8 @@ from typing import Any, Dict, List, Optional
 import numpy as np
 import requests
 
+from app.config import settings
+
 DEFAULT_PAPER_BASE_URL = "https://paper-api.alpaca.markets"
 # Los datos de mercado NO viven en el host de trading (paper-api): están en
 # data.alpaca.markets. Pedir el último trade al host de trading da 404
@@ -68,13 +70,19 @@ class AlpacaPaperClient:
         market_data_base_url: str = "",
         session: Any = None,
     ) -> None:
-        self.api_key = api_key or os.environ.get("ALPACA_PAPER_API_KEY", "")
-        self.secret_key = secret_key or os.environ.get("ALPACA_PAPER_SECRET_KEY", "")
+        # Credenciales vía settings (pydantic lee backend/.env) — os.environ solo
+        # como fallback para compatibilidad; el cron de launchd no exporta env y
+        # fallaba con os.environ.get directo aunque .env sí tenía las keys.
+        self.api_key = api_key or settings.ALPACA_PAPER_API_KEY or os.environ.get("ALPACA_PAPER_API_KEY", "")
+        self.secret_key = secret_key or settings.ALPACA_PAPER_SECRET_KEY or os.environ.get("ALPACA_PAPER_SECRET_KEY", "")
         self.base_url = (
             base_url
+            or settings.ALPACA_PAPER_BASE_URL
             or os.environ.get("ALPACA_PAPER_BASE_URL", "")
             or DEFAULT_PAPER_BASE_URL
         )
+        # ALPACA_MARKET_DATA_BASE_URL no está en Settings (solo paper base),
+        # se lee de env con fallback al default de datos.
         self.market_data_base_url = (
             market_data_base_url
             or os.environ.get("ALPACA_MARKET_DATA_BASE_URL", "")
