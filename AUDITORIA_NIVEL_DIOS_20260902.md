@@ -100,10 +100,35 @@ Además, hay un desdoblamiento producto/investigación: la maquinaria estadísti
 12. Graduación formal de regime matching ANTES de más pilotos: z-score rolling, features per-ticker (como dice `DISENO_REGIME_MATCHING_20260901.md`; los pilotos se desviaron del diseño), Mahalanobis, corrección por conteo real, y UN pre-registro con OOS fresco post-2026-08.
 
 **Fase 3 — Donde está el edge**:
-13. Retomar LEAN (o stack liviano intradía) para testear gap-reversion y reversión intradía con costos reales — las únicas señales con t>10 jamás medidas.
-14. Loop cerrado: reconciliación automática backtest↔paper, `drift_detector` conectado al conformal, alertas activadas.
-15. Libro de costos vivo: cada fill paper acumula slippage real por símbolo/tamaño → reemplaza el supuesto 0.05% con serie propia.
+13. Loop cerrado: reconciliación automática backtest↔paper, `drift_detector` conectado al conformal, alertas activadas.
+14. Libro de costos vivo: cada fill paper acumula slippage real por símbolo/tamaño → reemplaza el supuesto 0.05% con serie propia.
+15. (Reformulada tras réplica de Claude Code, ver §7) Intradía: primero acumular datos 1-min gratis vía Alpaca (I3), generar hipótesis intradía genuinamente nuevas con costos modelados desde el día 1, recién entonces evaluar LEAN. NO recalentar gap-reversion (§13: bruto t=−0.20, neto t-NW −11.53 — ni en bruto fue capturable a ejecución EOD).
 
 ## 6. Recomendación fundada
 
-Fase 0 ahora mismo (son bugs, no decisiones). **La apuesta estratégica es Fase 2**: sin potencia muestral ni holdout, cada trial futuro es ruido caro. Si hay que elegir un solo frente: universidad→universo ampliado + holdout, porque multiplica el valor de TODO lo demás. Fase 3 es la única vía a una señal operable real si el edge está intradía como la evidencia interna indica. Regime matching queda en pausa de pilotos hasta tener su pre-registro de graduación — seguir pilotando sin corrección sobre la misma matriz es exactamente el patrón que el ledger fue construido para impedir.
+Fase 0 ahora mismo (son bugs, no decisiones). **La apuesta estratégica es Fase 2**: sin potencia muestral ni holdout, cada trial futuro es ruido caro. Si hay que elegir un solo frente: universidad→universo ampliado + holdout, porque multiplica el valor de TODO lo demás. Fase 3 es la única vía a una señal operable real si el edge está intradía como la evidencia interna indica.
+
+## 7. Adendum (2026-09-02 08:30) — análisis de la réplica de Claude Code y opciones adicionales
+
+Claude Code verificó independientemente los 3 hallazgos críticos (confirmados) y aprueba F0 y F2 (nota: la ampliación a 102 símbolos ya estaba en marcha con Kilo — esta auditoría le agrega el argumento formal de potencia). Dos correcciones aceptadas:
+
+- **F3 reformulada** (ítem 15 arriba): gap-reversion no es "el edge que nunca miramos" — §13 lo testeó con costos y murió (bruto t=−0.20, neto t-NW −11.53: ni en bruto fue capturable a ejecución EOD). El argumento intradía queda así: el IC mismo-día es microestructura real, pero **ningún instrumento actual puede expresarlo**; apostar a LEAN sin hipótesis intradía genuinamente nueva y costos modelados desde el día 1 sería recalentar un cadáver. Primero acumular datos (I3), después hipótesis, después pre-registro.
+- **Regime matching des-pausado** (ítem 12 se lee como "corregir y luego seguir"): los pilotos capa-1 sin slot son legítimos por la propia arquitectura de graduación en dos capas — no evadieron el ledger, lo usaron bien (descartaron barato la hipótesis growth/high-beta con growth3). Lo que sí son **bugs de medición a corregir antes de seguir pilotando** (sin pre-registro, como cualquier bug): z-score con μ/σ full-sample (fuga real), L2 sin ponderar (ignora ρ(SPY,QQQ)~0.9), confusor momentum idio sin controlar. La graduación a señal sigue requiriendo pre-registro cuando llegue.
+
+### Opciones de mejora adicionales (no cubiertas por F0–F3)
+
+| # | Opción | Qué resuelve | Costo |
+|---|---|---|---|
+| I1 | **Gate de potencia ex-ante (MDE)**: antes de cada trial, calcular el efecto mínimo detectable dado n/cross-section/horizonte; si MDE > efecto plausible → etiqueta INEJECUTABLE, no consume slot ni produce "refutación" | Mata la refutación-teatro: distingue refutado de no-decidido por subpotencia | Bajo |
+| I2 | **Unificar motores, no solo etiquetarlos**: reemplazar el scoring interno de `predictive_engine.py` por el score congelado de `signal_engine.py` bajo el mismo contrato API (o campo `variant` explícito) | Elimina de raíz el riesgo del motor doble en vez de advertirlo | Medio |
+| I3 | **Acumular intradía HOY (gratis)**: la data API de Alpaca (incluida con la cuenta paper existente) da barras 1-min; un colector launchd agrega meses de datos reales sin pagar nada | Desbloquea F3 real cuando haya hipótesis intradía; el tiempo es el único recurso no recuperable | Bajo |
+| I4 | **Pesos jerárquicos (shrinkage James-Stein / Bayes empírico) de ICs per-ticker**: la heterogeneidad medida (pooled +0.06 vs mediana per-ticker −0.074) no se resuelve ni con peso global ni con extremos por ticker; shrinkage hacia la media es el estimador correcto | Vulnerabilidad real del motor (w_mom 0.6642 derivado de un pooled no representativo) | Medio — trial pre-registrable |
+| I5 | **Meta-labeling (López de Prado)**: modelo secundario que predice si cada trade del baseline congelado gana (features: régimen, vol, day-of-week, spread proxy). `barrier_labeling.py` (M1) ya está construido | Cambia el objetivo: filtrar lo que cuasi-funciona en vez de cazar alpha crudo con n chico; el efecto necesario es menor | Medio — nueva familia de trial |
+| I6 | **Panel versionado (feature store mínimo)**: `build_factor_panel` produce dataset con hash de versión; los scripts consumen por versión → elimina la divergencia silenciosa de utilidades copiadas | B6 parcial, raíz del riesgo de inconsistencia entre 97 scripts | Medio |
+| I7 | **OOS rolling-origin automatizado**: todo veredicto final incluye mecánicamente el corte de los últimos N meses jamás tocados por tuning | Extiende el holdout sagrado y lo vuelve no-negociable | Bajo |
+| I8 | **Test omnibus White Reality Check / Hansen SPA** sobre la familia completa de estrategias ya probadas (una vez, bootstrap estacionario): "¿alguna de las N bate al azar?" | Complementa PBO; es el único test diseñado para "mejor de N" | Bajo-medio |
+| I9 | **Telemetría de ejecución por orden**: loggear decision_price vs fill_price por cada orden del pipeline paper → cada oficio es una muestra del libro de costos | Libro de costos propio sin campaña de medición | Bajo |
+| I10 | **PEAD (post-earnings announcement drift) como hipótesis de evento**: la anomalía académica más robusta, y el universo ya acumula EDGAR point-in-time (~1400 eventos en 50 símbolos × 7 años). NO probar sin chequear PLAN_MEJORA_MATEMATICA: §27 (FinBERT event study) y trial #9 son primos refutados; PEAD por SUE con alineación por timestamp EDGAR es distinto, pero verificar primero | Hipótesis bien potenciada sobre dato propio, fuera del loop TA-indicadores que agotó su presupuesto | Medio-alto |
+
+### Prioridad de las opciones nuevas
+I1 e I2 primero (baratas, cierran los dos riesgos de proceso más graves). I3 e I9 el mismo día (gratuitas; el dato intradía empieza a acumularse hoy o no existe nunca). I4 e I5 como próximas familias de trial — las únicas que cambian el objetivo de investigación en vez de repetirlo sobre el mismo panel. I8 cuando cierre la fase de descarte actual.
