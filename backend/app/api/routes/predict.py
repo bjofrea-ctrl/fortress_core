@@ -145,8 +145,23 @@ def _load_sentiment_data() -> Optional[dict]:
 
 
 def _serialize_result(result, fundamentals_source: str = "unavailable") -> dict:
-    """Serializa PredictionResult a dict para JSON."""
+    """Serializa PredictionResult a dict para JSON.
+
+    AUDITORIA_NIVEL_DIOS_20260902 F0.2 — etiquetado honesto del motor:
+    - `motor: "heuristico_no_validado"` declara explícitamente que este
+      endpoint NO pasó por el ledger/DSR (a diferencia de signal_engine.py).
+    - `probabilidades_calibradas: False` advierte que las prob_up_* son
+      scores normalizados a [0,1], NO probabilidades calibradas contra
+      frecuencias empíricas. Un consumidor externo NO debe interpretarlas
+      como P(real).
+    - `confidence` se mantiene como campo string categórico (Baja/Media/
+      Alta) — NO es probabilidad.
+    """
     return {
+        # Identidad del motor (NUEVO, F0.2)
+        "motor": result.motor,                          # siempre "heuristico_no_validado" hasta que se valide
+        "probabilidades_calibradas": result.probabilidades_calibradas,  # siempre False hasta calibrar
+        # Datos básicos
         "symbol": result.symbol,
         "timestamp": result.timestamp,
         "regime_state": result.regime_state,
@@ -158,7 +173,9 @@ def _serialize_result(result, fundamentals_source: str = "unavailable") -> dict:
         "volatility_score": round(result.volatility_score, 4),
         "composite_score": round(result.composite_score, 4),
         "decision": result.decision,
+        # `confidence` es categórico (Baja/Media/Alta), NO probabilidad
         "confidence": result.confidence,
+        # Probabilidades (scores normalizados, NO calibradas)
         "prob_up_short": round(result.prob_up_short, 4),
         "prob_up_medium": round(result.prob_up_medium, 4),
         "prob_up_long": round(result.prob_up_long, 4),
