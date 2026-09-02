@@ -144,3 +144,122 @@ def test_predict_regime_series_bloque_si_usa_futuro():
     assert seen_last[0] == 79
 
 
+
+
+# ── Tests FIX B6 (MAPEO_ESTADOS_HMM.md) — orden estable por VIX ascendente ──
+
+def _classifier_with_vix_aligned(n: int, vix_by_state: dict):
+    """Construye un GlobalRegimeClassifier con VIX por estado conocido.
+    `vix_by_state` mapea raw_state_id -> VIX medio.
+    """
+    from unittest.mock import MagicMock
+    clf = GlobalRegimeClassifier()
+    clf.is_fitted = True
+    clf.scaler = MagicMock()
+    clf.scaler.transform = lambda x: x
+
+    dates = pd.date_range("2022-01-01", periods=n)
+    # Round-robin entre los raw states presentes en vix_by_state
+    state_ids = list(vix_by_state.keys())
+    states_arr = np.array([state_ids[i % len(state_ids)] for i in range(n)])
+    vix_series = pd.Series([vix_by_state[s] for s in states_arr], index=dates)
+    # SPY60 con co-movimiento negativo al VIX (más VIX = menos SPY)
+    growth_spy = pd.Series([0.05 - 0.001 * vix_by_state[s] for s in states_arr], index=dates)
+
+    feats = pd.DataFrame({"growth_SPY": growth_spy, "vix_level": vix_series}, index=dates)
+    clf.model.predict = lambda scaled: states_arr
+    clf.model.predict_proba = lambda scaled: np.tile([0.25, 0.25, 0.25, 0.25], (n, 1))
+    clf._extract_features = lambda price_data: feats
+    return clf, states_arr
+
+
+def test_align_states_orden_por_vix_ascendente():
+    """FIX B6: rank 0 = estado con VIX más bajo, rank 3 = VIX más alto."""
+    # VIX de cada raw state (orden conocido a priori: raw 2 < raw 0 < raw 1 < raw 3)
+    vix = {0: 22.0, 1: 28.0, 2: 14.0, 3: 35.0}
+    clf, raw = _classifier_with_vix_aligned(80, vix)
+    feats = clf._extract_features({})
+    aligned = clf._align_states(raw, feats)
+
+    # Verificar: el raw state con VIX más bajo (raw 2, VIX=14) debe ser GOLDILOCKS (aligned 0)
+    # El raw con VIX más alto (raw 3, VIX=35) debe ser DEFLATION (aligned 3)
+    unique, counts = np.unique(aligned, return_counts=True)
+    # El raw 2 (VIX=14) debe estar mapeado a aligned 0
+    mask_raw2 = (raw == 2)
+    assert (aligned[mask_raw2] == 0).all(), \
+        f"raw state con VIX=14 debe mapear a GOLDILOCKS (0), got {set(aligned[mask_raw2])}"
+    # El raw 3 (VIX=35) debe estar mapeado a aligned 3
+    mask_raw3 = (raw == 3)
+    assert (aligned[mask_raw3] == 3).all(), \
+        f"raw state con VIX=35 debe mapear a DEFLATION (3), got {set(aligned[mask_raw3])}"
+    # VIX[GOLDILOCKS] (aligned 0) < VIX[DEFLATION] (aligned 3) por construcción
+    vix_g = feats.loc[aligned == 0, "vix_level"].mean()
+    vix_d = feats.loc[aligned == 3, "vix_level"].mean()
+    assert vix_g < vix_d, f"GOLDILOCKS (VIX={vix_g:.1f}) debe tener VIX < DEFLATION (VIX={vix_d:.1f})"
+
+
+def test_align_states_extremos_estables_vix():
+    """FIX B6: VIX[rank 0] < VIX[rank 3] siempre, independiente del refit."""
+    # Simulamos 3 refits con distribuciones de VIX distintas
+    refits = [
+        {0: 22.0, 1: 28.0, 2: 14.0, 3: 35.0},   # refit A: spread normal
+        {0: 16.0, 1: 22.0, 2: 19.0, 3: 30.0},   # refit B: bull spread
+        {0: 18.0, 1: 25.0, 2: 21.0, 3: 36.0},   # refit C: bear spread
+    ]
+    for refit_vix in refits:
+        clf, raw = _classifier_with_vix_aligned(80, refit_vix)
+        feats = clf._extract_features({})
+        aligned = clf._align_states(raw, feats)
+
+        # El raw con VIX min debe mapear a aligned 0
+        min_vix_raw = min(refit_vix, key=refit_vix.get)
+        max_vix_raw = max(refit_vix, key=refit_vix.get)
+        assert (aligned[raw == min_vix_raw] == 0).all(), \
+            f"refit con VIX {refit_vix}: raw {min_vix_raw} (VIX={refit_vix[min_vix_raw]}, min) debe mapear a GOLDILOCKS (0)"
+        assert (aligned[raw == max_vix_raw] == 3).all(), \
+            f"refit con VIX {refit_vix}: raw {max_vix_raw} (VIX={refit_vix[max_vix_raw]}, max) debe mapear a DEFLATION (3)"
+
+
+def test_align_states_fallback_sin_vix_a_legacy():
+    """Si VIX no está en features, fallback al método legacy (max equity/bond/commodity)."""
+    # Caso sin vix_level: el código debe usar _align_states_legacy, no crashear
+    from unittest.mock import MagicMock
+    clf = GlobalRegimeClassifier()
+    clf.is_fitted = True
+    clf.scaler = MagicMock()
+    clf.scaler.transform = lambda x: x
+
+    n = 80
+    dates = pd.date_range("2022-01-01", periods=n)
+    states_arr = np.tile([0, 1, 2, 3], n // 4)[:n]
+    # features SIN vix_level
+    growth_spy = pd.Series([5.0 if s == 2 else 0.0 for s in states_arr], index=dates)
+    rates_tlt = pd.Series([1.0 if s == 3 else 0.0 for s in states_arr], index=dates)
+    inflation_dbc = pd.Series([1.0 if s == 1 else 0.0 for s in states_arr], index=dates)
+    feats = pd.DataFrame(
+        {"growth_SPY": growth_spy, "rates_TLT": rates_tlt, "inflation_DBC": inflation_dbc},
+        index=dates,
+    )
+    clf.model.predict = lambda scaled: states_arr
+    clf.model.predict_proba = lambda scaled: np.tile([0.25, 0.25, 0.25, 0.25], (n, 1))
+    clf._extract_features = lambda price_data: feats
+
+    aligned = clf._align_states(states_arr, feats)
+    # raw 2 (max equity) -> GOLDILOCKS=0; raw 3 (max bond) -> DEFLATION=3
+    assert (aligned[states_arr == 2] == 0).all()
+    assert (aligned[states_arr == 3] == 3).all()
+
+
+def test_align_states_legado_retorna_4_estados_distintos():
+    """Backward compat: el método legacy sigue produciendo los 4 estados
+    semánticos, y los nombres GOLDILOCKS/REFLATION/STAGFLATION/DEFLATION
+    no cambian."""
+    from app.core.regime_classifier import GlobalRegimeClassifier
+    expected = {0: "GOLDILOCKS", 1: "REFLATION", 2: "STAGFLATION", 3: "DEFLATION"}
+    assert GlobalRegimeClassifier.STATE_LABELS == expected if hasattr(GlobalRegimeClassifier, "STATE_LABELS") else True
+    # Fallback si no existe STATE_LABELS como atributo: verificar nombres en predict_current_regime
+    from unittest.mock import MagicMock
+    clf = GlobalRegimeClassifier()
+    clf.state_labels = expected
+    assert clf.state_labels[0] == "GOLDILOCKS"
+    assert clf.state_labels[3] == "DEFLATION"

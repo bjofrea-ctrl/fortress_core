@@ -49,9 +49,78 @@ class GlobalRegimeClassifier:
         return pd.DataFrame(features).ffill().dropna()
 
     def _align_states(self, states: np.ndarray, features: pd.DataFrame) -> np.ndarray:
+        """Renombra raw states del HMM a etiquetas semánticas ESTABLES entre
+        refits (FIX B6, MAPEO_ESTADOS_HMM.md §2-3).
+
+        Problema original: el método usaba `max(metrics, key=...)` sobre
+        equity/bond/commodity. Eso depende del ranking de cada refit — entre
+        refits trimestrales (WalkForwardRegimeGate recalibra cada 63d), el
+        mismo raw state podía terminar mapeado a GOLDILOCKS en un refit y a
+        DEFLATION en otro, aunque el perfil económico subyacente fuera el mismo.
+        Consecuencia: el gate de régimen observaba "switches" que eran
+        reordenamientos arbitrarios del HMM, no cambios reales.
+
+        Convención nueva: ordenar raw states por **VIX medio ascendente**
+        (VIX bajo = bull, VIX alto = bear) y asignar por rank con **SPY60d
+        descendente como tie-breaker** para los rangos 1/2. Robusto en 4 refits
+        empíricos (2015-2026, 2020-2026, 2015-2019, 2018-2026): los rangos 0
+        y 3 son estables (bull/bear), los rangos 1/2 son intercambiables
+        entre REFLATION y STAGFLATION según la muestra — aceptable porque esos
+        rangos no son críticos para gates operacionales.
+
+        Returns:
+            Array de la misma longitud que `states` con valores en {0, 1, 2, 3}:
+            0 = GOLDILOCKS, 1 = REFLATION, 2 = STAGFLATION, 3 = DEFLATION.
+        """
         if len(states) < 50:
             return states
 
+        # Necesitamos VIX para el criterio de orden. Si no está, fallback al
+        # método original (mantiene backward compat sin datos macro completos).
+        if "vix_level" not in features.columns:
+            return self._align_states_legacy(states, features)
+
+        # Calcular VIX medio y SPY 60d medio por raw state
+        vix_by_state = {}
+        spy_by_state = {}
+        for s in range(self.n_states):
+            mask = states == s
+            if mask.sum() == 0:
+                continue
+            vix_by_state[s] = float(features.loc[mask, "vix_level"].mean())
+            spy_by_state[s] = float(
+                features.loc[mask, "growth_SPY"].mean()
+                if "growth_SPY" in features.columns
+                else 0.0
+            )
+
+        if len(vix_by_state) < 2:
+            return states  # no hay suficientes estados para reordenar
+
+        # Ordenar raw states por VIX ascendente; desempate por SPY60d descendente
+        sorted_states = sorted(
+            vix_by_state.keys(),
+            key=lambda s: (vix_by_state[s], -spy_by_state[s]),
+        )
+
+        # Asignar etiquetas semánticas por rank
+        remap = {sorted_states[0]: 0}  # rank 0 = VIX más bajo = GOLDILOCKS
+        if len(sorted_states) > 1:
+            remap[sorted_states[1]] = 1  # rank 1 = REFLATION
+        if len(sorted_states) > 2:
+            remap[sorted_states[2]] = 2  # rank 2 = STAGFLATION
+        if len(sorted_states) > 3:
+            remap[sorted_states[3]] = 3  # rank 3 = VIX más alto = DEFLATION
+
+        return np.array([remap.get(int(s), int(s)) for s in states])
+
+    def _align_states_legacy(self, states: np.ndarray, features: pd.DataFrame) -> np.ndarray:
+        """Método original (pre-B6): max(metrics) sobre equity/bond/commodity.
+        Se mantiene como fallback para cuando VIX no está disponible en features
+        (e.g. datos de prueba sin VIX). El bug B6 es conocido y aceptable
+        solo en este fallback — el camino normal tiene VIX siempre
+        (vía `_extract_features`).
+        """
         metrics = {}
         for s in range(self.n_states):
             mask = states == s
@@ -62,16 +131,13 @@ class GlobalRegimeClassifier:
                 "bond": features.get("rates_TLT", pd.Series(0, index=features.index)).values[mask].mean(),
                 "commodity": features.get("inflation_DBC", pd.Series(0, index=features.index)).values[mask].mean(),
             }
-
         if len(metrics) < 4:
             return states
-
         goldilocks = max(metrics, key=lambda s: metrics[s]["equity"])
         deflation = max(metrics, key=lambda s: metrics[s]["bond"])
         reflation = max(metrics, key=lambda s: metrics[s]["commodity"])
         remaining = [s for s in metrics if s not in (goldilocks, deflation, reflation)]
         stagflation = remaining[0] if remaining else 2
-
         remap = {goldilocks: 0, reflation: 1, stagflation: 2, deflation: 3}
         return np.array([remap.get(s, s) for s in states])
 
