@@ -169,6 +169,39 @@ momentum_12_1 low  +12.56% [11.79,13.34] low>>high
 
 Tablas completas no truncadas están en `/tmp/ingenieria_raw.txt`; este md muestra solo el esqueleto para no duplicar 330 líneas.
 
+## 8b. Timeline completo NVDA momentum — decaimiento gradual 10y→2y (hallazgo de chat preservado con evidencia)
+
+**Contexto**: en el chat se reportó solo 10y y 2y para NVDA momentum 20d. Boris pidió la línea completa 7y y 5y para ver si la reversión aparece de golpe o es gradual. Esta sección preserva esa lectura con los números ya calculados en `/tmp/ingenieria_raw.txt` (mismo script `ingenieria_inversa.py`, sin recalcular).
+
+**Tablas completas NVDA `momentum_12_1` (misma métrica, mismos terciles propios por ventana, bootstrap 1000, fwd_ret bruto)**
+
+*20d (corto, mensual)*
+
+| Ventana | n | low | mid | high | q33/q66 | diff high-low |
+|---------|---|-----|-----|------|---------|---------------|
+| **10y** 2016-09-01→2026-07-23 | 2485 | **+4.09% [3.13,5.08]** n=828 | +4.11% [3.14,5.02] n=828 | **+6.58% [5.70,7.45]** n=829 | 48.21/140.65 | **+2.49pp SÍ** high>low |
+| **7y** 2019-09-03→ | 1731 | **+6.16% [5.01,7.29]** n=577 | +4.74% [3.51,5.95] n=577 | +5.55% [4.54,6.54] n=577 | 46.29/128.42 | +0.61pp NO (CIs solapados 5.01-7.29 vs 4.54-6.54) |
+| **5y** 2021-09-01→ | 1227 | **+5.61% [4.28,7.03]** n=409 | +3.18% [1.61,4.73] n=409 | **+5.65% [4.36,7.04]** n=409 | 36.14/134.94 | +0.04pp NO (low≈high, mid peor) |
+| **2y** 2024-09-03→ | 473 | **+6.32% [4.72,7.91]** n=158 | +1.56% [0.33,2.85] n=157 | +1.45% [-0.07,2.95] n=158 | 36.46/66.58 | **-4.87pp SÍ low>>high (reversión)** |
+
+*60d (largo, trimestral) — mismo indicador, mismo bucketeo, mayor horizonte*
+
+| Ventana | low | mid | high | diff high-low |
+|---------|-----|-----|------|---------------|
+| **10y** | +17.23% [15.21,19.04] n=815 | +9.28% [7.74,11.01] n=815 | **+19.92% [18.24,21.64]** n=815 | +2.69pp |
+| **7y** | **+23.23% [20.98,25.61]** n=564 | +12.25% [10.39,14.04] n=563 | +16.33% [14.09,18.60] n=564 | -6.90pp low>high |
+| **5y** | **+23.16% [20.34,26.10]** n=396 | +4.66% [2.42,6.85] n=395 | +17.15% [14.46,19.95] n=396 | -6.01pp low>high, mid colapsa |
+| **2y** | **+20.10% [16.79,23.44]** n=144 | +8.83% [7.05,10.70] n=144 | **-3.89% [-6.23,-1.64]** n=145 | **-23.99pp SÍ, high negativo** |
+
+**Lectura preservada (chat 22:4x): decaimiento gradual, no quiebre, más temprano y profundo en 60d que en 20d**
+
+- **Gradual, no golpe**: 10y muestra continuación (high>low en 20d, high≈low>mid en 60d). 7y y 5y se aplanan (20d: low≈high, CIs solapados; 60d: low>high pero mid sigue peor — forma en U). 2y revierte violentamente (20d low>>high +4.87pp SÍ; 60d low +20% vs high -3.9% **SÍ con signo negativo**). La transición es escalonada 10y→7y→5y→2y, no un salto 10y→2y.
+- **60d anticipa el giro**: en 7y el 60d ya es low>high (-6.9pp) mientras el 20d aún es plano (NO). En 5y el 60d ya tiene mid colapsado (+4.66% vs low +23%) mientras el 20d aún es low≈high. En 2y el 60d lleva high a territorio negativo (-3.89% con CI que no incluye 0) mientras el 20d apenas lo lleva a ~1.45% neutro. El horizonte largo revela la reversión una ventana antes y con mayor magnitud.
+- **q33/q66 propios cambian**: NVDA momentum terciles 48/141 en 10y → 46/128 en 7y → 36/135 en 5y → 36/67 en 2y. La distribución se comprime en 2y (bull estrecho), pero el bucketeo es siempre intra-ventana, así que la comparación low/high es válida dentro de cada ventana.
+- **Implicancia**: no hay un "momentum funciona / no funciona" binario. NVDA vivió continuación débil en 10y, aplanamiento en 7y/5y y reversión en 2y — y esa reversión se ve primero y más fuerte a 60d. Cualquier trial futuro que use momentum debe especificar ventana y horizonte por separado; pooled 10y ocultaría la heterogeneidad.
+
+Fuente: `/tmp/ingenieria_raw.txt:1-40` (líneas NVDA), sin recalcular, solo reorganizado en tabla.
+
 ## 9. Qué sigue (si algo promete)
 
 - Si se decide pre-registrar, elegir **una** celda primaria antes de mirar el resto (ej. NVDA 10y 20d momentum high vs low) y fijar umbral, horizonte y ventana en el pre-registro. El resto va como exploratorio, no como confirmatorio.
