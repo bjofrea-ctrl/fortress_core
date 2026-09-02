@@ -211,3 +211,35 @@ que consume los `state_name`.
 | Riesgos documentados | §4 de este doc |
 | No toca el ledger | Confirmado (solo `regime_classifier.py` + tests) |
 | No toca el motor de señales | Confirmado (el HMM es upstream del motor) |
+
+---
+
+## 7. Regresión conocida y resolución (2026-09-02) — NO reintroducir
+
+**Contexto**: el commit del fix B6 (`dd1d6c1`) rompió 3 tests de lag en
+`test_backtest_engine.py` (`test_entrada_con_lag_1...`, `test_entrada_con_lag_0...`,
+`test_salida_con_lag_1...`): el backtest pasó de 1 trade a 0 trades.
+
+**Causa raíz (verificada contra el refit real)**: `_market_data()` en esos tests
+arma el MISMO dataframe sintético para los 9 tickers macro
+(SPY/EFA/QQQ/GLD/DBC/TIP/TLT/AGG/^VIX). Con features de retorno idénticas,
+`_align_states_legacy` colapsaba: los 3 `max(metrics, key=...)` devolvían el mismo
+raw state y el dict literal `{g:0, r:1, st:2, d:3}` quedaba con keys duplicadas
+(gestionadas por el intérprete a favor de la última) → el raw state del día de
+señal quedaba FUERA del remap y mantenía su id → 2 (STAGFLATION, no bloqueante)
+**por accidente del bug**. Con VIX ascendente ese mismo día cae en 3 (DEFLATION)
+y el gate `regime_state == 3` de `signal_engine.generate_signal` lo bloquea —
+comportamiento CORRECTO del motor ante un régimen distinto.
+
+**Decisión**: el alineamiento por VIX es correcto (fix B6 se mantiene). Los tests
+de lag verifican la MECÁNICA de ejecución (T0.2), no el régimen: sobre un panel
+degenerado el régimen es arbitrario. La resolución fue fijar la ENTRADA de régimen
+del motor a GOLDILOCKS (0) en `_run()` de `test_backtest_engine.py` (parcheando
+`predict_current_regime`), dejando intactos `signal_engine`, la elegibilidad y el
+fit HMM real. Ver commit `2ab6658`.
+
+**Lección para agentes futuros**: si un test que NO prueba régimen empieza a
+fallar por el mapeo de `_align_states`, verificar primero si el panel del test es
+degenerado (tickers idénticos). NO debilitar el gate (`regime_state == 3`) ni
+reintroducir el orden legacy — aislar la entrada de régimen en el test.
+
