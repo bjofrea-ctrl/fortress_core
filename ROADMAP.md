@@ -43,9 +43,12 @@ Cline como implementadores). Verificar contra `git log --oneline -10`,
    ninguno depende de investigación nueva): F0 de la auditoría (bugs, no
    decisiones), el colector intradía I3, telemetría de ejecución I9, y
    cerrar lo que ya estaba abierto antes de esta regla (mapeo HMM B6,
-   inventario de series para el SPA, comparación PBO §39 vs §40 — pendiente
-   de decisión de Boris). Nada de esto consume el tiempo del gate; el gate
-   lo consume solo el paper trading corriendo solo, todos los días.
+   inventario de series para el SPA — cerrado, ver hallazgo abajo, latido
+   de datos I-heartbeat). PBO vigente: **§39 (0.2358) cerrado como oficial
+   2026-09-02** (ver `PLAN_MEJORA_MATEMATICA.md §40.1`) — §40 (0.4688)
+   queda citado con limitación, no revocado. Nada de esto consume el tiempo
+   del gate; el gate lo consume solo el paper trading corriendo solo, todos
+   los días.
 
 1. **A6.3 — screening PALA/RESTO/POOLED** — 🟢 trial original CERRADO
    (29/08, `COMPLETED`/`NO_CUMPLE`, ver §12 de `PRE_REGISTRO_SCREENING_PALAS.md`).
