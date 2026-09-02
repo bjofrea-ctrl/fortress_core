@@ -202,16 +202,26 @@ def test_summarize_vacio_es_error_ruidoso():
 # AlpacaPaperClient — cliente real, con sesión fake (sin red).
 # --------------------------------------------------------------------------- #
 def test_cliente_exige_credenciales(monkeypatch):
+    from app.config import settings
+
     monkeypatch.delenv("ALPACA_PAPER_API_KEY", raising=False)
     monkeypatch.delenv("ALPACA_PAPER_SECRET_KEY", raising=False)
+    monkeypatch.setattr(settings, "ALPACA_PAPER_API_KEY", "")
+    monkeypatch.setattr(settings, "ALPACA_PAPER_SECRET_KEY", "")
     with pytest.raises(ConfigurationError):
         AlpacaPaperClient(base_url=BASE_URL)
 
 
 def test_cliente_usa_env_vars(monkeypatch):
+    from app.config import settings
+
     monkeypatch.setenv("ALPACA_PAPER_API_KEY", "env-key")
     monkeypatch.setenv("ALPACA_PAPER_SECRET_KEY", "env-secret")
+    # Parchear settings a valores falsos explícitos para no depender del .env real
+    monkeypatch.setattr(settings, "ALPACA_PAPER_API_KEY", "fake-test-key")
+    monkeypatch.setattr(settings, "ALPACA_PAPER_SECRET_KEY", "fake-test-secret")
     c = AlpacaPaperClient(base_url=BASE_URL)
+    # Precedencia: env var runtime > settings/.env
     assert c.api_key == "env-key"
     assert c.secret_key == "env-secret"
 

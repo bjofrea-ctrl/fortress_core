@@ -70,15 +70,16 @@ class AlpacaPaperClient:
         market_data_base_url: str = "",
         session: Any = None,
     ) -> None:
-        # Credenciales vía settings (pydantic lee backend/.env) — os.environ solo
-        # como fallback para compatibilidad; el cron de launchd no exporta env y
-        # fallaba con os.environ.get directo aunque .env sí tenía las keys.
-        self.api_key = api_key or settings.ALPACA_PAPER_API_KEY or os.environ.get("ALPACA_PAPER_API_KEY", "")
-        self.secret_key = secret_key or settings.ALPACA_PAPER_SECRET_KEY or os.environ.get("ALPACA_PAPER_SECRET_KEY", "")
+        # Precedencia: arg constructor > env var runtime > settings/.env.
+        # Una env var puesta en el momento debe pisar el default del .env
+        # commiteado; el orden anterior (settings antes que env) rompía tests
+        # que hacen monkeypatch.setenv para simular credencial distinta.
+        self.api_key = api_key or os.environ.get("ALPACA_PAPER_API_KEY", "") or settings.ALPACA_PAPER_API_KEY
+        self.secret_key = secret_key or os.environ.get("ALPACA_PAPER_SECRET_KEY", "") or settings.ALPACA_PAPER_SECRET_KEY
         self.base_url = (
             base_url
-            or settings.ALPACA_PAPER_BASE_URL
             or os.environ.get("ALPACA_PAPER_BASE_URL", "")
+            or settings.ALPACA_PAPER_BASE_URL
             or DEFAULT_PAPER_BASE_URL
         )
         # ALPACA_MARKET_DATA_BASE_URL no está en Settings (solo paper base),
