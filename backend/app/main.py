@@ -19,6 +19,7 @@ from app.api.routes import (
     ranking,
     risk,
     system,
+    trades,
 )
 from app.config import settings
 from app.models.database import engine, init_db
@@ -55,6 +56,7 @@ app.include_router(advisor.router)
 app.include_router(costs.router)
 app.include_router(ranking.router)
 app.include_router(fundamentals_screen.router)
+app.include_router(trades.router)
 
 
 @app.middleware("http")

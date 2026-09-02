@@ -36,7 +36,7 @@ export default function PortfolioPage() {
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
         <div className="xl:col-span-2 bg-dark-card border border-dark-border rounded p-3">
-          <h3 className="text-xs font-bold uppercase text-tv-dim mb-2 tracking-wide">Trades (verificación #10)</h3>
+          <h3 className="text-xs font-bold uppercase text-tv-dim mb-2 tracking-wide">Trades — Backtest + Paper (real)</h3>
           <TradesTable apiUrl={API_URL} />
         </div>
         <div className="space-y-4">
