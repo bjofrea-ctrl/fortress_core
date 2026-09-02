@@ -26,7 +26,7 @@ import sqlite3
 import time
 from dataclasses import dataclass
 from datetime import datetime, timezone
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import numpy as np
 import requests
@@ -149,6 +149,57 @@ class AlpacaPaperClient:
             row["symbol"] = row.get("symbol", "").replace(".", "-")
             out.append(row)
         return out
+
+    def get_bars(
+        self,
+        symbol: str,
+        timeframe: str = "1Min",
+        start: str = "",
+        end: str = "",
+        limit: int = 10000,
+        feed: str = "iex",
+        adjustment: str = "raw",
+    ) -> List[Dict[str, Any]]:
+        """Barras OHLCV 1-min (o timeframe genérico) — solo lectura, sin costo extra.
+
+        Host de DATOS (data.alpaca.markets), endpoint
+        `GET /v2/stocks/{symbol}/bars?timeframe=1Min&start=...&end=...`.
+        `start`/`end` en RFC3339 UTC (ej. 2024-01-01T00:00:00Z). Paginada vía
+        `next_page_token` hasta agotar. `feed=iex` es gratis en paper; `sip`
+        requiere suscripción. Traduce BRK-B → BRK.B solo en el borde HTTP.
+
+        Usado por el colector intradía I3 (acumulación 1-min) — no toca trading.
+        """
+        params: Dict[str, Any] = {
+            "timeframe": timeframe,
+            "limit": limit,
+            "adjustment": adjustment,
+            "feed": feed,
+        }
+        if start:
+            params["start"] = start
+        if end:
+            params["end"] = end
+        bars: List[Dict[str, Any]] = []
+        page_token: Optional[str] = None
+        while True:
+            if page_token:
+                params["page_token"] = page_token
+            resp = self._session.get(
+                f"{self.market_data_base_url}/v2/stocks/{self._alpaca_symbol(symbol)}/bars",
+                params=params,
+                timeout=DEFAULT_TIMEOUT_SECONDS,
+            )
+            resp.raise_for_status()
+            payload = resp.json()
+            chunk = payload.get("bars") or []
+            bars.extend(chunk)
+            page_token = payload.get("next_page_token")
+            if not page_token:
+                break
+            if len(chunk) == 0:
+                break
+        return bars
 
     def submit_market_order(self, symbol: str, qty: float, side: str) -> Dict[str, Any]:
         """Manda una orden MARKET de PAPER y devuelve el JSON de la orden ya fillada.
