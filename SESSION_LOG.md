@@ -3017,3 +3017,18 @@ Ninguna fortress.db del repo tiene hoy la tabla `signal_ledger` — el pipeline 
 
 ### Docs
 README.md tabla de endpoints actualizada con `/api/trades/combined`.
+
+### Corrección post-commit (mismo día, feedback de Boris sobre la DB real de main)
+Boris probó `/api/trades/combined` contra la DB real y encontró **2 filas de CHECKPOINT**
+(MSFT/AAPL, 26-27 ago, signal_id prefijo `chkpt__`, exit_reason `OVERRIDE_MECANISMO — no es señal real`)
+apareciendo bajo `origin='paper'` con el mismo badge PAPER que una señal real — rompía la regla
+de nunca mezclar sin etiqueta. **Fix commit `57a4c66`**:
+- `_read_ledger_trades()` ahora filtra en SQL: `WHERE signal_id NOT LIKE 'chkpt__%'`
+  (constante `CHECKPOINT_SID_PREFIX` duplicando la convención de `pipeline_daily_signal.py:139`).
+- Decisión (criterio: vista de "operaciones reales"): **excluirlas por defecto**, no
+  etiquetarlas — son validación del mecanismo del tubo, no trades. `paper_total` solo cuenta
+  filas reales (la leyenda del frontend no miente).
+- Test nuevo `test_excluye_checkpoint_override_de_operaciones_reales`: siembra una fila
+  `chkpt__MSFT__2026-08-26` en el fixture y verifica que no aparece en `/combined` ni en
+  `paper_total`; las 3 reales sí. Suite `test_trades_api.py`: **9/9 passed**, ruff limpio.
+
