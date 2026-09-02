@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 import numpy as np
 import pandas as pd
@@ -682,7 +682,7 @@ class BacktestEngine:
         }
 
     def monte_carlo_simulation(self, trades: List[Dict], equity_curve: List[Dict] = None,
-                               n_sims: int = 1000) -> Dict:
+                               n_sims: int = 1000, seed: Optional[int] = 42) -> Dict:
         """
         Combina dos Monte Carlo distintos, no uno reemplaza al otro:
         - bootstrap: resamplea el PNL de los trades ya ocurridos (testea
@@ -690,16 +690,31 @@ class BacktestEngine:
         - fat_tail: simula retornos DIARIOS con t-Student (colas más gruesas
           que la normal) y da VaR/ES vía Cornish-Fisher — testea la
           MAGNITUD de escenarios que todavía no se observaron en el backtest.
+
+        Args:
+            seed: Semilla del RNG local (np.random.default_rng). Mismo patrón
+                que `circular_block_bootstrap_ci` en probabilistic_engine.py:754
+                (T2.2). Con seed fijo la función es determinista (requisito de
+                reproducibilidad en tests y en re-ejecuciones del backtest).
+                `None` → no determinista.
         """
         pnls = [t["pnl"] for t in trades]
         bootstrap = {}
         if pnls:
-            results = [np.sum(np.random.choice(pnls, size=len(pnls), replace=True)) for _ in range(n_sims)]
+            pnls_arr = np.asarray(pnls, dtype=float)
+            rng = np.random.default_rng(seed)
+            # Mismo patrón que T2.2: default_rng(seed) en vez de np.random.choice
+            # (que usa el global state y no es reproducible). Vectorizado: una
+            # sola llamada a rng.choice con n_sims×len(pnls) reemplaza el
+            # list-comprehension de n_sims invocaciones a np.random.choice.
+            sample_idx = rng.integers(0, len(pnls_arr), size=(n_sims, len(pnls_arr)))
+            results = pnls_arr[sample_idx].sum(axis=1)
             bootstrap = {
                 "mean": float(np.mean(results)),
                 "p5": float(np.percentile(results, 5)),
                 "p95": float(np.percentile(results, 95)),
                 "prob_loss": float(np.mean(np.array(results) < 0)),
+                "seed": seed,
             }
 
         fat_tail = {}
