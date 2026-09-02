@@ -23,8 +23,15 @@ Cline como implementadores). Verificar contra `git log --oneline -10`,
    importante de todo este documento, léela antes que cualquier otra cosa.
    **Cero hipótesis nuevas, cero pilotos nuevos, cero frentes de investigación
    nuevos hasta que el paper trading (con la contabilidad corregida de
-   `paper_trading.py`, commit `1466dcc`) acumule datos limpios.** Fecha de
-   evaluación: **2026-12-01** (90 días desde hoy). Criterio pre-declarado —
+   `paper_trading.py`, commit `1466dcc`) acumule datos limpios.**
+   **Precondición (agregada 2026-09-02 tras revisión GLM): la fecha mide
+   TIEMPO LIMPIO, no calendario** — exige ≥60 días de pipeline 3×/día
+   corriendo SIN interrupciones con la contabilidad corregida vigente. Si
+   el colector/pipeline tiene una semana muerta entre hoy y la fecha, la
+   evaluación corre hasta completar los 60 días limpios — no se decide con
+   menos del único activo que el gate necesita. Fecha de
+   evaluación: **2026-12-01, o más tarde si faltan días limpios** (90 días
+   es el piso, no el techo). Criterio pre-declarado —
    el mismo estándar que ya rige todos los trials formales del proyecto, no
    uno nuevo más permisivo: **DSR≥0.90 en ≥2/3 ventanas**. Si a esa fecha
    nada cruza el umbral: se decide CON DATOS entre (a) reducir el proyecto a
