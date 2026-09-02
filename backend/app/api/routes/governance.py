@@ -139,6 +139,9 @@ async def analyze_with_governance(symbol: str, regime_state: int = Query(0, ge=0
             "symbol": symbol.upper(),
             "flow": "TRIAD → CONTROLLER ↔ PROFESSOR → JUDGE",
             "predictive": {
+                # Identidad del motor (NUEVO, F0.2 — propagado desde _serialize_result)
+                "motor": result.motor,                          # "heuristico_no_validado"
+                "probabilidades_calibradas": result.probabilidades_calibradas,  # False
                 "composite_score": result.composite_score,
                 "decision": result.decision,
                 "prob_up_short": result.prob_up_short,
