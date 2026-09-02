@@ -10,7 +10,12 @@ Code, Cline, OpenCode), leer este documento primero. Al cerrar, actualizarlo ant
 — marcar lo que se cerró, agregar lo que apareció nuevo. Ningún ítem se da por cerrado sin
 marcarlo acá, aunque se haya resuelto "de pasada" en otra conversación.
 
-Última actualización: 2026-08-28 (noche).
+Última actualización: 2026-09-02.
+
+**⏱️ CONTADOR DEL GATE — día 1/60 limpio, arrancado 2026-09-02.** Universo 102
+confirmado en vivo desde hoy (corrida 09:35 ya lo usó). Actualizar esta línea a mano
+cada vez que se verifique un día limpio (ver definición en regla 0) — es el
+contador visible que sostiene la regla, no una formalidad.
 
 ## PENDIENTE AHORA — chequear primero, antes de leer el resto
 
@@ -31,7 +36,17 @@ Cline como implementadores). Verificar contra `git log --oneline -10`,
    evaluación corre hasta completar los 60 días limpios — no se decide con
    menos del único activo que el gate necesita. Fecha de
    evaluación: **2026-12-01, o más tarde si faltan días limpios** (90 días
-   es el piso, no el techo). Criterio pre-declarado —
+   es el piso, no el techo). **Definición de "día limpio" (fijada 2026-09-02,
+   ANTES de que haga falta, para que el 1/12 no sea debate)**: cuenta si Y
+   SOLO SI las 3 condiciones se cumplen ese día hábil — (a) `pipeline_diario.log`
+   muestra `rc=0` en sus 3 corridas programadas (9:35/15:40/22:10 ET); (b)
+   `data_updater.log` sin línea `PRECIOS: ERROR`; (c) `reconcile_open_positions`
+   corrió sin dejar órdenes huérfanas con `pnl_r` sin explicar (ver
+   `paper_trading.py` commit `1466dcc`). Un día que falla cualquiera de las 3
+   NO cuenta y no rompe la racha retroactivamente — solo no suma. Universo:
+   **102 confirmado en vivo desde 2026-09-02** (corrida 09:35 ya lo usó, sin
+   paso de migración pendiente) — el contador no espera nada más para
+   arrancar. Criterio pre-declarado —
    el mismo estándar que ya rige todos los trials formales del proyecto, no
    uno nuevo más permisivo: **DSR≥0.90 en ≥2/3 ventanas**. Si a esa fecha
    nada cruza el umbral: se decide CON DATOS entre (a) reducir el proyecto a
