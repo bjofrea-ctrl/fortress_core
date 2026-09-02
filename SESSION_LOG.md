@@ -1,5 +1,40 @@
 # Fortress Core — Memoria de Sesiones (Última sesión resumida)
 
+## 2026-09-02 — Fix B6: regresión en 3 tests de lag, causa raíz y resolución (Cline)
+
+**Qué**: el commit `dd1d6c1` (fix B6, `_align_states` por VIX ascendente) rompió
+3 tests de `test_backtest_engine.py` (`test_entrada_con_lag_1...`,
+`test_entrada_con_lag_0...`, `test_salida_con_lag_1...`): el backtest pasó de
+generar 1 trade a 0.
+
+**Causa raíz (verificada contra código y refits reales)**: el `_market_data()`
+de esos tests usa el MISMO dataframe sintético para los 9 tickers macro
+(SPY/EFA/QQQ/GLD/DBC/TIP/TLT/AGG/^VIX) → todas las features de retorno del HMM
+son idénticas (`growth_SPY == rates_TLT == inflation_DBC`). Con el método legacy
+(pre-B6) eso hacía que los 3 `max(metrics, ...)` colapsaran al mismo raw state y
+el dict literal `{g:0, r:1, st:2, d:3}` quedara con keys duplicadas (gana la
+última) → el raw state del día de señal (2021-05-10) NO estaba en el remap y
+quedaba en 2 (STAGFLATION, no bloqueante) **por accidente del bug**. Con el
+alineamiento nuevo (VIX ascendente, determinístico) ese día cae en 3 (DEFLATION)
+y `signal_engine.generate_signal` lo bloquea (`regime_state == 3 → None`) —
+comportamiento CORRECTO del motor, expuesto por el panel sintético degenerado.
+
+**Decisión (regla: no tocar signal_engine ni elegibilidad)**: el test verificaba
+la MECÁNICA de lag (T0.2), no el régimen. Se fija la ENTRADA de régimen del motor
+a GOLDILOCKS (0) parcheando `regime_classifier.predict_current_regime` en `_run()`
+(docstring REGIMEN explica el porqué). El fit HMM real sigue corriendo; no se toca
+ni `signal_engine` ni el criterio de elegibilidad.
+
+**Verificación**: suite completa `test_backtest_engine.py` (12) +
+`test_regime_classifier.py` (7) + `test_regime_gate.py` (9) = **28 passed** en
+299.46s, 0 failures. ruff limpio.
+
+**Próximo pendiente**: retomar Fase 4 — verificación visual del dashboard contra
+`market_view_export.xlsx` (ver `VERIFICACION_VISUAL_DASHBOARD.md`) y completar la
+revisión de los ítems restantes del ROADMAP.
+
+---
+
 ## 2026-09-01 — Verificación visual dashboard/Excel Fase 4 (CIERRE ítem 2 ROADMAP)
 
 **Qué**: se cerró el último punto abierto de la Fase 4 (ítem 2, "PENDIENTE VERIFICAR"):
