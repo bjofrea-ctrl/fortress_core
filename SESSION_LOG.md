@@ -3195,3 +3195,34 @@ la permite explícitamente); cuenta separada + tag impide contaminar el ledger o
 Secundarias B0.bis: cross-check de precios yfinance↔Alpaca al ingerir (fresness hoy mide
 antigüedad no corrección — auditado) y fund-the-moat (screening AAI como ingreso no
 correlacionado post-gate). Cronograma y dependencias actualizados en el plan.
+
+## 2026-09-03 (cierre 2) — PLAN_IMPLEMENTACION_REMEDIO_20260903.md (Kilo Code)
+
+Boris pidió el plan de implementación CON fundamentos para conversarlo con Claude Code.
+Doc nuevo (complementa PLAN_REMEDIO_BRECHAS, no lo reemplaza): especificación por ticket
+con fundamentos de diseño, 6 open questions genuinas para Claude, cronograma con orden
+interno, presupuesto (~13-17 sesiones pre-gate) y criterios verificables.
+
+Decisiones de diseño pre-declaradas en el plan (Claude las stress-testea):
+1. Racha NO retroactiva al 09-02: arranca con el freeze completo (~09-08); días previos
+   UNVERIFIED_C (honestidad > optimismo: la condición (c) era inejecutable antes de A1).
+2. A1 reconciler como WRAPPER (verifica (c) re-consultando ledger vs positions) — editar
+   paper_trading.py para cosméticos resetea el contador (regla del gate); A1 no lo toca.
+3. A3 kill-switch asimétrico: frena entradas nuevas, JAMÁS EXIT ni reconcile; rearme solo
+   manual (kill que se rearma solo no existió).
+4. A4 freeze en 2 pasos: núcleo YA (excepción: A6 bugfix antes del freeze), pipeline al
+   cierre de Fase A; racha oficial = firma del manifiesto completo.
+5. A7 enforcement: allow-list de UNA entrada (pbo39_lag0_fix, bugfix_medicion, post-gate).
+6. B0 firewall duro: SIN cuenta paper separada NO se construye (riesgo existencial para
+   el gate si un fill SHADOW toca signal_ledger). Plan de muestreo pre-declarado con
+   verificación A0 de límites Alpaca (PDT/equity/rate) ANTES del primer fill.
+7. B5 MDE umbral 0.10 pre-declarado, override de Boris por trial registrado.
+8. B6 golden bit-idéntico por consumidor migrado (pipeline PRIMERO, antes del freeze A4).
+
+Open questions para Claude: semántica 60 días (acumulados vs consecutivos — posición:
+acumulados + peor racha como contexto), freeze del pipeline (edición A interna vs
+sub-scripts cron), umbral MDE, B0 sin cuenta separada (línea dura NO-GO), A9 flag vs
+borrado, B7 ahora o post-gate.
+
+Pendiente: conversación Boris+Claude sobre las open questions → aprobación por fase →
+arranque Fase A (A6 primero, freeze del núcleo inmediatamente después).
