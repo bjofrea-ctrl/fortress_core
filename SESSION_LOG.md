@@ -3119,3 +3119,38 @@ confirmación explícita de Boris. Esta auditoría no borró ni movió nada.
 
 Pendiente para 09-04: verificar `launchctl list | rg fundamentals` + log 22:30 + artefacto
 screen_2026-09-03.json (primera corrida launchd del screening).
+
+## 2026-09-03 (tarde) — Auditoría integral del sistema, óptica Simons (Kilo Code)
+
+Encargo de Boris: auditar fortress completo (debilidades/oportunidades/amenazas), evaluar
+prompts, context, harness, loops, memory engineering, matemáticas y análisis sistemático
+de opciones, con el objetivo final de máxima rentabilidad. Solo lectura (gate activo).
+
+Método: 3 exploraciones paralelas (agentes/LLM+prompts, matemáticas vs código,
+loops+memoria) + spot-check directo de cada hallazgo crítico contra el artefacto.
+Doc: AUDITORIA_INTEGRAL_SISTEMA_20260903.md (complementa AUDITORIA_NIVEL_DIOS_20260902,
+cuya Fase 0 ya estaba ejecutada).
+
+Hallazgos críticos nuevos (verificados):
+- D1: pipeline diario NO importa la capa multi-agente — SignalEngine decide solo;
+  gobernanza LLM = fachada de dashboard. record_prediction sin caller automático (n=0).
+- D2: reconcile_open_positions SIN caller productivo → condición (c) del gate
+  ("sin órdenes huérfanas") inejecutable; el contador de días limpios mide sin verificar.
+- D3: sin kill-switch ni alertas automáticas (divergencia PnL no detiene nada).
+- D5: DSR del motor DEFAULT_N_TRIALS=5 vs 51 reales del ledger (sub-deflaciona).
+- D6: PBO §39 vigente (0.2358) entra lag-0 (close→close) vs estándar T0.2 open→close.
+- D-Opciones: presencia CERO (sin Black-Scholes/IV/griegas/cadenas) — la familia
+  de estrategias ausente entera; post-gate con yfinance options (gratis) + barras 1-min.
+- Decorativo confirmado: drift_detector sin consumidor, knowledge_repo sin embeddings
+  (17 entradas hardcodeadas, Jaccard), hardiness half muerto, REGIME_ALLOCATION sin uso.
+
+Recomendación (única línea, no menú): ANTES del gate construir el loop cerrado de
+ejecución — reconciler en pipeline health + kill-switch por divergencia + telemetría
+decision vs fill por orden (libro de costos propio) + hash-guard de motor + DSR n_trials
+unificado. Es construcción, permitida durante el gate. POST-gate: opciones (VRP/GEX/PEAD
+vía opciones) y meta-labeling (I5) como familias nuevas pre-registradas.
+
+Veredicto Simons: aparato de falsificación institucional montado sobre aparato de
+ejecución universitario; el sistema aprende a refutar hipótesis, no aprende de sus
+operaciones. Cerrar el loop primero — sin medir la propia ejecución, ninguna señal
+futura puede validarse honestamente.
