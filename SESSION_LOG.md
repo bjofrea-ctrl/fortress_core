@@ -3180,3 +3180,18 @@ Urgencia documentada: cada día sin reconciler+contador automático es un día q
 racha mide sin verificar (c) — la fecha de evaluación real es max(2026-12-01, arranque
 + 60 días VERIFICADOS). Aprobación de Boris requerida por fase (es su decisión de
 producto). Commit de este plan: docs only, cero código tocado.
+
+## 2026-09-03 (cierre) — Plan ampliado: B0 granja de ejecución fantasma (Kilo Code)
+
+Pregunta de Boris: "¿qué agregarías tú, más allá de lo pedido, para elevar la rentabilidad?".
+Adición principal al PLAN_REMEDIO_BRECHAS_20260903.md como B0 (propuesta, requiere OK de
+Boris por la segunda cuenta paper Alpaca): granja de ejecución fantasma — misma señal
+congelada, cero variantes, cuenta paper SEPARADA, órdenes chicas muestreadas a horas
+(09:35/12:00/14:00/15:30) y tamaños (1/3/10), todo taggeado SHADOW_. Convierte los 60 días
+de gate en 600-1800 fills reales (vs n=156 de todo agosto): libro de costos propio con
+curva por hora/tamaño (D3 lo necesita desde el día 1), features de fill para meta-labeling
+(D1), modelo de costos para opciones (D2). Gate-legal: telemetría I9 amplificada (Regla 0
+la permite explícitamente); cuenta separada + tag impide contaminar el ledger oficial.
+Secundarias B0.bis: cross-check de precios yfinance↔Alpaca al ingerir (fresness hoy mide
+antigüedad no corrección — auditado) y fund-the-moat (screening AAI como ingreso no
+correlacionado post-gate). Cronograma y dependencias actualizados en el plan.

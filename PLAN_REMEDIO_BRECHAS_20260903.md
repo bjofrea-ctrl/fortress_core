@@ -69,6 +69,17 @@ El contador de días limpios arrancó el 2026-09-02 con 2 condiciones verificabl
 
 ## FASE B — Acumular donde estará el edge (semanas 1-8, paralela al gate; solo datos, tooling y versionado — cero hipótesis)
 
+### B0. Granja de ejecución fantasma (PROPUESTO 2026-09-03 por Kilo — requiere OK de Boris: segunda cuenta paper Alpaca) — el dato que nadie está acumulando
+- **Qué**: `backend/scripts/shadow_executor.py` — misma señal congelada del pipeline, **cero variantes de señal, cero evaluación de retornos**, cuenta paper Alpaca SEPARADA, órdenes chicas fijas (qty 1/3/10) muestreadas a horas distintas del día (09:35, 12:00, 14:00, 15:30) sobre los 30 símbolos de B1. Todo taggeado `SHADOW_` en client_order_id. Mide por orden: fill vs decision price, latencia de fill, fills parciales, spread proxy (quotes IEX), hora del día, tamaño.
+- **Por qué es lo más palanca por dólar**: agosto midió n=156 fills en total; la granja produce **600-1800 fills reales para el 1/12** — el libro de costos propio (A5) pasa de anecdótico a estadística, con curva de costo por hora/tamaño que D3 (intradía) necesita DESDE el día 1, features de fill real para el meta-labeling (D1) y el modelo de costos que la familia opciones (D2) también requerirá. Convierte 60 días de gate muerto en el dataset más escaso del proyecto: la microestructura de nuestra propia ejecución.
+- **Gate-legal**: es telemetría de ejecución I9 amplificada — plomería, no hipótesis; el Regla 0 la permite explícitamente ("telemetría de ejecución I9"). La cuenta separada es el detalle estructural que impide contaminar el ledger oficial del gate.
+- **Verificación**: los reportes de A5 separan oficial vs SHADOW_ por tag; ningún flujo del pipeline oficial lee la cuenta shadow; kills del shadow executor no tocan el pipeline.
+- **Esfuerzo**: 1-2 sesiones + la cuenta (10 min).
+
+### B0.bis (secundarias, una línea)
+- **Validación cruzada de precios yfinance↔Alpaca al ingerir**: `check_data_freshness.sh` verifica antigüedad, no corrección (auditado 09-03: solo age/mtime); un bad tick silencioso envenena todo el aparato estadístico aguas abajo. Cross-check diario del close, flag divergencia >0.5%, alerta en el latido. ~0.5 sesión.
+- **Fund-the-moat**: el screening AAI ya produce artefactos diarios solo; si monetiza, financia los datos que son el techo real de D2/D3 (constituyentes point-in-time, data de opciones). Ingreso no correlacionado mientras el gate corre. Sin acción técnica ahora — decisión de producto de Boris a post-gate.
+
 ### B1. Colector intradía 7 → 30 líquidos (etapas 15 → 30)
 - **Qué**: extender `collect_intraday_1min.py` con lista staged (SPY, QQQ + 28 de mayor liquidez del universo 102), monitor de rate/cuota Alpaca en el propio log, rollback trivial (lista es parámetro). Al ritmo medido (auditoría 09-03): ~4MB/sem a 30 símbolos — despreciable.
 - **Por qué**: las dos señales con t>10 del proyecto son intradía; sin cross-section no hay trial futuro posible. 30 símbolos dan la potencia mínima para un diseño intradía pre-registrable post-gate.
@@ -146,13 +157,14 @@ Ya computados y validados vs Marchenko-Pastur (`rmt_factor_scores_8factors.csv` 
 
 ```
 Sem 1 (09-03→09-08):   A1→A2→A4 (arranca contador VERIFICADO) → A3, A5, A6, A7, A8, A9
-Sem 2-3:               B1 (15→30 símb) + B2 (IV diaria) + A5 acumulando telemetría
+Sem 1-2 (con OK Boris): B0 granja fantasma (cuenta paper separada) + B0.bis cross-check precios
+Sem 2-3:               B1 (15→30 símb) + B2 (IV diaria) + A5 acumulando telemetría + B0 acumulando fills SHADOW_
 Sem 2-8:               B3, B4, B5, B6, B7(opcional) — sin tocar ruta de decisión (B6 solo con golden)
 2026-12-01:            C1 (o fecha que fije contador ≥ 60 días limpios)
 Post-gate:             D1 → (D2, D4, D6 en paralelo) → D3, D5
 ```
 
-Dependencias duras: A1 antes que A2 (el contador necesita la evidencia de reconcile); A4 antes de arrancar la racha oficial (el congelamiento se firma con el manifiesto); B6 solo con golden bit-idéntico + actualización de manifiesto declarada (reinicia el contador — o se difiere al 1/12 si la equivalencia no es perfecta); D2 y D3 dependen de B2/B1 acumulando ≥ 2-3 meses de datos.
+Dependencias duras: A1 antes que A2 (el contador necesita la evidencia de reconcile); A4 antes de arrancar la racha oficial (el congelamiento se firma con el manifiesto); **B0 requiere OK explícito de Boris (segunda cuenta paper) antes de construirse**; B6 solo con golden bit-idéntico + actualización de manifiesto declarada (reinicia el contador — o se difiere al 1/12 si la equivalencia no es perfecta); D2 y D3 dependen de B2/B1/B0 acumulando ≥ 2-3 meses de datos.
 
 ## Criterios de éxito verificables (por fase)
 
