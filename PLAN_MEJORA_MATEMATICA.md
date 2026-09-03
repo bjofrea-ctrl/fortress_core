@@ -3060,7 +3060,28 @@ retorno medio mensual de la config ACTUAL debe ser positivo sin costos.
 
 **No se toca**: T1.4/RESUMEN_STOP_ESTRUCTURAL (mejora calidad por trade, informativo no promovible) y Tarea L DSR/N_eff (solo calibración) — decisión del usuario.
 
+### 40.1 RESOLUCIÓN — PBO vigente (2026-09-02, decisión de Boris)
 
+Comparación fundamentada (`COMPARACION_PBO_39_VS_MOMRSI.md`, OpenCode, revisada por
+Claude Code y aprobada por Boris): **§39 (PBO=0.2358) queda como el PBO vigente del
+proceso**. Motivo — no es preferencia por el número más cómodo, es diseño más sólido:
+(a) §39 testea 27 variantes REALES del mismo modelo (mismo espacio pesos/RSI/techo),
+§40 mapea 21 ideas heterogéneas a la grilla por PROXY — rompe la premisa de
+comparabilidad que Bailey & López de Prado exigen para CSCV; (b) §39 tiene el doble de
+potencia (T=128 vs T=80, SE menor); (c) §40 ajustó el protocolo DESPUÉS de ver que
+T=80 era insuficiente (piso MIN_T=72 post-hoc) — exactamente el patrón que la
+disciplina de pre-registro del proyecto existe para prohibir. §39 no tiene ese ajuste.
+
+**§40 no se revoca, queda citado con su limitación**: "estimación de proceso más alta
+(0.469) sobre proxies con piso T post-hoc — auditoría de proceso, no veredicto de
+diseño". Ninguna de las dos entradas del ledger se edita retroactivamente.
+
+**Nota para el futuro**: existe una tercera vía pre-registrada y NUNCA ejecutada que
+resolvería la ambigüedad de raíz sin proxies — §43 "PBO/CSCV de fidelidad completa"
+(9 candidatos reconstruidos como configuraciones ejecutables reales de
+`backtest_engine.run()`, ver §43.1-§43.8 arriba). No se corre ahora (gate de 90 días,
+`ROADMAP.md` regla 0) — queda lista para cuando el gate se abra, sin necesidad de
+re-diseñarla.
 
 ---
 

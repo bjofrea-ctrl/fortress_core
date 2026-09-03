@@ -1,0 +1,1136 @@
+# Lista de exclusión sectorial — fuente: exports del screener de InvestingPro (región USA), corte 2026-07-13
+# Sectores: Financiero (1000 mayores por capitalización) y Utilities (sector completo, 130)
+# LISTA BLANCA (se analizan normalmente por ser plataformas de pagos, no bancos): V, MA, PYPL, FISV/FI, FIS, GPN, JKHY, WEX, CPAY, TOST, XYZ (Block), FOUR (Shift4)
+ticker,name,sector
+# Clases duales: se añade el ticker hermano (A/B) de cada emisor de la lista, porque el screener
+# puede devolver una clase u otra según la configuración (p. ej. BRK.A vs BRK.B).
+AAC.U,Ares Acquisition Corp Unit,Financiero
+AACB,Artius II Acquisition Inc,Financiero
+AACI,Armada Acquisition Corp III,Financiero
+AACO,Abony Acquisition Corp I,Financiero
+AACP,Apogee Acquisition Corp,Financiero
+AAMI,Acadian Asset Management Inc,Financiero
+AB,AllianceBernstein Holding LP,Financiero
+ABCB,Ameris Bancorp,Financiero
+ABX,Abacus Global Management Inc,Financiero
+ACAA,Averin Capital Acquisition Corp,Financiero
+ACGC,ACP Holdings Acquisition Corp,Financiero
+ACGL,Arch Capital Group Ltd,Financiero
+ACGP,"""Associated Capital Group"," Inc.""",Financiero
+ACIC,American Coastal Insurance Corp,Financiero
+ACNB,ACNB Corporation,Financiero
+ACT,Enact Holdings Inc,Financiero
+ACTG,Acacia Research Corporation,Financiero
+ADAC,American Drive Acquisition Co,Financiero
+ADKT,The Adirondack Trust Company,Financiero
+AEAQ,Activate Energy Acquisition Corp,Financiero
+AEE,Ameren Corp,Utilities
+AEP,American Electric Power Company Inc,Utilities
+AEPT,American Energy Partners Inc,Utilities
+AES,The AES Corporation,Utilities
+AESP,Aeon Acquisition I Corp,Financiero
+AEXA,American Exceptionalism Acquisition Corp A,Financiero
+AFBI,Affinity Bancshares Inc,Financiero
+AFG,American Financial Group Inc,Financiero
+AFIP.A,AMFI Corp.,Financiero
+AFIP.B,AMFI Corp. Class B,Financiero
+AFL,Aflac Inc,Financiero
+AFRM,Affirm Holdings Inc,Financiero
+AGBK,AGI Inc,Financiero
+AGM,Federal Agricultural Mortgage,Financiero
+AGO,Assured Guaranty Ltd,Financiero
+AIG,American International Group Inc,Financiero
+AII,American Integrity Insurance Inc,Financiero
+AIIA,AI Infrastructure Acquisition Corp,Financiero
+AIZ,Assurant Inc,Financiero
+AJG,Arthur J Gallagher & Co,Financiero
+ALCE,Clean Earth Acquisitions Corp,Utilities
+ALDF,Aldel Financial II Inc,Financiero
+ALF,Centurion Acquisition Corp,Financiero
+ALL,Allstate Corp,Financiero
+ALLY,Ally Financial Inc,Financiero
+ALOV,Aldabra 4 Liquidity Opportunity,Financiero
+ALPI.A,Alpine Banks of Colorado Class A,Financiero
+ALPI.B,Alpine Banks of Colorado,Financiero
+ALPX,Alpex Acquisition Corp,Financiero
+ALRS,Alerus Financial Corp,Financiero
+ALTI,Alti Global Inc,Financiero
+ALTN.F,Alternus Energy Group Plc,Utilities
+ALUB,Alussa Energy Acquisition Corp II,Financiero
+AMAL,Amalgamated Bank,Financiero
+AMAN,Amanat Acquisition Corp,Financiero
+AMBK,American Bank Inc,Financiero
+AMBZ,American Business Bk,Financiero
+AMG,Affiliated Managers Group Inc,Financiero
+AMP,Ameriprise Financial Inc,Financiero
+AMSF,AMERISAFE Inc,Financiero
+AMTB,Amerant Bancorp Inc Class A,Financiero
+ANNA,AleAnna Inc,Utilities
+ANSC,Agriculture & Natural Solutions,Financiero
+ANTA,Antalpha Platform Holding Ltd,Financiero
+AON,Aon PLC,Financiero
+APAM,Artisan Partners Asset Management Inc,Financiero
+APMC,AmperCap Acquisition Co,Financiero
+APO,Apollo Global Management LLC Class A,Financiero
+APTL,Alaska Power & Telephone Company,Utilities
+APUR,Aperture AC,Financiero
+APXT,Apex Treasury Corp,Financiero
+ARBV,American Riviera Bank,Financiero
+ARCI,Archimedes Tech SPAC Partners III,Financiero
+ARCL,ARC Group Acquisition I Corp,Financiero
+ARES,Ares Management Corp Class A,Financiero
+ARMM,Current Energy and Renewables Corp.,Utilities
+AROW,Arrow Financial Corporation,Financiero
+ARTC,Art Technology Acquisition Corp,Financiero
+ARTN.A,Artesian Resources Corporation,Utilities
+ARTN.B,Artesian Resources Corporation Class B,Utilities
+ARX,Accelerant Holdings Ltd,Financiero
+ASB,Associated Banc-Corp,Financiero
+ASIC,Ategrity Specialty Holdings LLC,Financiero
+ASRE,"""Astra Energy"," Inc.""",Utilities
+ATEK,Athena Technology Acquisition Corp II,Financiero
+ATII,Archimedes Tech SPAC Partners II Co,Financiero
+ATLC,Atlanticus Holdings Corporation,Financiero
+ATLO,Ames National Corporation,Financiero
+ATO,Atmos Energy Corporation,Utilities
+AUB,Atlantic Union Bankshares Corp,Financiero
+AUBN,Auburn National Bancorporation Inc,Financiero
+AVA,Avista Corporation,Utilities
+AVBC,Avidia Bancorp Inc,Financiero
+AVBH,Avidbank Holdings Inc,Financiero
+AWK,American Water Works,Utilities
+AWR,American States Water Company,Utilities
+AWRS,All World Resources Corporation,Utilities
+AWSL,Atlantic Wind & Solar Inc,Utilities
+AX,Axos Financial Inc,Financiero
+AXG,Solowin Holdings Ltd,Financiero
+AXIN,Axiom Intelligence Acquisition,Financiero
+AXP,American Express Company,Financiero
+AXS,AXIS Capital Holdings Ltd,Financiero
+AZRE.F,Azure Power Global Ltd,Utilities
+BAC,Bank of America Corp,Financiero
+BACC,Blue Acquisition Corp,Financiero
+BANC,Banc of California Inc,Financiero
+BANF,BancFirst Corporation,Financiero
+BANR,Banner Corporation,Financiero
+BAP,Credicorp Ltd,Financiero
+BBCQ,Bleichroeder Acquisition Corp II,Financiero
+BBNA,"""Bonvenu Bancorp"," Inc.""",Financiero
+BBT,Beacon Financial Corp,Financiero
+BCAL,Southern California Bancorp,Financiero
+BCAR,D Boral ARC Acquisition I Corp,Financiero
+BCBP,BCB Bancorp Inc,Financiero
+BCCQ.U,Bleichroeder Acquisition Corp III Unit,Financiero
+BCML,BayCom Corp,Financiero
+BCON,"""Beacon Holding Company"," Inc.""",Financiero
+BCRD,Blueone Card Inc,Financiero
+BCSS,Bain Capital GSS Investment Corp,Financiero
+BCTF,Bancorp 34 Inc,Financiero
+BDCI,BTC Development Corp,Financiero
+BEAG,Bold Eagle Acquisition Corp,Financiero
+BEBE,TGE Value Creative Solutions Corp,Financiero
+BEN,Franklin Resources Inc,Financiero
+BEOB,BEO Bancorp,Financiero
+BEPC,Brookfield Renewable Corp,Utilities
+BETR,Better Home & Finance Holding Co,Financiero
+BFC,Bank First National Corp,Financiero
+BFCC,BankFirst Capital Corporation,Financiero
+BFH,Bread Financial Holdings Inc,Financiero
+BFST,Business First Bancshares Inc,Financiero
+BGC,Bgc Group Inc,Financiero
+BHAV,BHAV Acquisition Corp,Financiero
+BHB,Bar Harbor Bankshares Inc,Financiero
+BHF,Brighthouse Financial Inc,Financiero
+BHRB,Burke Herbert Financial Services Corp,Financiero
+BIDW.U,Tribeca Strategic Acquisition Corp,Financiero
+BIII,Black Spade Acquisition III Co,Financiero
+BIP,Brookfield Infrastructure Partners LP,Utilities
+BIPC,Brookfield Infrastructure Corp A,Utilities
+BIXI,Bitcoin Infrastructure Acquisition,Financiero
+BKGM,BankGuam Holding Company,Financiero
+BKH,Black Hills Corporation,Utilities
+BKKT,Bakkt Inc,Financiero
+BKSC,Bank of South Carolina Corp,Financiero
+BKU,BankUnited Inc,Financiero
+BKUT,Bank of Utica,Financiero
+BLHK,Blueharbor Bank,Financiero
+BLK,BlackRock Inc,Financiero
+BLRK,Bluerock Acquisition Corp,Financiero
+BLSH,Bullish Inc,Financiero
+BLSP,Blue Sphere Corp,Utilities
+BLUW,Blue Water Acquisition Corp III,Financiero
+BLX,Bladex Inc,Financiero
+BLZR,Trailblazer Acquisition Corp,Financiero
+BMBN,"""Benchmark Bankshares"," Inc.""",Financiero
+BMHL,Bluemount Holdings Ltd,Financiero
+BMRC,Bank of Marin Bancorp,Financiero
+BNCC,BNCCorp Inc,Financiero
+BNY,Bank of New York Mellon Corp,Financiero
+BOH,Bank of Hawaii Corporation,Financiero
+BOKF,BOK Financial Corporation,Financiero
+BORT,Bank of Botetourt,Financiero
+BOTJ,Bank of the James Financial Group,Financiero
+BOW,Bowhead Specialty Holdings Inc,Financiero
+BPOP,Popular Inc,Financiero
+BPRN,Princeton Bancorp Inc,Financiero
+BRBS,Blue Ridge Bankshares Inc,Financiero
+BREZ,Breeze Acquisition Corp II,Financiero
+BRK.A,Berkshire Hathaway Inc Class A,Financiero
+BRK.B,Berkshire Hathaway Inc Class B,Financiero
+BRKH.U,Burtech Acquisition Corp II Unit,Financiero
+BRO,Brown & Brown Inc,Financiero
+BRR,ProCap Financial Inc,Financiero
+BSBK,Bogota Financial Corp,Financiero
+BSFO,Bank of San Francisco,Financiero
+BSRR,Sierra Bancorp,Financiero
+BSSC,The Bank of Southside Virginia Corporation,Financiero
+BSVN,Bank7 Corp,Financiero
+BTGO,BitGo Holdings Inc,Financiero
+BULL,Webull Corp,Financiero
+BUR,Burford Capital Ltd,Financiero
+BUSE,First Busey Corp,Financiero
+BVFL,BV Financial Inc,Financiero
+BWB,Bridgewater Bancshares Inc,Financiero
+BWFG,Bankwell Financial Group Inc,Financiero
+BWIN,Baldwin Insurance Group Inc,Financiero
+BWIV,Blue Water Acquisition Corp IV,Financiero
+BX,Blackstone Inc,Financiero
+BY,Byline Bancorp Inc,Financiero
+BYLB,"""Boyle Bancorp"," Inc.""",Financiero
+C,Citigroup Inc,Financiero
+CAC,Camden National Corporation,Financiero
+CACC,Credit Acceptance Corporation,Financiero
+CAES,Cantor Equity Partners VII Inc,Financiero
+CAII,Collective Acquisition Corp II,Financiero
+CAQ,Cambridge Acquisition Corp,Financiero
+CARE,Carter Bank and Trust,Financiero
+CASH,Pathward Financial Inc,Financiero
+CASS,Cass Information Systems Inc,Financiero
+CATY,Cathay General Bancorp,Financiero
+CB,Chubb Ltd,Financiero
+CBAN,Colony Bankcorp Inc,Financiero
+CBBI,CBB Bancorp Inc,Financiero
+CBC,Central Bancompany,Financiero
+CBFV,CB Financial Services Inc,Financiero
+CBK,Commercial Bancgroup Inc,Financiero
+CBNA,Chain Bridge Bancorp Ltd,Financiero
+CBNK,Capital Bancorp,Financiero
+CBOE,Cboe Global Markets Inc,Financiero
+CBSH,Commerce Bancshares Inc,Financiero
+CBTN,"""Citizens Bancorp Investment"," Inc.""",Financiero
+CBU,Community Bank System Inc,Financiero
+CCAQ,Collective Acquisition Corp,Financiero
+CCB,Coastal Financial Corp,Financiero
+CCBG,Capital City Bank Group,Financiero
+CCFN,Muncy Columbia Financial Corp,Financiero
+CCII,Cohen Circle Acquisition Corp II,Financiero
+CCIX,Churchill Capital Corp IX,Financiero
+CCNB,"""Coastal Carolina Bancshares"," Inc.""",Financiero
+CCNE,CNB Financial Corporation,Financiero
+CCXI,Churchill Capital Corp XI,Financiero
+CDZI,Cadiz Inc,Utilities
+CEG,Constellation Energy Corp,Utilities
+CEPF,Cantor Equity Partners IV Inc,Financiero
+CEPO,Cantor Equity Partners I Inc,Financiero
+CEPS,Cantor Equity Partners VI Inc,Financiero
+CEPV,Cantor Equity Partner V Corp,Financiero
+CFBK,CF Bankshares Inc,Financiero
+CFFI,C&F Financial Corporation,Financiero
+CFFN,Capitol Federal Financial Inc,Financiero
+CFG,Citizens Financial Group Inc,Financiero
+CFR,Cullen/Frost Bankers Inc,Financiero
+CFSU,Complete Fin Solu,Financiero
+CG,Carlyle Group Inc,Financiero
+CGCF.U,Cartesian Growth IV Corp,Financiero
+CGEI,CGE Energy Inc,Utilities
+CHAR,Charlton Aria Acquisition Corp,Financiero
+CHBH,Croghan Bancshares Inc,Financiero
+CHCO,City Holding Company,Financiero
+CHEC,Chenghe Acquisition III Co,Financiero
+CHMG,Chemung Financial Corp,Financiero
+CHPG,ChampionsGate Acquisition Corp,Financiero
+CHYM,Chime Financial Inc,Financiero
+CIA,Citizens Inc,Financiero
+CINF,Cincinnati Financial Corporation,Financiero
+CION,Cion Investment Corp,Financiero
+CIVB,Civista Bancshares Inc,Financiero
+CLBK,Columbia Financial Inc,Financiero
+CLBR,Colombier Acquisition Corp III,Financiero
+CLIR.F,Clearford Water Systems Inc.,Utilities
+CLUS,Cluster Group Holdings Limited Co.,Financiero
+CME,CME Group Inc,Financiero
+CMHF,"""Community Heritage Financial"," Inc.""",Financiero
+CMII,Columbus Circle Capital Corp II,Financiero
+CMNR,"""Commerce Energy Group"," Inc.""",Utilities
+CMRB,First Commerce Bank,Financiero
+CMS,CMS Energy Corporation,Utilities
+CMTV,Community Bancorp,Financiero
+CNA,CNA Financial Corporation,Financiero
+CNBB,Cnb Community Bancorp Inc,Financiero
+CNBP,Cornerstone Bancorp Inc.,Financiero
+CNBW,CNB Corp.,Financiero
+CNCK,Coincheck Group NV,Financiero
+CNER,China New Energy Group Company,Utilities
+CNND,Canandaigua National Corporation,Financiero
+CNNE,Cannae Holdings Inc,Financiero
+CNO,CNO Financial Group Inc,Financiero
+CNOB,ConnectOne Bancorp Inc,Financiero
+CNP,CenterPoint Energy Inc,Utilities
+CNS,Cohen & Steers Inc,Financiero
+CODI,Compass Diversified Holdings,Financiero
+COF,Capital One Financial Corporation,Financiero
+COFS,ChoiceOne Financial Services Inc,Financiero
+COIN,Coinbase Global Inc,Financiero
+COLB,Columbia Banking System Inc,Financiero
+COPL,Copley Acquisition Corp,Financiero
+COSO,Coastalsouth Bancshares Inc,Financiero
+CPF,Central Pacific Financial Corp,Financiero
+CPK,Chesapeake Utilities Corporation,Utilities
+CPKF,Chesapeake Finl Shs,Financiero
+CPSS,Consumer Portfolio Services Inc,Financiero
+CPWR,Ocean Thermal Energy Corp,Utilities
+CRAC,Crown Reserve Acquisition Corp. I,Financiero
+CRAN,Crane Harbor Acquisition Corp II,Financiero
+CRAQ,Cal Redwood Acquisition Corp,Financiero
+CRBG,Corebridge Financial Inc,Financiero
+CRD.A,Crawford & Comp D Class A,Financiero
+CRD.B,Crawford & Comp D,Financiero
+CSBB,CSB Bancorp Inc,Financiero
+CSHR,Coinshares PLC,Financiero
+CSHX,Cashmere Valley Bank,Financiero
+CSTA.F,Constellation Acquisition Corp I,Financiero
+CTAA,Clearthink 1 Acquisition Corp,Financiero
+CTBI,Community Trust Bancorp Inc,Financiero
+CTUY,Century Next Financial Corporation,Financiero
+CUB,Lionheart Holdings,Financiero
+CUBI,Customers Bancorp Inc,Financiero
+CURR,CURRENC Group Inc,Financiero
+CVBF,CVB Financial Corporation,Financiero
+CWBC,Community West Bancshares,Financiero
+CWBK,CW Bancorp,Financiero
+CWCO,Consolidated Water Co Ltd,Utilities
+CWEN,Clearway Energy Inc Class C,Utilities
+CWT,California Water Service Group,Utilities
+CXII,Churchill Capital Corp XII,Financiero
+CYVF,Crystal Valley Financial Corp,Financiero
+CZBS,Citizens Bancshares Corp,Financiero
+CZFS,Citizens Financial Services Inc,Financiero
+CZNC,Citizens & Northern Corp,Financiero
+CZWI,Citizens Community Bancorp Inc,Financiero
+D,Dominion Energy Inc,Utilities
+DAAQ,Digital Asset Acquisition Corp,Financiero
+DAVE,Dave Inc,Financiero
+DBCA,D Boral Acquisition I Corp,Financiero
+DBIN,"""Dacotah Banks"," Inc.""",Financiero
+DCOM,Dime Community Bancshares Inc,Financiero
+DFIN,Donnelley Financial Solutions Inc,Financiero
+DGAC.U,Disciplined Growth Acquisition Corp Unit,Financiero
+DGIC.A,Donegal Group A Inc,Financiero
+DGIC.B,Donegal Group A Inc Class B,Financiero
+DIMC,"""Dimeco"," Inc.""",Financiero
+DLO,Dlocal Ltd,Financiero
+DMAA,Drugs Made In America Acquisition,Financiero
+DMII,Drugs Made In America Acquisition II Corp,Financiero
+DNMX,Dynamix Corp III,Financiero
+DRDB,Roman DBDR Acquisition Corp II,Financiero
+DSAC,Daedalus Special Acquisition Corp,Financiero
+DTE,DTE Energy Company,Utilities
+DUK,Duke Energy Corporation,Utilities
+DYNA,"""Dynastar Holdings"," Inc.""",Utilities
+DYNC,Dynamix Corp,Financiero
+DYOR,Insight Digital Partners II,Financiero
+EBC,Eastern Bankshares Inc,Financiero
+EBMT,Eagle Bancorp Montana Inc,Financiero
+ECBK,ECB Bancorp Inc,Financiero
+ECPG,Encore Capital Group Inc,Financiero
+ED,Consolidated Edison Inc,Utilities
+EEFT,Euronet Worldwide Inc,Financiero
+EFSC,Enterprise Financial Services,Financiero
+EFSI,Eagle Financial Services Inc,Financiero
+EG,Everest Re Group Ltd,Financiero
+EGBN,Eagle Bancorp Inc,Financiero
+EGHA,EGH Acquisition Corp,Financiero
+EIG,Employers Holdings Inc,Financiero
+EIX,Edison International,Utilities
+ELLO,Ellomay Capital Ltd,Utilities
+EMIS,Emmis Acquisition Corp,Financiero
+EMYB,Embassy Bancorp Inc,Financiero
+ENBP,ENB Financial Corp,Financiero
+ENDI,Enterprise Diversified Inc,Financiero
+ENVA,Enova International Inc,Financiero
+EQBK,Equity Bancshares Inc,Financiero
+EQH,Axa Equitable Holdings Inc,Financiero
+ERIE,Erie Indemnity Company,Financiero
+ES,Eversource Energy,Utilities
+ESNT,Essent Group Ltd,Financiero
+ESQ,Esquire Financial Holdings Inc,Financiero
+ETOR,eToro Group Ltd,Financiero
+ETR,Entergy Corporation,Utilities
+ETRX.F,Etrion Corporation,Utilities
+ETSS,Energy Transition Special,Financiero
+EVAC,EQV Ventures Acquisition Corp II,Financiero
+EVOX,Evolution Global Acquisition Corp,Financiero
+EVR,Evercore Partners Inc,Financiero
+EVRG,Evergy Inc,Utilities
+EVTC,Evertec Inc,Financiero
+EWBC,East West Bancorp Inc,Financiero
+EXC,Exelon Corporation,Utilities
+EXSR,Exchange Bank,Financiero
+EZPW,EZCORP Inc,Financiero
+FACO,First Acceptance Corp,Financiero
+FACT,FACT II Acquisition Corp,Financiero
+FAF,First American Corporation,Financiero
+FBAK,First National Bank Alaska,Financiero
+FBIP,FNB Bancorp Inc,Financiero
+FBIZ,First Business Financial Services,Financiero
+FBK,FB Financial Corp,Financiero
+FBLA,FB Bancorp Inc,Financiero
+FBNC,First Bancorp,Financiero
+FBP,First Bancorp,Financiero
+FCAP,First Capital Inc,Financiero
+FCBC,First Community Bancshares Inc,Financiero
+FCBM,First Carolina Financial Services,Financiero
+FCCO,First Community Corporation,Financiero
+FCF,First Commonwealth Financial,Financiero
+FCFS,FirstCash Inc,Financiero
+FCNC.A,First Citizens BancShares Inc,Financiero
+FCNC.B,First Citizens BancShares Inc Class B,Financiero
+FCPB,"""First Capital Bancshares"," Inc.""",Financiero
+FCRS,FutureCrest Acquisition Corp,Financiero
+FDBC,Fidelity D&D Bancorp Inc,Financiero
+FDMM.U,Freedom Metals Acquisition Corp,Financiero
+FDS,FactSet Research Systems Inc,Financiero
+FE,FirstEnergy Corporation,Utilities
+FERA,Fifth Era Acquisition Corp I,Financiero
+FEWP,Far East Wind Power Corp.,Utilities
+FFBB,Ffb Bancorp,Financiero
+FFBC,First Financial Bancorp,Financiero
+FFDF,FFD Financial Corp,Financiero
+FFIN,First Financial Bankshares Inc,Financiero
+FFMH,First Farmers and Merchants Corporation,Financiero
+FFMR,First Farmers Financial Corp,Financiero
+FFXX.F,Helios Fairfax Partners Corporation,Financiero
+FG,F&G Annuities & Life Inc,Financiero
+FGBI,First Guaranty Bancshares Inc,Financiero
+FGFH,Foresight Financial,Financiero
+FGII,FG Imperii Acquisition Corp,Financiero
+FGMC.U,FG Merger II Corp Unit,Financiero
+FGPR,Ferrellgas Partners LP Unit,Utilities
+FHB,First Hawaiian Inc,Financiero
+FHI,Federated Investors Inc B,Financiero
+FHN,First Horizon National Corporation,Financiero
+FIBK,First Interstate BancSystem Inc,Financiero
+FIGR,Figure Technology Solutions Ltd,Financiero
+FIGX,FIGX Capital Acquisition Corp,Financiero
+FINN,"""First National of Nebraska"," Inc.""",Financiero
+FINR,Fintech Scion Ltd,Financiero
+FINW,Finwise Bancorp,Financiero
+FISI,Financial Institutions Inc,Financiero
+FISN,Deep Fission Inc,Utilities
+FITB,Fifth Third Bancorp,Financiero
+FKYS,First Keystone Corp,Financiero
+FLG,Flagstar Bank National Association,Financiero
+FLYW,Flywire Corp,Financiero
+FMAC,Future Money Acquisition Corp,Financiero
+FMAO,Farmers & Merchants Bancorp Inc,Financiero
+FMBH,First Mid Illinois Bancshares Inc,Financiero
+FMBL,Farmers And Merchants Bank of Long Beach,Financiero
+FMBM,F & M Bank Corp.,Financiero
+FMCB,Farmers & Merchants Bancorp,Financiero
+FMCC,Federal Home Loan Mortgage Corp,Financiero
+FMNB,Farmers National Banc Corp,Financiero
+FNB,F.N.B. Corp,Financiero
+FNEC,First National Energy Corp,Utilities
+FNF,Fidelity National Financial Inc,Financiero
+FNLC,First Bancorp Inc,Financiero
+FNMA,Federal National Mortgage Association,Financiero
+FNRN,First Northern Community Bancorp,Financiero
+FNWB,First Northwest Bancorp,Financiero
+FNWD,Finward Bancorp,Financiero
+FOA,Finance of America Companies Inc,Financiero
+FRAF,Franklin Financial Services Corp,Financiero
+FRBA,First Bank,Financiero
+FRBP,Franklin BSP Capital Corporation,Financiero
+FRBT,Forbright Inc,Financiero
+FRME,First Merchants Corporation,Financiero
+FRMO,Frmo Corp,Financiero
+FRST,Primis Financial Corp,Financiero
+FRVO,Fervo Energy Co Ltd,Utilities
+FSBC,Five Star Bancorp,Financiero
+FSBW,FS Bancorp Inc,Financiero
+FSRL,First Reliance Bancshares Inc,Financiero
+FSUN,Firstsun Capital Bancorp,Financiero
+FTFI,"""First Berlin Bancorp"," Inc.""",Financiero
+FTHA,Forefront Tech Holdings,Financiero
+FTRA.U,FutureCorp Space Acquisition 1,Financiero
+FULT,Fulton Financial Corporation,Financiero
+FUNC,First United Corporation,Financiero
+FVAV,Fortress Value Acquisition V Corp,Financiero
+FVCB,FVCBankcorp Inc,Financiero
+FXAC,Fortunex Acquisition Corp,Financiero
+FXLG,FS Bancorp,Financiero
+FXNC,First National Corp,Financiero
+GABC,German American Bancorp Inc,Financiero
+GAMI,Gamco Investors Inc,Financiero
+GBCI,Glacier Bancorp Inc,Financiero
+GBFH,GBank Financial Holdings Inc,Financiero
+GBLI,Global Indemnity PLC,Financiero
+GCBC,Greene County Bancorp Inc,Financiero
+GCCO,Garden City Co.,Utilities
+GCGR,General Catalyst Global Resilience,Financiero
+GCMG,GCM Grosvenor Inc,Financiero
+GDOT,Green Dot Corporation,Financiero
+GEFI,Geo Finance Corp.,Utilities
+GEMI,Gemini Space Station Ltd,Financiero
+GHI,Greystone Housing Impact Investors,Financiero
+GHXI.U,Gores Holdings XI Inc,Financiero
+GIW,GigCapital8 Corp,Financiero
+GIX,GigCapital9 Corp,Financiero
+GL,Globe Life Inc,Financiero
+GLED,GalaxyEdge Acquisition Corp,Financiero
+GLRE,Greenlight Capital Re Ltd,Financiero
+GLXY,Galaxy Digital Inc,Financiero
+GNE,Genie Energy Ltd,Utilities
+GNW,Genworth Financial Inc,Financiero
+GPAC,General Purpose Acquisition Corp,Financiero
+GPAT,GP Act III Acquisition Corp,Financiero
+GRAF,Graf Global Corp,Financiero
+GREH,Green Rain Energy Holdings Inc,Utilities
+GRGG,"""Green For Energy"," Inc.""",Utilities
+GS,Goldman Sachs Group Inc,Financiero
+GSBC,Great Southern Bancorp Inc,Financiero
+GSHD,Goosehead Insurance Inc,Financiero
+GSHR,Gesher Acquisition II Corp,Financiero
+GSRF,GSR IV Acquisition Corp,Financiero
+GSRV,GSR V Acquisition Corp,Financiero
+GTEN,Gores Holdings X Inc,Financiero
+GTER.A,Globa Terra Acquisition Corp,Financiero
+GTER.B,Globa Terra Acquisition Corp Class B,Financiero
+GUAC,Berto Acquisition Corp II,Financiero
+GWRS,Global Water Resources Inc,Utilities
+GWTR,"""Global Water Technologies"," Inc.""",Utilities
+HACQ,HCM IV Acquisition Corp,Financiero
+HAFC,Hanmi Financial Corporation,Financiero
+HAPN,Happen Inc,Financiero
+HARL,Harleysville Financial Corp,Financiero
+HAVA,Harvard Ave Acquisition Corp,Financiero
+HBAN,Huntington Bancshares Incorporated,Financiero
+HBCP,Home Bancorp Inc,Financiero
+HBIA,Hills Bancorporation,Financiero
+HBNC,Horizon Bancorp,Financiero
+HBT,Hbt Financial Inc,Financiero
+HCAC,Hall Chadwick Acquisition Corp,Financiero
+HCGI,Huntwicke Capital Group Inc.,Financiero
+HCI,HCI Group Inc,Financiero
+HCIC,Hennessy Capital Investment Corp,Financiero
+HCMA,HCM III Acquisition Corp,Financiero
+HE,Hawaiian Electric Industries Inc,Utilities
+HFWA,Heritage Financial Corporation,Financiero
+HG,Hamilton Insurance Group Ltd B,Financiero
+HGTY,Hagerty Inc,Financiero
+HIFS,Hingham Institution for Savings,Financiero
+HIG,Hartford Financial Services Group,Financiero
+HIPO,Hippo Holdings Inc,Financiero
+HLI,Houlihan Lokey Inc,Financiero
+HLNE,Hamilton Lane Inc,Financiero
+HLXC,Helix Acquisition III Corp,Financiero
+HMN,Horace Mann Educators Corporation,Financiero
+HNOI,HNO International Inc,Utilities
+HNRG,Hallador Energy Company,Utilities
+HNVR,Hanover Bancorp Inc,Financiero
+HOMB,Home BancShares Inc,Financiero
+HONT,"""Honat Bancorp"," Inc.""",Financiero
+HOOD,Robinhood Markets Inc,Financiero
+HOPE,Hope Bancorp Inc,Financiero
+HRTG,Heritage Insurance Holdings Inc,Financiero
+HTB,HomeTrust Bancshares Inc,Financiero
+HTH,Hilltop Holdings Inc,Financiero
+HTO,H2O America,Utilities
+HVII,Hennessy Capital Investment Corp VII,Financiero
+HVMC,Highview Merger Corp,Financiero
+HWBK,Hawthorn Bancshares Inc,Financiero
+HWC,Hancock Whitney Corp,Financiero
+HYNE,Hoyne Bancorp Inc,Financiero
+IACO,Idea Acquisition Corp,Financiero
+IACQ,Irenic Acquisition Corp,Financiero
+IBCP,Independent Bank Corporation,Financiero
+IBKR,Interactive Brokers Group Inc,Financiero
+IBOC,International Bancshares Corporation,Financiero
+ICE,Intercontinental Exchange Inc,Financiero
+IDA,IDACORP Inc,Utilities
+IDAC,Iron Dome Acquisition I Corp,Financiero
+IEAG,Infinite Eagle Acquisition Corp,Financiero
+IGAC,Invest Green Acquisition Corp,Financiero
+IGIC,International General Insurance Holdings Ltd,Financiero
+ILLU,Illumination Acquisition I Corp,Financiero
+IMXI,International Money Express Inc,Financiero
+INAC,Indigo Acquisition Corp,Financiero
+INBC,"""InBankshares"," Corp""",Financiero
+INBK,First Internet Bancorp,Financiero
+INDB,Independent Bank,Financiero
+INTR,Inter and Co Class A,Financiero
+INV,Innventure Inc,Financiero
+IPCX,Inflection Point Acquisition III,Financiero
+IPEX,Inflection Point Acquisition Corp V,Financiero
+IPFX,Inflection Point Acquisition A,Financiero
+IPVV.U,InterPrivate Investment Partners V,Financiero
+IRAB,Iris Acquisition II Corp,Financiero
+IRHO,Iron Horse Acquisitions Corp II,Financiero
+ISBA,Isabella Bank Corp,Financiero
+ISNR.U,Snow Rothschild Acquisition Corp Unit,Financiero
+ISTR,Investar Holding Corp,Financiero
+ITHA,ITHAX Acquisition Corp III,Financiero
+ITIC,Investors Title Company,Financiero
+IVZ,Invesco Plc,Financiero
+JABR.U,JAB Acquisition Corp I Unit,Financiero
+JACS,Jackson Acquisition Company II,Financiero
+JCAP,Jefferson Capital Inc,Financiero
+JDVB,"""JD Bancshares"," Inc.""",Financiero
+JEF,Jefferies Financial Group Inc,Financiero
+JENA,Jena Acquisition Corp II,Financiero
+JFBC,Jeffersonville Bancorp,Financiero
+JMSB,John Marshall Bancorp Inc,Financiero
+JPM,JPMorgan Chase & Co,Financiero
+JRVR,James River Group Holdings Ltd,Financiero
+JWSM.F,Jaws Mustang Acquisition Corp,Financiero
+JXN,Jackson Financial Inc,Financiero
+KBON,Karbon Capital Partners Corp,Financiero
+KCAC.U,Kensington Capital Acquisition IV Corp,Financiero
+KCHV,Kochav Defense Acquisition Corp,Financiero
+KCLI,Kansas City Life Insurance Company,Financiero
+KEY,KeyCorp,Financiero
+KEYY,Keystone Acquisition Corp,Financiero
+KFII,K&F Growth Acquisition II Corp,Financiero
+KINS,Kingstone Companies Inc,Financiero
+KISB,"""Kish Bancorp"," Inc.""",Financiero
+KKR,KKR & Co LP,Financiero
+KLAR,Klarna Group PLC,Financiero
+KMPR,Kemper Corporation,Financiero
+KNRL.F,Kontrol Technologies Corp.,Utilities
+KNSL,Kinsale Capital Group Inc,Financiero
+KOYN,CSLM Digital Asset Acquisition III,Financiero
+KPET,KPET Ultra Paceline Corp,Financiero
+KRAQ,KRAKacquisition Corp,Financiero
+KRNY,Kearny Financial Corp,Financiero
+KRSP,Rice Acquisition Corp 3,Financiero
+KTHN,Katahdin Bankshares Corp,Financiero
+KTWO,K2 Capital Acquisition Corp,Financiero
+KWY,Kingsway Financial Services Inc,Financiero
+L,Loews Corp,Financiero
+LAFA,LaFayette Acquisition Corp,Financiero
+LARK,Landmark Bancorp Inc,Financiero
+LATA,Galata Acquisition Corp II,Financiero
+LAZ,Lazard Ltd,Financiero
+LCLN,Lincoln International Inc,Financiero
+LCNB,LCNB Corporation,Financiero
+LDI,Loandepot Inc,Financiero
+LEGO,Legato Merger Corp IV,Financiero
+LFAC,Leapfrog Acquisition Corp,Financiero
+LIFE,Ethos Technologies Inc,Financiero
+LKFN,Lakeland Financial Corporation,Financiero
+LKSP,Lake Superior Acquisition Corp,Financiero
+LMND,Lemonade Inc,Financiero
+LNC,Lincoln National Corporation,Financiero
+LNMG,Linike Medical Group Ltd.,Utilities
+LNT,Alliant Energy Corp,Utilities
+LOB,Live Oak Bancshares Inc,Financiero
+LOGC,ContextLogic Holdings Inc,Financiero
+LPAA,Launch One Acquisition Corp,Financiero
+LPBB,Launch Two Acquisition Corp,Financiero
+LPCV,Launchpad Cadenza Acquisition Corp,Financiero
+LPLA,LPL Financial Holdings Inc,Financiero
+LPRO,Open Lending Corp,Financiero
+LRBI,Lake Ridge Bancorp Inc.,Financiero
+LSAK,Lesaka Technologies Inc,Financiero
+LSBK,Lake Shore Bancorp Inc,Financiero
+LWAC,LightWave Acquisition Corp,Financiero
+LYBC,Lyons Bancorp Inc.,Financiero
+MACI,Melar Acquisition Corp I,Financiero
+MBAV,M3 Brigade Acquisition V Corp,Financiero
+MBI,MBIA Inc,Financiero
+MBIN,Merchants Bancorp,Financiero
+MBVI,M3 Brigade Acquisition VI Corp,Financiero
+MBWM,Mercantile Bank Corporation,Financiero
+MC,Moelis & Co,Financiero
+MCB,Metropolitan Bank Holding,Financiero
+MCBS,MetroCity Bankshares,Financiero
+MCGA,Yorkville Acquisition Corp,Financiero
+MCHB,Mechanics Bancorp,Financiero
+MCO,Moodys Corporation,Financiero
+MCPB,Mt. Carmel Public Utility Co.,Utilities
+MCY,Mercury General Corporation,Financiero
+MDU,MDU Resources Group Inc,Utilities
+MESH,Meshflow Acquisition Corp,Financiero
+MET,MetLife Inc,Financiero
+MEVO,M Evo Global Acquisition Corp II,Financiero
+MFGI,"""Merchants Financial Group"," Inc.""",Financiero
+MFI,mF International Limite,Financiero
+MFIN,Medallion Financial Corp,Financiero
+MGEE,MGE Energy Inc,Utilities
+MGYR,Magyar Bancorp Inc,Financiero
+MIAC.U,Meridian3 Industrials Acquisition Unit,Financiero
+MIAX,Miami International Holdings Inc,Financiero
+MKL,Markel Group Inc,Financiero
+MKLY,McKinley Acquisition Corp,Financiero
+MKTW,Marketwise Inc,Financiero
+MKTX,MarketAxess Holdings Inc,Financiero
+MLAA,Mountain Lake Acquisition II Corp,Financiero
+MLGF,Malaga Financial Corporation,Financiero
+MNAT,Marquette National Corp,Financiero
+MNSB,Mainstreet Bank,Financiero
+MNTK,Montauk Renewables Inc,Utilities
+MORN,Morningstar Inc,Financiero
+MPB,Mid Penn Bancorp,Financiero
+MPCB,"""Mountain Pacific Bancorp"," Inc.""",Financiero
+MQ,Marqeta Inc,Financiero
+MRBK,Meridian Bank,Financiero
+MRCO.U,Mercator Acquisition Corp Unit,Financiero
+MRSH,Marsh & McLennan Companies Inc,Financiero
+MRX,Marex Group PLC,Financiero
+MS,Morgan Stanley,Financiero
+MSBC,Mission Bancorp,Financiero
+MSBI,Midland States Bancorp Inc,Financiero
+MSCI,MSCI Inc,Financiero
+MSEX,Middlesex Water Company,Utilities
+MSWV,Main Street Financial Services Corp.,Financiero
+MTAL,Metals Acquisition Corp II,Financiero
+MTB,M&T Bank Corp,Financiero
+MTG,MGIC Investment Corp,Financiero
+MTNE,CH4 Natural Solutions Corp,Financiero
+MUZE,Muzero Acquisition Corp,Financiero
+MVBF,MVB Financial Corp,Financiero
+MYFW,First Western Financial Inc,Financiero
+MYX,Maywood Acquisition Corp 2,Financiero
+MZYX,Mozayyx Acquisition Corp,Financiero
+NASB,NASB Financial Inc,Financiero
+NATL,NCR Atleos Corp,Financiero
+NAVI,Navient Corp,Financiero
+NBBK,NB Bancorp Inc,Financiero
+NBHC,National Bank Holdings Corporation,Financiero
+NBN,Northeast Bancorp,Financiero
+NBTB,NBT Bancorp Inc,Financiero
+NCEN,Nacel Energy Corp,Utilities
+NDAQ,Nasdaq Inc,Financiero
+NECB,Northeast Community Bancorp Inc,Financiero
+NEE,Nextera Energy Inc,Utilities
+NEWT,Newtek Business Services Corp,Financiero
+NFBK,Northfield Bancorp Inc,Financiero
+NFG,National Fuel Gas Company,Utilities
+NHIC,NewHold Investment Corp III,Financiero
+NHIV,Newhold Investment Corp IV,Financiero
+NI,NiSource Inc,Utilities
+NIC,Nicolet Bankshares Inc,Financiero
+NJR,NewJersey Resources Corporation,Utilities
+NKSH,National Bankshares Inc,Financiero
+NMIH,NMI Holdings Inc,Financiero
+NMP,NMP Acquisition Corp,Financiero
+NNI,Nelnet Inc,Financiero
+NODB,North Dallas Bank & Trust Co,Financiero
+NODK,NI Holdings Inc,Financiero
+NOEM,CO2 Energy Transition Corp,Financiero
+NP,Neptune Insurance Holdings Inc,Financiero
+NPAC,New Providence Acquisition Corp III,Financiero
+NPB,Northpointe Bancshares Inc,Financiero
+NRDS,Nerdwallet Inc,Financiero
+NRG,NRG Energy Inc,Utilities
+NRIM,Northrim BanCorp Inc,Financiero
+NTB,Bank of N.T. Butterfield & Son Ltd,Financiero
+NTRS,Northern Trust Corporation,Financiero
+NTWO,Newbury Street II Acquisition Corp,Financiero
+NU,Nu Holdings Ltd,Financiero
+NWAX,New America Acquisition I Corp,Financiero
+NWBI,Northwest Bancshares Inc,Financiero
+NWE,NorthWestern Corporation,Utilities
+NWFL,Norwood Financial Corp,Financiero
+NWN,Northwest Natural Gas Co,Utilities
+NWPP,New Peoples Bankshares Inc,Financiero
+OACC,Oaktree Acquisition Corp III,Financiero
+OAKC,Oakworth Capital Inc.,Financiero
+OBA,Oxley Bridge Acquisition Ltd,Financiero
+OBK,Origin Bancorp Inc,Financiero
+OBT,Orange County Bancorp Inc,Financiero
+OCAC.U,Ocean Capital Acquisition Corp Unit,Financiero
+OCFC,OceanFirst Financial Corp,Financiero
+OFED,Oconee Federal Financial Corp,Financiero
+OFG,OFG Bancorp,Financiero
+OGE,OGE Energy Corporation,Utilities
+OGS,One Gas Inc,Utilities
+OHAC,Oceanhawk Acquisition Corp,Financiero
+OICT,Oicintra Inc,Financiero
+OIM,OneIM Acquisition Corp,Financiero
+OKLO,Oklo Inc,Utilities
+OMF,OneMain Holdings Inc,Financiero
+ONB,Old National Bancorp,Financiero
+ONCH,1RT Acquisition Corp,Financiero
+ONIT,Onity Group Inc,Financiero
+OPBK,OP Bancorp,Financiero
+OPFI,OppFi Inc,Financiero
+OPRT,Oportun Financial Corp,Financiero
+OPY,Oppenheimer Holdings Inc,Financiero
+ORA,Ormat Technologies Inc,Utilities
+ORI,Old Republic International Corp,Financiero
+ORRF,Orrstown Financial Services Inc,Financiero
+OSBC,Old Second Bancorp Inc,Financiero
+OSCR,Oscar Health Inc,Financiero
+OSG,Octave Specialty Group Inc,Financiero
+OSPR.U,Osprey Acquisition Corp III Unit,Financiero
+OTAI,Starlink Ai Acquisition Corp,Financiero
+OTCM,Otc Markets Group,Financiero
+OTGA,OTG Acquisition I Corp,Financiero
+OTTR,Otter Tail Corporation,Utilities
+OVBC,Ohio Valley Banc Corp,Financiero
+OVLY,Oak Valley Bancorp,Financiero
+OWL,Blue Owl Capital Inc,Financiero
+OWLS,Obook Holdings Ltd,Financiero
+OXBC,Oxford Bank Corporation,Financiero
+OYSE,Oyster Enterprises II Acquisition,Financiero
+OZK,Bank Ozk,Financiero
+PAAC,Proem Acquisition Corp I,Financiero
+PACH,Pioneer Acquisition I Corp,Financiero
+PAGS,PagSeguro Digital Ltd,Financiero
+PAII,Pyrophyte Acquisition Corp II,Financiero
+PALO,Paloma Acquisition Corp I,Financiero
+PAX,Patria Investments Ltd,Financiero
+PAY,Paymentus Holdings Inc,Financiero
+PAYO,Payoneer Global Inc,Financiero
+PAYS,Paysign Inc,Financiero
+PB,Prosperity Bancshares Inc,Financiero
+PBAM,Private Bancorp of America,Financiero
+PBCO,PBCO Financial Corporation,Financiero
+PBFS,Pioneer Bancorp Inc,Financiero
+PBHC,Pathfinder Bancorp Inc,Financiero
+PBNC,PB Financial Corporation,Financiero
+PBNK,Pinnacle Bank,Financiero
+PCAP,ProCap Acquisition Corp,Financiero
+PCB,PCB Bancorp,Financiero
+PCG,PG&E Corp,Utilities
+PCSC,Perceptive Capital Solutions Corp,Financiero
+PCYO,Pure Cycle Corporation,Utilities
+PDLB,Ponce Financial Group Inc,Financiero
+PEBK,Peoples Bancorp of North Carolina,Financiero
+PEBO,Peoples Bancorp Inc,Financiero
+PEG,Public Service Enterprise Group Inc,Utilities
+PFBC,Preferred Bank,Financiero
+PFBX,Peoples Financial Corp,Financiero
+PFG,Principal Financial Group Inc,Financiero
+PFIS,Peoples Fin,Financiero
+PFLC,Pacific Financial Corp,Financiero
+PFS,Provident Financial Services Inc,Financiero
+PFSI,PennyMac Financial Services Inc,Financiero
+PGAC,Pantages Capital Acquisition Corp,Financiero
+PGC,Peapack-Gladstone Financial,Financiero
+PGR,Progressive Corp,Financiero
+PICS,PicS PicPay Inc,Financiero
+PIPR,Piper Sandler Companies,Financiero
+PJT,PJT Partners Inc,Financiero
+PKBK,Parke Bancorp Inc,Financiero
+PKIN,Pekin Life Insurance Co,Financiero
+PLBC,Plumas Bancorp,Financiero
+PLGO,Pelagos Insurance Capital Ltd,Financiero
+PLMK,Plum Acquisition Corp IV,Financiero
+PLMR,Palomar Holdings Inc,Financiero
+PLQC,Plains Acquisition Corporation,Financiero
+PLUN,Plutonian Acquisition Corp II,Financiero
+PMTR,Perimeter Acquisition I Corp,Financiero
+PNBK,Patriot National Bancorp Inc,Financiero
+PNC,PNC Financial Services Group Inc,Financiero
+PNFP,Pinnacle Financial Partners Inc,Financiero
+PNW,Pinnacle West Capital Corp,Utilities
+POLE,Andretti Acquisition Corp II,Financiero
+PONO,Pono Capital Four Inc,Financiero
+POR,Portland General Electric Co,Utilities
+PPBN,Pinnacle Bankshares Corporation,Financiero
+PPL,PPL Corporation,Utilities
+PPLL,Peoples Ltd.,Financiero
+PPYA,Papaya Growth Opportunity Corp I,Financiero
+PRAA,PRA Group Inc,Financiero
+PRG,PROG Holdings Inc,Financiero
+PRI,Primerica Inc,Financiero
+PRK,Park National Corporation,Financiero
+PRMY,Primary Bank,Financiero
+PROV,Provident Financial Holdings Inc,Financiero
+PRTH,Priority Technology Holdings Inc,Financiero
+PRU,Prudential Financial Inc,Financiero
+PS,Pershing Square Inc,Financiero
+PSBQ,PSB Holdings Inc,Financiero
+PSFE,Paysafe Ltd,Financiero
+PSPW,3Power Energy Group Inc,Utilities
+PSWW,Principal Solar Inc,Utilities
+PTAC,Patriot Acquisition Corp,Financiero
+PTBS,Potomac Bancshares Inc,Financiero
+PTOR,Praetorian Acquisition Corp,Financiero
+PWCO,"""PwrCor"," Inc.""",Utilities
+PWP,Perella Weinberg Partners,Financiero
+QADR,QDRO Acquisition Corp,Financiero
+QCRH,QCR Holdings Inc,Financiero
+QLEP,Quantum Leap Acquisition Corp,Financiero
+QNBC,QNB Corp,Financiero
+QRED,QuasarEdge Acquisition Corp,Financiero
+QSEA,Quartzsea Acquisition Corp,Financiero
+QUCT,"""Queen City Investments"," Inc.""",Financiero
+QUMS,Quantumsphere Acquisition Corp,Financiero
+QWTR,"""Quest Water Global"," Inc.""",Utilities
+RAC.U,Rithm Acquisition Corp Unit,Financiero
+RACC,Research Alliance III Corp,Financiero
+RAKR,Rainmaker Worldwide Inc,Utilities
+RANG,Range Capital Acquisition Corp,Financiero
+RBB,RBB Bancorp,Financiero
+RBCA.A,Republic Bancorp Inc,Financiero
+RBCA.B,Republic Bancorp Inc Class B,Financiero
+RBKB,Rhinebeck Bancorp Inc,Financiero
+RCBC,River City Bank,Financiero
+RDAG,Republic Digital Acquisition Co,Financiero
+RDN,Radian Group Inc,Financiero
+RELY,Remitly Global Inc,Financiero
+RENE.F,Cartesian Growth Corporation II,Financiero
+RF,Regions Financial Corporation,Financiero
+RFAM,RF Acquisition Corp III,Financiero
+RGA,Reinsurance Group of America,Financiero
+RGCO,RGC Resources Inc,Utilities
+RILY,B. Riley Financial Inc,Financiero
+RJF,Raymond James Financial Inc,Financiero
+RKT,Rocket Companies Inc,Financiero
+RLI,RLI Corp,Financiero
+RM,Regional Management Corp,Financiero
+RMBI,Richmond Mutual Bancorporation Inc,Financiero
+RNGT,Range Capital Acquisition II Corp,Financiero
+RNR,Renaissancere Holdings Ltd,Financiero
+RNST,Renasant Corporation,Financiero
+RNW,ReNew Energy Global PLC,Utilities
+ROOT,Root Inc,Financiero
+RPAY,Repay Holdings Corp,Financiero
+RPC,Ridgepost Capital Inc,Financiero
+RRBI,Red River Bancshares Inc,Financiero
+RREV,RRE Ventures Acquisition Corp,Financiero
+RSER.F,Reservoir Capital Corp.,Utilities
+RTAC,Renatus Tactical Acquisition I Corp,Financiero
+RTB,RTB Digital Inc,Financiero
+RVRF,River Financial Corporation,Financiero
+RVSB,Riverview Bancorp Inc,Financiero
+RWAY,Runway Growth Finance Corp,Financiero
+RYAN,Ryan Specialty Group Holdings Inc,Financiero
+SAAQ,Space Asset Acquisition Corp,Financiero
+SABK,South Atlantic Bancshares Inc,Financiero
+SAC,Safeguard Acquisition Corp,Financiero
+SAFT,Safety Insurance Group Inc,Financiero
+SAGU,Shreya Acquisition Group,Financiero
+SAMG,Silvercrest Asset Management Group Inc,Financiero
+SAMO.U,Samos Energy Acquisition Corporation,Financiero
+SBCF,Seacoast Banking Corporation of Florida,Financiero
+SBFG,SB Financial Group Inc,Financiero
+SBKO,"""Summit Bank Group"," Inc.""",Financiero
+SBNC,Southern BancShares N.C. Inc,Financiero
+SBSI,Southside Bancshares Inc,Financiero
+SBXD,SilverBox Corp IV,Financiero
+SBXE,SilverBox Corp V,Financiero
+SCHW,Charles Schwab Corp,Financiero
+SCII,SC II Acquisition Corp,Financiero
+SCPQ,Social Commerce Partners Corp,Financiero
+SDHI,Siddhi Acquisition Corp,Financiero
+SEBC,Southeastern Banking Corp,Financiero
+SECZ,Securitize Corp,Financiero
+SEIC,SEI Investments Company,Financiero
+SEMU.F,Siem Industries S.A.,Financiero
+SEZL,Sezzle Inc,Financiero
+SF,Stifel Financial Corporation,Financiero
+SFBC,Sound Financial Bancorp Inc,Financiero
+SFBS,ServisFirst Bancshares Inc,Financiero
+SFDL,Security Federal Corporation,Financiero
+SFIG.A,Star Financial Group Inc,Financiero
+SFIG.B,Star Financial Group Inc Class B,Financiero
+SFNC,Simmons First National Corporation,Financiero
+SFST,Southern First Bancshares Inc,Financiero
+SGU,Star Gas Partners LP,Utilities
+SHBI,Shore Bancshares Inc,Financiero
+SHOT.U,RMG ML Sports Holdings Unit,Financiero
+SIGI,Selective Insurance Group Inc,Financiero
+SINX,Sionix Corp.,Utilities
+SKWD,Skyward Specialty Insurance Group Inc,Financiero
+SKYC,Sky Constant Century Inc,Financiero
+SLAM.F,Slam Corp,Financiero
+SLBK,"""Skyline Bankshares"," Inc.""",Financiero
+SLDE,Slide Insurance Holdings Inc,Financiero
+SLM,SLM Corp,Financiero
+SLQT,Selectquote Inc,Financiero
+SMBC,Southern Missouri Bancorp Inc,Financiero
+SMBK,SmartFinancial Inc,Financiero
+SNEX,Stonex Group Inc,Financiero
+SNFC.A,Security National Financial,Financiero
+SNFC.B,Security National Financial Class B,Financiero
+SNLC,Security National Corporation,Financiero
+SO,Southern Company,Utilities
+SOCA,Solarius Capital Acquisition Corp,Financiero
+SOFI,SoFi Technologies Inc.,Financiero
+SOMC,Southern Michigan Bancorp Inc,Financiero
+SOME,Somerset Trust Holding Company,Financiero
+SOPV,"""Solar Park Initiatives"," Inc.""",Utilities
+SORN,Soren Acquisition Corp,Financiero
+SOUL,Soulpower Acquisition Corp,Financiero
+SPEG,Silver Pegasus Acquisition Corp,Financiero
+SPFI,South Plains Financial Inc,Financiero
+SPGI,S&P Global Inc,Financiero
+SPH,Suburban Propane Partners LP,Utilities
+SPKL,Spark I Acquisition Corp,Financiero
+SPNT,Siriuspoint Ltd,Financiero
+SPRU,Spruce Power Holding Corp,Utilities
+SR,Spire Inc,Utilities
+SRBK,SR Bancorp Inc,Financiero
+SRCE,1st Source Corporation,Financiero
+SRE,Sempra Energy,Utilities
+SSAC,Spacsphere Acquisition Corp,Financiero
+SSB,SouthState Bank Corp,Financiero
+SSCC,Spirits Capital Corporation,Financiero
+STBA,S&T Bancorp Inc,Financiero
+STC,Stewart Information Services Corp,Financiero
+STEP,Stepstone Group Inc,Financiero
+STLE,Steele Bancorp Inc.,Financiero
+STNE,StoneCo Ltd,Financiero
+STT,State Street Corp,Financiero
+SUIG,SUI Group Holdings Ltd,Financiero
+SUMA,SUMA Acquisition Corp,Financiero
+SUME,"""Summer Energy Holdings"," Inc.""",Utilities
+SVAQ,Silicon Valley Acquisition Corp,Financiero
+SVCC,Stellar V Capital Corp,Financiero
+SVIV,Spring Valley Acquisition Corp IV,Financiero
+SWRD,Stewards Inc.,Financiero
+SWX,Southwest Gas Holdings Inc,Utilities
+SYBT,Stock Yards Bancorp Inc,Financiero
+SYF,Synchrony Financial,Financiero
+SZZL,Sizzle Acquisition II Corp,Financiero
+TACH,Titan Acquisition Corp,Financiero
+TACO,Berto Acquisition Corp,Financiero
+TAVI,Tavia Acquisition Corp,Financiero
+TBBK,The Bancorp Inc,Financiero
+TCBI,Texas Capital Bancshares Inc,Financiero
+TCBK,TriCo Bancshares,Financiero
+TCBX,Third Coast Bancshares Inc,Financiero
+TDAC.U,Translational Development Unit,Financiero
+TDWD,Tailwind 20 Acquisition Corp,Financiero
+TFC,Truist Financial Corp,Financiero
+TFIN,Triumph Bancorp,Financiero
+TFSL,TFS Financial Corporation,Financiero
+THFF,First Financial Corporation Indiana,Financiero
+THG,The Hanover Insurance Group Inc,Financiero
+THVB,"""Thomasville Bancshares"," Inc.""",Financiero
+TLN,Talen Energy Corp,Utilities
+TLNC,Talon Capital Corp,Financiero
+TMP,Tompkins Financial Corporation,Financiero
+TMS,Teamshares Inc,Financiero
+TMTS,Spartacus Acquisition Corp II,Financiero
+TOWN,Towne Bank,Financiero
+TPG,TPG Inc,Financiero
+TPII,Triad Pro Innovators Inc,Utilities
+TRAD,APEX Tech Acquisition Inc,Financiero
+TRCY,Tri City Bankshares Corp,Financiero
+TREE,Lendingtree Inc,Financiero
+TRGS,TRG Latin America Acquisitions Corp,Financiero
+TRIT.F,Tri-Tech Holding Inc,Utilities
+TRMK,Trustmark Corporation,Financiero
+TROW,T. Rowe Price Group Inc,Financiero
+TRST,TrustCo Bank Corp NY,Financiero
+TRUP,Trupanion Inc,Financiero
+TRUX,Truxton Corporation,Financiero
+TRV,Travelers Companies,Financiero
+TSBK,Timberland Bancorp Inc,Financiero
+TVA,Texas Ventures Acquisition III Corp,Financiero
+TVAI,Thayer Ventures Acquisition II Corp,Financiero
+TW,Tradeweb Markets Inc,Financiero
+TWFG,TWFG Inc,Financiero
+TWLV,Twelve Seas Investment Company III,Financiero
+TXNM,TXNM Energy Inc,Utilities
+TYBT,Trinity Bank National Assocation,Financiero
+TYCB,Taylor Calvin B Bksh,Financiero
+TYFG,"""Tri-County Financial Group"," Inc.""",Financiero
+UAC,United Acquisition I Corp,Financiero
+UBAB,United Bancorporation of Alabama Inc,Financiero
+UBOH,United Bancshares Inc,Financiero
+UBSI,United Bankshares Inc,Financiero
+UCB,United Community Banks Inc,Financiero
+UETH,"""United Ethanol"," LLC.""",Utilities
+UFCS,United Fire Group Inc,Financiero
+UGI,UGI Corporation,Utilities
+UMBF,UMB Financial Corporation,Financiero
+UNB,Union Bankshares Inc,Financiero
+UNM,Unum Group,Financiero
+UNTY,Unity Bancorp Inc,Financiero
+UPST,Upstart Holdings Inc,Financiero
+USB,U.S. Bancorp,Financiero
+USCB,US Century Bank,Financiero
+USMT,"""US Metro Bancorp"," Inc.""",Financiero
+USWF,"""U.S. Wind Farming"," Inc.""",Utilities
+UTGN,"""UTG"," Inc.""",Financiero
+UTL,UNITIL Corporation,Utilities
+UVE,Universal Insurance Holdings Inc,Financiero
+UVSP,Univest Corporation Pennsylvania,Financiero
+UWMC,UWM Holdings Corp,Financiero
+VABK,Virginia National Bankshares Corp,Financiero
+VACI,Viking Acquisition Corp I,Financiero
+VALU,Value Line Inc,Financiero
+VCTR,Victory Capital Holdings Inc,Financiero
+VECA,Vernal Capital Acquisition Corp,Financiero
+VEL,Velocity Financial Llc,Financiero
+VHCP,Vine Hill Capital Investment Corp,Financiero
+VII.U,Viking Acquisition Corp II Unit,Financiero
+VINP,Vinci Partners Investments Ltd,Financiero
+VIRT,Virtu Financial Inc,Financiero
+VIVO,VivoPower PLC,Utilities
+VLY,Valley National Bancorp,Financiero
+VNME,Vendome Acquisition Corp I,Financiero
+VOYA,Voya Financial Inc,Financiero
+VRTS,Virtus Investment Partners Inc,Financiero
+VST,Vistra Energy Corp,Utilities
+WABC,Westamerica Bancorporation,Financiero
+WAFD,WaFd Inc,Financiero
+WAL,Western Alliance Bancorporation,Financiero
+WASH,Washington Trust Bancorp Inc,Financiero
+WBHC,Wilson Bank Holding Company,Financiero
+WBRE,"""Wild Brush Energy"," Inc.""",Utilities
+WBS,Webster Financial Corporation,Financiero
+WCCB,West Coast Community Bancorp,Financiero
+WD,Walker & Dunlop Inc,Financiero
+WEC,WEC Energy Group Inc,Utilities
+WENC,West Enclave Merger Corp,Financiero
+WENN,Wen Acquisition Corp,Financiero
+WFC,Wells Fargo & Company,Financiero
+WFHG,World Financial Holding Group,Financiero
+WHG,Westwood Holdings Group Inc,Financiero
+WLCO.U,Wilco 63,Financiero
+WLII,Willow Lane Acquisition Corp II,Financiero
+WLTH,Wealthfront Corp,Financiero
+WNEB,Western New England Bancorp Inc,Financiero
+WPAC,White Pearl Acquisition Corp,Financiero
+WRB,W. R. Berkley Corp,Financiero
+WRIV,White River Bancshares Co,Financiero
+WRLD,World Acceptance Corporation,Financiero
+WSBC,WesBanco Inc,Financiero
+WSBF,Waterstone Financial Inc,Financiero
+WSBK,Winchester Bancorp,Financiero
+WSFS,WSFS Financial Corporation,Financiero
+WSRC,Western Sierra Mining Corp,Utilities
+WT,WisdomTree Investments Inc,Financiero
+WTBA,West Bancorporation,Financiero
+WTBF.A,W.T.B. Financial Corporation Class A,Financiero
+WTBF.B,W.T.B. Financial Corporation,Financiero
+WTF,Waton Financial Ltd,Financiero
+WTFC,Wintrust Financial Corporation,Financiero
+WTM,White Mountains Insurance Group Ltd,Financiero
+WTRG,Essential Utilities Inc,Utilities
+WTW,Willis Towers Watson PLC,Financiero
+WU,Western Union Co,Financiero
+WWPW,Wind Works Power,Utilities
+XCBE,X3 Acquisition Corp Ltd,Financiero
+XEL,Xcel Energy Inc,Utilities
+XFLH,XFLH Capital Corp,Financiero
+XIFR,XPLR Infrastructure LP Unit,Utilities
+XP,Xp Inc,Financiero
+XRPN,Armada Acquisition Corp II,Financiero
+XSLL,Xsolla SPAC 1,Financiero
+XXI,Twenty One Capital Inc,Financiero
+XZO,Exzeo Group Inc,Financiero
+YCY,AA Mission Acquisition Corp II,Financiero
+YDVL,"""YVC Holdings"," Inc""",Financiero
+YICC.U,Yorkville International Capital Cor,Financiero
+YORW,The York Water Company,Utilities
+ZHYL.F,Zhaoheng Hydropower Ltd.,Utilities
+ZION,Zions Bancorporation,Financiero
+ZKP,Lafayette Digital Acquisition I,Financiero

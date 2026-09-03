@@ -14,7 +14,7 @@ const HEADERS = [
   "Curva de capital (baseline)",
   "Régimen (M3 HMM)",
   "Riesgo adaptativo",
-  "Trades (verificación #10)",
+  "Trades — Backtest + Paper (real)",
   "Monte Carlo",
   "Distribución de trades",
 ];

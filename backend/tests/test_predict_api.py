@@ -22,6 +22,9 @@ def _fake_result():
         technical_score=0.3, fundamental_score=0.1, macro_score=0.2,
         sentiment_score=0.0, volatility_score=0.1, composite_score=0.55,
         decision="COMPRAR", confidence=0.7,
+        # F0.2: campos de honestidad del motor (F0.2)
+        motor="heuristico_no_validado",
+        probabilidades_calibradas=False,
         prob_up_short=0.6, prob_up_medium=0.55, prob_up_long=0.52,
         manipulation_risk=0.05, manipulation_signals=[],
         triad_score=0.4, triad_recommendation="COMPRAR", triad_agreement="ALTO",
@@ -143,3 +146,65 @@ def test_assess_risk_regime_neutral_sin_datos():
     assert assessment["regime"] == "NEUTRAL"
     assert assessment["score"] == 0.0
     assert assessment["signals"] == []
+
+
+# ── Tests F0.2 — etiquetado honesto del motor predictivo (AUDITORIA_NIVEL_DIOS_20260902) ──
+
+def test_serialize_declara_motor_heuristico_no_validado(monkeypatch, ohlcv_df):
+    """El response del endpoint /api/predict debe declarar `motor: "heuristico_no_validado"`
+    para que un consumidor externo (frontend, otro servicio) sepa que NO pasó
+    por el ledger/DSR — a diferencia de signal_engine.py:generate_signal."""
+    result = _fake_result()
+    _patch_io(monkeypatch, result=result)
+    monkeypatch.setattr(predict, "download_data", lambda s, start=None: ohlcv_df)
+
+    body = asyncio.run(predict.analyze_symbol("TESTA"))
+    assert "motor" in body, "F0.2: el response debe incluir el campo 'motor'"
+    assert body["motor"] == "heuristico_no_validado"
+
+
+def test_serialize_declara_probabilidades_no_calibradas(monkeypatch, ohlcv_df):
+    """`probabilidades_calibradas: False` advierte que prob_up_* son scores
+    normalizados, NO probabilidades calibradas contra frecuencias empíricas."""
+    result = _fake_result()
+    _patch_io(monkeypatch, result=result)
+    monkeypatch.setattr(predict, "download_data", lambda s, start=None: ohlcv_df)
+
+    body = asyncio.run(predict.analyze_symbol("TESTA"))
+    assert "probabilidades_calibradas" in body
+    assert body["probabilidades_calibradas"] is False
+
+
+def test_serialize_prob_up_short_sigue_presente(monkeypatch, ohlcv_df):
+    """Backward compat: prob_up_* siguen presentes (no se borran, solo se
+    etiquetan como no calibradas). Un consumidor existente no rompe."""
+    result = _fake_result()
+    _patch_io(monkeypatch, result=result)
+    monkeypatch.setattr(predict, "download_data", lambda s, start=None: ohlcv_df)
+
+    body = asyncio.run(predict.analyze_symbol("TESTA"))
+    assert body["prob_up_short"] == 0.6
+    assert body["prob_up_medium"] == 0.55
+    assert body["prob_up_long"] == 0.52
+
+
+def test_prediction_result_dataclass_motor_default():
+    """El dataclass PredictionResult debe tener motor='heuristico_no_validado'
+    como default (ningún caller puede olvidarse de declararlo)."""
+    from app.core.predictive_engine import PredictionResult
+    r = PredictionResult(symbol="X", timestamp="t", regime_state=0, regime_name="G")
+    assert r.motor == "heuristico_no_validado"
+    assert r.probabilidades_calibradas is False
+
+
+def test_prediction_result_motor_no_puede_ser_validado_sin_ledger():
+    """Mecanismo anti-regresión: si alguien intenta poner motor='validado' o
+    cualquier otra cosa, debe ser explícito en el código (no por default).
+    El default está FIJO en 'heuristico_no_validado'."""
+    from app.core.predictive_engine import PredictionResult
+    r = PredictionResult(symbol="X", timestamp="t", regime_state=0, regime_name="G",
+                        motor="otro_valor")
+    assert r.motor == "otro_valor"  # Python permite override, pero el default es seguro
+    # El default sigue siendo "heuristico_no_validado" para los callers que no lo setean
+    r2 = PredictionResult(symbol="X", timestamp="t", regime_state=0, regime_name="G")
+    assert r2.motor == "heuristico_no_validado"

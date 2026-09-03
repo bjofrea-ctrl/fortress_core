@@ -9,6 +9,17 @@ Estos tests arman un panel sintético determinístico que dispara UNA señal un
 lunes conocido, le inyectan un gap overnight grande y verificado en el martes,
 y comprueban que el precio de entrada registrado es la apertura del día
 siguiente y NO el cierre del día de la señal.
+
+REGIMEN: estos tests verifican la MECÁNICA de ejecución con lag, no la
+clasificación de régimen. El market_data sintético usa el MISMO dataframe para
+los 9 tickers (features de retorno idénticas), así que el régimen HMM estimado
+sobre ese panel degenerado es arbitrario y puede reetiquetarse al cambiar el
+alineamiento semántico (FIX B6, MAPEO_ESTADOS_HMM.md): con VIX ascendente el
+día de la señal cae en DEFLATION y el gate de elegibilidad (regime_state==3 en
+signal_engine) lo bloquea — comportamiento CORRECTO del motor, irrelevante
+para la mecánica de lag que estos tests prueban. Por eso `_run` fija la
+entrada de régimen del motor a GOLDILOCKS (0). NO se tocan signal_engine ni el
+criterio de elegibilidad: solo se controla la entrada que el motor observa.
 """
 import numpy as np
 import pandas as pd
@@ -54,7 +65,26 @@ def _build_panel(n=1000, seed=1, base=100.0, slope=0.10, chop_amp=7.0, chop_freq
 
 
 def _run(price_data, market_data, lag):
+    """Corre el backtest sobre el panel sintético.
+
+    Fija la entrada de régimen del motor a GOLDILOCKS (0) parcheando
+    ``regime_classifier.predict_current_regime`` — ver nota REGIMEN arriba.
+    El fit HMM real sigue corriendo (camino de integración intacto); solo se
+    controla el estado semántico que el motor observa para aislar la mecánica
+    de ejecución con lag que estos tests verifican.
+    """
     engine = BacktestEngine(initial_capital=25000)
+    clf = engine.regime_classifier
+
+    def _fixed_regime(*args, **kwargs):
+        return {
+            "state": 0,
+            "state_name": clf.state_labels[0],
+            "allocation": clf.REGIME_ALLOCATION[0],
+            "confidence": 1.0,
+        }
+
+    clf.predict_current_regime = _fixed_regime
     return engine.run(
         price_data,
         market_data,
@@ -169,3 +199,70 @@ def test_update_bayesian_weights_sin_datos_de_riesgo_cae_a_signo():
     alpha, beta = engine.bayesian_updater.get_posterior("0_momentum")
     assert alpha == pytest.approx(2.0)
     assert beta == pytest.approx(1.0)
+
+
+# ── Tests F0.1 — bootstrap Monte Carlo reproducible (AUDITORIA_NIVEL_DIOS_20260902) ──
+
+class TestMonteCarloBootstrapReproducible:
+    """El bootstrap de `monte_carlo_simulation` debe ser determinístico con
+    el mismo seed (mismo patrón que `circular_block_bootstrap_ci` T2.2 en
+    probabilistic_engine.py:754). Antes del fix usaba `np.random.choice` que
+    dependía del global state — no reproducible entre corridas."""
+
+    def _make_trades(self, n=60):
+        rng = np.random.default_rng(0)
+        pnls = rng.normal(50, 200, n).tolist()
+        return [{"pnl": float(p)} for p in pnls]
+
+    def test_mismo_seed_mismo_resultado(self):
+        """Determinismo: dos llamadas con mismo seed dan mismo mean/p5/p95."""
+        bt = BacktestEngine()
+        trades = self._make_trades()
+        r1 = bt.monte_carlo_simulation(trades, n_sims=500, seed=42)["bootstrap"]
+        r2 = bt.monte_carlo_simulation(trades, n_sims=500, seed=42)["bootstrap"]
+        assert r1["mean"] == r2["mean"]
+        assert r1["p5"] == r2["p5"]
+        assert r1["p95"] == r2["p95"]
+        assert r1["prob_loss"] == r2["prob_loss"]
+
+    def test_seed_distinto_resultado_distinto(self):
+        """Sanity: cambiar el seed produce distribuciones distintas."""
+        bt = BacktestEngine()
+        trades = self._make_trades()
+        r1 = bt.monte_carlo_simulation(trades, n_sims=500, seed=42)["bootstrap"]
+        r3 = bt.monte_carlo_simulation(trades, n_sims=500, seed=99)["bootstrap"]
+        assert r1["mean"] != r3["mean"] or r1["p5"] != r3["p5"]
+
+    def test_seed_default_42_presente_en_respuesta(self):
+        """El seed usado debe quedar explícito en la respuesta para auditoría."""
+        bt = BacktestEngine()
+        trades = self._make_trades()
+        r = bt.monte_carlo_simulation(trades, n_sims=100, seed=42)["bootstrap"]
+        assert r["seed"] == 42
+
+    def test_seed_none_no_determinista_pero_registrado(self):
+        """`seed=None` produce resultados no deterministas, pero el campo
+        `seed` en la respuesta documenta que fue None (auditoría)."""
+        bt = BacktestEngine()
+        trades = self._make_trades()
+        r1 = bt.monte_carlo_simulation(trades, n_sims=100, seed=None)["bootstrap"]
+        r2 = bt.monte_carlo_simulation(trades, n_sims=100, seed=None)["bootstrap"]
+        assert r1["seed"] is None
+        assert r2["seed"] is None
+        # No determinismo — pero al menos uno de los cuantiles debe diferir
+        # (probabilidad de colisión exacta en 100 simulaciones ≈ 0)
+        assert r1["mean"] != r2["mean"] or r1["p5"] != r2["p5"]
+
+    def test_estructura_respuesta_intacta(self):
+        """Las 5 claves (mean, p5, p95, prob_loss, seed) están presentes."""
+        bt = BacktestEngine()
+        trades = self._make_trades()
+        r = bt.monte_carlo_simulation(trades, n_sims=100, seed=42)["bootstrap"]
+        for key in ("mean", "p5", "p95", "prob_loss", "seed"):
+            assert key in r, f"falta clave {key}"
+
+    def test_sin_trades_bootstrap_vacio(self):
+        """Si no hay trades, bootstrap queda {} sin crashear (compat)."""
+        bt = BacktestEngine()
+        r = bt.monte_carlo_simulation([], n_sims=100, seed=42)
+        assert r["bootstrap"] == {}

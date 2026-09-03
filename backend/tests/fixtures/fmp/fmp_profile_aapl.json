@@ -1,0 +1,18 @@
+[
+  {
+    "symbol": "AAPL",
+    "companyName": "Apple Inc.",
+    "price": 175.32,
+    "beta": 1.28,
+    "marketCap": 2750000000000,
+    "exchange": "NASDAQ Global Select",
+    "industry": "Consumer Electronics",
+    "sector": "Technology",
+    "country": "US",
+    "website": "http://www.apple.com",
+    "isActivelyTrading": true,
+    "currency": "USD",
+    "isin": "US0378331005",
+    "fullTimeEmployees": 164000
+  }
+]

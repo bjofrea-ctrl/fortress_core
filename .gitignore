@@ -26,6 +26,10 @@ pythonenv*
 # Se trackea SIEMPRE; el resto de *.json de backend/data/ sigue ignorado.
 !backend/data/trial_registry.json
 backend/data/*.json
+# Track A (2026-08-26): el trial_registry NO es un .json desechable — es el
+# ledger canónico en version control (presupuesto Bonferroni multi-agente).
+# Se trackea SIEMPRE; el resto de *.json de backend/data/ sigue ignorado.
+!backend/data/trial_registry.json
 backend/data/cache/*.json
 backend/data/cache/edgar/
 /data/
@@ -71,6 +75,15 @@ nohup.out
 
 # Heartbeat local del coordinador (Claude Code) — estado efímero, no se trackea
 .claude-heartbeat
+
+# Artefactos regenerables del screening automatizado (Fase 4) — no se trackean:
+# los produce el job diario en backend/data/cache_fundamentals_screen/.
+backend/data/cache_fundamentals_screen/
+
+# Fixture de paridad de Fase 3 (export real de InvestingPro, ~1.28MB) — no se
+# trackea en el repo por peso; se regenera desde el screener. El test de paridad
+# falla ruidoso si falta (ver tests/test_fundamentals_screen.py::canon_xlsx).
+backend/tests/fixtures/canon/
 
 # Señal de merge pendiente de aprobación — efímero, no se trackea
 .pending-merge.md

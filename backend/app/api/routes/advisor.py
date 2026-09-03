@@ -52,7 +52,7 @@ from app.api.routes.opportunities_universe import MARKET_TICKERS, SYMBOLS
 from app.config import settings
 from app.core import trial_registry
 from app.core.edgar_fundamentals import get_edgar_fundamentals
-from app.core.indicators import calculate_all_indicators
+from app.core.indicators import calculate_all_indicators, ema
 
 router = APIRouter(prefix="/api/advisor", tags=["advisor"])
 
@@ -156,14 +156,24 @@ def _load_context_sync():
 # Cache en memoria + offload a threadpool (HANDOFF 2026-08-19, bug "sin señal"):
 # _load_context_sync corría síncrono dentro de `async def` — bloqueaba el ÚNICO
 # event loop, así que hasta /health (que no toca esto) quedaba colgado detrás.
-# TTL 5 min: el universo de 50 símbolos no cambia más rápido que eso para este
+# TTL 5 min: el universo de 102 símbolos no cambia más rápido que eso para este
 # uso de solo-lectura. El lock asyncio evita manada (varias requests concurrentes
 # disparando el mismo refit caro a la vez) — la primera hace el trabajo, las
 # demás esperan sin bloquear el loop y reciben el mismo resultado cacheado.
+#
+# Cache de tickets del universo: el loop de ~102 tickets (generate_signal × 102
+# ≈ 174s) es una FUNCIÓN PURA del contexto (price_data, regime_state, calibradores).
+# Si el contexto no ha cambiado, los tickets no cambian — cachearlos con el mismo
+# TTL evita re-computar el loop en cada request (3:20 caliente → ~0.1s).
+# Se invalidan automáticamente cuando el contexto se recarga (comparando timestamps).
 _CONTEXT_CACHE_TTL_SECONDS = 300
 _context_lock = asyncio.Lock()
 _context_cache: Optional[tuple] = None
 _context_cache_time: float = 0.0
+_tickets_lock = asyncio.Lock()
+_tickets_cache: Optional[list] = None
+_tickets_cache_time: float = 0.0
+_tickets_cache_ctx_time: float = 0.0
 
 
 async def _get_context():
@@ -177,6 +187,80 @@ async def _get_context():
         return _context_cache
 
 
+async def _get_tickets(price_data, today, regime_state, signal_engine, calibrator, conformal,
+                       ctx_gen: float):
+    """Tickets del universo con cache de TTL — evita el loop de ~174s por request.
+
+    Los tickets son función pura del contexto (price_data + regime_state +
+    calibradores): si el contexto cacheado no cambió, los tickets calculados hace
+    <TTL siguen siendo válidos.
+
+    `ctx_gen` es `_context_cache_time` al momento de obtener el contexto en
+    `advisor_universe`. Se guarda como la generación de contexto de estos tickets.
+    Si el contexto se recarga entre la obtención y el cómputo de tickets, o durante
+    el cómputo (174s de threadpool), la generación guardada no coincidirá con
+    `_context_cache_time` en la próxima request → recálculo automático.
+
+    Lock propio para no bloquear /symbol (que solo usa el contexto) mientras el
+    universo re-computa su loop.
+    """
+    global _tickets_cache, _tickets_cache_time, _tickets_cache_ctx_time
+    async with _tickets_lock:
+        now = time.monotonic()
+        if (
+            _tickets_cache is not None
+            and _tickets_cache_ctx_time == ctx_gen
+            and (now - _tickets_cache_time) < _CONTEXT_CACHE_TTL_SECONDS
+        ):
+            return _tickets_cache
+        _tickets_cache = await run_in_threadpool(
+            _build_tickets_sync, price_data, today, regime_state,
+            signal_engine, calibrator, conformal,
+        )
+        _tickets_cache_time = time.monotonic()
+        _tickets_cache_ctx_time = ctx_gen
+        return _tickets_cache
+
+
+def _build_tickets_sync(price_data, today, regime_state, signal_engine, calibrator, conformal):
+    """Construye todos los tickets del universo en un solo thread serial.
+
+    Corre en el threadpool de Starlette (run_in_threadpool) para NO bloquear
+    el event loop durante los ~225s de cómputo serial (102 símbolos).
+
+    Elimina la redundancia de calculate_all_indicators para los que pasan
+    gate: generate_signal ya computa los indicadores, y se reusan para
+    dist_ema50/dist_ema200. Para los que no pasan gate (sig=None), mantiene
+    el cálculo de EMAs para preservar el payload (mismo output que el original).
+    """
+    tickets = []
+    for symbol, df in price_data.items():
+        sig = signal_engine.generate_signal(df, symbol, regime_state)
+        t = _compute_ticket(symbol, df, regime_state, today, signal_engine, calibrator, conformal,
+                            sig=sig, sig_evaluated=True)
+        t["projected"] = _projected_label(t["win_prob"], calibrator.is_fitted)
+        close = round(float(df["close"].iloc[-1]), 2)
+        t["last_close"] = close
+        t["last_close_date"] = df.index[-1].date().isoformat()
+        if sig is not None:
+            # generate_signal ya computó calculate_all_indicators — reusamos
+            ind = sig["indicators"]
+            ema50 = float(ind["ema50"])
+            ema200 = float(ind["ema200"])
+        else:
+            # Fuera de gate: SOLO las 2 EMAs necesarias para dist_ema en el payload.
+            # ema() es exactamente lo que calcula calculate_all_indicators para
+            # ema50/ema200 (ewm span adjust=False) — verificado idéntico en los 102
+            # símbolos del universo — pero sin pagar los ~30 indicadores restantes
+            # (~0.95s -> ~0.001s por símbolo).
+            ema50 = float(ema(df.close, 50).iloc[-1])
+            ema200 = float(ema(df.close, 200).iloc[-1])
+        t["dist_ema50"] = round(close / ema50 - 1.0, 4) if ema50 and not np.isnan(ema50) else None
+        t["dist_ema200"] = round(close / ema200 - 1.0, 4) if ema200 and not np.isnan(ema200) else None
+        tickets.append(t)
+    return tickets
+
+
 @router.get("/universe")
 async def advisor_universe():
     """Mesa consolidada: ticket por activo + etiqueta proyectada + transición,
@@ -188,22 +272,15 @@ async def advisor_universe():
     """
     try:
         price_data, today, regime, regime_state, signal_engine, calibrator, conformal = await _get_context()
+        ctx_gen = _context_cache_time  # generación del contexto que obtuvimos
 
-        tickets = []
-        for symbol, df in price_data.items():
-            t = _compute_ticket(symbol, df, regime_state, today, signal_engine, calibrator, conformal)
-            t["projected"] = _projected_label(t["win_prob"], calibrator.is_fitted)
-            # distancia a EMAs del motor (sin reprogramar: usa calculate_all_indicators,
-            # realineado por fecha porque el dropna de warmup acorta el frame)
-            ind = calculate_all_indicators(df.copy()).reindex(df.index)
-            close = round(float(df["close"].iloc[-1]), 2)
-            t["last_close"] = close
-            t["last_close_date"] = df.index[-1].date().isoformat()
-            ema50 = float(ind["ema50"].iloc[-1])
-            ema200 = float(ind["ema200"].iloc[-1])
-            t["dist_ema50"] = round(close / ema50 - 1.0, 4) if ema50 and not np.isnan(ema50) else None
-            t["dist_ema200"] = round(close / ema200 - 1.0, 4) if ema200 and not np.isnan(ema200) else None
-            tickets.append(t)
+        # Tickets cacheados por TTL (mismo del contexto, 300s): como dependen
+        # solo del contexto (price_data, regime_state, calibradores), son una
+        # función pura. En cache caliente la segunda llamada pasa de 200s → ~0.1s.
+        # La copia superficial evita que sort+transition contamine el cache compartido.
+        tickets = [dict(t) for t in await _get_tickets(
+            price_data, today, regime_state, signal_engine, calibrator, conformal, ctx_gen,
+        )]
 
         prior = _latest_prior_states(_load_states_history(), today)
         for t in tickets:

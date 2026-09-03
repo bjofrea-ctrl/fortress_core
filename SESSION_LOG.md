@@ -1,5 +1,131 @@
 # Fortress Core — Memoria de Sesiones (Última sesión resumida)
 
+
+## 2026-09-02 — Diagnóstico y optimización de `GET /api/advisor/universe` con 102 símbolos (Cline)
+
+**Qué**: GET /api/advisor/universe tardaba ~18 min en frío (universo 102) y, dato clave
+aportado por Boris, **3:20 min en una segunda llamada que debía estar en cache caliente
+(TTL 5 min)**. Se perfiló dónde se va el tiempo, se diagnosticó la causa real y se
+implementó la optimización de bajo riesgo (sin tocar motor ni criterio de decisión).
+
+**Diagnóstico cerrado con la medición del usuario**: el 3:20 en caliente NO significa que
+el cache de contexto falle — de hecho es la prueba de que funciona: si el replay se
+hubiera re-ejecutado, la segunda llamada habría tardado otros ~18 min. El 3:20 es
+**exactamente el costo del loop de tickets que se recomputa en CADA request y no tenía
+cache** (224.6s medidos serial original ≈ 3:44; la diferencia es variación de máquina).
+El cache de contexto (TTL 300s) solo cachea `_load_context_sync` (precios, régimen,
+calibradores) — no el resultado del loop.
+
+**Cuellos medidos (perfilado real, 102 símbolos)**:
+1. **#1 replay de calibradores** — `_fit_calibrators` → `engine._build_calibration_dataset`
+   (replay walk-forward 20d × ~2 años) ≈ 11.7s/símbolo × 102 ≈ **~20 min** en frío.
+   Dominante en frío, pagado una vez por ventana TTL. **No se tocó** (decisión de motor/TTL).
+2. **#2 loop de tickets** — `generate_signal` llama `calculate_all_indicators` (~0.95s)
+   × 102 + `_compute_ticket` que en el código original volvía a llamar `generate_signal`
+   si sig=None (doble trabajo) + `calculate_all_indicators` duplicado para el payload
+   (`dist_ema50/200`). Total original **224.6s**; este es el costo de la llamada caliente.
+3. **#3 threads contraproducentes** — 8 workers: 278.1s vs 224.6s serial (**0.8x**) por el
+   GIL de CPython. Descartado definitivamente con evidencia.
+4. **No es I/O de red en el path caliente** — los precios vienen de parquets cacheados;
+   el yfinance visible es backfill/refresh de la carga de contexto (una vez por cache).
+
+**Implementado (todo bajo riesgo, en el worktree, listo para commit)**:
+1. `decision.py` — `_compute_ticket(..., sig_evaluated=True)`: evita regenerar
+   `generate_signal` cuando el caller ya lo computó (el criterio de decisión no cambia).
+2. `advisor.py` — loop serial en un solo `run_in_threadpool` (no bloquea event loop;
+   threads paralelos medidos como contraproducentes).
+3. `advisor.py` — `ema()` directo (~0.001s) para símbolos sin gate en vez de
+   `calculate_all_indicators` (~0.95s); identidad verificada (0 diferencias en los 102).
+   Loop optimizado: **174.5s (1.29x)**.
+4. `advisor.py` — **cache de tickets del universo** (`_get_tickets`): los tickets son
+   función pura del contexto, se cachean con el mismo TTL (300s) e invalidación por
+   generación de contexto (compara `ctx_gen` con `_context_cache_time` — robusto a
+   recargas durante el cómputo). Lock propio para no bloquear `/symbol`.
+
+**Verificación**:
+- Suite: **25/25 passed** (test_advisor_api.py 22 + test_opportunities_api.py 3).
+- Cache de tickets con 102 símbolos reales (repo Desktop, sin replay de calibración para
+  no esperar ~20 min): 1ra llamada **138.6s** → 2da **1.034s** (~134x), **payload idéntico
+  verificado** (`True`).
+- Cache reseteado en `ctx` fixture de tests para aislamiento.
+
+**Pendiente (decisión de Boris, NO implementado)**: cuello #1 — opción 4a subir
+`_CONTEXT_CACHE_TTL_SECONDS` 300s→6-24h (bajo riesgo, ~0 líneas de motor) u opción 4b
+paralelizar `_build_calibration_dataset` con `ProcessPoolExecutor` (toca motor, riesgo
+medio). Doc completo: `DIAGNOSTICO_PERF_ADVISOR_102.md`. Trabajo en rama
+`bjofrea-ctrl/fundamentales-automatizado`; copias temporales en repo Desktop revertidas
+(`git checkout --`).
+
+
+## 2026-09-02 — Fix B6: regresión en 3 tests de lag, causa raíz y resolución (Cline)
+
+**Qué**: el commit `dd1d6c1` (fix B6, `_align_states` por VIX ascendente) rompió
+3 tests de `test_backtest_engine.py` (`test_entrada_con_lag_1...`,
+`test_entrada_con_lag_0...`, `test_salida_con_lag_1...`): el backtest pasó de
+generar 1 trade a 0.
+
+**Causa raíz (verificada contra código y refits reales)**: el `_market_data()`
+de esos tests usa el MISMO dataframe sintético para los 9 tickers macro
+(SPY/EFA/QQQ/GLD/DBC/TIP/TLT/AGG/^VIX) → todas las features de retorno del HMM
+son idénticas (`growth_SPY == rates_TLT == inflation_DBC`). Con el método legacy
+(pre-B6) eso hacía que los 3 `max(metrics, ...)` colapsaran al mismo raw state y
+el dict literal `{g:0, r:1, st:2, d:3}` quedara con keys duplicadas (gana la
+última) → el raw state del día de señal (2021-05-10) NO estaba en el remap y
+quedaba en 2 (STAGFLATION, no bloqueante) **por accidente del bug**. Con el
+alineamiento nuevo (VIX ascendente, determinístico) ese día cae en 3 (DEFLATION)
+y `signal_engine.generate_signal` lo bloquea (`regime_state == 3 → None`) —
+comportamiento CORRECTO del motor, expuesto por el panel sintético degenerado.
+
+**Decisión (regla: no tocar signal_engine ni elegibilidad)**: el test verificaba
+la MECÁNICA de lag (T0.2), no el régimen. Se fija la ENTRADA de régimen del motor
+a GOLDILOCKS (0) parcheando `regime_classifier.predict_current_regime` en `_run()`
+(docstring REGIMEN explica el porqué). El fit HMM real sigue corriendo; no se toca
+ni `signal_engine` ni el criterio de elegibilidad.
+
+**Verificación**: suite completa `test_backtest_engine.py` (12) +
+`test_regime_classifier.py` (7) + `test_regime_gate.py` (9) = **28 passed** en
+299.46s, 0 failures. ruff limpio.
+
+**Próximo pendiente**: retomar Fase 4 — verificación visual del dashboard contra
+`market_view_export.xlsx` (ver `VERIFICACION_VISUAL_DASHBOARD.md`) y completar la
+revisión de los ítems restantes del ROADMAP.
+
+---
+
+## 2026-09-01 — Verificación visual dashboard/Excel Fase 4 (CIERRE ítem 2 ROADMAP)
+
+**Qué**: se cerró el último punto abierto de la Fase 4 (ítem 2, "PENDIENTE VERIFICAR"):
+verificación visual del dashboard/Excel generados por `render_artifacts()` contra el
+export real de InvestingPro. Documento nuevo: `backend/VERIFICACION_VISUAL_DASHBOARD.md`
+(492 líneas). ROADMAP actualizado a CERRADO.
+
+**Cómo**: motor canónico vendorizado (`backend/app/core/motor_canonico/scripts/motor_screening.py`,
+hash byte-a-byte `84abe30...` verificado previamente) corrió directamente sobre
+`backend/tests/fixtures/canon/market_view_export.xlsx` (export real finbox.io que Boris
+re-subió el 29/08). Análisis estructural con openpyxl de ambos xlsx (metadatos, hojas,
+headers, estilos, fills, number formats, widths/heights, freeze panes, merged cells,
+conditional formatting, comentarios) + análisis del HTML (funnel, grid7, CSS vars,
+cards). Suite 32 passed, 1 skip (guard REQUIRE_PARIDAD).
+
+**Hallazgos**:
+- El export InvestingPro (input, 26 cols, 1 hoja `sheet`, header en fila 8) y el output
+  del motor (37 cols, 6 bandas de color, 2 hojas Screening+Instructivo, freeze E3,
+  DataBar `#63C384` en Price vs Fair Value, 15 tooltips, fills por balde/veredicto)
+  son formatos FUNDAMENTALMENTE distintos **por diseño** — el motor enriquece el export.
+- Diferencias intencionales documentadas: `Full Ticker` ausente del Excel output (solo
+  alimenta links del dashboard HTML), `Market Cap (Adjusted)` → `Market Cap (US$ B)`
+  con formato `#,##0.0` (motor_screening.py línea 389), filas de título del export
+  ("fortress core"/"Summary") ignoradas por el motor.
+- El motor inyecta el x14 dataBar por regex post-procesado; openpyxl emite un warning
+  benigno al releer (`Conditional Formatting extension is not supported`).
+- Distribución de baldes de esta corrida: DD 13 / WL 25 / Neutral 227 / Descartada 532 /
+  Omitidas 203 — consistente con el test de paridad PLAN §3.
+
+**Veredicto**: CERRADO. Commit `a387df0`, push a `bjofrea-ctrl/fundamentales-automatizado`,
+espejo en `/Volumes/EMPRESA/fortress_core_backups/current/`.
+
+---
+
 ## 2026-08-27 — Fix data_ingestion gap >7 (bug infra)
 
 **Bug**: `backend/app/core/data_ingestion.py::download_data()` usaba `if (gap).days > 7` en backfill (~línea 31) y refresh (~línea 42) — el updater diario (launchd nightly `scripts/data_updater.sh` 22:00) **nunca refrescaba hasta superar una semana**. Cache quedaba 0-8 días stale, invisible porque `rc=0` y los dos estados "no había nada que bajar (fin de semana)" vs "no intenté" eran indistinguibles. Confirmado: `AAPL.parquet` clavado en 2026-08-21 en 3 corridas nocturnas 24,25,26/08 con `rc=0` sin errores. Reportado por Boris como bug real de infra.
@@ -2926,3 +3052,177 @@ Nota: proceso trial18 intento-1 ya muerto (abortado >13h, documentado en ROADMAP
 **Pipeline en vivo verificado**: existe y corre 3x/día hace 3 días sin fallar, pero el log de señales solo tiene corridas de checkpoint (validación mecánica), no señal real todavía. Activar el modo real quedó documentado como prioridad futura — Boris respondió "Sí" dos veces sin elegir entre "anotar para después" o "activar ya"; dado que activar implica órdenes/señales reales y es difícil de revertir, se optó por NO activarlo ante la ambigüedad y dejarlo anotado, en vez de asumir.
 
 **Infraestructura nueva del día**: `com.fortresscore.backupdatos` (cron diario 23:00, respalda a `/Volumes/EMPRESA/FortressCore_Fuentes/` todo lo que git ignora — `fortress.db`, memorias, `.parquet` — nunca borra, rsync sin `--delete`). LEAN se archivó al externo (verificado, NO se borró de la Mac porque está tracked en git — borrar 1171 archivos versionados por 225MB no valía el ruido en la historia).
+
+## 2026-09-01 — Vista unificada de trades: backtest histórico + paper real (Cline)
+
+**Alcance**: feature mecánica sobre infraestructura existente — motor de decisión, signal_engine.py, paper_trading.py y signal_ledger.py INTACTOS. Todo aditivo.
+
+### Contexto que explica el diseño
+- `TradesTable.tsx` leía `/api/backtest/trades`, que cortaba en los últimos 50 trades de UNA corrida backtest estática (`data/backtest_results.json`).
+- Las operaciones REALES del paper se registran en `signal_ledger` (fortress.db) pero NADA las exponía al dashboard.
+- `backtest_results.json` YA tiene profundidad suficiente: 303 trades, 2019-12-02 → 2024-11-04 (~5 años, supera el piso de 3 años pedido). No hizo falta regenerar ni cachear una corrida nueva.
+
+### Qué se construyó
+1. **`backend/app/api/routes/trades.py` (nuevo router `/api/trades`)**: endpoint `GET /api/trades/combined` — lee TODOS los trades del backtest (sin el corte de 50), lee el signal_ledger de fortress.db (solo si la tabla existe; hoy el pipeline es dry-run y no hay filas), combina ambas fuentes y devuelve cada fila con **`origin: 'backtest' | 'paper'`** explícito. Orden descendente por entry_date, paginación `skip`/`limit` (default 200, 0 = todos). Totales separados: `total` / `backtest_total` / `paper_total`.
+2. **Contrato unificado por fila**: symbol, entry_date, exit_date, entry_price, exit_price, shares, pnl (USD absoluto), pnl_r (relativo, el backtest no lo tenía → se calcula), exit_reason, status, signal_id. **Órdenes paper abiertas** (`status='open'`) devuelven exit_price/pnl/pnl_r = null — NO se fabrica P&L ficticio con close_fill_price NULL (bug detectado en validación).
+3. **`TradesTable.tsx`**: fetch a `/api/trades/combined`; columna **Origen** con badge BT/PAPER; columna P&L %; leyenda con conteos por origen; filas open renderizan "abierta"/"—".
+4. **`main.py`**: `trades.router` registrado. El endpoint legacy `/api/backtest/trades` queda INTACTO (TradeDistribution lo consume).
+5. **Tests**: `test_trades_api.py` NUEVO (8) contra tmp_path (nunca al runtime real): sin archivo ni DB, sirve >50 sin cortar, combina con origin explícito, orden desc, paper cerrado trae fills/pnl, paper abierto no fabrica pnl, paginación, DB sin tabla → solo backtest. **8/8 passed**; suites relacionadas (backtest_api + trades_api + paper_trading) 22 passed; ruff limpio.
+
+### Estado real del ledger (verificado)
+Ninguna fortress.db del repo tiene hoy la tabla `signal_ledger` — el pipeline diario corrió en dry-run y nunca escribió paper real. La vista mostrará "0 paper" hasta que el pipeline active el modo real (decisión pendiente de Boris documentada más arriba).
+
+### Docs
+README.md tabla de endpoints actualizada con `/api/trades/combined`.
+
+### Corrección post-commit (mismo día, feedback de Boris sobre la DB real de main)
+Boris probó `/api/trades/combined` contra la DB real y encontró **2 filas de CHECKPOINT**
+(MSFT/AAPL, 26-27 ago, signal_id prefijo `chkpt__`, exit_reason `OVERRIDE_MECANISMO — no es señal real`)
+apareciendo bajo `origin='paper'` con el mismo badge PAPER que una señal real — rompía la regla
+de nunca mezclar sin etiqueta. **Fix commit `57a4c66`**:
+- `_read_ledger_trades()` ahora filtra en SQL: `WHERE signal_id NOT LIKE 'chkpt__%'`
+  (constante `CHECKPOINT_SID_PREFIX` duplicando la convención de `pipeline_daily_signal.py:139`).
+- Decisión (criterio: vista de "operaciones reales"): **excluirlas por defecto**, no
+  etiquetarlas — son validación del mecanismo del tubo, no trades. `paper_total` solo cuenta
+  filas reales (la leyenda del frontend no miente).
+- Test nuevo `test_excluye_checkpoint_override_de_operaciones_reales`: siembra una fila
+  `chkpt__MSFT__2026-08-26` en el fixture y verifica que no aparece en `/combined` ni en
+  `paper_total`; las 3 reales sí. Suite `test_trades_api.py`: **9/9 passed**, ruff limpio.
+
+
+## 2026-09-03 — Auditoría de automatización (launchd) y almacenamiento (Kilo Code, gate)
+
+Mantenimiento de infraestructura, no investigación. Repo autoritativo Desktop (main 55633ac).
+Documento completo con todas las tablas: `AUDITORIA_AUTOMATIZACION_ALMACENAMIENTO.md`.
+
+**Automatización**: crontab vacío; todo launchd. Inventario 10 plists repo vs 11 cargados.
+Cero drift de contenido en los 8 jobs presentes en ambos lados (diff idéntico). Hallazgos:
+1. `fundamentals_screen` commiteado pero nunca cargado (caso conocido) — verificado
+   no-destructivo (solo escribe en cache_fundamentals_screen/ + logs; FMP cuota protegida;
+   RunAtLoad=false) → **cargado** (`launchctl load -w`), primera corrida launchd hoy 22:30.
+   Las corridas manuales del 02/09 habían terminado con screening 0 símbolos (FMP vacío,
+   state.json resumible); el job de esta noche retoma con --resume.
+2. Drift inverso: `intraday` y `autobackup` cargados pero SIN plist en repo → copiados a
+   scripts/ y commiteados (antes, una restauración desde GitHub perdía ambos silenciosamente).
+3. `daily_notify` sin cargar BY DESIGN (TELEGRAM/SMTP vacíos, per ONBOARDING).
+4. Todos los jobs cargados: exit 0 con corridas reales recientes (verificado log a log).
+5. Bóvedas: 2/2 idénticas byte a byte vs /Volumes/EMPRESA; el Permission denied del 01/09
+   fue puntual del montaje, auto-resuelto.
+
+**Almacenamiento**: interno 83Gi libres (umbral check_disk_health 15GB → 5.5× holgura),
+externo EMPRESA 1.8Ti libres. backend/data/cache 65MB. Crecimiento medido: intradía 1min
+7 símb ~0.55MB/sem; fundamentals screen ~2.3MB/sem; OHLCV 102 símb ~2-3MB/sem; total
+**~5-6MB/sem ≈ 300MB/año** → sin acción de storage requerida. Vigilante real: ~/.claude
+2.2GB (umbral agentes 5GB). Pre-acuerdo preventivo: si interno baja de 30GB libres,
+migrar artefactos grandes de backtests al externo ANTES de que apriete; nada se borra sin
+confirmación explícita de Boris. Esta auditoría no borró ni movió nada.
+
+Pendiente para 09-04: verificar `launchctl list | rg fundamentals` + log 22:30 + artefacto
+screen_2026-09-03.json (primera corrida launchd del screening).
+
+## 2026-09-03 (tarde) — Auditoría integral del sistema, óptica Simons (Kilo Code)
+
+Encargo de Boris: auditar fortress completo (debilidades/oportunidades/amenazas), evaluar
+prompts, context, harness, loops, memory engineering, matemáticas y análisis sistemático
+de opciones, con el objetivo final de máxima rentabilidad. Solo lectura (gate activo).
+
+Método: 3 exploraciones paralelas (agentes/LLM+prompts, matemáticas vs código,
+loops+memoria) + spot-check directo de cada hallazgo crítico contra el artefacto.
+Doc: AUDITORIA_INTEGRAL_SISTEMA_20260903.md (complementa AUDITORIA_NIVEL_DIOS_20260902,
+cuya Fase 0 ya estaba ejecutada).
+
+Hallazgos críticos nuevos (verificados):
+- D1: pipeline diario NO importa la capa multi-agente — SignalEngine decide solo;
+  gobernanza LLM = fachada de dashboard. record_prediction sin caller automático (n=0).
+- D2: reconcile_open_positions SIN caller productivo → condición (c) del gate
+  ("sin órdenes huérfanas") inejecutable; el contador de días limpios mide sin verificar.
+- D3: sin kill-switch ni alertas automáticas (divergencia PnL no detiene nada).
+- D5: DSR del motor DEFAULT_N_TRIALS=5 vs 51 reales del ledger (sub-deflaciona).
+- D6: PBO §39 vigente (0.2358) entra lag-0 (close→close) vs estándar T0.2 open→close.
+- D-Opciones: presencia CERO (sin Black-Scholes/IV/griegas/cadenas) — la familia
+  de estrategias ausente entera; post-gate con yfinance options (gratis) + barras 1-min.
+- Decorativo confirmado: drift_detector sin consumidor, knowledge_repo sin embeddings
+  (17 entradas hardcodeadas, Jaccard), hardiness half muerto, REGIME_ALLOCATION sin uso.
+
+Recomendación (única línea, no menú): ANTES del gate construir el loop cerrado de
+ejecución — reconciler en pipeline health + kill-switch por divergencia + telemetría
+decision vs fill por orden (libro de costos propio) + hash-guard de motor + DSR n_trials
+unificado. Es construcción, permitida durante el gate. POST-gate: opciones (VRP/GEX/PEAD
+vía opciones) y meta-labeling (I5) como familias nuevas pre-registradas.
+
+Veredicto Simons: aparato de falsificación institucional montado sobre aparato de
+ejecución universitario; el sistema aprende a refutar hipótesis, no aprende de sus
+operaciones. Cerrar el loop primero — sin medir la propia ejecución, ninguna señal
+futura puede validarse honestamente.
+
+## 2026-09-03 (mañana+tarde) — PLAN_REMEDIO_BRECHAS_20260903.md (Kilo Code)
+
+Boris pidió el plan de implementación de alta calidad para remediar las 4 brechas de
+capacidad (subpotencia, sin intradía, sin multivariado, patrón≠ineficiencia) + familia
+opciones ausente. Doc: PLAN_REMEDIO_BRECHAS_20260903.md, estructurado en 4 fases:
+
+- FASE A (esta semana, 100% gate-permitida): cerrar el loop de ejecución y blindar el
+  gate — reconciler en pipeline 22:10 (hace verificable condición (c)), contador de
+  días limpios AUTOMÁTICO, kill-switch pre-registrado (4 reglas), hash-guard sha256
+  del motor, telemetría decision-vs-fill (libro de costos propio), DSR n_trials del
+  motor → ledger, enforcement técnico del gate en trial_registry, nota lag-0 §39,
+  flag GOVERNANCE_LLM_ENABLED=false.
+- FASE B (semanas 1-8, paralela): acumulación donde estará el edge — colector intradía
+  7→30, colector superficie IV yfinance diario (la familia opciones empieza a acumular
+  datos HOY), feature store versionado, holdout sellado 2025-09-01, MDE ex-ante como
+  hook del pre-registro (fin de la refutación-teatro), contrato de señal única con
+  golden bit-idéntico, point-in-time opcional.
+- FASE C: evaluación 1/12 o contador≥60 días limpios verificados.
+- FASE D (post-gate): meta-labeling primero, luego opciones (VRP/GEX/PEAD-options),
+  shrinkage James-Stein, neutralización RMT; intradía genuina y multivariada después.
+
+Urgencia documentada: cada día sin reconciler+contador automático es un día que la
+racha mide sin verificar (c) — la fecha de evaluación real es max(2026-12-01, arranque
++ 60 días VERIFICADOS). Aprobación de Boris requerida por fase (es su decisión de
+producto). Commit de este plan: docs only, cero código tocado.
+
+## 2026-09-03 (cierre) — Plan ampliado: B0 granja de ejecución fantasma (Kilo Code)
+
+Pregunta de Boris: "¿qué agregarías tú, más allá de lo pedido, para elevar la rentabilidad?".
+Adición principal al PLAN_REMEDIO_BRECHAS_20260903.md como B0 (propuesta, requiere OK de
+Boris por la segunda cuenta paper Alpaca): granja de ejecución fantasma — misma señal
+congelada, cero variantes, cuenta paper SEPARADA, órdenes chicas muestreadas a horas
+(09:35/12:00/14:00/15:30) y tamaños (1/3/10), todo taggeado SHADOW_. Convierte los 60 días
+de gate en 600-1800 fills reales (vs n=156 de todo agosto): libro de costos propio con
+curva por hora/tamaño (D3 lo necesita desde el día 1), features de fill para meta-labeling
+(D1), modelo de costos para opciones (D2). Gate-legal: telemetría I9 amplificada (Regla 0
+la permite explícitamente); cuenta separada + tag impide contaminar el ledger oficial.
+Secundarias B0.bis: cross-check de precios yfinance↔Alpaca al ingerir (fresness hoy mide
+antigüedad no corrección — auditado) y fund-the-moat (screening AAI como ingreso no
+correlacionado post-gate). Cronograma y dependencias actualizados en el plan.
+
+## 2026-09-03 (cierre 2) — PLAN_IMPLEMENTACION_REMEDIO_20260903.md (Kilo Code)
+
+Boris pidió el plan de implementación CON fundamentos para conversarlo con Claude Code.
+Doc nuevo (complementa PLAN_REMEDIO_BRECHAS, no lo reemplaza): especificación por ticket
+con fundamentos de diseño, 6 open questions genuinas para Claude, cronograma con orden
+interno, presupuesto (~13-17 sesiones pre-gate) y criterios verificables.
+
+Decisiones de diseño pre-declaradas en el plan (Claude las stress-testea):
+1. Racha NO retroactiva al 09-02: arranca con el freeze completo (~09-08); días previos
+   UNVERIFIED_C (honestidad > optimismo: la condición (c) era inejecutable antes de A1).
+2. A1 reconciler como WRAPPER (verifica (c) re-consultando ledger vs positions) — editar
+   paper_trading.py para cosméticos resetea el contador (regla del gate); A1 no lo toca.
+3. A3 kill-switch asimétrico: frena entradas nuevas, JAMÁS EXIT ni reconcile; rearme solo
+   manual (kill que se rearma solo no existió).
+4. A4 freeze en 2 pasos: núcleo YA (excepción: A6 bugfix antes del freeze), pipeline al
+   cierre de Fase A; racha oficial = firma del manifiesto completo.
+5. A7 enforcement: allow-list de UNA entrada (pbo39_lag0_fix, bugfix_medicion, post-gate).
+6. B0 firewall duro: SIN cuenta paper separada NO se construye (riesgo existencial para
+   el gate si un fill SHADOW toca signal_ledger). Plan de muestreo pre-declarado con
+   verificación A0 de límites Alpaca (PDT/equity/rate) ANTES del primer fill.
+7. B5 MDE umbral 0.10 pre-declarado, override de Boris por trial registrado.
+8. B6 golden bit-idéntico por consumidor migrado (pipeline PRIMERO, antes del freeze A4).
+
+Open questions para Claude: semántica 60 días (acumulados vs consecutivos — posición:
+acumulados + peor racha como contexto), freeze del pipeline (edición A interna vs
+sub-scripts cron), umbral MDE, B0 sin cuenta separada (línea dura NO-GO), A9 flag vs
+borrado, B7 ahora o post-gate.
+
+Pendiente: conversación Boris+Claude sobre las open questions → aprobación por fase →
+arranque Fase A (A6 primero, freeze del núcleo inmediatamente después).

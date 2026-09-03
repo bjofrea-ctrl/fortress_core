@@ -10,7 +10,12 @@ Code, Cline, OpenCode), leer este documento primero. Al cerrar, actualizarlo ant
 — marcar lo que se cerró, agregar lo que apareció nuevo. Ningún ítem se da por cerrado sin
 marcarlo acá, aunque se haya resuelto "de pasada" en otra conversación.
 
-Última actualización: 2026-08-28 (noche).
+Última actualización: 2026-09-02.
+
+**⏱️ CONTADOR DEL GATE — día 1/60 limpio, arrancado 2026-09-02.** Universo 102
+confirmado en vivo desde hoy (corrida 09:35 ya lo usó). Actualizar esta línea a mano
+cada vez que se verifique un día limpio (ver definición en regla 0) — es el
+contador visible que sostiene la regla, no una formalidad.
 
 ## PENDIENTE AHORA — chequear primero, antes de leer el resto
 
@@ -18,18 +23,57 @@ Coordinación multi-agente vía Orca (Claude Code como coordinador; Kilo Code, O
 Cline como implementadores). Verificar contra `git log --oneline -10`,
 `ps aux | grep screening_palas` y las ramas de cada worktree antes de asumir estado.
 
+0. **REGLA VIGENTE — GATE DE 90 DÍAS (decisión de Boris, 2026-09-02, tras auditoría
+   `AUDITORIA_NIVEL_DIOS_20260902.md` + análisis externo GLM 5.3)** — 🔴 la más
+   importante de todo este documento, léela antes que cualquier otra cosa.
+   **Cero hipótesis nuevas, cero pilotos nuevos, cero frentes de investigación
+   nuevos hasta que el paper trading (con la contabilidad corregida de
+   `paper_trading.py`, commit `1466dcc`) acumule datos limpios.**
+   **Precondición (agregada 2026-09-02 tras revisión GLM): la fecha mide
+   TIEMPO LIMPIO, no calendario** — exige ≥60 días de pipeline 3×/día
+   corriendo SIN interrupciones con la contabilidad corregida vigente. Si
+   el colector/pipeline tiene una semana muerta entre hoy y la fecha, la
+   evaluación corre hasta completar los 60 días limpios — no se decide con
+   menos del único activo que el gate necesita. Fecha de
+   evaluación: **2026-12-01, o más tarde si faltan días limpios** (90 días
+   es el piso, no el techo). **Definición de "día limpio" (fijada 2026-09-02,
+   ANTES de que haga falta, para que el 1/12 no sea debate)**: cuenta si Y
+   SOLO SI las 3 condiciones se cumplen ese día hábil — (a) `pipeline_diario.log`
+   muestra `rc=0` en sus 3 corridas programadas (9:35/15:40/22:10 ET); (b)
+   `data_updater.log` sin línea `PRECIOS: ERROR`; (c) `reconcile_open_positions`
+   corrió sin dejar órdenes huérfanas con `pnl_r` sin explicar (ver
+   `paper_trading.py` commit `1466dcc`). Un día que falla cualquiera de las 3
+   NO cuenta y no rompe la racha retroactivamente — solo no suma. Universo:
+   **102 confirmado en vivo desde 2026-09-02** (corrida 09:35 ya lo usó, sin
+   paso de migración pendiente) — el contador no espera nada más para
+   arrancar. Criterio pre-declarado —
+   el mismo estándar que ya rige todos los trials formales del proyecto, no
+   uno nuevo más permisivo: **DSR≥0.90 en ≥2/3 ventanas**. Si a esa fecha
+   nada cruza el umbral: se decide CON DATOS entre (a) reducir el proyecto a
+   mantenimiento, (b) pivotar el frente de investigación, o (c) aceptarlo
+   como laboratorio personal sin aspiración de capital — no se seguirá
+   pateando la decisión sin condición de salida (esto es lo que el
+   pre-mortem señaló como causa real de burnout, no el código).
+   **Lo único permitido en paralelo mientras corre el gate** (mecánico,
+   ninguno depende de investigación nueva): F0 de la auditoría (bugs, no
+   decisiones), el colector intradía I3, telemetría de ejecución I9, y
+   cerrar lo que ya estaba abierto antes de esta regla (mapeo HMM B6,
+   inventario de series para el SPA — cerrado, ver hallazgo abajo, latido
+   de datos I-heartbeat). PBO vigente: **§39 (0.2358) cerrado como oficial
+   2026-09-02** (ver `PLAN_MEJORA_MATEMATICA.md §40.1`) — §40 (0.4688)
+   queda citado con limitación, no revocado. Nada de esto consume el tiempo
+   del gate; el gate lo consume solo el paper trading corriendo solo, todos
+   los días.
+
 1. **A6.3 — screening PALA/RESTO/POOLED** — 🟢 trial original CERRADO
    (29/08, `COMPLETED`/`NO_CUMPLE`, ver §12 de `PRE_REGISTRO_SCREENING_PALAS.md`).
-   **Saneamiento del check APROBADO por Boris (29/08) y EN CURSO**: Kilo
-   implementó el check corregido (N_TRIALS igualado a 17 SOLO para la
-   comparación, sin tocar el default de ningún script) y reservó un
-   trial nuevo (`screening_palas_saneada_a63`, `RESERVED` en el ledger,
-   familia `signal_diagnosis`). Corre como 3 procesos detached
-   (PALA/RESTO/POOLED) desde el 29/08 22:25 — PALA terminó esa misma
-   noche, **RESTO y POOLED seguían corriendo al 30/08 mediodía** (fueron
-   más lentos de lo esperado, probablemente por el sleep de la Mac
-   overnight). Al terminar: revisar la salida cruda ANTES de llamar
-   `complete_trial()` — instrucción explícita a Kilo de no auto-completar.
+   **Saneamiento del check APROBADO por Boris (29/08) — 🟢 CERRADO (31/08)**:
+   Kilo implementó el check corregido (N_TRIALS igualado a 17 SOLO para la
+   comparación, sin tocar el default de ningún script), corrió los 3
+   procesos paralelos (PALA/RESTO/POOLED) y el ledger quedó
+   `screening_palas_saneada_a63` = `COMPLETED`/`NO_CUMPLE`
+   (artefacto `data/cache/screening_palas_parallel_raw_20260830_partial.txt`,
+   verificado por mí antes de commitear el cierre del ledger).
    **W3 investigado a fondo (OpenCode, 30/08,
    `INVESTIGACION_W3_A63_20260830.md` en worktree `test-opencode-orca`,
    spot-check verificado por mí)**: no es un parámetro mal puesto — es
@@ -103,10 +147,15 @@ Cline como implementadores). Verificar contra `git log --oneline -10`,
    - Verificado por mí, corriendo todo de cero: 93 passed, 0 skipped
      (suite completa + paridad estricta), tamaños/hashes de los artefactos
      en disco coinciden exacto con lo reportado.
-   - **PENDIENTE VERIFICAR** (pedido explícito de Boris, no cerrado
-     todavía): que el dashboard/Excel generados se *vean* iguales al
-     original de AAI (formato/layout), no solo que los tests pasen —
-     abrir los artefactos reales y mirarlos.
+   - **VERIFICADO VISUALMENTE (01/09, `backend/VERIFICACION_VISUAL_DASHBOARD.md`)**:
+      el dashboard/Excel generados por `render_artifacts()` (motor vendorizado) se
+      compararon estructuralmente contra el export real de InvestingPro
+      (`market_view_export.xlsx`, fixture canon). El motor produce el formato canónico
+      correcto: 2 hojas (Screening + Instructivo), 37 columnas en 6 bandas de color,
+      freeze_panes E3, DataBar en Price vs Fair Value, 15 tooltips, fills por
+      balde/veredicto, dashboard HTML grid7 con funnel 13/25/227/532/203. Todas las
+      diferencias vs el export input son intencionales (el motor enriquece el export
+      con el sistema de bandas y clasificación propio). Veredicto: **CERRADO**.
    Sigue necesitando `FMP_API_KEY`/`FINNHUB_API_KEY` reales para probar
    contra la red de verdad (hasta ahora todo probado con mocks, declarado
    así explícitamente, no ocultado).
@@ -146,6 +195,30 @@ Cline como implementadores). Verificar contra `git log --oneline -10`,
    29/08 se le preguntó A) anotar para después vs B) activar ya, y la
    respuesta ("Sí" repetido dos veces sin elegir) no alcanzó ese umbral —
    se optó por A) hasta tener una confirmación sin ambigüedad.
+10. **ATLAS — Sistema de ingeniería inversa precio→indicador por ticker**
+    (`DISENO_ATLAS_INGENIERIA_INVERSA_20260901.md`, commit `23f4aee` →
+    implementación `0f2c798`) — 🟢 **CERRADO capa 1 (descriptiva)**, 01/09.
+    Origen: trabajo de Boris 30/08 con Kilo (worktree `test-kilo-orca`,
+    `INGENIERIA_INVERSA_POR_TICKER.md`) exploró NVDA/AAPL/EPAM/QLYS de forma
+    puntual; Boris pidió generalizar a un SISTEMA reutilizable sobre todo el
+    universo. Diseño (aprobado 01/09) propuso dos capas: ATLAS descriptivo
+    (cualquier celda, sin ledger) y GRADUACIÓN (pre-registro + deflactación
+    Bonferroni por conteo real de celdas — única vía a regla). Implementación
+    v1 (alcance declarado: universo 50 canónico, 3 ind, 3 horiz, W1/W2/W3/TOTAL,
+    9 celdas régimen sin h60 por §5.4): `backend/scripts/atlas_ticker.py`
+    (988 líneas, 8 funciones, offline, cache-only, sin tocar el motor).
+    Outputs: `atlas_celdas.csv`, `fichas/<TICKER>.md`, `resumen_arquetipos.md`,
+    `atlas_meta.json`, `kilo_validacion.csv` (con `--kilo-validacion`).
+    Tests: 5 grupos del §8.5 del diseño — sin look-ahead (x_t invariante a h),
+    gates cobertura (INSUFICIENTE cuando N<3), convención t−1→t+h, idempotencia,
+    conteo real de celdas. **13 tests passed, 1 skip, suite conjunta
+    41 passed** con `test_fundamentals_screen.py` (sin romper nada).
+    Validación cruzada Kilo (gratis): NVDA × momentum_12_1 × h20 × TOTAL →
+    atlas spread Q5−Q1 = +306bp, piloto Kilo spread high−low = +249bp,
+    **ambos positivos → match_direccional TRUE**. Hallazgo visual del piloto
+    2y/60d (NVDA reversionista) y 5y/60d (EPAM desplome) preservados como
+    celdas del atlas — heterogeneidad por ticker confirmada por construcción.
+    Capa 2 (graduación) NO implementada, esperando decisión de Boris.
 
 Si alguna de estas cambió de estado cuando leas esto, actualizá esta sección
 (borrala o marcá cerrado) — no la dejes desactualizada.
@@ -490,9 +563,13 @@ gantt
 | Frontend | Dashboard completo rediseñado (estilo institucional) | 🟢 cerrado (2026-08-17) | — | Nuevo `Layout.tsx` con paneles colapsables, Header unificado, fix contrato GovernancePanel (triad/controller/judge/professor), URLs hardcodeadas eliminadas en SystemStatus/RiskPanel, index.css modernizado. Build OK (TS sin errores), 242 tests backend pass |
 | Frontend | Dashboard institucional consolidado — advisor API + mesas por vista + Exit Thesis Monitor (Kilo Code) | 🟢 cerrado (2026-08-17) | Verificación visual del navegador HECHA (2026-08-19) — ver nota final | Consolidación del rebuild de Claude Code + plan Kilo sobre `frontend/` (sin rama aparte). Backend: router `/api/advisor` (universe/symbol/theses/evidence, solo lectura, reutiliza `_compute_ticket` de decision.py — cero reprogramación del motor) + 21 tests. Frontend: 4 vistas con lazy-loading (Mesa/Detalle/Portfolio/Gobernanza), tokens TradingView exactos (#131722/#1e222d/#26a69a/#ef5350), chart Lightweight Charts con EMA50/200 + zonas mecánicas (entry/stop 2×ATR/target 4×ATR) + widget TradingView secundario con degradación graceful, etiquetas proyectadas §29 pre-registradas (mapeo verificado contra `baseline_clean_20260811_150643_trades.parquet`: ≥0.70→VPP 87.5% n=8; ≥0.65→73.7% n=19; <0.45→RIESGOSA_SIN_APOYO sin afirmar pérdida), Exit Thesis Monitor (`decision_theses.json` atómico: se sale cuando se pierde la tesis), Evidence Footer vivo desde trial_registry, badge de honestidad global, chip de staleness (>2 ruedas), API URL vía VITE_API_URL. Code splitting: bundle principal 624 kB → 152 kB. Acceptance: 263 tests backend, ruff limpio en archivos nuevos, tsc+build OK, endpoints crudos verificados en vivo (universe 44 símbolos régimen 2, CVX detalle 400 barras EMAs consistentes con gates, AAPL fundamentals EDGAR, theses, evidence tolerante a umbral str). Campo costo/trade RESUELTO por la Tarea E (2026-08-19) — ver fila propia. **UNIVERSE 44 EXPLICADO (2026-08-19, Tarea F)**: el endpoint iteraba `opportunities.SYMBOLS`, lista curada HARDCODED de 44 (distinta del universo 50 de investigación) — **NO era bug**, era duplicación manual. **FIX APLICADO (2026-08-19, decisión de Boris "los 50")**: módulo canónico `app/api/routes/opportunities_universe.py` deriva SYMBOLS desde `scripts/fetch_universe_data.NEW_UNIVERSE` (fuente única) + 7 base = **50** con dedup y fallback; opportunities/decision/advisor conectados vía re-exportación. Verificado en vivo: `/api/advisor/universe` → **50 states** (AMD/CMCSA/DIS/INTU/META/PFE/QCOM/SPGI/TSLA presentes, ABT/GS/WFC fuera), régimen STAGFLATION sin cambio, suite 271 passed. **VERIFICACIÓN VISUAL DEL NAVEGADOR (2026-08-19, Tarea G, OpenCode)**: stack levantado (uvicorn :8000 + vite :3000) y 4 vistas inspeccionadas vía Chrome headless + CDP (DOM renderizado post-fetch + logs de consola). Mesa/Portfolio/Gobernanza cargan sin errores de consola; Detalle renderiza chart Lightweight Charts (canvas, EMA50/200) + Zonas mecánicas + M2 + Plan de salida 4 mecanismos (partial tp/trailing/technical/regime stop) con datos reales; CostField visible en todas las vistas con datos reales: `COSTO REAL/LADO: 0.017% · n=156 · q1: 0.019% · q10: 0.013% · q50: 0.004%`; badge honestidad + chip staleness presentes. **HALLAZGO (no bloqueante, backend — NO arreglado en esta tarea)**: `/api/advisor/AAPL` tarda ~80s (vs MSFT 2.8s) porque `_compute_ticket` intenta descargar de Yahoo símbolos fantasma (`$BASELINE_CLEAN_..._EVENTS`, `$COT_2019`, etc.) que dan timeout de red ~1s c/u — es costo de arranque/cache fría del endpoint de detalle, no del frontend; el chart aparece al completar. **RESUELTO 2026-08-21 (Tarea K, Cline) — ver fila propia más abajo en esta tabla. Ver SESSION_LOG. **TAREA F (2026-08-19, Kilo Code) — DIAGNÓSTICO universe 44 vs 50**: NO es bug. El endpoint usa `opportunities.SYMBOLS` (44, lista curada hardcoded), NO el "universo 50" (BASE_SYMBOLS 7 + NEW_UNIVERSE 43 de `fetch_universe_data.py`/`measure_execution_costs.py`) que usan los trials de investigación. Verificado empíricamente: los 44 de SYMBOLS pasan el filtro `len(df)>200` de `load_universe` (0 descartados) → el endpoint devuelve los 44 definidos. Diferencia de listas: en 50-no-44 = [AMD, CMCSA, DIS, INTU, META, PFE, QCOM, SPGI, TSLA]; en 44-no-50 = [ABT, GS, WFC]. Artefacto: `data/cache/diagnostico_universo_20260819_174613.txt`. Acción (no aplicada, es diagnóstico): si se quiere cubrir los 50, cambiar `opportunities.SYMBOLS` al universo 50; si no, documentar 44 como universo de decisión intencional. |
 | Perf | `/api/advisor/{symbol}` ~80s en frío por símbolos fantasma (Tarea K, Cline) | 🟢 cerrado (2026-08-21) | — | TRAZA confirmada: la ruta Yahoo←cache era el glob de `_cache_date()` (advisor.py) que trataba artefactos de trials como símbolos; el fix (entrado en commit `d2819ab` junto al barrido live/market/predict) itera SOLO `SYMBOLS + MARKET_TICKERS` del universo canónico (`opportunities_universe.py`, fuente única de Tarea F) — cero heurística de nombre de archivo, y toda la cadena `advisor→decision→opportunities→load_universe→download_data` usa listas canónicas (ningún glob llega a Yahoo). Verificado: `data/cache/` sin artefactos (60 parquet = tickers reales), `_cache_date()` 0.37s. Medición fría real (contexto vacío): AAPL 276s ≈ MSFT 252s — **la asimetría del bug desapareció**; el costo restante es el refit de calibradores (~4 min compute local, idéntico para cualquier símbolo), que el cache TTL 5min de `_get_context` paga una sola vez por proceso: AAPL caliente **1.36s** (~= MSFT 2.8s histórico, medido caliente). Test nuevo `test_cache_date_ignora_artefactos` (parquet BASELINE_CLEAN/COT/CAPITAL_USAGE con fecha 2030 en cache de test → cero llamadas a yfinance y no contamina la fecha del cache); suite advisor **22 passed** (Python 3.9). Limpio `import glob` muerto de advisor.py. Detalle en SESSION_LOG 2026-08-21. Sin commit/push (regla de la ronda). |
+| Perf | `GET /api/advisor/universe` ~18 min frío / 3:20 caliente con 102 símbolos (2026-09-02, Cline) | 🟢 diagnóstico cerrado + optimización implementada | — | Diagnóstico cerrado con la medición de Boris (2da llamada caliente 3:20 = loop de tickets recomputado por request; el cache de contexto SÍ evita el replay de ~20 min — de otro modo la 2da llamada habría tardado otros ~18 min). Cuellos medidos: #1 replay calibradores `_build_calibration_dataset` ~11.7s/símbolo × 102 ≈ 20 min (frío, TTL 300s); #2 loop de tickets 102×`generate_signal`+`_compute_ticket` (original **224.6s**, sin cache → es el 3:20 caliente). Implementado (bajo riesgo, sin tocar motor ni criterio): (1) `_compute_ticket(sig_evaluated=True)` evita doble generate_signal; (2) `ema()` directo (~0.001s) en vez de `calculate_all_indicators` (~0.95s) para los ~97 sin gate — loop **174.5s** (1.29x); (3) cache de tickets del universo (`_get_tickets`, TTL 300s ligado a la generación del contexto, lock propio) — 2da llamada caliente **1.034s vs 138.6s** medido real 102 símbolos (~134x), payload idéntico verificado; threads descartados con evidencia (0.8x por GIL). Suite **25/25** (advisor 22 + opportunities 3). Doc completo: `DIAGNOSTICO_PERF_ADVISOR_102.md`. Pendiente decisión de Boris para cuello #1: opción 4a TTL contexto 300s→6-24h (bajo riesgo, ~0 líneas de motor) u opción 4b paralelizar replay con ProcessPoolExecutor (toca motor, riesgo medio) |
 
 | Producto | `signal_engine.py` comentario/cita falsa sobre ADX | 🟢 cerrado (2026-08-16, commit `243e19f`) | — | Comentarios corregidos en `signal_engine.py` (líneas 16-25 y 51-59): afirmaban "adx mostró IC negativo" cuando el artefacto corregido (§0.5a, `rr2_intraday_20260811_150741.txt`) mide **IC +0.0679, t=+2.31 nominal — POSITIVO, único factor con señal nominal**, marginal no robusto bajo Bonferroni-4 (≈2.5). La cita repetía la auditoría pooled vieja (metodología descartada). Verificado: suite completa 216 passed |
 | Producto | LEAN/QuantConnect | ⚪ parqueado, uso futuro pretendido (2026-08-14) | Datos ampliados si crece el universo, o ejecución real si hay señal validada | Imagen Docker (42.5GB) borrada del disco local por espacio — recuperable gratis con `docker pull` cuando se retome. No tocar hasta que aparezca uno de los dos disparadores |
+| Infraestructura | **Auditoría completa de automatización (launchd) y almacenamiento** (2026-09-03, Kilo Code) | 🟢 cerrada — 2 fixes aplicados | — | Inventario 10 plists repo vs 11 cargados, cero drift de contenido, crontab vacío. **Fix 1**: `fundamentals_screen` commiteado pero nunca cargado → verificado no-destructivo (solo escribe artefactos+logs, cuota FMP protegida, RunAtLoad=false) y **cargado con `launchctl load -w`** (primera corrida 22:30, confirmar 09-04). **Fix 2**: `intraday`+`autobackup` cargados pero SIN plist en repo (drift inverso — restaurar desde GitHub los perdía) → copiados a `scripts/` y commiteados; 12/12 jobs versionados. `daily_notify` sigue sin cargar BY DESIGN (TELEGRAM/SMTP vacíos). Almacenamiento: interno 83Gi libres (umbral diskhealth 15GB, 5.5× holgura), externo 1.8Ti; `backend/data/cache` 65MB creciendo **~5-6MB/sem (~300MB/año)** a ritmo 102 símbolos+intradía 7 símb/30min+screen diario — sin acción requerida. Bóvedas verificadas idénticas byte a byte en EMPRESA (Permission denied 01/09 fue puntual del montaje). Doc completo: `AUDITORIA_AUTOMATIZACION_ALMACENAMIENTO.md` |
+| Auditoría | **Auditoría integral del sistema, óptica Simons** (2026-09-03, Kilo Code) | 🟢 cerrada — hallazgos D1-D12 verificados | — | Complementa AUDITORIA_NIVEL_DIOS (F0 ya ejecutada, F1.6 HMM ya ejecutada 93b5718). **Nuevos críticos, todos spot-checkeados contra código**: D1 capa multi-agente LLM NO se importa en el pipeline diario (solo SignalEngine decide el dinero — la gobernanza es fachada de dashboard); D2 `reconcile_open_positions` SIN caller productivo → condición (c) del gate ("sin órdenes huérfanas") inejecutable, contador de racha contaminado de origen; D3 sin kill-switch ni alertas (divergencia PnL no detiene nada); D4 loop de aprendizaje vacío (record_prediction solo manual, historial n=0); D5 DSR motor DEFAULT_N_TRIALS=5 vs 51 reales (sub-deflaciona); D6 PBO §39 entra lag-0 al cierre (inconsistente con T0.2); D10 sizing sin estructura de cartera (8 factores RMT huérfanos); **D-opciones: análisis de opciones con presencia CERO en el repo** (sin BS/IV/griegas — familia ausente entera). Recomendación única: cerrar el loop de ejecución ANTES del gate (reconciler en pipeline + kill-switch + telemetría fills + hash-guard motor + DSR n_trials unificado) — es construcción permitida; post-gate abrir opciones y meta-labeling (I5) como familias nuevas pre-registradas. Doc: `AUDITORIA_INTEGRAL_SISTEMA_20260903.md` |
+| Plan | **PLAN_REMEDIO_BRECHAS_20260903.md** — remedio completo de las 4 brechas de capacidad (2026-09-03, Kilo Code) | 🔵 plan aprobado-pendiente, Fase A ES ESTA SEMANA | Boris aprueba explícitamente por fase | Fase A (gate-permitida, esta semana): A1 reconciler en pipeline 22:10 (D2), A2 contador de días limpios AUTOMÁTICO con evidencia por condición, A3 kill-switch pre-registrado (DD>10%, PnL<−3σ, fill<80%, staleness>2 ruedas; STOP_FILE que frena entradas nuevas, nunca EXIT), A4 hash-guard sha256 del motor en fase health (contador reinicia solo si cambio declarado), A5 telemetría decision-vs-fill por orden → tabla execution_telemetry (libro de costos propio I9), A6 DSR n_trials=None→ledger (D5), A7 enforcement técnico del gate en trial_registry (rechaza trials nuevos en ventana salvo bugfix/infra), A8 nota lag-0 §39 + pre-registro post-gate (D6), A9 flag GOVERNANCE_LLM_ENABLED=false (D1 honesto). Fase B (paralela, datos/tooling): B1 colector intradía 7→30, B2 colector superficie IV yfinance 22:35 diario (familia opciones empieza a acumular HOY), B3 feature store versionado I6, B4 holdout sellado 2025-09-01 (I7), B5 MDE ex-ante hook en pre-registro (I1 — fin refutación-teatro), B6 contrato de señal única SOLO con golden bit-idéntico, B7 point-in-time opcional. Fase C: evaluación 1/12 o contador≥60. Fase D (post-gate, pre-registradas): D1 meta-labeling I5 → D2 opciones VRP/GEX/PEAD-options, D4 shrinkage James-Stein I4, D6 neutralización RMT; D3 intradía genuina, D5 multivariada tras D1. **Urgencia**: cada día sin A1/A2 es un día que el contador mide sin verificar (c) — la fecha real de evaluación es max(2026-12-01, arranque + 60 días VERIFICADOS) |
 | Producto | Conexión a broker real | 🔴 bloqueada, correctamente | Validar edge neto de costos primero (§13) | No avanzar hasta cerrar investigación. **Insumo listo para cuando se desbloquee** (§33.1, PLAN_MEJORA_MATEMATICA.md, evidencia JoF 2025 verificada): ranking de brokers por calidad de ejecución medida — TD Ameritrade (7.2bps RT) y Fidelity (19.7bps) en el extremo bueno; IBKR Lite/Pro (44-46bps) en el extremo malo; Alpaca/Schwab no estudiados directamente, Schwab con indicios de estar en el grupo bueno. No repetir esta investigación cuando llegue el momento |
 | Seguridad | **`fortress.db` (SQLite local) nunca se respalda** | 🟢 cerrado (2026-08-12, commit `217eb51`) | — | `backup_db()` en `auto_backup.sh` + paso 6.5 en `backup.sh` (`sqlite3 .backup` → `/Volumes/EMPRESA/fortress_core_backups/db/`, retención 20). Verificado: snapshots cada ~10 min en disco externo, launchd instalado |
 | Seguridad | GET endpoints sin auth que disparan LLM real (costo/abuso) | 🟢 mitigado (2026-08-12, commit `217eb51`) | — | Rate limit en memoria (10 llamadas/60s por IP) aplicado vía `RateLimitDependency` en `routes/predict.py` y `routes/governance.py`. Sin auth completa por decisión (UI pública); el rate limit acota el abuso de costo. Test: `test_rate_limit.py` |
@@ -507,6 +584,7 @@ gantt
 | Infraestructura | **Frente 2 — Pipeline diario launchd (com.fortresscore.pipeline)** | 🟢 instalado 26/08 16:42 · verificado 27/08 11:34 — ORDEN INVERTIDO vs plan (ver detalle) | — | Instalado 26/08 16:42 (auto-backup 52c20a4) ANTES de checkpoint Semana 1 verificado 27/08 — quiebra PLAN_MAESTRO_FASE_PRODUCCION.md que exige checkpoint antes de instalar cron. Kickstart `launchctl kickstart -k gui/501/com.fortresscore.pipeline` 27/08 11:33:57 → runs 0→1 LastExit 0, Fase health (fuera de ventanas), artefacto pipeline_run_health_20260827_113404, pipeline_diario.log 2541→3300 B rc=0, pipeline_launchd.log 0 B BY DESIGN (todo redirige a pipeline_diario.log, mismo patrón que data_updater). Cache 6d at limit (último 21/08). Verificado end-to-end; no bloquea Semana 2 pero rastro corrige orden. Logs: scripts/pipeline_diario.log (canónico) + backend/data/cache/pipeline_run_*. |
 | Infraestructura | **Bug data_ingestion gap >7 — cache stale 6d invisible** | 🟡 fix listo para revisión 27/08 (NO mergeado, pendiente gate) — 2 umbrales corregidos + señal explícita + 11 tests | Gate de aprobación antes de merge a main | `data_ingestion.py:31,42` `>7`→`>=1` (backfill y refresh, justificación daily updater, >=1 lee intención mejor que >0) + logs `[data_ingestion]` distinguen `attempting`/`attempted but empty`/`no new rows`/`no refresh needed`/`cache miss` (edge df.empty). Test `test_data_ingestion.py` 11 tests (gap 2 habría sido saltado con >7, gap1/0, empty/dedup). Suite 467 collected, batched 467 passed (full run >600s por heavy tests, batched OK). Vivo: AAPL 2026-08-21→2026-08-26 (3 filas 24-26, 2926→4187 con backfill 1258) tras fix; 2da corrida gap1 log distinto. Diff pendiente, no commiteado. |
 | Infraestructura | **Garantías anti-evasión Bonferroni familia `re_test`** (H3.1 auditoría GLM, Cline) | 🟡 hecho en worktree — espera merge (2026-08-26) | Aprobado por Boris (2026-08-26): implementar §4.1+4.2+4.3 del análisis (`ANALISIS_RE_TEST_BONFERRONI.md`) | `trial_registry.py`: (1) `re_test_de` obligatorio cuando `familia=re_test` — objetivo existente y ANTERIOR en el registro, veredicto NO_CUMPLE, familia de investigación (no `producto`, no cadenas re_test); (2) tope `MAX_RETESTS_PER_TARGET=2` por objetivo (subirlo = decisión explícita visible en diff); (3) `n_trials_consumidos=0` solo legal en `re_test` (cierra el vector real: cero libre en cualquier familia). Invariante cruzado corriendo tanto en `register_trial()` como en carga completa (`_load_raw`) — un JSON editado a mano también explota. Backfill actualizado: las 2 entradas históricas citan su objetivo real (`fase06_retest_sentimiento`→`trial_08_sentimiento`, `fase06_retest_fundamentales`→`trial_09_fundamentales`, existencia verificada antes de escribir). Tests: 8 rutas pedidas + 2 existentes ajustadas al contrato nuevo; suite completa **420 passed**, ruff limpio. Verificado sobre copia en /tmp: ledger sin migrar falla ruidoso; con las 2 líneas migradas carga completo (47 entradas). **PENDIENTE AL MERGEAR**: migrar el `trial_registry.json` de producción agregando los 2 campos `re_test_de` (2 líneas, sin más), porque el código nuevo rechaza el archivo sin ellos POR DISEÑO |
+| Auditoría | **AUDITORIA_NIVEL_DIOS_20260902.md** — auditoría cuant integral (4 líneas paralelas + verificación directa de código) | 🟡 informe emitido, plan propuesto (2026-09-02) | Decisión de Boris sobre qué fases ejecutar | Hallazgos críticos verificados: bug pnl_r=0 en `paper_trading.py:114-119`; motor heurístico no validado expuesto en /predict-family; bootstrap sin seed `backtest_engine.py:697`. Fases 0–3 propuestas en el documento (F0: fixes inmediatos; F1: integridad aparato; F2: diseño muestral/holdout/universo ampliado; F3: intradía vía LEAN). Regime matching: pausa de pilotos hasta pre-registro de graduación |
 
 
 | Instrumento | M5 — Detector de deriva | 🟢 hecho (2026-08-15) | — | `app/core/drift_detector.py`, OpenCode, KS+Bonferroni+concepto, 18 tests, abstención con n<30 |
@@ -546,6 +624,7 @@ gantt
 | Frontend | **Infraestructura de testing de frontend** — Vitest + RTL + tests de contrato (GovernancePanel, CostField, hooks advisor) (2026-08-23, Cline vía Orca; plan de Claude Code) | 🟢 cerrado (2026-08-23) | — | Primera suite de tests del frontend (antes: cero, ver AUDITORIA_TECNICA). Deps verificadas contra package.json real (React 18.2/Vite 5/TS 5.3/Node v24): vitest@2.1.9 (línea 2.x por soporte explícito de Vite 5), jsdom@25.0.1, @testing-library/react@16.3.2 + dom@10.4.1 (peer obligatorio de RTL 16) + jest-dom@6.9.1. Config: bloque test jsdom en vite.config.ts (import desde vitest/config) + src/test/setup.ts; scripts `npm test` (vitest run) y `npm run test:watch`. **17 tests**: GovernancePanel (7) — fija el contrato post-bug-P0 (`governance.triad.{bull,bear,contrarian}.score`, `controller.approved`, `judge.verdict`, URLs `/api/governance/status` y `/api/governance/analyze/{symbol}`), error HTTP 500 visible, skeleton de loading, estado del sistema; CostField (4) — loading sin número, `medido=false` → SIN MEDICIÓN con nota en tooltip y NUNCA un % aunque venga basura (contrato de honestidad M4), medido → costo formateado + n + curva q1/q10/q50, caveat PAPER en tooltip; hooks advisor (6) — useExecutionCosts éxito/error con detail del body/refetch, useAdvisorSymbol(null) no llama a la API. Mock de global.fetch, cero red. **Verificado CORRIDO (no de palabra)**: `npx vitest run` → 17 passed (3 archivos, 14.7s, cero warnings act); `tsc` limpio (27.5s, tipa los tests también) y `vite build` OK (863 módulos, bundle principal 152.95 kB — igual al documentado, sin regresión). Commit `7c154f2` en worktree test-cline-orca (rama bjofrea-ctrl/test-cline-orca, SIN push a main — coordinación vía Orca). Backend y motor intactos. Pendiente heredado: extender cobertura a otras vistas (Mesa/Detalle/Portfolio) y considerar CI para frontend |
 
 | Frontend | **Tests de las 4 vistas principales** (Mesa, Detalle, Portfolio, Gobernanza) + 3 fixes de degradación graceful (2026-08-24, Cline vía Orca) | 🟢 cerrado (2026-08-24) | — | Extensión del patrón Vitest+RTL a `src/test/views/`: **24 tests nuevos** (MesaPage 6: contadores por estado, banners staleness/blocked_reason, reintentar re-invoca ambos hooks, tesis ROTA primero; DetailPage 4: matching de tesis por símbolo —nunca cruza símbolos—, error con status, thesis=null graceful; DetailView 8: **zonas mecánicas** entrada/stop 2×ATR/target 4×ATR con disclaimer anti-predicción, nulls→— sin NaN/undefined, fundamentales sin cobertura EDGAR explícitos, toggle chart local↔TV, M2 abstención; PortfolioPage 3: composición de 7 paneles sin crash con endpoints colgados/500/payloads mínimos; GovernancePage 3: fallback SPY y API_URL centralizada). Charts mockeados (canvas fuera de alcance jsdom). **Hallazgo operativo previo**: los 3 commits del 23-08 NO estaban en main pese a lo reportado — recuperados del reflog y re-aplicados sobre main actualizada (cherry-picks limpios). **3 bugs reales encontrados por los tests y arreglados**: (1) `KPICards` no chequeaba `resp.ok` ni validaba forma → crasheaba el dashboard si `/api/backtest/metrics` devolvía 500 con body JSON; (2) `TradeDistribution` mostraba "NaN%" con lista de trades vacía (0/0); (3) `RiskPanel` mostraba "-NaN%" si el monitor no traía `absolute_ceiling`. Verificado CORRIDO: vitest → **41 passed (8 archivos)**, tsc limpio, vite build OK (bundle principal 152.95 kB intacto). Commit `43e614d` en worktree test-cline-orca, SIN push. Backend/motor intactos |
+| Frontend | Vista unificada de trades: backtest histórico + paper real en el dashboard (Cline, 2026-09-01) | 🟢 cerrado (2026-09-01) | — | `TradesTable.tsx` ahora lee `/api/trades/combined` (nuevo router) que combina 303 trades de backtest (2019-12→2024-11, sin límite de 50) + operaciones reales del signal_ledger (fortress.db). Cada fila lleva `origin: 'backtest' | 'paper'` explícito. Columna Origen con badge BT/PAPER y columna P&L %. Ördenes paper abiertas (status=open) muestran "—" en P&L. Contrato legacy `/api/backtest/trades` intacto. 8 tests nuevos, 22 passed suites relacionadas, ruff limpio, tsc 0. Detalle en SESSION_LOG 2026-09-01 |
 
 | Seguridad | `trial_registry.json` sin backup versionado (el rsync SÍ lo copiaba, pero sin retención propia — corrupción local se propagaba al espejo en el siguiente ciclo) | 🟢 cerrado (2026-08-24, commit `c67a99c`) | — | `backup_trial_registry()` en `auto_backup.sh` y `backup.sh` (paso 6.6), mismo patrón que `backup_db()`: timestamped, retención 20 copias en `/Volumes/EMPRESA/fortress_core_backups/trial_registry/` |
 | Código | CI no corría tests de frontend (8 archivos Vitest existían, cero cobertura en push/PR) | 🟢 cerrado (2026-08-24, commit `c67a99c`) | — | Job `frontend` nuevo en `ci.yml` (setup-node 20, `npm ci`, `npm run test`). Verificado localmente con `npm ci` (mismo comando del runner): 41/41 tests, 8/8 archivos |

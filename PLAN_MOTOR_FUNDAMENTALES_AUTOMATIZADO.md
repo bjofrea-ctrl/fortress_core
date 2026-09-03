@@ -74,16 +74,53 @@ testeado y verificado.
   tal cual para la salida. Logo, colores, tribunales, "cómo leer este informe":
   todo se hereda sin tocar.
 
-### Fase 4 — Integración
+### Fase 4 — Integración 🟢 CERRADA (2026-08-29, commit `67109a6`)
 
 - Endpoint nuevo en el backend (solo lectura) que expone el resultado del screening
-  automático.
-- Cron diario/semanal (mismo patrón que `com.fortresscore.dataupdater.plist`).
-- Pestaña nueva del dashboard institucional: empotrar (iframe) el mismo HTML que ya
-  genera `generar_dashboard()`, en vez de reimplementar el diseño visual en React —
-  preserva el trabajo de diseño ya hecho sin duplicar esfuerzo.
-- Pestaña nueva en el dashboard institucional (acordado con Boris 2026-08-27) que
-  muestra el resultado más reciente — sin necesitar ningún export manual.
+  automático: `/api/fundamentals/screen/latest`, `/screen/dashboard.html`,
+  `/screen/export.xlsx`, `/screen/state`. Todos sirven artefactos de disco.
+- Cron diario (`scripts/fundamentals_screen_daily.sh` + `.plist` 22:30 local),
+  versionado en repo. Sigue el patrón de `data_updater.sh`.
+- **Generación real de artefactos**: `fundamentals_artifacts.py` llama
+  `motor.generar_excel()` y `motor.generar_dashboard()` del motor canónico
+  vendorizado (`motor_canonico/scripts/motor_screening.py`, hash `84abe308...`
+  byte-a-byte del skill r13). El job runner devuelve rc=3 si el render falla.
+- **Tests e2e** (4 tests): corren el job completo contra fixtures FMP y verifican
+  que produce `screen_<date>.json`, `dashboard_<date>.html`,
+  `Screening_AAI_<date>.xlsx`. Si el job no genera el HTML, fallan en rojo.
+- **Fixture de paridad estable**: `_CANON_XLSX` apunta a
+  `backend/tests/fixtures/canon/market_view_export.xlsx` (no `~/Downloads`).
+  Skip ruidoso con `REQUIRE_PARIDAD=1` como gate de merge. Referencia hermana en
+  `test_fundamentals_ingestion.py` actualizada al mismo path.
+- **`.gitignore`**: `fixtures/canon/` (1.28MB) y `cache_fundamentals_screen/`
+  excluidos (artefactos regenerables).
+- **Pestaña frontend** (item 8 ROADMAP, 2026-08-30): `FundamentalsPage.tsx`
+  embebe el dashboard vía iframe con verificación previa de disponibilidad
+  (fetch → 200 muestra iframe, 503/red caída muestra mensaje accionable sobre
+  el cron). Tab "Fundamentos" en `Layout.tsx`, code splitting (chunk 1.92 kB).
+  5 tests de degradación graceful. Verificado: 46 passed, build tsc+vite OK,
+  endpoint vivo HTTP 200 (31KB). Realiza la decisión de diseño acordada:
+  empotrar (iframe) el mismo HTML de `generar_dashboard()` en vez de
+  reimplementar el diseño visual en React.
+- Verificado: 44 passed, 1 skipped. Endpoints sirven artefactos via async call.
+- **Lo NO probado en vivo**: job contra FMP real (requiere API key, no está en el
+  repo por diseño). Con clave ficticia FMP rechaza → rc=2 limpio.
+
+### Pendiente post-merge (verificado 2026-08-30, NO hacer antes del merge)
+
+1. **Instalar el cron**: `com.fortresscore.fundamentals_screen.plist` está versionado
+   en `scripts/` pero NO instalado en `~/Library/LaunchAgents/`. NO instalar todavía:
+   el `.sh` apunta a `REPO=/Users/boris/Desktop/fortress_core` (main), que NO tiene
+   el código de fundamentales (verificado: `fundamentals_screen.py`,
+   `fundamentals_artifacts.py`, `motor_canonico/` ausentes de main al 30/08). Si se
+   instala ahora, el job de 22:30 falla todas las noches con ModuleNotFoundError.
+   Secuencia correcta: (a) merge de esta rama a main → (b) `cp
+   scripts/com.fortresscore.fundamentals_screen.plist ~/Library/LaunchAgents/ && launchctl
+   load ~/Library/LaunchAgents/com.fortresscore.fundamentals_screen.plist` →
+   (c) verificar con `launchctl list | grep fundamentals` + corrida manual del `.sh`.
+2. **Corrida end-to-end contra FMP real**: requiere `FMP_API_KEY` real en el `.env`
+   del repo principal. Hasta entonces, lo único probado es el flujo con mocks (e2e)
+   y el motor canónico con fixtures.
 
 ## Aislamiento — cero colisión con Kilo/OpenCode
 

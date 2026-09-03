@@ -155,7 +155,21 @@ class PredictionResult:
     # Score compuesto y decisión
     composite_score: float = 0.0
     decision: str = "MANTENER"
-    confidence: str = "Baja"
+    confidence: str = "Baja"   # categórico ("Baja"/"Media"/"Alta") — NO probabilidad calibrada
+
+    # ── HONESTIDAD DEL MOTOR (AUDITORIA_NIVEL_DIOS_20260902 F0.2) ────────────
+    # Este motor es HEURÍSTICO: combina indicadores técnicos + fundamentales
+    # + macro + sentiment + TRIAD (BULL/BEAR/CONTRARIAN vía LLM) con pesos fijos
+    # por régimen. NO pasó por trial pre-registrado, NO tiene DSR medido,
+    # NO consume slot del ledger, NO está validado contra OOS walk-forward.
+    # Comparación con signal_engine.py: el `SignalEngine` genera señales que
+    # SÍ pasan por el ledger `motor_signal` con DSR≥0.90 — `signal_diagnosis`
+    # para diagnósticos. Este motor NO está en ese circuito.
+    motor: str = "heuristico_no_validado"   # único valor posible mientras no se valide
+    probabilidades_calibradas: bool = False  # False: las prob_up_* son scores
+                                              # normalizados a [0,1], NO frecuencias
+                                              # empíricas. No usar como P(real).
+    # ───────────────────────────────────────────────────────────────────────
 
     # Probabilidades por horizonte
     prob_up_short: float = 0.5

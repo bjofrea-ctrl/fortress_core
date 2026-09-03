@@ -23,6 +23,13 @@ class Settings(BaseSettings):
     # esto, get_fundamentals() sigue usando el sample hardcodeado de 6 tickers.
     FINNHUB_API_KEY: str = ""
 
+    # Fuente primaria de estados financieros crudos del motor de fundamentales
+    # automatizado (PLAN_MOTOR_FUNDAMENTALES_AUTOMATIZADO.md, Fase 1).
+    # Free tier: https://financialmodelingprep.com/ — 250 llamadas/día. Vacía =
+    # el cliente FMP no se instancia como primario (construye, no bloquea; la
+    # ingesta degrada al cruce Finnhub o devuelve el cache). NUNCA en código.
+    FMP_API_KEY: str = ""
+
     # Notificaciones diarias (Pieza 4): aviso de oportunidades 16:30 ET.
     # Vacíos = canal desactivado; el notifier salta el canal sin fallar.
     TELEGRAM_BOT_TOKEN: str = ""

@@ -1,0 +1,12 @@
+[
+  {
+    "symbol": "AAPL",
+    "targetHigh": 275.0,
+    "targetLow": 185.0,
+    "targetConsensus": 245.5,
+    "targetMean": 245.5,
+    "targetMedian": 247.0,
+    "numberOfAnalystOpinions": 39,
+    "currentPrice": 232.32
+  }
+]
