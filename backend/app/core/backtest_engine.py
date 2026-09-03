@@ -1,3 +1,7 @@
+from __future__ import annotations
+
+import os
+from concurrent.futures import ProcessPoolExecutor
 from datetime import datetime
 from typing import Dict, List, Optional, Tuple
 
@@ -30,6 +34,62 @@ CALIBRATOR_ROLLING_WINDOW_DAYS = 730  # ~2 años calendario, similar al train_wi
 # Un outcome de 0.2R pesa como 1 observación (piso); uno de 12R pesa 10 (cap).
 BAYES_EVIDENCE_STRENGTH_CAP = 10.0
 
+# Cuello #1 (cuello paralelizable, DIAGNOSTICO_PERF_ADVISOR_102 §"Propuestas 4b").
+# Umbral mínimo de símbolos para activar ProcessPoolExecutor: por debajo de
+# esto, el overhead de pickling + fork domina y no hay ganancia. 8 sale de
+# la observación empírica del baseline (17s/símbolo) — el costo del fork
+# (~0.5-1s) empieza a compensar a partir de ~8 símbolos.
+_CALIBRATION_PARALLEL_MIN_SYMBOLS = 8
+
+
+def _calibrate_symbol(
+    symbol: str,
+    df: pd.DataFrame,
+    train_end_date: datetime,
+    train_start_date: Optional[datetime],
+    execution_lag_days: int,
+) -> Tuple[List[float], List[float]]:
+    """Unidad picklable del replay de calibración para un único símbolo.
+
+    Reproduce EXACTAMENTE el cuerpo del loop interno de
+    BacktestEngine._build_calibration_dataset (líneas 73-103) sin acceso a
+    `self`, para poder ejecutarse en procesos separados vía
+    ProcessPoolExecutor. Sin estado compartido: cada worker construye su
+    propia SignalEngine() — `factor_weights` es atributo de SignalEngine
+    inicializado en __init__ con valores del módulo, idéntico en todos los
+    procesos hijos (mismo código, mismo pickle).
+
+    Returns:
+        (scores, outcomes) como listas planas — el caller concatena.
+    """
+    # SignalEngine requiere un regime_classifier. Con regime_state=0 fijo
+    # acá, el classifier no se usa en compute (sólo se almacena en
+    # self.regime_classifier); construimos uno nuevo por worker para no
+    # arrastrar el pesado GlobalRegimeClassifier del padre por pickle.
+    signal_engine = SignalEngine(GlobalRegimeClassifier())
+    train_df = df[df.index < train_end_date]
+    if train_start_date is not None:
+        train_df = train_df[train_df.index >= train_start_date]
+    n = len(train_df)
+    if n < 220:
+        return [], []
+
+    scores: List[float] = []
+    outcomes: List[float] = []
+    for i in range(200, n - CALIBRATION_HORIZON_DAYS, CALIBRATION_STRIDE_DAYS):
+        sig = signal_engine.generate_signal(train_df.iloc[: i + 1], symbol, regime_state=0)
+        if sig is None:
+            continue
+        if execution_lag_days >= 1:
+            entry = train_df["open"].iloc[i + 1]
+        else:
+            entry = train_df["close"].iloc[i]
+        future = train_df["close"].iloc[i + CALIBRATION_HORIZON_DAYS]
+        won = future > entry
+        scores.append(sig["score"])
+        outcomes.append(1.0 if won else 0.0)
+    return scores, outcomes
+
 
 class BacktestEngine:
     def __init__(self, initial_capital: float = 25000.0):
@@ -49,26 +109,34 @@ class BacktestEngine:
         update_bayesian: bool = True, train_start_date: datetime = None,
         execution_lag_days: int = 1,
     ) -> Tuple[np.ndarray, np.ndarray]:
-        """
-        Replay histórico previo a train_end_date: por cada fecha (cadencia semanal)
-        genera la señal que se habría emitido y la etiqueta como win/loss según el
-        precio CALIBRATION_HORIZON_DAYS hábiles después. Usa regime_state=0 como
-        aproximación (los filtros de entrada no cambian por régimen, salvo el
-        bloqueo en régimen 3, que de todos modos no genera señal).
+        """Replay histórico + warm-start Bayesiano opcional. Ver docstring previo."""
+        scores: List[float] = []
+        outcomes: List[float] = []
 
-        De paso, con el mismo replay hace un warm-start del BayesianOnlineUpdater
-        por (régimen=0, factor) para que el BMA no arranque en frío. Los regímenes
-        1-3 sólo se calibran online durante el loop principal del backtest, que sí
-        usa el régimen real de cada fecha.
+        use_parallel = (
+            not update_bayesian
+            and len(indicators_cache) >= _CALIBRATION_PARALLEL_MIN_SYMBOLS
+        )
 
-        update_bayesian=False evita ese warm-start — necesario para refits
-        periódicos del calibrador (walk-forward real): si se repitiera el
-        warm-start en cada refit, la evidencia de los primeros años se
-        re-contaría cada vez que la ventana se expande, sesgando el
-        posterior Bayesiano hacia la historia temprana en vez de aprender
-        online de verdad.
-        """
-        scores, outcomes = [], []
+        if use_parallel:
+            # Cuello #1: paralelizar CPU-bound sin estado compartido.
+            n_workers = max(1, min(os.cpu_count() or 1, len(indicators_cache)))
+            items = list(indicators_cache.items())
+            with ProcessPoolExecutor(max_workers=n_workers) as ex:
+                futures = [
+                    ex.submit(
+                        _calibrate_symbol,
+                        symbol, df, train_end_date, train_start_date, execution_lag_days,
+                    )
+                    for symbol, df in items
+                ]
+                for fut in futures:
+                    sym_scores, sym_outcomes = fut.result()
+                    scores.extend(sym_scores)
+                    outcomes.extend(sym_outcomes)
+            return np.array(scores), np.array(outcomes)
+
+        # Serial (path original, preserva warm-start Bayesiano cuando aplica)
         priors = self.signal_engine.factor_weights[0]
         for symbol, df in indicators_cache.items():
             train_df = df[df.index < train_end_date]
@@ -81,11 +149,6 @@ class BacktestEngine:
                 sig = self.signal_engine.generate_signal(train_df.iloc[: i + 1], symbol, regime_state=0)
                 if sig is None:
                     continue
-                # Precio de entrada con el MISMO lag de ejecución que el loop
-                # principal: con execution_lag_days>=1 la señal emitida con el
-                # cierre de 'i' se ejecuta en la apertura de 'i+1' (primera
-                # oportunidad real de operar). Con 0 se conserva el sesgo
-                # original (señal y ejecución en la misma barra, cierre de 'i').
                 if execution_lag_days >= 1:
                     entry = train_df["open"].iloc[i + 1]
                 else:
@@ -94,7 +157,6 @@ class BacktestEngine:
                 won = future > entry
                 scores.append(sig["score"])
                 outcomes.append(1.0 if won else 0.0)
-
                 if update_bayesian:
                     for factor, factor_score in sig["factors"].items():
                         predicted_up = factor_score > 0.5
