@@ -3154,3 +3154,29 @@ Veredicto Simons: aparato de falsificación institucional montado sobre aparato 
 ejecución universitario; el sistema aprende a refutar hipótesis, no aprende de sus
 operaciones. Cerrar el loop primero — sin medir la propia ejecución, ninguna señal
 futura puede validarse honestamente.
+
+## 2026-09-03 (mañana+tarde) — PLAN_REMEDIO_BRECHAS_20260903.md (Kilo Code)
+
+Boris pidió el plan de implementación de alta calidad para remediar las 4 brechas de
+capacidad (subpotencia, sin intradía, sin multivariado, patrón≠ineficiencia) + familia
+opciones ausente. Doc: PLAN_REMEDIO_BRECHAS_20260903.md, estructurado en 4 fases:
+
+- FASE A (esta semana, 100% gate-permitida): cerrar el loop de ejecución y blindar el
+  gate — reconciler en pipeline 22:10 (hace verificable condición (c)), contador de
+  días limpios AUTOMÁTICO, kill-switch pre-registrado (4 reglas), hash-guard sha256
+  del motor, telemetría decision-vs-fill (libro de costos propio), DSR n_trials del
+  motor → ledger, enforcement técnico del gate en trial_registry, nota lag-0 §39,
+  flag GOVERNANCE_LLM_ENABLED=false.
+- FASE B (semanas 1-8, paralela): acumulación donde estará el edge — colector intradía
+  7→30, colector superficie IV yfinance diario (la familia opciones empieza a acumular
+  datos HOY), feature store versionado, holdout sellado 2025-09-01, MDE ex-ante como
+  hook del pre-registro (fin de la refutación-teatro), contrato de señal única con
+  golden bit-idéntico, point-in-time opcional.
+- FASE C: evaluación 1/12 o contador≥60 días limpios verificados.
+- FASE D (post-gate): meta-labeling primero, luego opciones (VRP/GEX/PEAD-options),
+  shrinkage James-Stein, neutralización RMT; intradía genuina y multivariada después.
+
+Urgencia documentada: cada día sin reconciler+contador automático es un día que la
+racha mide sin verificar (c) — la fecha de evaluación real es max(2026-12-01, arranque
++ 60 días VERIFICADOS). Aprobación de Boris requerida por fase (es su decisión de
+producto). Commit de este plan: docs only, cero código tocado.
