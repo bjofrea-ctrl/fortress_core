@@ -3089,3 +3089,33 @@ de nunca mezclar sin etiqueta. **Fix commit `57a4c66`**:
   `chkpt__MSFT__2026-08-26` en el fixture y verifica que no aparece en `/combined` ni en
   `paper_total`; las 3 reales sí. Suite `test_trades_api.py`: **9/9 passed**, ruff limpio.
 
+
+## 2026-09-03 — Auditoría de automatización (launchd) y almacenamiento (Kilo Code, gate)
+
+Mantenimiento de infraestructura, no investigación. Repo autoritativo Desktop (main 55633ac).
+Documento completo con todas las tablas: `AUDITORIA_AUTOMATIZACION_ALMACENAMIENTO.md`.
+
+**Automatización**: crontab vacío; todo launchd. Inventario 10 plists repo vs 11 cargados.
+Cero drift de contenido en los 8 jobs presentes en ambos lados (diff idéntico). Hallazgos:
+1. `fundamentals_screen` commiteado pero nunca cargado (caso conocido) — verificado
+   no-destructivo (solo escribe en cache_fundamentals_screen/ + logs; FMP cuota protegida;
+   RunAtLoad=false) → **cargado** (`launchctl load -w`), primera corrida launchd hoy 22:30.
+   Las corridas manuales del 02/09 habían terminado con screening 0 símbolos (FMP vacío,
+   state.json resumible); el job de esta noche retoma con --resume.
+2. Drift inverso: `intraday` y `autobackup` cargados pero SIN plist en repo → copiados a
+   scripts/ y commiteados (antes, una restauración desde GitHub perdía ambos silenciosamente).
+3. `daily_notify` sin cargar BY DESIGN (TELEGRAM/SMTP vacíos, per ONBOARDING).
+4. Todos los jobs cargados: exit 0 con corridas reales recientes (verificado log a log).
+5. Bóvedas: 2/2 idénticas byte a byte vs /Volumes/EMPRESA; el Permission denied del 01/09
+   fue puntual del montaje, auto-resuelto.
+
+**Almacenamiento**: interno 83Gi libres (umbral check_disk_health 15GB → 5.5× holgura),
+externo EMPRESA 1.8Ti libres. backend/data/cache 65MB. Crecimiento medido: intradía 1min
+7 símb ~0.55MB/sem; fundamentals screen ~2.3MB/sem; OHLCV 102 símb ~2-3MB/sem; total
+**~5-6MB/sem ≈ 300MB/año** → sin acción de storage requerida. Vigilante real: ~/.claude
+2.2GB (umbral agentes 5GB). Pre-acuerdo preventivo: si interno baja de 30GB libres,
+migrar artefactos grandes de backtests al externo ANTES de que apriete; nada se borra sin
+confirmación explícita de Boris. Esta auditoría no borró ni movió nada.
+
+Pendiente para 09-04: verificar `launchctl list | rg fundamentals` + log 22:30 + artefacto
+screen_2026-09-03.json (primera corrida launchd del screening).

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.fortresscore.intraday</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/boris/Desktop/fortress_core/backend/.venv/bin/python</string>
+        <string>-m</string>
+        <string>scripts.collect_intraday_1min</string>
+    </array>
+    <key>WorkingDirectory</key>
+    <string>/Users/boris/Desktop/fortress_core/backend</string>
+    <key>StartInterval</key>
+    <integer>1800</integer>
+    <key>RunAtLoad</key>
+    <false/>
+    <key>StandardOutPath</key>
+    <string>/Users/boris/Desktop/fortress_core/scripts/intraday_collector.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/boris/Desktop/fortress_core/scripts/intraday_collector.log</string>
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PYTHONPATH</key>
+        <string>/Users/boris/Desktop/fortress_core/backend</string>
+    </dict>
+</dict>
+</plist>
