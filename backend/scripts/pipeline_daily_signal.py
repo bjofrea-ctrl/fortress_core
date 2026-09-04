@@ -52,6 +52,7 @@ from app.api.routes.opportunities_universe import SYMBOLS as UNIVERSE
 from app.config import settings
 from app.core.indicators import calculate_all_indicators
 from app.core.signal_engine import SignalEngine
+from scripts.motor_manifest import load_manifest, verify_manifest  # noqa: E402
 
 # Track B (paso 4b): logging best-effort de senales/ordenes para futura
 # reconciliacion pipeline-backtest (paso 4c, en 2-4 semanas).
@@ -62,6 +63,8 @@ CACHE_DIR = os.path.join("data", "cache")
 STATE_PATH = os.path.join(CACHE_DIR, "pipeline_state.json")
 DECISION_PREFIX = os.path.join(CACHE_DIR, "pipeline_decision_")
 ARTIFACT_DIR = CACHE_DIR
+# A4 hash-guard: log dedicado de drifts detectados por phase_health.
+HASH_GUARD_LOG = os.path.join(CACHE_DIR, "hash_drift.log")
 CALENDAR_SYMBOL = "SPY"
 STALENESS_MAX_DAYS = 6          # fin de semana + feriado US + margen
 PAPER_CAPITAL_BUDGET = 25000.0  # fallback si la lectura de cuenta (Cline) no existe
@@ -681,9 +684,44 @@ def phase_health() -> int:
     err_n = sum(1 for e in state["entries"].values() if e.get("status") == "ERROR")
     lines.append(f"Estado: {open_n} OPEN / {closed_n} CLOSED / {err_n} ERROR | meses: {list(state.get('months', {}).keys())}")
     lines.append(f"Hoy: {dt.date.today()} | fase auto sugerida: {detect_auto_phase()}")
+    # --- A4 hash-guard (PLAN_REMEDIO_BRECHAS_20260903.md §A4) ---
+    # Verifica que los 7 módulos críticos del motor siguen idénticos al
+    # momento de arranque del gate. Si alguno driftó sin bump declarado,
+    # día NO limpio por definición: rc=2 (distinto del rc=1 de cache
+    # estancado para que el contador de Cline pueda discriminar).
+    manifest = load_manifest()
+    manifest_present = bool(manifest.get("hashes"))
+    hash_ok, drifted = verify_manifest(manifest)
+    if manifest_present and not hash_ok:
+        # Alerta visible: a stdout (la pipeline_diario.log lo captura) y al
+        # log dedicado para que A2 (clean_days_counter) lo pueda leer.
+        line = (
+            f"[HASH-GUARD] DRIFT DETECTADO: {len(drifted)} módulo(s) del motor "
+            f"cambiaron desde el manifiesto (commit={manifest.get('commit')}). "
+            f"Paths: {drifted}. Día NO limpio por definición del gate (A4). "
+            f"Para declarar: python -m scripts.motor_manifest --bump \"<motivo>\""
+        )
+        lines.append(line)
+        print(line)
+        try:
+            os.makedirs(os.path.dirname(HASH_GUARD_LOG), exist_ok=True)
+            with open(HASH_GUARD_LOG, "a", encoding="utf-8") as f:
+                f.write(f"{dt.datetime.now().isoformat(timespec='seconds')} {line}\n")
+        except OSError:
+            pass
+    elif manifest_present:
+        lines.append(f"Hash-guard: OK ({len(manifest['hashes'])} módulo(s) coinciden "
+                     f"con commit={manifest.get('commit')})")
+    else:
+        lines.append("Hash-guard: sin manifiesto cargado (gate no formal todavía)")
     payload = {"phase": "health", "stale_days": stale, "cache_ok": ok,
-               "open": open_n, "closed": closed_n, "errors": err_n}
+               "open": open_n, "closed": closed_n, "errors": err_n,
+               "hash_ok": hash_ok, "hash_drift": drifted,
+               "manifest_commit": manifest.get("commit") if manifest_present else None}
     _artifact(lines, payload, "health")
+    # rc=2 si hash driftó (A4); rc=1 si cache estancado; rc=0 si todo OK.
+    if manifest_present and not hash_ok:
+        return 2
     return 0 if ok else 1
 
 
