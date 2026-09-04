@@ -266,3 +266,153 @@ class TestMonteCarloBootstrapReproducible:
         bt = BacktestEngine()
         r = bt.monte_carlo_simulation([], n_sims=100, seed=42)
         assert r["bootstrap"] == {}
+
+
+# =====================================================================
+# A6 (PLAN_REMEDIO_BRECHAS_20260903 §A6) — n_trials del motor = ledger
+# =====================================================================
+#
+# El default de calculate_metrics() antes era DEFAULT_N_TRIALS = 5 (número
+# mágico de las 5 variantes que se probaron en la sesión original). Eso
+# sub-deflacionaba el DSR desde el momento en que la familia signal_diagnosis
+# superó 5. A6 corrige el bug: el default ahora se resuelve del ledger vía
+# trial_registry.consumed_budget('signal_diagnosis') (29 al cierre del plan).
+#
+# Los callers explícitos (validacion_oos_fresca_mom_rsi.py, trial_evt_stops*.py)
+# NO cambian: pasan su n_trials y eso es lo correcto para su contexto.
+
+
+def _equity_curve_borderline(n=1500, seed=11):
+    """Serie sintética con Sharpe moderado (cerca del threshold Bailey-Lopez)
+    para que el DSR discrimine bien entre n=5 y n=29 — necesario para
+    verificar que la corrección deflaciona de verdad y no es cosmética."""
+    import datetime as _dt
+    rng = np.random.default_rng(seed)
+    ret = 0.0002
+    vol = 0.015
+    eq = []
+    price = 25000.0
+    start = _dt.date(2020, 1, 1)
+    for i in range(n):
+        d = start + _dt.timedelta(days=int(i * 1.4))
+        price *= np.exp(ret - 0.5 * vol * vol + vol * rng.normal())
+        dd = max(0.0, (1 - price / 26000) * 6)
+        eq.append({"date": d, "equity": price, "drawdown_pct": -dd})
+    return eq
+
+
+def _trades_borderline(n=150, seed=11):
+    rng = np.random.default_rng(seed + 1)
+    return [{"pnl": float(rng.normal(20, 180))} for _ in range(n)]
+
+
+class TestA6NtrialsFromLedger:
+    """A6: el default de calculate_metrics() lee del ledger."""
+
+    def test_default_n_trials_constante_es_None(self):
+        """Invariante de contrato: DEFAULT_N_TRIALS ya no es 5."""
+        assert BacktestEngine.DEFAULT_N_TRIALS is None
+
+    def test_calculate_metrics_signature_acepta_None_explicito(self):
+        """El type hint debe ser Optional[int], no int (callers pueden pasar None)."""
+        import inspect
+        import typing
+        sig = inspect.signature(BacktestEngine.calculate_metrics)
+        ann = sig.parameters["n_trials"].annotation
+        # En Python 3.9 (target del repo) el annotation puede ser la clase
+        # o el string. Aceptamos ambas formas siempre que diga Optional[int].
+        assert ann in ("Optional[int]", typing.Optional[int]), (
+            f"annotation inesperada: {ann!r}"
+        )
+        assert sig.parameters["n_trials"].default is None
+
+    def test_calculate_metrics_sin_n_trials_usa_ledger_actual(self, monkeypatch):
+        """Sin pasar n_trials, el resultado usa el n del ledger vivo (>= 1)."""
+        from app.core import trial_registry as tr
+        monkeypatch.setattr(tr, "consumed_budget", lambda fam, path=None, today=None: 17)
+        eng = BacktestEngine()
+        m = eng.calculate_metrics(_equity_curve_borderline(), _trades_borderline())
+        assert m["deflated_sharpe_n_trials"] == 17
+        assert m["n_trials_source"] == "ledger"
+        assert m["n_trials_fallback_reason"] is None
+
+    def test_calculate_metrics_respeta_n_trials_explicito(self, monkeypatch):
+        """Si paso n_trials=10, usa 10 — los callers explícitos no cambian."""
+        from app.core import trial_registry as tr
+        # Aunque el ledger diga 17, el caller manda.
+        monkeypatch.setattr(tr, "consumed_budget", lambda fam, path=None, today=None: 17)
+        eng = BacktestEngine()
+        m = eng.calculate_metrics(
+            _equity_curve_borderline(), _trades_borderline(), n_trials=10
+        )
+        assert m["deflated_sharpe_n_trials"] == 10
+        assert m["n_trials_source"] == "explicit"
+        assert m["n_trials_fallback_reason"] is None
+
+    def test_calculate_metrics_dsr_mas_conservador_con_n_mayor(self, monkeypatch):
+        """El DSR con N=29 es <= al DSR con N=5 (sentido del fix: deflaciona)."""
+        from app.core import trial_registry as tr
+        monkeypatch.setattr(tr, "consumed_budget", lambda fam, path=None, today=None: 29)
+        eng = BacktestEngine()
+        m5 = eng.calculate_metrics(
+            _equity_curve_borderline(seed=11), _trades_borderline(seed=11), n_trials=5
+        )
+        m29 = eng.calculate_metrics(
+            _equity_curve_borderline(seed=11), _trades_borderline(seed=11), n_trials=29
+        )
+        # Sentido: a mayor n_trials, mayor SR_0, menor DSR (con misma muestra).
+        assert m29["deflated_sharpe"] <= m5["deflated_sharpe"] + 1e-9
+        # Y la diferencia es no-trivial — verifica que el cambio no es cosmético.
+        assert (m5["deflated_sharpe"] - m29["deflated_sharpe"]) > 0.05
+
+    def test_calculate_metrics_fallback_cuando_ledger_falla(self, monkeypatch):
+        """Si consumed_budget del ledger no está disponible, usa fallback
+        conservador (29) y deja la razón escrita en el payload."""
+        from app.core import trial_registry as tr
+        def _broken(*a, **kw):
+            raise RuntimeError("ledger corrupto de prueba")
+        monkeypatch.setattr(tr, "consumed_budget", _broken)
+        eng = BacktestEngine()
+        m = eng.calculate_metrics(_equity_curve_borderline(), _trades_borderline())
+        assert m["deflated_sharpe_n_trials"] == 29  # fallback conservador
+        assert m["n_trials_source"] == "ledger"
+        assert m["n_trials_fallback_reason"] is not None
+        assert "RuntimeError" in m["n_trials_fallback_reason"]
+        assert "ledger corrupto" in m["n_trials_fallback_reason"]
+
+    def test_calculate_metrics_fallback_cuando_ledger_devuelve_cero(self, monkeypatch):
+        """Si consumed_budget devuelve 0 (estado patológico), fallback."""
+        from app.core import trial_registry as tr
+        monkeypatch.setattr(tr, "consumed_budget", lambda fam, path=None, today=None: 0)
+        eng = BacktestEngine()
+        m = eng.calculate_metrics(_equity_curve_borderline(), _trades_borderline())
+        assert m["deflated_sharpe_n_trials"] == 29
+        assert m["n_trials_fallback_reason"] is not None
+
+    def test_calculate_metrics_fallback_cuando_ledger_devuelve_no_entero(self, monkeypatch):
+        """Si consumed_budget devuelve un valor no-entero, fallback."""
+        from app.core import trial_registry as tr
+        monkeypatch.setattr(tr, "consumed_budget", lambda fam, path=None, today=None: "17")
+        eng = BacktestEngine()
+        m = eng.calculate_metrics(_equity_curve_borderline(), _trades_borderline())
+        assert m["deflated_sharpe_n_trials"] == 29
+        assert m["n_trials_fallback_reason"] is not None
+
+    def test_resolve_default_n_trials_sobre_senal_viva(self):
+        """Sin monkeypatch, el resolver lee el ledger real (>= 1; en este
+        worktree es 29 al cierre del plan, pero se permite >= 1 para no
+        atar el test al conteo exacto que puede cambiar)."""
+        n, reason = BacktestEngine()._resolve_default_n_trials()
+        assert isinstance(n, int) and n >= 1
+        assert reason is None
+
+    def test_calculate_metrics_paylod_incluye_trazabilidad_A6(self):
+        """Las 3 claves nuevas del payload existen (contrato API)."""
+        m = BacktestEngine().calculate_metrics(
+            _equity_curve_borderline(), _trades_borderline(), n_trials=5
+        )
+        for key in ("deflated_sharpe_n_trials", "n_trials_source", "n_trials_fallback_reason"):
+            assert key in m, f"falta clave A6: {key}"
+        # Caller explícito → source=explicit, fallback_reason=None
+        assert m["n_trials_source"] == "explicit"
+        assert m["n_trials_fallback_reason"] is None

@@ -582,20 +582,63 @@ class BacktestEngine:
             "portfolio_tail_risk": self.analyze_portfolio_tail_risk(price_data, start_date, end_date),
         }
 
-    # Deflated Sharpe (Bailey & López de Prado): n_trials debe reflejar
-    # cuántas variantes de la estrategia se compararon antes de quedarse con
-    # ésta -no un número mágico-. Contando las corridas completas de
-    # backtest efectivamente comparadas en esta sesión sobre este mismo
-    # pipeline (signal_engine + backtest_engine): (1) baseline momentum+
-    # technical fijo, (2) +Kelly+calibración Platt, (3) +BMA Bayesiano,
-    # (4) +score técnico reponderado por IC medido, (5) +walk-forward real
-    # del HMM de régimen. Actualizar este número si se prueban más variantes.
-    DEFAULT_N_TRIALS = 5
+    # A6 (PLAN_REMEDIO_BRECHAS_20260903 §A6): n_trials por default se lee del
+    # ledger de la familia `signal_diagnosis` (los trials reales de la
+    # familia, no un número mágico). Antes era 5 hardcodeado (conteo manual
+    # de las 5 variantes que se probaron en la sesión original) — eso
+    # sub-deflacionaba el DSR desde el momento en que la familia superó
+    # ese tamaño. Callers que ya pasan n_trials explícito (p.ej.
+    # trial_evt_stops_v2.py, validacion_oos_fresca_mom_rsi.py) NO cambian:
+    # su número es el correcto para su contexto, no la corrección de A6.
+    # Si el ledger no está disponible (test con tmp_path, sandbox, etc.),
+    # se cae a un fallback explícito con `n_trials_fallback_reason` en el
+    # payload — nunca un default silencioso que mimetice el bug original.
+    DEFAULT_N_TRIALS = None  # sentinel: el número se resuelve en runtime
+
+    def _resolve_default_n_trials(self) -> Tuple[int, Optional[str]]:
+        """Lee `consumed_budget('signal_diagnosis')` del ledger.
+
+        Devuelve (n_trials:int, fallback_reason:Optional[str]).
+        Si el ledger no está disponible (import roto, archivo corrupto,
+        path a un tmp que no tiene trial_registry.json), devuelve el
+        fallback documentado en el payload — NUNCA un número silencioso.
+        El fallback es la opción más conservadora: el mayor N conocido
+        públicamente (29 al cierre del plan, 2026-09-03) para que el DSR
+        no se INFLATE por sub-deflacionar en un error de lectura.
+        """
+        try:
+            from app.core.trial_registry import consumed_budget
+            n = consumed_budget("signal_diagnosis")
+            if isinstance(n, int) and n >= 1:
+                return n, None
+            return 29, f"ledger devolvió valor no-entero o <1: {n!r}"
+        except Exception as exc:  # noqa: BLE001 — el logging del motivo es lo que importa
+            return 29, f"ledger no disponible: {type(exc).__name__}: {exc}"
 
     def calculate_metrics(self, equity_curve: List[Dict], trades: List[Dict],
-                          n_trials: int = DEFAULT_N_TRIALS) -> Dict:
+                          n_trials: Optional[int] = DEFAULT_N_TRIALS) -> Dict:
         if not equity_curve:
             return {}
+
+        # A6 (PLAN_REMEDIO_BRECHAS_20260903 §A6): si el caller NO pasó
+        # n_trials (o pasó None explícito), lo resolvemos del ledger. El
+        # resolver nunca falla silencioso: si el ledger no está disponible,
+        # devuelve el fallback conservador (29) + razón en el payload.
+        n_trials_source = "explicit"  # default: caller pasó n_trials
+        n_trials_fallback_reason: Optional[str] = None
+        if n_trials is None:
+            n_trials, n_trials_fallback_reason = self._resolve_default_n_trials()
+            n_trials_source = "ledger"
+            if n_trials_fallback_reason is not None:
+                # Log al stderr para que aparezca en pipeline_diario.log y
+                # en cualquier job que capture la salida del motor. La
+                # trazabilidad del fallback es parte del contrato A6.
+                import sys as _sys
+                print(
+                    f"[A6] n_trials fallback usado: "
+                    f"n_trials={n_trials} | razón: {n_trials_fallback_reason}",
+                    file=_sys.stderr,
+                )
 
         df = pd.DataFrame(equity_curve).set_index("date")
         returns = df["equity"].pct_change().dropna()
@@ -679,6 +722,12 @@ class BacktestEngine:
             "total_trades": len(trades),
             "deflated_sharpe": deflated_sharpe,
             "deflated_sharpe_n_trials": n_trials,
+            # A6: trazabilidad del default. "explicit" = caller pasó n_trials
+            # (caso normal en trials pre-registrados). "ledger" = se resolvió
+            # del registry al vuelo (default del motor). Si el resolver cayó
+            # al fallback, la razón queda en `n_trials_fallback_reason`.
+            "n_trials_source": n_trials_source,
+            "n_trials_fallback_reason": n_trials_fallback_reason,
         }
 
     def monte_carlo_simulation(self, trades: List[Dict], equity_curve: List[Dict] = None,
