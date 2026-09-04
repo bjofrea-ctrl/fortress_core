@@ -14,6 +14,9 @@ import GovernancePanel from "../components/GovernancePanel";
 
 const STATUS_PAYLOAD = {
   flow: "predictivo→tríada→controller→judge",
+  // A9: default real del backend desde 2026-09-03 — la capa LLM está APAGADA.
+  governance_llm_enabled: false,
+  nvidia_nim_blocked_by_a9: false,
   professor: { lessons_count: 42, teaching_summary: "resumen" },
   controller: { absolute_ceiling: 0.25, risk_per_trade: 0.01, max_position: 0.1, regime_stops: {} },
   judge: { verdicts_count: 100 },
@@ -88,9 +91,9 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-function mockHappyPath() {
+function mockHappyPath(statusPayload: unknown = STATUS_PAYLOAD) {
   fetchMock.mockImplementation((url: string | URL) => {
-    if (String(url).includes("/api/governance/status")) return Promise.resolve(jsonResponse(STATUS_PAYLOAD));
+    if (String(url).includes("/api/governance/status")) return Promise.resolve(jsonResponse(statusPayload));
     return Promise.resolve(jsonResponse(ANALYZE_PAYLOAD));
   });
 }
@@ -166,3 +169,72 @@ describe("GovernancePanel — contrato con el backend", () => {
     expect(screen.queryByText(/Gobernanza Multi-Agente/)).not.toBeInTheDocument();
   });
 });
+
+/**
+ * A9 (PLAN_REMEDIO_BRECHAS_20260903 §A9) — el dashboard debe mostrar la
+ * gobernanza como "descriptiva — no conectada a decisiones del pipeline" cuando
+ * el flag GOVERNANCE_LLM_ENABLED está apagado (el default desde 2026-09-03).
+ *
+ * Lo que estos tests fijan es la FUENTE del cartel: sale del flag que sirve
+ * /api/governance/status, no de un texto libre (final_reason, llm_model) que
+ * aparezca por otra razón y se preste para mentir.
+ */
+describe("GovernancePanel — A9 estado del flag GOVERNANCE_LLM_ENABLED", () => {
+  it("flag=false → cartel descriptivo visible sin expandir nada", async () => {
+    mockHappyPath();
+    render(<GovernancePanel apiUrl="http://test" symbol="AAPL" />);
+    expect(await screen.findByTestId("a9-governance-mode")).toBeInTheDocument();
+    expect(screen.getByTestId("a9-governance-mode-badge")).toHaveTextContent("DESACTIVADA (A9)");
+    expect(screen.getByTestId("a9-governance-mode-note")).toHaveTextContent(
+      "descriptiva — no conectada a decisiones del pipeline",
+    );
+  });
+
+  it("el cartel NO está escondido dentro de un <details> colapsable", async () => {
+    mockHappyPath();
+    render(<GovernancePanel apiUrl="http://test" symbol="AAPL" />);
+    const banner = await screen.findByTestId("a9-governance-mode");
+    expect(banner.closest("details")).toBeNull();
+  });
+
+  it("flag=true → dice ACTIVA y no deja el cartel de desactivada", async () => {
+    mockHappyPath({ ...STATUS_PAYLOAD, governance_llm_enabled: true });
+    render(<GovernancePanel apiUrl="http://test" symbol="AAPL" />);
+    expect(await screen.findByTestId("a9-governance-mode-badge")).toHaveTextContent("ACTIVA");
+    expect(screen.queryByText(/DESACTIVADA/)).not.toBeInTheDocument();
+  });
+
+  it("flag ausente (backend viejo o /status caído) → DESCONOCIDA, nunca asume activa", async () => {
+    const sinFlag = { ...STATUS_PAYLOAD } as Record<string, unknown>;
+    delete sinFlag.governance_llm_enabled;
+    delete sinFlag.nvidia_nim_blocked_by_a9;
+    mockHappyPath(sinFlag);
+    render(<GovernancePanel apiUrl="http://test" symbol="AAPL" />);
+    expect(await screen.findByTestId("a9-governance-mode-badge")).toHaveTextContent("DESCONOCIDA");
+    expect(screen.getByTestId("a9-governance-mode-note")).toHaveTextContent(
+      "no se asume que la capa esté activa",
+    );
+  });
+
+  it("NIM disponible pero bloqueado por A9 → BLOQUEADA (A9), no ACTIVO ni DETERMINISTA", async () => {
+    mockHappyPath({
+      ...STATUS_PAYLOAD,
+      governance_llm_enabled: false,
+      nvidia_nim_blocked_by_a9: true,
+      nvidia_nim: { ...STATUS_PAYLOAD.nvidia_nim, available: true },
+    });
+    render(<GovernancePanel apiUrl="http://test" symbol="AAPL" />);
+    expect(await screen.findByTestId("a9-nim-bloqueado")).toBeInTheDocument();
+    expect(screen.getByText("BLOQUEADA (A9)")).toBeInTheDocument();
+    expect(screen.queryByText("ACTIVO")).not.toBeInTheDocument();
+    expect(screen.queryByText("DETERMINISTA")).not.toBeInTheDocument();
+  });
+
+  it("NIM no disponible y flag apagado → sigue diciendo DETERMINISTA (contract previo)", async () => {
+    mockHappyPath();
+    render(<GovernancePanel apiUrl="http://test" symbol="AAPL" />);
+    await screen.findByTestId("a9-governance-mode");
+    expect(screen.getByText("DETERMINISTA")).toBeInTheDocument();
+  });
+});
+

@@ -68,6 +68,18 @@ class Settings(BaseSettings):
     # (el bug): señal y ejecución comparten la misma barra (cierre de 'date').
     EXECUTION_LAG_DAYS: int = 1
 
+    # A9 (PLAN_REMEDIO_BRECHAS_20260903 §A9): desactivar las llamadas a
+    # NIM/OpenRouter en la capa multi-agente durante el gate de 60 días.
+    # Default False: el dashboard muestra gobernanza como DESCRIPTIVA
+    # (tríada vacía, final_decision="MANTENER", final_reason etiquetado),
+    # y NO quema cuota de NIM ni sesga el "resultado" con razonamiento
+    # no validado por el ledger. El motor validado (signal_engine.py)
+    # NO usa esta capa (verificado en D1 de la auditoría
+    # AUDITORIA_NIVEL_DIOS_20260902.md), así que el gate no se afecta.
+    # Para volver al modo activo (p.ej. demos), setear
+    # GOVERNANCE_LLM_ENABLED=true en .env o settings.
+    GOVERNANCE_LLM_ENABLED: bool = False
+
     # Alpaca PAPER TRADING — medición de costos reales (M4, app/core/execution_costs.py).
     # ÚNICO propósito: medir slippage/fill reales contra el precio de decisión. Jamás
     # una orden en cuenta live. Credenciales solo acá vía .env / variables de entorno,
