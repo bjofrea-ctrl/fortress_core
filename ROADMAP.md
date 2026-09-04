@@ -10,13 +10,36 @@ Code, Cline, OpenCode), leer este documento primero. Al cerrar, actualizarlo ant
 — marcar lo que se cerró, agregar lo que apareció nuevo. Ningún ítem se da por cerrado sin
 marcarlo acá, aunque se haya resuelto "de pasada" en otra conversación.
 
-Última actualización: 2026-08-28 (noche).
+Última actualización: 2026-09-03 (cierre Fase A de remediación: A4/A6/A7/A8/A9).
 
 ## PENDIENTE AHORA — chequear primero, antes de leer el resto
 
 Coordinación multi-agente vía Orca (Claude Code como coordinador; Kilo Code, OpenCode,
 Cline como implementadores). Verificar contra `git log --oneline -10`,
 `ps aux | grep screening_palas` y las ramas de cada worktree antes de asumir estado.
+
+> **Gate de 60 días (arrancó 2026-09-02) — estado al 2026-09-03**: la Fase A de
+> `PLAN_REMEDIO_BRECHAS_20260903.md` quedó cerrada en **A4** (hash-guard del motor con
+> drift de A6 declarado y `verify` rc=0), **A6** (n_trials del ledger, no número mágico),
+> **A7** (el ledger enforcea la Regla 1 de `ONBOARDING.md` con chokepoint único), **A8**
+> (pre-registro PBO lag-0 **sellado y NO ejecutado** — docs-only) y **A9** (flag
+> `GOVERNANCE_LLM_ENABLED` + cartel explícito en el dashboard). Verificado corrido:
+> backend **162/162**, ruff limpio, frontend **52/52** + `tsc` + `vite build`.
+>
+> 🔴 **Falta A2, y es lo único que impide que el gate sea evaluable**: no existe
+> `backend/data/clean_days.json` en NINGÚN repo (verificado 2026-09-03 con `find` sobre
+> `~/Desktop/fortress_core` y este worktree). Sin ese contador la racha de días limpios
+> **no está corriendo**; el `motor_manifest bump` que declaró el drift de A6 ordena
+> "reiniciar el contador a mano" sobre un archivo que todavía no existe. Crearlo es la
+> próxima pieza, no es opcional ni delegable en el hash-guard.
+>
+> 🔴 **El ticket `PLAN_REMEDIO_BRECHAS_20260903.md` cita una "Regla 0 del ROADMAP" que no
+> existe** (líneas 67, 68 y 88; el ROADMAP no tiene reglas numeradas — la regla real es la
+> **Regla 1 de `ONBOARDING.md`**: "Ningún trial de motor sin criterio pre-registrado").
+> Ya está corregido en código, mensajes de error y tests; el plan queda sin tocar porque
+> es el ticket de Boris, pero hay que arreglarlo ahí también o el próximo agente va a
+> volver a copiar la cita errónea.
+
 
 1. **A6.3 — screening PALA/RESTO/POOLED** — 🟢 trial original CERRADO
    (29/08, `COMPLETED`/`NO_CUMPLE`, ver §12 de `PRE_REGISTRO_SCREENING_PALAS.md`).
@@ -590,6 +613,13 @@ gantt
 
 | Investigación | **§46 Trial #19 — Compuerta M3 STANDALONE sobre el motor (Brecha 2)** (Kilo Code, auto-cierre autorizado) | ⚪ **cerrado — NO INTERPRETABLE mecánico (piso insuficiente), sin consumo de slot** (2026-08-25) | Re-intento requiere pre-registro nuevo con piso alcanzable — decisión de Boris | Pre-registro §46 APROBADO por coordinador antes de correr; primera medición REAL de M3 como compuerta de operación (vs §42 condicionante diagnóstico): ALWAYS vs GATED intra-corrida, GOLDILOCKS-rezagado 21b cubre solo **28.7%** de días → GATED n=17/19/51 contra piso 30 → solo W3 computable (<2/3) → **NO registra NI consume** (motor_signal sigue 12, th 0.99231). Desglose exploratorio: mejora riesgo-retorno cuando GOLD es escaso (W1 Sharpe 0.69 vs 0.32, maxDD −1.5% vs −5.3%) y lo destruye cuando abunda (W3 0.16 vs 0.48) — el filtro vale para EVITAR malos, no para certificar buenos; pista, no evidencia. Fidelidad OK×6 (F9 identity-cache bit-idéntico, gate 34 recalibs, suite 370 pre-corrida; señales 75.7% bloqueadas). Script `backend/scripts/trial_m3_gate_standalone.py`; artefacto `trial_m3_gate_standalone_20260825_164832.txt`(+json+parquet); §46+§46.1 PLAN_MEJORA_MATEMATICA.md. Producción intacta. |
 | Investigación | **§47 Trial #20 — "Buffett's Alpha" sistemático (Quality + Value + Low-Beta), A5** (Kilo Code) | 🟢 **cerrado — NO_CUMPLE mecánico (Sharpe_OOS 0.886>0, DSR 0.361<0.99231), consume 1 slot** (2026-08-25) | Si se mejora cobertura/definición de valor, el re-test corresponde a A4 (no re-abrir A5) | Pre-registro §47 aprobado por coordinador. Fase 0 (panel EDGAR point-in-time 47/48, coverage-gate 97.9%/100% PASS) + trial único (`trial_a5_buffett_alpha.py`). OOS 31m: **Sharpe neto 0.886>0, DSR 0.361 (n=13) → NO_CUMPLE binario**. Hallazgo: control equal-weight OOS Sharpe **1.50 > factor 0.886** — el composite no bate al universo naive. Familia motor_signal consume **12→13** (th vigente 0.992857). Sin promoción al ensamble. §47+§47.1 PLAN_MEJORA_MATEMATICA.md. |
+| Gate | **A7 — enforcement técnico del gate en el ledger** (Cline, 2026-09-03) | 🟢 cerrado (2026-09-03) | — | `gate_window.py` (nuevo) + `_gate_window_check()` en `trial_registry.py`: trial con fecha dentro de 2026-09-02..GATE_END y `categoria` fuera del allow-list cerrado `{bugfix, infraestructura}` → `TrialRegistryError` ANTES de escribir el archivo. Chokepoint único cubre `register_trial` y `register_trial_reservation`; escape declarado `FORTRESS_ALLOW_GATE_TRIAL=1` (el conftest lo deja activo para que el resto de la suite pruebe mecánica). El mensaje cita la **Regla 1 de ONBOARDING.md con su contenido real**, verificado leyendo el doc (no un literal del test) + guarda anti-renumeración. 22 tests en `test_trial_registry_gate.py`. |
+| Investigación | **A8 — PBO baseline con lag-0: pre-registro sellado, NO ejecutado** (Cline, 2026-09-03) | 🟢 cerrado como docs-only (2026-09-03) · corrida post-gate pendiente | Boris evalúa correrlo cuando exista racha ≥60 en `clean_days.json` | `PRE_REGISTRO_PBO_BASELINE_LAG0_20260903.md` + §40.1 en `PLAN_MEJORA_MATEMATICA.md` declarando la limitación lag-0 del PBO=0.2358 vigente. Criterio, umbrales (0.20/0.50), checks de fidelidad y los campos del ledger (`Umbral_aplicado`, `Familia: signal_diagnosis`, `Categoría: bugfix`) escritos ANTES de correr, per Regla 1. Red de seguridad: 15 tests `test_a8_pbo_lag0_docs.py`. **No se ejecutó ningún trial durante el gate ni se tocó `app/*.py`.** |
+| Gobernanza | **A9 — flag `GOVERNANCE_LLM_ENABLED` + cartel explícito en el dashboard** (Cline, 2026-09-03) | 🟢 cerrado (2026-09-03) | — | Default `False` en `config.py`; NIM/OpenRouter guardados en `advanced_agents.py`, `predict.py` y `governance.py` (no quema llamadas decorativas). `/api/governance/status` expone `governance_llm_enabled` y `nvidia_nim_blocked_by_a9`; `GovernancePanel.tsx` muestra banner NO colapsable con el texto del plan ("descriptiva — no conectada a decisiones del pipeline") en tri-estado ACTIVA / DESACTIVADA (A9) / DESCONOCIDA — nunca asume activa si el `/status` no carga. Arreglado de paso: NVIDIA NIM decía "ACTIVO" con el pipeline bloqueado → ahora "BLOQUEADA (A9)". Contrato backend↔frontend verificado campo a campo. 6 tests nuevos, frontend 52/52, tsc y build limpios. |
+| Motor | **A4 — hash-guard: drift de `backtest_engine.py` por A6 declarado y re-verify limpio** (Cline, 2026-09-03) | 🟢 cerrado (2026-09-03) | — | `motor_manifest verify` detectó drift real (rc=2) causado por A6 y no declarado al commitear. Antes de bump se verificó contra el diff que el cambio es 100% A6 (n_trials del ledger + trazabilidad; no toca señal, riesgo ni rebalanceo) → `bump --note` con la razón. `verify` → OK 7 módulos, rc=0. El reinicio del contador queda pendiente porque A2 no existe (ver ítem siguiente). |
+| Gate | **A2 — contador de días limpios `backend/data/clean_days.json`** | 🔴 no existe en ningún repo (verificado 2026-09-03) | Crear el contador: sin él la racha del gate no corre y el bump de A4 no tiene qué reiniciar | Descubierto al cerrar A4: el `bump` ordena reiniciar "a mano" un archivo que nunca se creó. No es un efecto de A4/A6 — es Fase A incompleta. |
+| Docs | **`PLAN_REMEDIO_BRECHAS_20260903.md` cita una "Regla 0 del ROADMAP" inexistente** (líneas 67, 68, 88) | 🔴 sin corregir en el plan (es ticket de Boris) | Corregirla a "Regla 1 de ONBOARDING.md" o el próximo agente vuelve a copiarla | Es el origen del error de cita que A7 arrastró; ya corregido en código, mensajes y tests. El ROADMAP no tiene reglas numeradas. |
+
 
 **Leyenda**: 🔴 crítico/sin empezar · 🟡 en curso/parcial · ⚪ parqueado, sin decisión de producto · 🟢 cerrado
 
