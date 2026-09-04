@@ -65,6 +65,12 @@ DECISION_PREFIX = os.path.join(CACHE_DIR, "pipeline_decision_")
 ARTIFACT_DIR = CACHE_DIR
 # A4 hash-guard: log dedicado de drifts detectados por phase_health.
 HASH_GUARD_LOG = os.path.join(CACHE_DIR, "hash_drift.log")
+# A1 reconciler: log canónico diario del pipeline — el mismo archivo al que la
+# shell redirige stdout (scripts/daily_signal_pipeline.sh → $REPO/scripts/
+# pipeline_diario.log; ver ONBOARDING.md). PATRÓN relativo como el resto del
+# módulo (STATE_PATH/CACHE_DIR asumen cwd=backend, que es donde lo corre la
+# shell): NUNCA __file__ (resolvería a backend/scripts/, que no lee nadie).
+DIARIO_LOG = os.path.join("..", "scripts", "pipeline_diario.log")
 CALENDAR_SYMBOL = "SPY"
 STALENESS_MAX_DAYS = 6          # fin de semana + feriado US + margen
 PAPER_CAPITAL_BUDGET = 25000.0  # fallback si la lectura de cuenta (Cline) no existe
@@ -458,7 +464,97 @@ def _cache_stale_days() -> int:
     return (pd.Timestamp(dt.date.today()) - days[-1]).days
 
 
-def phase_decide(dry_run: bool, inject_symbols: Optional[List[str]] = None) -> int:
+# --------------------------------------------------------------------------
+# A1 reconciler (PLAN_REMEDIO_BRECHAS_20260903.md §A1) — condición (c) del gate
+# --------------------------------------------------------------------------
+
+def append_diario_log(line: str, path: str = DIARIO_LOG) -> None:
+    """Append con timestamp al log canónico del pipeline (scripts/pipeline_diario.log)."""
+    ts = dt.datetime.now().isoformat(timespec="seconds")
+    with open(path, "a", encoding="utf-8") as fh:
+        fh.write(f"{ts} [pipeline] {line}\n")
+
+
+def reconcile_orphans(
+    ledger,
+    client,
+    exit_date: str,
+    exit_reason: str = "RECONCILE",
+    state: Optional[Dict[str, Any]] = None,
+    log_path: str = DIARIO_LOG,
+) -> Dict[str, Any]:
+    """Cierre contable de órdenes huérfanas + posiciones sin explicación (A1).
+
+    La condición (c) del gate exige que el ledger no tenga órdenes huérfanas:
+    abiertas en el ledger pero sin posición REAL en el paper (su fill se fue
+    fuera del pipeline). Por eso aquí:
+
+      - ``orphan_closed``: órdenes abiertas cuyo símbolo YA no figura en
+        ``GET /positions``. Se cierran con pnl_r REAL = (close-open)/open
+        usando el último trade vía la API canónica del conector
+        (``PaperTrader.close_paper_order``) — nunca 0.0 a ciegas.
+      - ``unexplained``: posiciones REALES del paper sin una orden abierta
+        correspondiente en el ledger (compradas fuera del sistema / sin
+        explicación contable). En un día limpio vale 0.
+
+    Idempotente: una huérfana cerrada deja de estar ``open`` y re-correr no la
+    re-cuenta. Si el precio de mercado no se puede obtener, la cierra con
+    pnl_r=0.0 y lo deja VISIBLE en ``sin_precio`` (no falsea la condición (c)).
+
+    Escribe ``state['reconcile']`` (si se pasa state) y una línea en
+    ``pipeline_diario.log`` para que el contador A2 la pueda parsear.
+    """
+    positions = {p["symbol"] for p in client.get_positions()}
+    abiertas = ledger.open_orders()
+    abiertas_syms = {r["symbol"] for r in abiertas}
+    from app.core.paper_trading import PaperTrader
+    trader = PaperTrader(client=client, ledger=ledger)
+
+    huérfanas = [r for r in abiertas if r["symbol"] not in positions]
+    sin_precio = 0
+    for r in huérfanas:
+        try:
+            trader.close_paper_order(
+                signal_id=r["signal_id"],
+                symbol=r["symbol"],
+                qty=r["qty"],
+                exit_date=exit_date,
+                exit_reason=exit_reason,
+            )
+        except Exception:  # noqa: BLE001 — sin último trade no falseamos el pnl
+            ledger.close_order(
+                signal_id=r["signal_id"],
+                exit_date=exit_date,
+                exit_reason=exit_reason,
+                pnl_r=0.0,
+                close_fill_price=None,
+            )
+            sin_precio += 1
+
+    unexplained = sorted(positions - abiertas_syms)
+    result = {
+        "orphan_closed": len(huérfanas),
+        "unexplained": len(unexplained),
+        "unexplained_symbols": unexplained,
+        "sin_precio": sin_precio,
+        "exit_date": exit_date,
+        "timestamp": dt.datetime.now().isoformat(timespec="seconds"),
+    }
+    if state is not None:
+        state["reconcile"] = result
+    try:
+        append_diario_log(
+            f"reconcile orphan_closed={result['orphan_closed']} "
+            f"unexplained={result['unexplained']}",
+            path=log_path,
+        )
+    except OSError:
+        pass  # sin log no bloquea la fase; el estado sí queda persistido
+    return result
+
+
+def phase_decide(dry_run: bool, inject_symbols: Optional[List[str]] = None,
+                 *, ledger=None, client_factory=None) -> int:
     lines = ["Pipeline DECIDE — señal con definición CONGELADA (sin re-optimizar)",
              "=" * 74]
     stale = _cache_stale_days()
@@ -491,7 +587,8 @@ def phase_decide(dry_run: bool, inject_symbols: Optional[List[str]] = None) -> i
     log_decision(signals, today.isoformat(), mk, echo)
     payload = {"phase": "decide", "decision_date": today.isoformat(),
                "month_key": mk, "frozen_echo": echo, "stats": stats, "signals": signals,
-               "checkpoint_notes": notes, "dry_run": dry_run}
+               "checkpoint_notes": notes, "dry_run": dry_run,
+               "reconcile": {"status": "dry_run" if dry_run else "pending"}}
     if inject_symbols:
         lines += ["", "!! OVERRIDE_MECANISMO — no es senal real !!",
                   "!! Simbolos inyectados SOLO para validar el tubo (Checkpoint S1): "
@@ -513,6 +610,42 @@ def phase_decide(dry_run: bool, inject_symbols: Optional[List[str]] = None) -> i
         lines.append(f"Decision file: {path}")
     else:
         lines.append("DRY-RUN: decision file NO escrito.")
+    # --- A1 reconciler (PLAN_REMEDIO_BRECHAS_20260903.md §A1) — condición (c) ---
+    # Post-cierre 22:10 (EXIT 15:40 ya vendió las posiciones del mes): las órdenes
+    # que quedaron abiertas en el ledger sin posición real en el paper se cierran
+    # contablemente con pnl_r real. Idempotente y solo toca huérfanas. Registra
+    # state['reconcile'] en pipeline_state.json + línea en pipeline_diario.log.
+    # Si ledger/cliente no existen se registra 'unavailable' — NUNCA se inventa
+    # un 0/0 como si la condición (c) hubiera quedado verificada.
+    if not dry_run:
+        _led = ledger
+        if _led is None:
+            try:
+                from app.core.signal_ledger import SignalLedger
+                _led = SignalLedger()
+            except Exception as exc:  # noqa: BLE001
+                lines.append(f"[warn] reconcile: ledger no disponible ({str(exc)[:60]})")
+                payload["reconcile"] = {"status": "unavailable", "reason": "ledger_no_disponible"}
+        _client = None
+        if _led is not None:
+            try:
+                _fac = client_factory if client_factory is not None else _make_client_factory()
+                _client = _fac()
+            except Exception as exc:  # noqa: BLE001
+                lines.append(f"[warn] reconcile: cliente no construible ({str(exc)[:60]})")
+                payload["reconcile"] = {"status": "unavailable", "reason": "cliente_no_disponible"}
+        if _led is not None and _client is not None:
+            try:
+                state = load_state()
+                payload["reconcile"] = reconcile_orphans(_led, _client,
+                                                         exit_date=today.isoformat(),
+                                                         state=state)
+                save_state(state)
+                lines.append(f"Reconcile: orphan_closed={payload['reconcile']['orphan_closed']} "
+                             f"unexplained={payload['reconcile']['unexplained']}")
+            except Exception as exc:  # noqa: BLE001
+                lines.append(f"[warn] reconcile falló ({str(exc)[:80]})")
+                payload["reconcile"] = {"status": "error", "reason": str(exc)[:120]}
     _artifact(lines, payload, "decide")
     return 0
 
