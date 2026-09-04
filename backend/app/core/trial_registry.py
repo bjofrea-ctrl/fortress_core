@@ -386,12 +386,23 @@ def register_trial(entry: dict, path: Optional[str] = None, check_git: bool = Tr
     Track A: entradas sin status explicito se registran COMPLETED (registro
     post-hoc con veredicto). Para reservar un slot ANTES de correr el trial,
     usar register_trial_reservation().
+
+    A7 (PLAN_REMEDIO_BRECHAS_20260903 §A7): si la fecha cae dentro de la
+    ventana del gate, la entrada debe llevar `categoria` allow-list
+    (`bugfix` / `infraestructura`). El escape explicito es la env var
+    `FORTRESS_ALLOW_GATE_TRIAL=1` (emergencias declaradas).
     """
     path = path or _default_path()
     entry = dict(entry)
     entry.setdefault("status", STATUS_COMPLETED)
     if check_git:
         _git_reconciliation_error(path)
+    # A7: gate window check ANTES de validar forma — un trial que no pasa
+    # el gate no merece ni un check de entry. Skip el helper si el caller
+    # no quiere el check (passa `check_git=False`... no, ese flag es para
+    # git; para el gate usamos un flag separado si hace falta, pero por
+    # ahora la regla es uniforme: TODA escritura respeta el gate).
+    _gate_window_check(entry)
     entries = _load_raw(path)
     if any(e["id"] == entry["id"] for e in entries):
         raise TrialRegistryError(f"id duplicado: {entry['id']}")
@@ -415,6 +426,9 @@ def register_trial_reservation(
     aprobado (o ruta a un archivo .md). Se extrae mecanicamente su
     'umbral_aplicado' y se compara contra el de la entrada — si difieren, NO
     se registra (disciplina ejecutable minima).
+
+    A7: misma regla que `register_trial` — la fecha del trial no puede caer
+    dentro de la ventana del gate sin categoria allow-list.
     """
     path = path or _default_path()
     entry = dict(entry)
@@ -432,6 +446,8 @@ def register_trial_reservation(
         validate_umbral_aplicado(contenido, str(entry["umbral_aplicado"]))
     if check_git:
         _git_reconciliation_error(path)
+    # A7: gate window check (idéntico al de register_trial).
+    _gate_window_check(entry)
     entries = _load_raw(path)
     if any(e["id"] == entry["id"] for e in entries):
         raise TrialRegistryError(f"id duplicado: {entry['id']}")
@@ -439,6 +455,21 @@ def register_trial_reservation(
     entries.append(entry)
     _validate_cross_entries(entries)
     _write(path, entries)
+
+
+def _gate_window_check(entry: dict) -> None:
+    """A7: helper que invoca el check de la ventana del gate sobre la entrada.
+
+    Lanza `TrialRegistryError` con mensaje citando la Regla 1 de
+    ONBOARDING.md si la fecha cae dentro de la ventana y la categoria no
+    está en el allow-list (o el escape FORTRESS_ALLOW_GATE_TRIAL está
+    apagado)."""
+    # Import local: evita ciclo de imports (gate_window importa trial_registry).
+    from app.core.gate_window import assert_allowed_during_gate
+    fecha = _parse_fecha(entry["fecha"])
+    categoria = entry.get("categoria")
+    trial_id = str(entry.get("id", ""))
+    assert_allowed_during_gate(fecha, categoria, trial_id=trial_id)
 
 
 def complete_trial(
