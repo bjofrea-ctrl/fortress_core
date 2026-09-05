@@ -53,8 +53,17 @@ async def get_governance_status():
     repo = KnowledgeRepository()
     rag = RAGMemorySystem()
 
+    # A9: la flag de la capa multi-agente se expone al dashboard para que
+    # pueda mostrar el cartel "DESCRIPTIVA — NO CONECTADA A DECISIONES".
     return {
         "flow": "TRIAD → CONTROLLER ↔ PROFESSOR → JUDGE (si no hay consenso)",
+        # A9: estado de la capa. False (default durante el gate) = la
+        # tríada y la gobernanza caen al fallback determinista; no se
+        # queman llamadas a NIM. True = modo completo con LLM.
+        "governance_llm_enabled": settings.GOVERNANCE_LLM_ENABLED,
+        "nvidia_nim_blocked_by_a9": (
+            not settings.GOVERNANCE_LLM_ENABLED and nim.is_available()
+        ),
         "traid_llm_models": TRIAD_LLM_MODELS,
         "governance_llm_models": GOVERNANCE_LLM_MODELS,
         "professor": {
@@ -94,7 +103,16 @@ async def get_governance_status():
 
 @router.get("/analyze/{symbol}", dependencies=[Depends(llm_rate_limit)])
 async def analyze_with_governance(symbol: str, regime_state: int = Query(0, ge=0, le=3)):
-    """Análisis completo con el flujo de gobernanza: Tríada → Controlador ↔ Profesor → Juez."""
+    """Análisis completo con el flujo de gobernanza: Tríada → Controlador ↔ Profesor → Juez.
+
+    A9: si `settings.GOVERNANCE_LLM_ENABLED` está apagado (default durante
+    el gate), la tríada y la gobernanza caen al fallback determinista.
+    El motor validado (signal_engine.py) NO usa este endpoint; los datos
+    que produce la API son DESCRIPTIVOS — no entran a la decisión del
+    pipeline de trading. El payload incluye `governance_mode` y un
+    `final_reason` etiquetado para que el consumidor no confunda
+    "MANTENER" determinista con una decisión de governance.
+    """
     try:
         df = download_data(symbol, "2015-01-01")
         if len(df) < 200:
@@ -121,8 +139,12 @@ async def analyze_with_governance(symbol: str, regime_state: int = Query(0, ge=0
             "triad_agreement": result.triad_agreement,
         }
 
+        governance_mode = "active" if settings.GOVERNANCE_LLM_ENABLED else "descriptive_only"
         governance = GovernanceSystem()
         # Misma razón: process_governance puede llamar al LLM de PROFESSOR.
+        # A9: con la flag apagada, NvidiaNIMClient.generate() ya devuelve None
+        # antes de hacer el request (chokepoint único en advanced_agents.py:278).
+        # process_governance maneja el None cayendo al fallback determinista.
         governance_result = await run_in_threadpool(
             governance.process_governance,
             symbol=symbol.upper(),
@@ -135,9 +157,23 @@ async def analyze_with_governance(symbol: str, regime_state: int = Query(0, ge=0
             macro_score=result.macro_score,
         )
 
+        # A9: si la flag está apagada, etiquetamos el final_reason para que
+        # el consumidor (dashboard) pueda mostrar "descriptivo — no
+        # conectado a decisiones" en vez de un "MANTENER" mudo.
+        if not settings.GOVERNANCE_LLM_ENABLED:
+            governance_result = dict(governance_result)  # copia para no mutar el cache
+            existing = governance_result.get("final_reason", "")
+            tag = "GOVERNANCE_LLM_DISABLED_BY_A9"
+            if tag not in existing:
+                governance_result["final_reason"] = (
+                    f"{tag} | {existing}" if existing else tag
+                )
+            governance_result["governance_mode"] = governance_mode
+
         return {
             "symbol": symbol.upper(),
             "flow": "TRIAD → CONTROLLER ↔ PROFESSOR → JUDGE",
+            "governance_mode": governance_mode,
             "predictive": {
                 # Identidad del motor (NUEVO, F0.2 — propagado desde _serialize_result)
                 "motor": result.motor,                          # "heuristico_no_validado"

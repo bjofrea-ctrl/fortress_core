@@ -60,6 +60,15 @@ interface GovernanceData {
 
 interface GovernanceStatus {
   flow: string
+  /**
+   * A9 — flag real del backend (`settings.GOVERNANCE_LLM_ENABLED`).
+   * false (default durante el gate): la capa multi-agente es DESCRIPTIVA,
+   * corre en fallback determinista y no quema llamadas NIM.
+   * undefined = el /status no cargó o no la expone → no asumir "activa".
+   */
+  governance_llm_enabled?: boolean
+  /** A9 — true si NIM estaría disponible pero el flag lo bloquea. */
+  nvidia_nim_blocked_by_a9?: boolean
   professor?: {
     lessons_count: number
     teaching_summary: string
@@ -171,12 +180,61 @@ export default function GovernancePanel({ apiUrl, symbol }: GovernancePanelProps
   const judge = governance?.judge
   const professor = governance?.professor
   const decisionColor = DECISION_COLORS[predictive?.decision ?? governance?.final_decision ?? ""] || "text-gray-300"
+  // A9: el modo de la capa multi-agente se lee del FLAG del backend
+  // (`governance_llm_enabled`), nunca de un texto libre que aparezca por otra
+  // razón. `undefined` = no se pudo leer → se muestra "desconocida", no "activa".
+  const llmEnabled = status?.governance_llm_enabled
 
   return (
     <div className="bg-dark-card border border-dark-border rounded-lg p-6">
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-lg font-bold">Gobernanza Multi-Agente</h3>
         <span className="text-xs text-gray-500 font-mono">{data?.flow}</span>
+      </div>
+
+      {/* A9 (PLAN_REMEDIO_BRECHAS_20260903 §A9) — honestidad de la capa
+          multi-agente. El cartel se deriva del flag GOVERNANCE_LLM_ENABLED que
+          sirve /api/governance/status, NO de un texto libre que ya se mostraba
+          por otra razón. Visible sin expandir nada, arriba de todo el panel. */}
+      <div
+        data-testid="a9-governance-mode"
+        className={`mb-4 rounded-lg border p-3 ${
+          llmEnabled === true
+            ? "border-accent-green/30 bg-accent-green/10"
+            : llmEnabled === false
+              ? "border-accent-yellow/40 bg-accent-yellow/10"
+              : "border-dark-border bg-dark-bg"
+        }`}
+      >
+        <div className="flex items-center gap-2 flex-wrap">
+          <span className="text-xs uppercase tracking-wide text-gray-400 font-bold">
+            GOVERNANCE_LLM_ENABLED
+          </span>
+          <span
+            data-testid="a9-governance-mode-badge"
+            className={`px-2 py-0.5 rounded text-xs font-bold font-mono ${
+              llmEnabled === true
+                ? "bg-accent-green/20 text-accent-green"
+                : llmEnabled === false
+                  ? "bg-accent-yellow/20 text-accent-yellow"
+                  : "bg-gray-700/40 text-gray-400"
+            }`}
+          >
+            {llmEnabled === true ? "ACTIVA" : llmEnabled === false ? "DESACTIVADA (A9)" : "DESCONOCIDA"}
+          </span>
+        </div>
+        <p data-testid="a9-governance-mode-note" className="text-xs text-gray-300 mt-1.5">
+          {llmEnabled === true
+            ? "La tríada y los agentes usan LLM real (NIM/OpenRouter) en cada análisis."
+            : llmEnabled === false
+              ? "Gobernanza descriptiva — no conectada a decisiones del pipeline. Los agentes caen a fallback determinista y no se queman llamadas NIM."
+              : "No se pudo leer el flag del backend: no se asume que la capa esté activa."}
+        </p>
+        {status?.nvidia_nim_blocked_by_a9 && (
+          <p data-testid="a9-nim-bloqueado" className="text-xs text-accent-yellow mt-1">
+            NVIDIA NIM está disponible pero bloqueado por A9: manda el flag.
+          </p>
+        )}
       </div>
 
       {/* TRIAD Consensus */}
@@ -425,8 +483,17 @@ export default function GovernancePanel({ apiUrl, symbol }: GovernancePanelProps
             </div>
             <div className="bg-dark-bg rounded-lg p-3">
               <p className="text-xs text-gray-400">NVIDIA NIM</p>
-              <p className={`text-lg font-mono font-bold ${status.nvidia_nim?.available ? "text-accent-green" : "text-gray-500"}`}>
-                {status.nvidia_nim?.available ? "ACTIVO" : "DETERMINISTA"}
+              {/* A9: si el flag bloquea NIM, decirlo. Mostrar "ACTIVO" porque el
+                  endpoint responde cuando el pipeline igual está apagado sería la
+                  decoratividad que A9 viene a eliminar. */}
+              <p className={`text-lg font-mono font-bold ${
+                status.nvidia_nim_blocked_by_a9
+                  ? "text-accent-yellow"
+                  : status.nvidia_nim?.available ? "text-accent-green" : "text-gray-500"
+              }`}>
+                {status.nvidia_nim_blocked_by_a9
+                  ? "BLOQUEADA (A9)"
+                  : status.nvidia_nim?.available ? "ACTIVO" : "DETERMINISTA"}
               </p>
             </div>
           </div>

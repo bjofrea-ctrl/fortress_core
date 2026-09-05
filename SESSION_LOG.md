@@ -1,5 +1,80 @@
 # Fortress Core — Memoria de Sesiones (Última sesión resumida)
 
+## 2026-09-03 — Cierre Fase A del gate: A7, A8, A9 + 3 fixes de auditoría (Cline)
+
+**Qué**: se completaron los tres tickets pendientes de `PLAN_REMEDIO_BRECHAS_20260903.md`
+(A7 enforcement del gate, A8 pre-registro PBO lag-0, A9 honestidad de la capa
+multi-agente) y se arreglaron tres hallazgos de la auditoría posterior: drift del
+manifiesto A4, una cita de regla inexistente, y la falta de cartel explícito del flag
+A9 en el dashboard.
+
+**A7 — el ledger enforcea la regla, no el documento**: `gate_window.py` (nuevo) define la
+ventana (2026-09-02 → `FORTRESS_GATE_END` o start+90d) y un allow-list cerrado
+`{bugfix, infraestructura}`. `_gate_window_check()` en `trial_registry.py` es el chokepoint
+único: lo invocan tanto `register_trial` como `register_trial_reservation`, y lanza
+`TrialRegistryError` **antes** de escribir el archivo. Escape declarado
+`FORTRESS_ALLOW_GATE_TRIAL=1`; el `conftest.py` lo deja activo a nivel sesión para que el
+resto de la suite siga probando mecánica sin que el gate la rompa.
+
+**A8 — docs-only, deliberadamente**: `PRE_REGISTRO_PBO_BASELINE_LAG0_20260903.md` + §40.1 en
+`PLAN_MEJORA_MATEMATICA.md`. Se pre-registra el re-run del PBO con `EXECUTION_LAG_DAYS=0`
+(criterio, umbrales 0.20/0.50, cinco checks de fidelidad, veredicto binario) **sin
+ejecutarlo**: correr un trial durante el gate violaría la regla que A7 acaba de endurecer.
+Cero cambios en `app/*.py`.
+
+**A9 — flag + cartel**: `GOVERNANCE_LLM_ENABLED=False` por default en `config.py`; los
+guards en `advanced_agents.py`, `predict.py` y `governance.py` cortan las llamadas NIM y
+OpenRouter. `/api/governance/status` expone `governance_llm_enabled` y
+`nvidia_nim_blocked_by_a9`.
+
+**Los tres fixes de auditoría**:
+1. **Drift A4**: `motor_manifest verify` dio rc=2 en `backtest_engine.py` — A6 cambió el
+   motor y nadie declaró el drift. Antes de bump se leyó el diff completo y se confirmó que
+   era 100% A6 (n_trials del ledger + trazabilidad, nada de señal/riesgo/rebalanceo); recién
+   ahí `bump --note` con la razón. `verify` → OK 7 módulos, rc=0.
+2. **Cita de regla equivocada**: código, tests y docs citaban la "Regla 0 del ROADMAP". No
+   existe: el ROADMAP no tiene reglas numeradas y la regla real es la **Regla 1 de
+   `ONBOARDING.md`** ("Ningún trial de motor sin criterio pre-registrado"). Corregido en
+   `gate_window.py`, `trial_registry.py` y los tests de A7/A8. **Y se cambió la naturaleza
+   de la verificación**: los tests ahora leen la regla desde `ONBOARDING.md` con un helper
+   (`_regla_de_onboarding(1)`) y exigen que el mensaje de error reproduzca su contenido
+   (`criterio pre-registrado`, `ANTES`), más `assert "Regla 0" not in msg`. Un test nuevo
+   (`test_regla_1_de_onboarding_es_la_de_criterio_pre_registrado`) falla si alguien renumera
+   las reglas del doc, antes de que producción quede citando un número mentiroso.
+3. **Cartel A9 en el frontend**: `GovernancePanel.tsx` tenía un bloque "Estado del Sistema"
+   escondido bajo `<details>` que mostraba NIM `ACTIVO`/`DETERMINISTA` según si el endpoint
+   respondía — con A9 apagado eso es exactamente la decoratividad que el ticket viene a
+   eliminar. Ahora hay un banner no colapsable derivado del **flag**, en tri-estado
+   ACTIVA / DESACTIVADA (A9) / DESCONOCIDA (si el `/status` no carga no se asume "activa"),
+   con el texto literal del plan: "descriptiva — no conectada a decisiones del pipeline".
+   NIM pasó a `BLOQUEADA (A9)` cuando el flag manda.
+
+**Verificación (todo corrido)**: backend **162/162** en las 9 suites relevantes
+(registry, gate, manifest, pipeline, governance flag/contract/auth, predict, A8, A6);
+ruff limpio en los 5 archivos tocados; frontend **52/52** en 9 archivos (13 en el panel,
+6 nuevos de A9), `tsc --noEmit` rc=0, `vite build` OK y el texto del cartel confirmado
+dentro del bundle de producción. Contrato backend↔frontend cruzado campo a campo.
+`frontend/dist/` está gitignoreado, no ensucia el commit.
+
+**Hallazgos para la próxima sesión**:
+- 🔴 **A2 no existe**: no hay `backend/data/clean_days.json` en ningún repo (verificado con
+  `find`). La racha de días limpios **no está corriendo**, así que el gate todavía no es
+  evaluable por máquina pese a tener el hash-guard y el chokepoint andando. El bump de A4
+  ordena reiniciar un contador que nunca se creó.
+- ✅ El plan `PLAN_REMEDIO_BRECHAS_20260903.md` (líneas 67, 68, 88) también quedó corregido
+  al mergear a main (2026-09-05) — ya no cita "Regla 0", cita la Regla 1 de ONBOARDING.md.
+
+**Archivos**: nuevos `backend/app/core/gate_window.py`, `backend/scripts/motor_manifest.py`,
+`scripts/motor_manifest.json`, `PRE_REGISTRO_PBO_BASELINE_LAG0_20260903.md`,
+`backend/tests/{test_trial_registry_gate,test_governance_llm_flag,test_motor_manifest,test_a8_pbo_lag0_docs}.py`.
+Modificados: `config.py`, `advanced_agents.py`, `routes/{predict,governance}.py`,
+`trial_registry.py`, `backtest_engine.py`, `pipeline_daily_signal.py`, `conftest.py`,
+`test_backtest_engine.py`, `PLAN_MEJORA_MATEMATICA.md`, `GovernancePanel.tsx`,
+`GovernancePanel.test.tsx`, `ROADMAP.md`.
+
+**Estado**: commiteado en el worktree `fundamentales-automatizado`, **sin push** (decisión
+de Boris).
+
 
 ## 2026-09-02 — Diagnóstico y optimización de `GET /api/advisor/universe` con 102 símbolos (Cline)
 
@@ -3088,7 +3163,6 @@ de nunca mezclar sin etiqueta. **Fix commit `57a4c66`**:
 - Test nuevo `test_excluye_checkpoint_override_de_operaciones_reales`: siembra una fila
   `chkpt__MSFT__2026-08-26` en el fixture y verifica que no aparece en `/combined` ni en
   `paper_total`; las 3 reales sí. Suite `test_trades_api.py`: **9/9 passed**, ruff limpio.
-
 
 ## 2026-09-03 — Auditoría de automatización (launchd) y almacenamiento (Kilo Code, gate)
 

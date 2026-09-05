@@ -3060,6 +3060,27 @@ retorno medio mensual de la config ACTUAL debe ser positivo sin costos.
 
 **No se toca**: T1.4/RESUMEN_STOP_ESTRUCTURAL (mejora calidad por trade, informativo no promovible) y Tarea L DSR/N_eff (solo calibración) — decisión del usuario.
 
+### 40.1.1 Limitación declarada del PBO=0.2358 vigente — lag de ejecución (2026-09-03, A8 del `PLAN_REMEDIO_BRECHAS_20260903.md`)
+
+**Contexto**: el PBO=0.2358 de §39 (vigente al cierre del plan, bucket **INTERMEDIO** del criterio pre-registrado 0.20–0.50) se calculó con el default del motor `EXECUTION_LAG_DAYS=1` (`backend/app/core/backtest_engine.py:646`), que rebalancea en `close[m-1]→close[m]`: la señal del mes m se ejecuta en el cierre del mes siguiente. Esa convención es conservadora para el edge del baseline (evita mirar el cierre del propio mes de la señal), pero **no es la convención estándar de la literatura de PBO** (Bailey, Borwein, López de Prado & Zhu 2014–2017), que usa `open(m)→close(m)` (rebalanceo intra-mes al apertura tras la señal).
+
+**Limitación**: la diferencia entre las dos convenciones es de grado, no de naturaleza — el PBO vigente mide overfitting de proceso asumiendo cierre-a-cierre; el re-run pendiente mide el mismo overfitting asumiendo apertura-a-cierre intra-mes. Si el ranking IS→OOS es robusto al cambio de convención, el PBO debería caer en el mismo bucket (0.20–0.50, INTERMEDIO). Si cambia de bucket, hay un sesgo de metodología que la convención actual estaba ocultando.
+
+**Re-corrida pre-registrada, NO ejecutada durante el gate**: el re-run con `open(m)→close(m)` (override `LAG_DAYS=0` en `backend/scripts/pbo_cscv_baseline.py`) está pre-registrado en `PRE_REGISTRO_PBO_BASELINE_LAG0_20260903.md` con:
+- Categoría `bugfix` (re-medición de hipótesis existente con metodología corregida, no trial nuevo de señal — per A8).
+- Familia `signal_diagnosis` (mismo §39), `n_trials_consumidos=1`, umbral pre-registrado idéntico a §39.
+- Criterio mecánico: misma tabla (PBO≤0.20 BAJO, 0.20–0.50 INTERMEDIO, >0.50 ALTO). El veredicto binario es CUMPLE si el re-run MEJORA el bucket (cae a ≤0.20) o se mantiene en INTERMEDIO; NO_CUMPLE si cae a >0.50 (alerta al ROADMAP).
+- Check de fidelidad nuevo: el artefacto debe declarar `EXECUTION_LAG_DAYS=0` explícitamente; si corrió con el default 1, se descarta.
+- Prohibido durante el gate: A8 es taxativo ("NO se ejecuta durante el gate — es medición de hipótesis existente, no bug de producción"). El slot del ledger se reserva al momento de la ejecución post-gate, no antes.
+
+**Ledger al cierre del plan**: el re-run **no consume slot todavía** — el slot se reservará cuando Boris ejecute la re-corrida post-gate, vía `register_trial_reservation(id="pbo_cscv_baseline_lag0", ..., categoria="bugfix")`. El check de A7 acepta `bugfix` durante el gate solo con el escape `FORTRESS_ALLOW_GATE_TRIAL=1`, que se activa al cierre del gate.
+
+**Por qué la declaración importa AHORA**: cualquier evaluación post-gate del baseline momentum+RSI que cite el PBO=0.2358 de §39 debe **sabiendo** que la convención close-to-close puede haber sesgado el bucket. Si el re-run post-gate cambia el bucket, el ROADMAP y el SESSION_LOG deben reflejarlo retroactivamente como actualización del §39 (no como un trial nuevo).
+
+**Relación con la matriz del plan §A**: A8 es la ÚLTIMA pieza de la Fase A (remedia D6 de `AUDITORIA_NIVEL_DIOS_20260902.md` — el PBO de §39 está sobre una convención de lag que no se ha auditado contra la literatura). Las otras piezas A0-A7+A9 están operativas al 2026-09-03; A8 deja la corrección lista para post-gate.
+
+---
+
 ### 40.1 RESOLUCIÓN — PBO vigente (2026-09-02, decisión de Boris)
 
 Comparación fundamentada (`COMPARACION_PBO_39_VS_MOMRSI.md`, OpenCode, revisada por

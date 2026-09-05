@@ -268,6 +268,15 @@ class NvidiaNIMClient:
     def generate(self, system_prompt: str, user_message: str, model: str = None) -> Optional[str]:
         if not self.is_available():
             return None
+        # A9 (PLAN_REMEDIO_BRECHAS_20260903 §A9): si el flag global está
+        # apagado, el cliente de NIM NO debe hacer requests reales. Esto
+        # protege la cuota de la API durante el gate de 60 días y
+        # garantiza que la capa multi-agente quede en modo "descriptivo"
+        # (los callers ya manejan el retorno None cayendo a determinista).
+        # El motor validado (signal_engine.py) NO usa este cliente, así
+        # que el pipeline de decisión del gate no se afecta.
+        if not settings.GOVERNANCE_LLM_ENABLED:
+            return None
         used_model = model or self.model
         url, api_key, wire_model = self._resolve_provider(used_model)
         if not api_key:

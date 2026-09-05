@@ -1,0 +1,13 @@
+{
+  "commit": "9c02c807211d",
+  "hashes": {
+    "backend/app/api/routes/decision.py": "0afd301e9b1b59710591255d46104dfaa57711477c43289231075c8ad82455bd",
+    "backend/app/core/adaptive_risk.py": "9ce657dd0fc6ef402c748c62afa3e05207ecf8d730f74c97565b1943578953a1",
+    "backend/app/core/backtest_engine.py": "c7021f0687f33f557c04a15414f3a78611e6c3ca72cbdf6966f4a48d397de458",
+    "backend/app/core/conformal.py": "941205f49009510138a0d6503d90f4a9638cc2511a233227e56823bb9695918b",
+    "backend/app/core/paper_trading.py": "4abdeb2e7ef891e5419b99f67165a74683784558322357aab068d7e748583ae6",
+    "backend/app/core/regime_classifier.py": "176cac0aee0c7a713b8377a9e09ca75b6515ca04ec535fb01a8a79bc6e25e27f",
+    "backend/app/core/signal_engine.py": "1d09ed7c2a34b8d43944dff5cbde62f83b75ff0d281a28f2c57173ce48a15103"
+  },
+  "note": "A6 (PLAN_REMEDIO_BRECHAS_20260903 parrafo A6): backtest_engine.py - DEFAULT_N_TRIALS 5 hardcodeado paso a sentinel None resuelto del ledger via consumed_budget('signal_diagnosis'), mas trazabilidad n_trials_source/n_trials_fallback_reason en el payload. Correccion metodologica del Deflated Sharpe (era un numero magico que sub-deflacionaba); NO toca generacion de senal, riesgo, ni rebalanceo. Drift declarado explicitamente por A6. El reinicio del contador de dias limpios en data/clean_days.json es decision humana aparte (A2), no la hace este bump."
+}

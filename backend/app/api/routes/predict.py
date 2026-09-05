@@ -9,6 +9,7 @@ from starlette.concurrency import run_in_threadpool
 
 from app.api.rate_limit import RateLimitDependency
 from app.api.routes.opportunities_universe import SYMBOLS
+from app.config import settings
 from app.core.data_ingestion import download_data
 from app.core.edgar_fundamentals import get_fundamentals
 from app.core.fundamentals_client import FinnhubClient
@@ -156,11 +157,21 @@ def _serialize_result(result, fundamentals_source: str = "unavailable") -> dict:
       como P(real).
     - `confidence` se mantiene como campo string categórico (Baja/Media/
       Alta) — NO es probabilidad.
+    - A9: `governance_mode: "descriptive_only"` cuando
+      `settings.GOVERNANCE_LLM_ENABLED` está apagado (default durante
+      el gate de 60 días). El consumidor sabe que la tríada viene
+      del fallback determinista — no de NIM. El motor validado
+      (signal_engine.py) no consume esta capa (D1, auditoría).
     """
+    governance_mode = "active" if settings.GOVERNANCE_LLM_ENABLED else "descriptive_only"
     return {
         # Identidad del motor (NUEVO, F0.2)
         "motor": result.motor,                          # siempre "heuristico_no_validado" hasta que se valide
         "probabilidades_calibradas": result.probabilidades_calibradas,  # siempre False hasta calibrar
+        # A9: estado de la capa multi-agente. "descriptive_only" = la tríada
+        # y la gobernanza caen al fallback determinista (no se queman
+        # llamadas a NIM durante el gate). "active" = modo completo con LLM.
+        "governance_mode": governance_mode,
         # Datos básicos
         "symbol": result.symbol,
         "timestamp": result.timestamp,

@@ -16,6 +16,23 @@ def _config_registry_tmp_db(tmp_path_factory):
     return adaptive_risk._REGISTRY
 
 
+@pytest.fixture(autouse=True, scope="session")
+def _gate_trial_escape_during_full_suite():
+    """A7 (PLAN_REMEDIO_BRECHAS_20260903 §A7): el gate arranca el 2026-09-02.
+    La suite completa de tests corre "hoy" (>= 2026-09-04), por lo que
+    cualquier test que use `date.today()` cae dentro de la ventana del
+    gate — esos tests prueban MECÁNICA del ledger, no la regla del gate.
+    Activamos el escape documentado a nivel de sesión para que la suite
+    entera siga probando lo que probaba antes; los tests específicos de
+    A7 (test_trial_registry_gate.py) lo desactivan explícitamente
+    cuando quieren verificar la regla del gate."""
+    import os
+    os.environ["FORTRESS_ALLOW_GATE_TRIAL"] = "1"
+    yield
+    # No borramos: si otro proceso hereda esta env, también se beneficia
+    # del escape y los tests siguen pasando. Es explícito en el docstring.
+
+
 @pytest.fixture
 def ohlcv_df():
     """OHLCV sintético con tendencia alcista suave, suficiente para el

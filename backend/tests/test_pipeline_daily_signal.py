@@ -5,6 +5,8 @@ idempotencia por estado, planes compra/venta, ejecución con cliente falso
 (incluye camino de error que NO corta el resto) y calendario hábil.
 """
 import datetime as dt
+import os
+from pathlib import Path
 
 import pandas as pd
 import pytest
@@ -312,3 +314,132 @@ def test_month_bounds_primer_y_ultimo_habil_desde_indice_sintetico():
     assert f_jan == dt.date(2026, 1, 1)
     assert l_jan.weekday() != 5 and l_jan.weekday() != 6
     assert l_feb == dt.date(2026, 2, 27)  # viernes previo al fin de semana
+# ------------------------------------- A1 reconciler (remedio brechas 09-03)
+# Condición (c) del gate: las órdenes abiertas del ledger deben tener posición
+# real en el paper. reconcile_orphans cierra las huérfanas con pnl_r REAL y
+# cuenta las posiciones sin explicación contable; registra en state + log.
+
+class ReconFakeClient(FakeClient):
+    """Cliente fake de papel con posiciones y último trade (sin red)."""
+
+    def __init__(self, positions=(), prices=None):
+        super().__init__()
+        self._positions = list(positions)
+        self._prices = dict(prices or {})
+
+    def get_positions(self):
+        return [{"symbol": s} for s in self._positions]
+
+    def last_trade_price(self, symbol):
+        if symbol not in self._prices:
+            raise RuntimeError(f"sin precio para {symbol}")
+        return self._prices[symbol]
+
+
+def _sembrar_ledger(tmp_path, *opens):
+    from app.core.signal_ledger import SignalLedger
+    led = SignalLedger(db_path=str(tmp_path / "ledger.db"))
+    for sid, sym, open_price in opens:
+        led.open_order(sid, sym, "2026-08-03", 10, open_price)
+    return led
+
+
+def test_reconcile_cierra_huerfana_con_pnl_r_real_y_registra_en_state_y_log(tmp_path):
+    # Ticket A1: 1 orden huérfana -> cerrada con pnl_r REAL != 0.0, línea en
+    # pipeline_state.json (state) y en pipeline_diario.log.
+    led = _sembrar_ledger(tmp_path, ("ORPH__2026-08-03", "ORPH", 100.0))
+    client = ReconFakeClient(positions=[], prices={"ORPH": 110.0})
+    state = pl.new_state()
+    log = str(tmp_path / "pipeline_diario.log")
+    res = pl.reconcile_orphans(led, client, exit_date="2026-09-02",
+                               state=state, log_path=log)
+
+    assert res["orphan_closed"] == 1
+    assert res["unexplained"] == 0
+    fila = led.fetch(symbol="ORPH")[0]
+    assert fila["status"] == "closed"
+    assert fila["exit_reason"] == "RECONCILE"
+    # pnl_r real = (close-open)/open con el último trade, NO 0.0 a ciegas.
+    assert fila["pnl_r"] == pytest.approx((110.0 - 100.0) / 100.0, abs=1e-9)
+    assert fila["close_fill_price"] == pytest.approx(110.0, abs=1e-9)
+    # state: reconcile persistido (el contador A2 lo lee como condición (c)).
+    assert state["reconcile"]["orphan_closed"] == 1
+    assert state["reconcile"]["unexplained"] == 0
+    # log: la métrica está presente en pipeline_diario.log.
+    with open(log, encoding="utf-8") as fh:
+        texto = fh.read()
+    assert "reconcile orphan_closed=1 unexplained=0" in texto
+
+
+def test_reconcile_no_toca_orden_viva_y_cuenta_posicion_sin_explicar(tmp_path):
+    led = _sembrar_ledger(tmp_path, ("SYNC__2026-08-03", "SYNC", 50.0))
+    # SYNC tiene posición real (explicada); ZZZ es una posición del paper que el
+    # ledger no registra (comprada fuera del sistema) -> unexplained.
+    client = ReconFakeClient(positions=["SYNC", "ZZZ"], prices={"SYNC": 55.0})
+    log = str(tmp_path / "pipeline_diario.log")
+    res = pl.reconcile_orphans(led, client, exit_date="2026-09-02", log_path=log)
+    assert res["orphan_closed"] == 0
+    assert res["unexplained"] == 1
+    assert res["unexplained_symbols"] == ["ZZZ"]
+    assert [r["signal_id"] for r in led.open_orders()] == ["SYNC__2026-08-03"]
+
+
+def test_reconcile_idempotente_no_recuenta_la_misma_huerfana(tmp_path):
+    led = _sembrar_ledger(tmp_path, ("ORPH__2026-08-03", "ORPH", 100.0))
+    client = ReconFakeClient(positions=[], prices={"ORPH": 110.0})
+    log = str(tmp_path / "pipeline_diario.log")
+    primera = pl.reconcile_orphans(led, client, exit_date="2026-09-02", log_path=log)
+    segunda = pl.reconcile_orphans(led, client, exit_date="2026-09-03", log_path=log)
+    assert primera["orphan_closed"] == 1
+    assert segunda["orphan_closed"] == 0   # ya cerrada -> no se re-cuenta
+    assert len(led.fetch(symbol="ORPH")) == 1  # la fila se cerró, no se duplicó
+
+
+def test_reconcile_sin_precio_cierra_con_0_visible_y_no_lanza(tmp_path):
+    led = _sembrar_ledger(tmp_path, ("ORPH__2026-08-03", "ORPH", 100.0))
+    client = ReconFakeClient(positions=[], prices={})  # last_trade_price falla
+    log = str(tmp_path / "pipeline_diario.log")
+    res = pl.reconcile_orphans(led, client, exit_date="2026-09-02", log_path=log)
+    assert res["orphan_closed"] == 1
+    assert res["sin_precio"] == 1   # el fallo de precio queda visible, no oculto
+    fila = led.fetch(symbol="ORPH")[0]
+    assert fila["status"] == "closed" and fila["pnl_r"] == 0.0
+
+
+def test_reconcile_dia_limpio_sin_huerfanas_ni_inexplicadas(tmp_path):
+    led = _sembrar_ledger(tmp_path, ("SYNC__2026-08-03", "SYNC", 50.0))
+    client = ReconFakeClient(positions=["SYNC"], prices={"SYNC": 55.0})
+    log = str(tmp_path / "pipeline_diario.log")
+    res = pl.reconcile_orphans(led, client, exit_date="2026-09-02", log_path=log)
+    assert res == {"orphan_closed": 0, "unexplained": 0,
+                   "unexplained_symbols": [], "sin_precio": 0,
+                   "exit_date": "2026-09-02", "timestamp": res["timestamp"]}
+    assert [r["signal_id"] for r in led.open_orders()] == ["SYNC__2026-08-03"]
+
+
+def test_reconcile_escribe_al_log_canonico_scripts_del_repo(tmp_path):
+    # A1 regresión: DIARIO_LOG debe apuntar al log canónico que la shell
+    # redirige (scripts/pipeline_diario.log en la RAÍZ del repo, no a
+    # backend/scripts/). Es el archivo que A2 va a parsear para la condición
+    # (c). El módulo corre con cwd=backend (daily_signal_pipeline.sh hace
+    # cd $REPO/backend, igual que estos tests), así que el default de
+    # reconcile_orphans (log_path=DIARIO_LOG) resuelve a <raíz>/scripts/.
+    repo_root = Path(__file__).resolve().parents[2]
+    canonico = repo_root / "scripts" / "pipeline_diario.log"
+
+    # El path NO es backend/scripts/ (bug reportado: __file__ resuelve ahí).
+    assert os.path.abspath(pl.DIARIO_LOG) != str(
+        Path(__file__).resolve().parents[1] / "scripts" / "pipeline_diario.log"
+    )
+    # Y SÍ es scripts/pipeline_diario.log relativo a la raíz del repo.
+    assert os.path.normpath(os.path.abspath(pl.DIARIO_LOG)) == os.path.normpath(
+        str(canonico)
+    )
+
+    # La línea de reconcile cae AHÍ usando el default (sin log_path override).
+    led = _sembrar_ledger(tmp_path, ("ORPH__2026-08-03", "ORPH", 100.0))
+    client = ReconFakeClient(positions=[], prices={"ORPH": 110.0})
+    pl.reconcile_orphans(led, client, exit_date="2026-09-02")
+    assert canonico.exists()
+    with open(canonico, encoding="utf-8") as fh:
+        assert "reconcile orphan_closed=1 unexplained=0" in fh.read()
