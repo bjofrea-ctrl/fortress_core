@@ -21,6 +21,19 @@ El contador de días limpios arrancó el 2026-09-02 con 2 condiciones verificabl
 
 ## FASE A — Cerrar el loop y blindar el gate (hoy → ~09-08; ~4-6 sesiones de agente; 100% permitido durante el gate)
 
+### A0. Harness de integridad del cache de datos (yfinance) — PRECONDICIÓN, bloquea A1
+- **Contexto**: se encontró contaminación cruzada en el cache de yfinance — `data_ingestion.py` tiene diseño append-only (solo pide desde `last_date` en adelante, nunca re-verifica ni repara filas viejas) — y en 3 clusters (24-26/ago, 31/ago, 1/sep 2026) al menos 38 barras completas de OTROS símbolos quedaron congeladas en 29 parquets (ej.: KO tenía la barra exacta de CRM; CMCSA tenía un +622.9% falso que en realidad era la barra de PM). Ya fue saneado a mano (re-descarga completa de los 102 símbolos con `auto_adjust=True`, verificado sin duplicados restantes) pero el diseño que lo permitió sigue intacto — puede volver a pasar en cualquier corrida futura. También hay 64 huecos de fechas faltantes en 57/102 símbolos (ej. AKAM/AMAT/AMGN faltan 2026-08-28) que el diseño append-only nunca repara porque no re-pide fechas intermedias ya pasadas. Especificación derivada de `COMPARACION_FUENTES_DATOS.md` §10/§10.3 (medida, no de opinión) — no reinventar, ese documento es la referencia.
+- **Qué** (4 partes, la 4 diferida):
+  1. Validador de sanidad de retornos: flag de cualquier |retorno diario| > umbral por clase de símbolo (large-cap 15-20%), barato (segundos), corre en cada actualización de cache. Habría atrapado las 38 barras el día que entraron (24-ago), antes de congelarse.
+  2. Reconciliación cache vs. descarga fresca del MISMO yfinance (muestra diaria rotativa o full): (a) filas cuyo OHLCV matchea otro símbolo → bloqueo + re-descarga del archivo completo; (b) mosaico (plateaus del ratio) → re-descarga completa del archivo; (c) huecos intermedios → re-descarga del tramo. Hoy nada de esto existe: el refresh solo mira el extremo derecho (`last_date`).
+  3. Freeze de snapshot por trial: el pre-registro de cada trial registra el hash del cache que consume (o copia congelada a un directorio del trial) — única defensa contra el reajuste retroactivo para reproducibilidad; hoy no existe ni git ni backup de los parquets.
+  4. **Diferido, solo pre-registrado en A0, no se implementa ahora**: cross-check Finnhub↔FMP cuando FMP produzca datos. Hoy no es implementable (0 datos, `calls_used: 0`/`failed: 102`) y hay un desborde de cuota estructural (universo 102 × 5 endpoints = 510 calls > 250/día del free tier) que debe resolverse antes (universo por mitades en días alternos, o cache 90-días con refresh incremental) — junto con validar el `FIELD_MAP` de Finnhub con `verify_finnhub_mapping.py` (existe, nunca corrió).
+- **Dónde**: `backend/app/core/data_ingestion.py` (el diseño append-only a corregir/envolver), nuevo módulo de validación (integridad de cache), enganchado en la misma ruta de actualización diaria que hoy solo pide `last_date` en adelante.
+- **Verificación**: test que siembra una fila con OHLCV de otro símbolo → detectada y dispara re-descarga; test que siembra un salto de retorno >20% en un large-cap → flag generado; test que siembra un hueco de fecha intermedio → detectado y re-descargado el tramo (no solo el extremo derecho); corrida real sobre los 102 símbolos confirmando 0 contaminaciones y 0 huecos restantes, con el harness quedando activo en cada actualización subsiguiente (no una pasada única).
+- **Remedia**: el defecto de diseño (no yfinance en sí) que permitió 2+ semanas de historia contaminada sin detección, verificado independientemente (ver `COMPARACION_FUENTES_DATOS.md` §3/§4/§6/§9 — ningún veredicto del ledger quedó contaminado por suerte calendárica, pero el próximo trial que use el cache completo ya no la tiene). Bloquea a **A1**: el reconciler de A1 y el contador de días limpios de A2 no son confiables si el cache de precios que alimenta el pipeline puede contener barras cruzadas o huecos sin detectar.
+- **Riesgo**: nulo/bajo — es observabilidad + reparación dirigida del cache, no cambia la lógica de decisión del motor (respeta la restricción del gate: solo contabilidad/tooling pre-trial).
+- **Esfuerzo**: 1.5-2 sesiones (partes 1-3; la parte 4 queda pre-registrada, no ejecutada, hasta resolver la cuota FMP).
+
 ### A1. Reconciler dentro del pipeline — hace verificable la condición (c)
 - **Qué**: invocar `PaperTrader.reconcile_open_positions()` en la fase 22:10 (post-cierre, idempotente, solo órdenes huérfanas) y registrar `reconcile: {orphan_closed: n, unexplained: n}` en `pipeline_state.json` + línea en `pipeline_diario.log`.
 - **Dónde**: `backend/scripts/pipeline_daily_signal.py` (fase DECIDE/22:10, después del cierre de órdenes), consumiendo `backend/app/core/paper_trading.py:169`.
@@ -156,7 +169,7 @@ Ya computados y validados vs Marchenko-Pastur (`rmt_factor_scores_8factors.csv` 
 ## Cronograma y dependencias
 
 ```
-Sem 1 (09-03→09-08):   A1→A2→A4 (arranca contador VERIFICADO) → A3, A5, A6, A7, A8, A9
+Sem 1 (09-03→09-08):   A0→A1→A2→A4 (arranca contador VERIFICADO) → A3, A5, A6, A7, A8, A9
 Sem 1-2 (con OK Boris): B0 granja fantasma (cuenta paper separada) + B0.bis cross-check precios
 Sem 2-3:               B1 (15→30 símb) + B2 (IV diaria) + A5 acumulando telemetría + B0 acumulando fills SHADOW_
 Sem 2-8:               B3, B4, B5, B6, B7(opcional) — sin tocar ruta de decisión (B6 solo con golden)
@@ -164,7 +177,7 @@ Sem 2-8:               B3, B4, B5, B6, B7(opcional) — sin tocar ruta de decisi
 Post-gate:             D1 → (D2, D4, D6 en paralelo) → D3, D5
 ```
 
-Dependencias duras: A1 antes que A2 (el contador necesita la evidencia de reconcile); A4 antes de arrancar la racha oficial (el congelamiento se firma con el manifiesto); **B0 requiere OK explícito de Boris (segunda cuenta paper) antes de construirse**; B6 solo con golden bit-idéntico + actualización de manifiesto declarada (reinicia el contador — o se difiere al 1/12 si la equivalencia no es perfecta); D2 y D3 dependen de B2/B1/B0 acumulando ≥ 2-3 meses de datos.
+Dependencias duras: A0 antes que A1 (el reconciler y el contador de días limpios no son confiables sobre un cache de precios que puede tener barras cruzadas o huecos sin detectar); A1 antes que A2 (el contador necesita la evidencia de reconcile); A4 antes de arrancar la racha oficial (el congelamiento se firma con el manifiesto); **B0 requiere OK explícito de Boris (segunda cuenta paper) antes de construirse**; B6 solo con golden bit-idéntico + actualización de manifiesto declarada (reinicia el contador — o se difiere al 1/12 si la equivalencia no es perfecta); D2 y D3 dependen de B2/B1/B0 acumulando ≥ 2-3 meses de datos.
 
 ## Criterios de éxito verificables (por fase)
 
