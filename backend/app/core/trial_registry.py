@@ -91,6 +91,28 @@ BASE_THRESHOLD = 0.90
 # maximo 1 por objetivo. Subirlo es una decision de producto, no un dato.
 MAX_RETESTS_PER_TARGET = 2
 
+# ---------------------------------------------------------------------------
+# B4 (PLAN_REMEDIO_BRECHAS_20260903 §B4): CORTE DEL HOLDOUT SELLADO.
+# NINGÚN trial de investigación puede tocar datos posteriores a esta fecha:
+# lo que sigue es el OOS sagrado del proyecto, reservado para la evaluación
+# final (C1, 2026-12-01) y para el paper trading PROSPECTIVO — que NO es
+# "dato histórico". El MDE (B5) computa potencia solo con datos <= este corte.
+# ---------------------------------------------------------------------------
+HOLDOUT_CUTOFF_DATE = date(2025, 9, 1)
+
+# Excepción explícita del holdout: el paper trading PROSPECTIVO es el OOS real
+# (señal decidida hoy, fill de mañana) — no es dato posterior al corte. Un
+# trial que lo use DEBE declararlo en la entrada:
+#   "ventana_datos": {"modo": "paper_prospectivo"}
+# Cualquier otra declaración que cruce el corte se rechaza por escritura.
+HOLDOUT_PAPER_MODE = "paper_prospectivo"
+HOLDOUT_EXEMPT_MODOS = frozenset({HOLDOUT_PAPER_MODE})
+
+# Escape documentado (mismo patrón que el del gate A7): emergencias
+# declaradas — p.ej. la evaluación final C1 de diciembre, que legítimamente
+# consume el holdout que se selló para eso.
+HOLDOUT_ESCAPE_ENV = "FORTRESS_ALLOW_HOLDOUT_TOUCH"
+
 # Track A (2026-08-26): estados del ciclo de vida de una entrada.
 STATUS_RESERVED = "RESERVED"    # Boris aprobo el pre-registro; slot contado, trial sin correr
 STATUS_COMPLETED = "COMPLETED"  # corrio; veredicto + artefacto presentes
@@ -170,6 +192,137 @@ def _parse_fecha(value) -> date:
         raise TrialRegistryError(
             f"fecha invalida: {value!r} — formato esperado YYYY-MM-DD"
         ) from exc
+
+
+# ---------------------------------------------------------------------------
+# B4 — holdout sellado (PLAN_REMEDIO_BRECHAS_20260903 §B4)
+# ---------------------------------------------------------------------------
+# Regla por ESCRITURA (mismo patrón que A7): el ledger histórico (51 entradas,
+# varias con datos post-corte en su diseño) carga sin problema; solo los
+# REGISTROS NUEVOS se validan contra el corte. Dos vías mecánicas:
+#   1. campo estructurado `ventana_datos` en la entrada:
+#        {"modo": "historico", "hasta": "YYYY-MM-DD"} -> hasta <= corte
+#        {"modo": "paper_prospectivo"}                  -> excepción (OOS real)
+#   2. escaneo best-effort del TEXTO del pre-registro por rangos de datos
+#      (ISO 'A -> B' o años 'AAAA-AAAA'/'AAAA-AAAA-MM') que crucen el corte.
+
+def _holdout_escape_active() -> bool:
+    """True si el operador activó el escape explícito (emergencia declarada)."""
+    return bool(os.environ.get(HOLDOUT_ESCAPE_ENV))
+
+
+def _holdout_exempt(entry: dict) -> bool:
+    """True si la entrada declara la excepción explícita del holdout.
+
+    La ÚNICA exención es el paper trading PROSPECTIVO (el OOS real, no dato
+    histórico), declarado como ``ventana_datos.modo == "paper_prospectivo"``.
+    La categoría del trial (A7) NO abre el holdout: son reglas distintas.
+    """
+    window = entry.get("ventana_datos")
+    return isinstance(window, dict) and window.get("modo") in HOLDOUT_EXEMPT_MODOS
+
+
+def _declared_historical_end(entry: dict) -> Optional[date]:
+    """Fin de la ventana de datos HISTÓRICOS que el trial declara usar.
+
+    Lee ``entry["ventana_datos"]``:
+      {"modo": "historico", "hasta": "YYYY-MM-DD"} -> date(hasta)
+    Devuelve None si la entrada no declara ventana histórica. Un modo
+    desconocido falla RUIDOSO (una declaración inválida no se calla)."""
+    window = entry.get("ventana_datos")
+    if not isinstance(window, dict):
+        return None
+    modo = window.get("modo")
+    if modo == HOLDOUT_PAPER_MODE:
+        return None  # exención: OOS prospectivo, no dato histórico
+    if modo is None or modo == "historico":
+        hasta = window.get("hasta")
+        if hasta is None:
+            if modo == "historico":
+                raise TrialRegistryError(
+                    "ventana_datos.modo='historico' exige 'hasta' (YYYY-MM-DD)"
+                )
+            return None
+        return _parse_fecha(hasta)
+    raise TrialRegistryError(
+        f"ventana_datos.modo desconocido: {modo!r} — validos: 'historico' "
+        f"o {HOLDOUT_PAPER_MODE!r}"
+    )
+
+
+def _preregistro_window_end(preregistro: str) -> Optional[date]:
+    """Fin de ventana de datos declarado en el TEXTO del pre-registro.
+
+    Best-effort sobre los patrones reales del proyecto (grep PRE_REGISTRO_*.md):
+      - rango ISO:   '2019-01-01 → 2026-08-04'  (también 'a' 'hasta' '..' '–')
+      - rango de años: '2019-2026' / '2024-2026-08' / '2014–2017'
+    Busca TODOS los rangos (el fin puede estar en la W3) y devuelve el fin
+    MÁXIMO, pero SOLO si cruza HOLDOUT_CUTOFF_DATE (si no cruza, None).
+    Fechas aisladas (p.ej. '2026-12-01' como fecha de evaluación) o citas de
+    papel ('Prado & Zhu 2014–2017') no generan ventana.
+    """
+    fins: List[date] = []
+    # Rango ISO: 'inicio SEP fin' con separadores de barrido de datos.
+    for m in re.finditer(
+        r"\d{4}-\d{2}-\d{2}\s*(?:→|⇒|->|\u2013|\u2014|\.\.|\.\.\.|hasta|a)\s*"
+        r"(\d{4}-\d{2}-\d{2})",
+        preregistro,
+    ):
+        fins.append(_parse_fecha(m.group(1)))
+    # Rango de años: 'AAAA SEP AAAA(/MM(/DD)?)?' (p.ej. 2024-2026-08-04).
+    for m in re.finditer(
+        r"\b(20\d{2})\s*(?:→|⇒|->|\u2013|\u2014|\.\.|\.\.\.|hasta|-)\s*"
+        r"(20\d{2})(?:-(0[1-9]|1[0-2]))?(?:-(0[1-9]|[12]\d|3[01]))?",
+        preregistro,
+    ):
+        anio_fin = int(m.group(2))
+        mes, dia = m.group(3), m.group(4)
+        if anio_fin > HOLDOUT_CUTOFF_DATE.year:
+            fins.append(date(anio_fin, 12, 31))  # año fin > 2025 => cruza
+        elif anio_fin == HOLDOUT_CUTOFF_DATE.year and mes:
+            fin = date(anio_fin, int(mes), int(dia or 28))
+            if fin > HOLDOUT_CUTOFF_DATE:
+                fins.append(fin)
+        # '2020-2025' (solo años, mes ausente) no se marca: conservador, evita
+        # falso bloqueo de un rango que bien pudo terminar antes del corte.
+    if not fins:
+        return None
+    fin_max = max(fins)
+    return fin_max if fin_max > HOLDOUT_CUTOFF_DATE else None
+
+
+def _holdout_check(entry: dict, preregistro: Optional[str] = None) -> None:
+    """B4: rechaza por escritura trials que tocan el holdout sellado.
+
+    La ventana se toma de (en orden): ventana_datos estructurada; si la
+    entrada no la declara, del texto del pre-registro (cuando se pasa). Si
+    ninguna vía detecta datos post-corte, no se bloquea (lo no declarado no
+    se puede juzgar — regla por escritura, no por lectura).
+    """
+    if _holdout_escape_active():
+        return  # escape explícito: respetar al operador
+    if _holdout_exempt(entry):
+        return  # paper prospectivo: es el OOS real, no dato histórico
+    fin, origen = _declared_historical_end(entry), "ventana_datos"
+    if fin is None and preregistro:
+        fin_txt = _preregistro_window_end(preregistro)
+        if fin_txt is not None:
+            fin, origen = fin_txt, "el pre-registro"
+    if fin is not None and fin > HOLDOUT_CUTOFF_DATE:
+        trial_id = str(entry.get("id", ""))
+        raise TrialRegistryError(
+            f"HOLDOUT_BLOQUEADO: el trial {trial_id!r} toca datos posteriores "
+            f"al corte del holdout sellado ({HOLDOUT_CUTOFF_DATE.isoformat()} — "
+            f"B4, PLAN_REMEDIO_BRECHAS_20260903 §B4): ventana detectada hasta "
+            f"{fin.isoformat()} en {origen}. Los datos post-corte son el OOS "
+            f"sagrado del proyecto (reservado para la evaluación final C1 de "
+            f"2026-12-01 y el paper trading PROSPECTIVO — el OOS real). Los "
+            f"trials de investigación solo usan datos <= "
+            f"{HOLDOUT_CUTOFF_DATE.isoformat()}. Si el diseño ES paper "
+            f"prospectivo, decláralo en la entrada: 'ventana_datos': "
+            f"{{'modo': {HOLDOUT_PAPER_MODE!r}}}. Para emergencias declaradas "
+            f"(p.ej. la evaluación final): export {HOLDOUT_ESCAPE_ENV}=1."
+        )
 
 
 def effective_status(entry: dict, today: Optional[date] = None) -> str:
@@ -403,6 +556,9 @@ def register_trial(entry: dict, path: Optional[str] = None, check_git: bool = Tr
     # git; para el gate usamos un flag separado si hace falta, pero por
     # ahora la regla es uniforme: TODA escritura respeta el gate).
     _gate_window_check(entry)
+    # B4: holdout sellado — por escritura, sin texto de pre-registro (esta
+    # ruta es post-hoc: la ventana se juzga por lo que DECLARA la entrada).
+    _holdout_check(entry)
     entries = _load_raw(path)
     if any(e["id"] == entry["id"] for e in entries):
         raise TrialRegistryError(f"id duplicado: {entry['id']}")
@@ -448,6 +604,10 @@ def register_trial_reservation(
         _git_reconciliation_error(path)
     # A7: gate window check (idéntico al de register_trial).
     _gate_window_check(entry)
+    # B4: holdout sellado — por escritura, con el TEXTO del pre-registro
+    # (cuando existe) para detectar ventanas de datos post-corte no
+    # declaradas en la entrada.
+    _holdout_check(entry, contenido if preregistro is not None else None)
     entries = _load_raw(path)
     if any(e["id"] == entry["id"] for e in entries):
         raise TrialRegistryError(f"id duplicado: {entry['id']}")
