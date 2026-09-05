@@ -152,22 +152,19 @@ except Exception as e:
 fi
 
 # ========== 2) earnings_sentiment ==========
-earn_path=""
-for cand in "backend/data/cache/earnings_sentiment.db" "data/cache/earnings_sentiment.db"; do
-  if [[ -e "$REPO/$cand" ]]; then
-    earn_path="$REPO/$cand"
-    break
-  fi
-done
-# También probar $FORTRESS_SENTIMENT_DB si está seteado y existe
-if [[ -z "$earn_path" && -n "${FORTRESS_SENTIMENT_DB:-}" && -e "$FORTRESS_SENTIMENT_DB" ]]; then
-  earn_path="$FORTRESS_SENTIMENT_DB"
-fi
+# Artefacto de vida: el LOG de corrida diario (earnings_sentiment_run_*.txt,
+# escrito ~22:00 siempre que el colector corre). La DB (earnings_sentiment.db)
+# NO es artefacto de vida: es un store incremental con dedup por accession —
+# solo cambia cuando llega un 8-K nuevo, lo que ocurre por rachas (earnings
+# season). Vigilar su mtime producía ERROR espurio cualquier día sin filings
+# nuevos (fix 2026-09-04: el latido detectó su propio falso positivo — db
+# congelada 3 días mientras las corridas diarias reportaban 0 errores).
+earn_path="$(find_newest "backend/data/cache/earnings_sentiment_run_*.txt" "data/cache/earnings_sentiment_run_*.txt")"
 if [[ -n "$earn_path" ]]; then
   mtime_earn="$(stat -f %m "$earn_path" 2>/dev/null || echo 0)"
   check_freshness "earnings_sentiment" "$earn_path" "$mtime_earn" "$TH_EARN"
 else
-  echo "[$(ts)] [WARN] earnings_sentiment missing: no db found at backend/data/cache/earnings_sentiment.db (ni FORTRESS_SENTIMENT_DB)" >> "$LOG"
+  echo "[$(ts)] [WARN] earnings_sentiment missing: no run log found (backend/data/cache/earnings_sentiment_run_*.txt)" >> "$LOG"
   warnings=$((warnings + 1))
 fi
 
