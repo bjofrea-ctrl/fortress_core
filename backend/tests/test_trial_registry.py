@@ -36,6 +36,19 @@ from app.core.trial_registry import (
 FAMILIA = "motor_signal"
 
 
+@pytest.fixture(autouse=True)
+def _no_cache_snapshot(monkeypatch):
+    """Estos tests validan las garantías del LEDGER (JSON), no el cache.
+    A0 agrega el attach automático del snapshot de cache en
+    register_trial/register_trial_reservation; acá se aísla para que las
+    entradas de prueba queden exactamente como las declara _entry()
+    (y sin pagar los 25s del manifiesto de 102 parquets por registro).
+    El contrato del snapshot tiene sus tests en test_cache_integrity.py."""
+    import app.core.trial_registry as tr
+
+    monkeypatch.setattr(tr, "_attach_cache_snapshot_if_absent", lambda entry: entry)
+
+
 def _entry(id_suffix="a", familia=FAMILIA, n=1, veredicto="NO_CUMPLE", path=None):
     return {
         "id": f"trial_{id_suffix}",

@@ -82,6 +82,8 @@ class AlpacaPaperClient:
             or settings.ALPACA_PAPER_BASE_URL
             or DEFAULT_PAPER_BASE_URL
         )
+        # ALPACA_MARKET_DATA_BASE_URL no está en Settings (solo paper base),
+        # se lee de env con fallback al default de datos.
         self.market_data_base_url = (
             market_data_base_url
             or os.environ.get("ALPACA_MARKET_DATA_BASE_URL", "")
@@ -176,6 +178,12 @@ class AlpacaPaperClient:
         requiere suscripción. Traduce BRK-B → BRK.B solo en el borde HTTP.
 
         Usado por el colector intradía I3 (acumulación 1-min) — no toca trading.
+
+        B1 (rate/cuota en el log del colector): el atributo opcional
+        `self.on_response` (callable o None) se invoca con cada response HTTP
+        cruda ANTES de consumirla, solo si está seteado. El colector lo usa
+        para leer headers X-RateLimit-* sin duplicar la lógica HTTP acá;
+        None (default) = comportamiento previo idéntico.
         """
         params: Dict[str, Any] = {
             "timeframe": timeframe,
@@ -197,6 +205,11 @@ class AlpacaPaperClient:
                 params=params,
                 timeout=DEFAULT_TIMEOUT_SECONDS,
             )
+            if getattr(self, "on_response", None) is not None:
+                try:
+                    self.on_response(resp.headers)  # type: ignore[misc]
+                except Exception:  # noqa: BLE001 — observabilidad nunca rompe el fetch
+                    pass
             resp.raise_for_status()
             payload = resp.json()
             chunk = payload.get("bars") or []

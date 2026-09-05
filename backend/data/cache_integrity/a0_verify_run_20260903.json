@@ -1,0 +1,7472 @@
+{
+  "cache_manifest": {
+    "AAPL": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "5a37f6c2cfe2f9f966a7c4a7cf192921ce33a0686d0cfe661e7e5de69a6b6484"
+    },
+    "ABBV": {
+      "range": [
+        "2013-01-02",
+        "2026-09-03"
+      ],
+      "rows": 3439,
+      "sha256": "b4d22f3bc5050fb4184e7fd09582f8abe1755a89bb644db159df1431bc428d7e"
+    },
+    "ACN": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "81693c50869f3395833e8cb6e38900f76345946d2f136ef185e949bcb6533b38"
+    },
+    "ADBE": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "9b3b0c4ae17a9c1a535dac350d1cd4ddd74fdc061ba2302085eb00f0f2a02613"
+    },
+    "AKAM": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "ca099b5d65beb2c25d54690cf519209ead26fe06f84af3f1d7a8e8004b07509a"
+    },
+    "ALGN": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "baf85c19dc32a42cc91cbd95077e0671766d75a86facfc7a7ce87db694e9c281"
+    },
+    "AMAT": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "31148aeb5c55bc0254166a551e7b5b49c389bef60d1628c9b4b8b7153821193d"
+    },
+    "AMD": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "47cea566925024fe6099fd1b0b98c5a15253cb8181d05dca588e505670828e82"
+    },
+    "AMGN": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "49c6916c9b3127d12e85468018b451dcee5b6488f5bef338aa2a4b5531b51080"
+    },
+    "AMZN": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "ff0d8ae96729c7742e5b4df7e9b890fdb9cf5bcf9e4cca01e33138fef01f41f2"
+    },
+    "AVGO": {
+      "range": [
+        "2009-08-06",
+        "2026-09-03"
+      ],
+      "rows": 4296,
+      "sha256": "06bd9ef897f9af35fe55b5e42fdff93337cd7f3977e118b56cf98b098ed50a00"
+    },
+    "AXP": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "5dae9c5979671fadb48664975a4c63ccc1aebdb30523e007aa4a1a791ec32b58"
+    },
+    "BAC": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "4395c286e54a9d8992f9820fb58875b0c3147fbe27577b609a98daf528a88e27"
+    },
+    "BIIB": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "b0702d84b20f752799db2f56dd401e791a3f6e01fff13b609331370ed5866386"
+    },
+    "BLK": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "e29f69ad416349b6842ce9ed017ef662c6e4bb9a4222f95143df33ac3180e407"
+    },
+    "BR": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "571cbb4946e2a6901999d15629ab1c891fbc409d8d7aee478c8d21264d7dbf40"
+    },
+    "BRK-B": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "94ba6a3c2183aaa16684cf185b6321bbf21d8df3a8da4abbe6cd3440da20e90b"
+    },
+    "CAT": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "1efc1c1ceb64c45e63d5fae66b2a561c9eaf2edc733b7096750441c48cf48083"
+    },
+    "CDNS": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "a1200d755594bfea609b269436f07480092c824a0a3e028284e40f3f6050683c"
+    },
+    "CHKP": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "faba8e68e594c24f38f422a14c60c23a5ce40c1e39a77ae5d30a0c4047da7a87"
+    },
+    "CHTR": {
+      "range": [
+        "2010-01-05",
+        "2026-09-03"
+      ],
+      "rows": 4192,
+      "sha256": "79957c888ee8bade448fba204d8af4e7299aea2f4e3ceafb6ed5f6be566ebe94"
+    },
+    "CMCSA": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "4bd34fa6e0411c2221bf09f4d394f0a4c48566f8d067ff1b2ea586f6eeaf8574"
+    },
+    "COST": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "bf1db6487d28993e37394e9c4bd9e80438b282c1fb1b14ca78aa80bd2cc279f2"
+    },
+    "CRM": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "cc49dd4112fcc3ebf991aa5f7887e34bbc47e88d5a45ecf6eb3577b16fc33ad7"
+    },
+    "CSCO": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "882204159aea1b64932b46d788f71134c11505debd312cd6c241dadeca1435c7"
+    },
+    "CVX": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "31f9631514401c455021ebed82bd3a0fb96378d949352ba73e82c5404ccb8db8"
+    },
+    "DE": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "a4ec315e3ea77a36a549db1a4c7e9069da3da50f7408185dbfb5aba214615e39"
+    },
+    "DIS": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "50336da75a0fc85e9dbd6855c19f22011e2e64543ced1fe9113c1b3f903190c1"
+    },
+    "DLR": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "8345329ad477ae85d75eaa529af538b07bbeb19ba114c99c244c0ff015bfcfd4"
+    },
+    "DRI": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "26e94e795f6f06773915fe3bef3b0052b67e1d8c151fa9a7411cc51991ecd762"
+    },
+    "DXCM": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "faf47d7c8845769a29df1ba4a28a9b030606b6a8eb8f356bfd00b4830b3d5999"
+    },
+    "EBAY": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "8e511160f9fc6bfd1bdd13e2a32cbc92e07bb1b6654aa60b16a4b251d7651978"
+    },
+    "EPAM": {
+      "range": [
+        "2012-02-08",
+        "2026-09-03"
+      ],
+      "rows": 3664,
+      "sha256": "12e347f60368848a5e596fda28ae1eb11eb5426fc99ce6be4968b98a6ea0b317"
+    },
+    "EQIX": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "39bdd2307293552325edc182de4dd3e8696042253afd75ad8b210e47f9d7df26"
+    },
+    "ETN": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "da7f2c218e6f0ede3630c64c6ed06915e260fddc45e45870ad07f56a3cec1d5c"
+    },
+    "FCX": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "1eec3241cc2ad0e96dc2fedbdfec64bdaba4c38ef4aaa492023bb53a38d454c5"
+    },
+    "FFIV": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "a7d193cec5950f2aba130b8c3c35bbe154d163b3baa72e7aeb1b479caa93d1fb"
+    },
+    "GE": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "c93867b9de58036081703f75d2f85ef8637fb94463f5828b2cef02207cf6a6e5"
+    },
+    "GOOGL": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "a8abb51ea04f800ecd74e57c53b0dc8560c01dfdfa1339eaff1fdc85dbd773fd"
+    },
+    "HD": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "cbc16e4ce005ae400b5adf374d428828339f639ae2561d56ab8f1352a823d13c"
+    },
+    "IBM": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "13b3ab68ead996759642d86f8daf3e02c9d57a8a5c5f73c7071e83e284a06325"
+    },
+    "INTU": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "e6b79e563402eeb3fb45a4e809ca6a6b6f0f934b939a2ec576f835b9776451ca"
+    },
+    "ISRG": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "70a136b1d06249a1af26db0ca9b2299871ef7a0275d41d8dee99b3fe6f188c56"
+    },
+    "JNJ": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "e4c00980397bcdf29026da4b1018c68b29f3f608722a4fbc33ed8b0b531bf5b3"
+    },
+    "JPM": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "921e9fbd6e467829a818ba9ac58b76530623ae9ef439514f1d60f53841cbe5de"
+    },
+    "KO": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "0a66c51916ee1e32c93381f3ee3dc361eb668f8d2f9c659a9633bc92eadf1dd4"
+    },
+    "LIN": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "6830dc7aa4bea03d7e862da536c78ac3953908d858771a836d21796a6b37e994"
+    },
+    "LLY": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "5cf1736052f76fd0e5fe69f40da5ea2f4b94dad04f3f302caba17c8a01811a25"
+    },
+    "LRCX": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "e6a8eb601de06a5e0694c29b3742381ca1fe1ea03cd29f57b637581025a29904"
+    },
+    "MA": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "a53c5b08756661154de91698ce9d9d108b71b5f83a32090ba86bdc4083546663"
+    },
+    "MAR": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "60898a388af141392470f42d11cceb4dadda6e88dbab5bb20a487363be6c933c"
+    },
+    "MCD": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "7b2acf59488290f92fc742c9131fa35ce3fe098705c4e87732927f0346a06dd1"
+    },
+    "META": {
+      "range": [
+        "2012-05-18",
+        "2026-09-03"
+      ],
+      "rows": 3594,
+      "sha256": "7b054575cfd87d692eb6e92dba85d741e9e32a59dfc8edc9813ab4d1da60fb88"
+    },
+    "MPWR": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "e04c3b8c1495cef15815ed9a4da661e17fec5ea8ab7a6a1869dfa3a9b909a383"
+    },
+    "MRK": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "25fd7518f330de7a32664d57c6b0f055187468fbad044919d5f1829e0bc24f74"
+    },
+    "MRVL": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "e618767c20db93ce1c9a69451ab6a43ec5fb955ba565560e22c6560f3802c29d"
+    },
+    "MSFT": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "9f2d3a9eff816c8cd4fdebac42a409b0051750444c2661c6089d8fed95f6261b"
+    },
+    "NEM": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "46a00b541d32da0f71c0ce36571ea8a11c17950afe81b2587be8e666f48381db"
+    },
+    "NFLX": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "8996a6a38a0f025e203891a2b5d5e842b1979b73a95ec847b653832a7a476009"
+    },
+    "NVDA": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "d174cc4613f14ab3d9f5e69b10a8e7ff3d618c45b24cd612a04952f7c02d169c"
+    },
+    "OKE": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "ca62c2a3fbda3297dfdda7135874e563527ca022b84a0fe3f5cf5d296e05c4a4"
+    },
+    "ORCL": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "f2d8409d93936b92eeb813b9b4fb90f1da4bee64f61e72b2358843e855ce4399"
+    },
+    "PANW": {
+      "range": [
+        "2012-07-20",
+        "2026-09-03"
+      ],
+      "rows": 3551,
+      "sha256": "b5ed343b17ed1098dbf19c463765f438f5607302d5323fd4deb3ab11c2270762"
+    },
+    "PEP": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "ff10469c58872c236d058523a78a10b67e2a8085d40a4605ca077efd4e3b2ff5"
+    },
+    "PFE": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "e705cde7cb3a900d5ec593ed82aa3aef0f1766cea1b965934e32ffa9c7a25bb6"
+    },
+    "PG": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "b955dd730f567509486fe0a28921749abc61992fdce7704b025bde515ad06bbb"
+    },
+    "PH": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "b86c659fb0eab91ed70db3f2b24a6a454613b80a431c828afca000707a7bdc48"
+    },
+    "PLD": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "0028b36fee0d63a2550b36b9613f3dc37def4a7bd4733d69aaa12e2e75f85d5e"
+    },
+    "PM": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "64cb74b38b13ee213ece88708ad064a9c5c526833b9d93a25d04f907e10699ec"
+    },
+    "PTC": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "e52918303878d8b4214c4e321561642db92a0428bbd0364d430cf067b8ef0d6b"
+    },
+    "PYPL": {
+      "range": [
+        "2015-07-06",
+        "2026-09-03"
+      ],
+      "rows": 2809,
+      "sha256": "1e59e28020e28f0b39ca8f519de4e2d3cb95d029ddea4736feb20c98cfc2c805"
+    },
+    "QCOM": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "4210f6e9f162ba966ff6ce1330a6bc34dfd30f5c10038fe8cef8105290cbf291"
+    },
+    "QLYS": {
+      "range": [
+        "2012-09-28",
+        "2026-09-03"
+      ],
+      "rows": 3502,
+      "sha256": "cf566f94b5696e1b89c1865e4a6db423c7e684c6573f2f20d8c9b84e988de46c"
+    },
+    "QQQ": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "40bc4801a71129947d5104bbf5f3c0e43c50b4a12f85f836c2952fbc8fe5df9d"
+    },
+    "QRVO": {
+      "range": [
+        "2015-01-02",
+        "2026-09-03"
+      ],
+      "rows": 2935,
+      "sha256": "f063ed5da02c28837db8574c48d1f6b6c07b21e843af607867114eabdb32c12b"
+    },
+    "RCL": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "3ab46281c95e1c24f067fdc0b8cb7d61f1adb95184a9e5c04ae5d55635bee0af"
+    },
+    "REGN": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "048d0f1d92d1dd45525579efbd87543ffb5086b1d5d5affcfe1c159969d290be"
+    },
+    "SBUX": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "f39bc7de3f9e3e93ce9e4e666b2a8139d88278d9e7022a2ef0eb12c7a3fce124"
+    },
+    "SCHW": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "2955d72fcde5278b86ea7589a7f7d911d8850473b19a272230a0823d1b2e5a27"
+    },
+    "SLB": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "b8c39cb8a383e46e5b46f2689e8a093f20eb15831f577bdc35b27de42f8fa9df"
+    },
+    "SNPS": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "c46ada1da46751918d3abf9908cb2e06939477dd0e675e892eb3bdd2ff6dfdf1"
+    },
+    "SPGI": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "8e8641317d33a94a8fe2bb7aa41417f662963a05b32df5b6b7b962a47a87e860"
+    },
+    "SPY": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "af0ee06abae1703a489df383b61316a717d0aecc9aa21ae344ad3346fadb73f7"
+    },
+    "STAG": {
+      "range": [
+        "2011-04-15",
+        "2026-09-03"
+      ],
+      "rows": 3869,
+      "sha256": "18caff490750f93532925c82ca0902a64cabec52e02726fc3ad0f3ea18ce06d8"
+    },
+    "SWKS": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "3136f3dd65a88294d7c88030465711b4f27c132babc1dc6aa7c8078a904fd7b4"
+    },
+    "TMO": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "176020a7121c8fe80e0aa8afbcae2859c6b95bade77f6771e682775e7e51369d"
+    },
+    "TMUS": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "67c2020be2e2b57fcd57b1987b6afaecd8acc7d8cabad5c220ae52630fab8f78"
+    },
+    "TSLA": {
+      "range": [
+        "2010-06-29",
+        "2026-09-03"
+      ],
+      "rows": 4071,
+      "sha256": "96bc7f75240fb145e1db1e85f74d2cfec74243117f5c60aa8df072b198097383"
+    },
+    "TXN": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "2de326f6c2b008636b54e93dacb4fcdaf63599a53be05f82187078da1b6e3a32"
+    },
+    "TYL": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "16464f5a9e9cd584baac4f08ab730e1659b2239ffbc181c4a929b257a7b257fb"
+    },
+    "UNH": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "694f703fbdc9d1ecbaaf586a7eb88bedf439e292c21fe1fe494721437b88fd8b"
+    },
+    "UNP": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "3db01867fe2bedce071480f0007cef47b4edfca42b4f3fd4fb628cfef7d3346b"
+    },
+    "UPS": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "5b332500d8622fb04cb3835a78e3e6ecb8a5a6a32b36360e2f9321fee97b14b0"
+    },
+    "V": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "7c0b26d1a002d7affec05008679865fb09cfa415028af71c375337e42da86cbf"
+    },
+    "VEEV": {
+      "range": [
+        "2013-10-16",
+        "2026-09-03"
+      ],
+      "rows": 3240,
+      "sha256": "1a2c5ca4d42d9bf8d458416d6cc716221ff5ef2a10110ea70c1ae2829341bfea"
+    },
+    "VLO": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "7e08f5c6442402da12d5052951d1b150b7a58cbea34149b3466cc3cd38e127a1"
+    },
+    "WELL": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "da91918965023fed8e46269b93c177c7e3c430101dc1497c3ff018765f9b1780"
+    },
+    "WM": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "d4da3a7d994ea57ecb0e11b204489bca4761309b264fd61ac10845ebe7df95d1"
+    },
+    "WMT": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "8dbc3eedd3501533feeee4dc2a04946e3eef4ea4c9012cb41c7d9131a5944c90"
+    },
+    "XEL": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "81ae6711a732836be58653218236ae6c8bfee584e6d7275373c111bf484daf9e"
+    },
+    "XOM": {
+      "range": [
+        "2009-01-02",
+        "2026-09-03"
+      ],
+      "rows": 4445,
+      "sha256": "ca3eeab1cd5fd99d3f7ed37ae35ccb3238d12faf6eae0d7e97aabc5a73ddfcbd"
+    },
+    "ZTS": {
+      "range": [
+        "2013-02-01",
+        "2026-09-03"
+      ],
+      "rows": 3418,
+      "sha256": "c68838100918ed9db6a8ef4e4a018a91d23a08d73e1162d1d83bae4b1ce07f21"
+    }
+  },
+  "n_symbols": 102,
+  "reports": [
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [],
+      "final_gaps": [],
+      "flags_returns": [],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "SPY"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [],
+      "final_gaps": [],
+      "flags_returns": [],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "QQQ"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2025-04-09",
+          "level": "soft",
+          "return": 0.153288,
+          "symbol": "AAPL",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2025-04-09",
+          "level": "soft",
+          "return": 0.153288,
+          "symbol": "AAPL",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "AAPL"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2026-07-30",
+          "level": "soft",
+          "return": 0.155067,
+          "symbol": "MSFT",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2026-07-30",
+          "level": "soft",
+          "return": 0.155067,
+          "symbol": "MSFT",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "MSFT"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2015-07-17",
+          "level": "soft",
+          "return": 0.162584,
+          "symbol": "GOOGL",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2015-07-17",
+          "level": "soft",
+          "return": 0.162584,
+          "symbol": "GOOGL",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "GOOGL"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2009-01-30",
+          "level": "soft",
+          "return": 0.1764,
+          "symbol": "AMZN",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-10-23",
+          "level": "hard",
+          "return": 0.267951,
+          "symbol": "AMZN",
+          "threshold": 0.15
+        },
+        {
+          "date": "2012-04-27",
+          "level": "soft",
+          "return": 0.157457,
+          "symbol": "AMZN",
+          "threshold": 0.15
+        },
+        {
+          "date": "2026-07-31",
+          "level": "soft",
+          "return": 0.153206,
+          "symbol": "AMZN",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2009-01-30",
+          "level": "soft",
+          "return": 0.1764,
+          "symbol": "AMZN",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-10-23",
+          "level": "hard",
+          "return": 0.267951,
+          "symbol": "AMZN",
+          "threshold": 0.15
+        },
+        {
+          "date": "2012-04-27",
+          "level": "soft",
+          "return": 0.157457,
+          "symbol": "AMZN",
+          "threshold": 0.15
+        },
+        {
+          "date": "2026-07-31",
+          "level": "soft",
+          "return": 0.153206,
+          "symbol": "AMZN",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "AMZN"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2016-05-13",
+          "level": "soft",
+          "return": 0.152095,
+          "symbol": "NVDA",
+          "threshold": 0.15
+        },
+        {
+          "date": "2016-11-11",
+          "level": "hard",
+          "return": 0.298068,
+          "symbol": "NVDA",
+          "threshold": 0.15
+        },
+        {
+          "date": "2017-05-10",
+          "level": "soft",
+          "return": 0.178259,
+          "symbol": "NVDA",
+          "threshold": 0.15
+        },
+        {
+          "date": "2018-11-16",
+          "level": "soft",
+          "return": -0.187559,
+          "symbol": "NVDA",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-16",
+          "level": "soft",
+          "return": -0.184521,
+          "symbol": "NVDA",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-24",
+          "level": "soft",
+          "return": 0.171565,
+          "symbol": "NVDA",
+          "threshold": 0.15
+        },
+        {
+          "date": "2023-05-25",
+          "level": "hard",
+          "return": 0.243696,
+          "symbol": "NVDA",
+          "threshold": 0.15
+        },
+        {
+          "date": "2024-02-22",
+          "level": "soft",
+          "return": 0.164009,
+          "symbol": "NVDA",
+          "threshold": 0.15
+        },
+        {
+          "date": "2025-01-27",
+          "level": "soft",
+          "return": -0.169682,
+          "symbol": "NVDA",
+          "threshold": 0.15
+        },
+        {
+          "date": "2025-04-09",
+          "level": "soft",
+          "return": 0.187227,
+          "symbol": "NVDA",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2016-05-13",
+          "level": "soft",
+          "return": 0.152095,
+          "symbol": "NVDA",
+          "threshold": 0.15
+        },
+        {
+          "date": "2016-11-11",
+          "level": "hard",
+          "return": 0.298068,
+          "symbol": "NVDA",
+          "threshold": 0.15
+        },
+        {
+          "date": "2017-05-10",
+          "level": "soft",
+          "return": 0.178259,
+          "symbol": "NVDA",
+          "threshold": 0.15
+        },
+        {
+          "date": "2018-11-16",
+          "level": "soft",
+          "return": -0.187559,
+          "symbol": "NVDA",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-16",
+          "level": "soft",
+          "return": -0.184521,
+          "symbol": "NVDA",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-24",
+          "level": "soft",
+          "return": 0.171565,
+          "symbol": "NVDA",
+          "threshold": 0.15
+        },
+        {
+          "date": "2023-05-25",
+          "level": "hard",
+          "return": 0.243696,
+          "symbol": "NVDA",
+          "threshold": 0.15
+        },
+        {
+          "date": "2024-02-22",
+          "level": "soft",
+          "return": 0.164009,
+          "symbol": "NVDA",
+          "threshold": 0.15
+        },
+        {
+          "date": "2025-01-27",
+          "level": "soft",
+          "return": -0.169682,
+          "symbol": "NVDA",
+          "threshold": 0.15
+        },
+        {
+          "date": "2025-04-09",
+          "level": "soft",
+          "return": 0.187227,
+          "symbol": "NVDA",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "NVDA"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [],
+      "final_gaps": [],
+      "flags_returns": [],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "META"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [],
+      "final_gaps": [],
+      "flags_returns": [],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "TSLA"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [],
+      "final_gaps": [],
+      "flags_returns": [],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "AVGO"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2009-03-10",
+          "level": "soft",
+          "return": 0.192641,
+          "symbol": "BRK-B",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2009-03-10",
+          "level": "soft",
+          "return": 0.192641,
+          "symbol": "BRK-B",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "BRK-B"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2020-06-16",
+          "level": "soft",
+          "return": 0.156797,
+          "symbol": "LLY",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2020-06-16",
+          "level": "soft",
+          "return": 0.156797,
+          "symbol": "LLY",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "LLY"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2009-01-20",
+          "level": "hard",
+          "return": -0.207274,
+          "symbol": "JPM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-01-21",
+          "level": "hard",
+          "return": 0.250967,
+          "symbol": "JPM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-03-10",
+          "level": "hard",
+          "return": 0.226416,
+          "symbol": "JPM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-03-23",
+          "level": "hard",
+          "return": 0.246652,
+          "symbol": "JPM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-04-09",
+          "level": "soft",
+          "return": 0.193948,
+          "symbol": "JPM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-13",
+          "level": "soft",
+          "return": 0.180125,
+          "symbol": "JPM",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2009-01-20",
+          "level": "hard",
+          "return": -0.207274,
+          "symbol": "JPM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-01-21",
+          "level": "hard",
+          "return": 0.250967,
+          "symbol": "JPM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-03-10",
+          "level": "hard",
+          "return": 0.226416,
+          "symbol": "JPM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-03-23",
+          "level": "hard",
+          "return": 0.246652,
+          "symbol": "JPM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-04-09",
+          "level": "soft",
+          "return": 0.193948,
+          "symbol": "JPM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-13",
+          "level": "soft",
+          "return": 0.180125,
+          "symbol": "JPM",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "JPM"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [],
+      "final_gaps": [],
+      "flags_returns": [],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "WMT"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [],
+      "final_gaps": [],
+      "flags_returns": [],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "V"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2020-03-16",
+          "level": "soft",
+          "return": -0.172769,
+          "symbol": "UNH",
+          "threshold": 0.15
+        },
+        {
+          "date": "2025-04-17",
+          "level": "hard",
+          "return": -0.223797,
+          "symbol": "UNH",
+          "threshold": 0.15
+        },
+        {
+          "date": "2025-05-13",
+          "level": "soft",
+          "return": -0.177875,
+          "symbol": "UNH",
+          "threshold": 0.15
+        },
+        {
+          "date": "2026-01-27",
+          "level": "soft",
+          "return": -0.196053,
+          "symbol": "UNH",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2020-03-16",
+          "level": "soft",
+          "return": -0.172769,
+          "symbol": "UNH",
+          "threshold": 0.15
+        },
+        {
+          "date": "2025-04-17",
+          "level": "hard",
+          "return": -0.223797,
+          "symbol": "UNH",
+          "threshold": 0.15
+        },
+        {
+          "date": "2025-05-13",
+          "level": "soft",
+          "return": -0.177875,
+          "symbol": "UNH",
+          "threshold": 0.15
+        },
+        {
+          "date": "2026-01-27",
+          "level": "soft",
+          "return": -0.196053,
+          "symbol": "UNH",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "UNH"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [],
+      "final_gaps": [],
+      "flags_returns": [],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "XOM"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2020-03-24",
+          "level": "soft",
+          "return": 0.166109,
+          "symbol": "MA",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2020-03-24",
+          "level": "soft",
+          "return": 0.166109,
+          "symbol": "MA",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "MA"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2020-03-13",
+          "level": "hard",
+          "return": 0.204271,
+          "symbol": "ORCL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2021-12-10",
+          "level": "soft",
+          "return": 0.156134,
+          "symbol": "ORCL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2025-09-10",
+          "level": "hard",
+          "return": 0.359488,
+          "symbol": "ORCL",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2020-03-13",
+          "level": "hard",
+          "return": 0.204271,
+          "symbol": "ORCL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2021-12-10",
+          "level": "soft",
+          "return": 0.156134,
+          "symbol": "ORCL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2025-09-10",
+          "level": "hard",
+          "return": 0.359488,
+          "symbol": "ORCL",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "ORCL"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [],
+      "final_gaps": [],
+      "flags_returns": [],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "PG"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [],
+      "final_gaps": [],
+      "flags_returns": [],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "COST"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2020-03-16",
+          "level": "soft",
+          "return": -0.197938,
+          "symbol": "HD",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2020-03-16",
+          "level": "soft",
+          "return": -0.197938,
+          "symbol": "HD",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "HD"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [],
+      "final_gaps": [],
+      "flags_returns": [],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "JNJ"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2019-06-25",
+          "level": "soft",
+          "return": -0.162524,
+          "symbol": "ABBV",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2019-06-25",
+          "level": "soft",
+          "return": -0.162524,
+          "symbol": "ABBV",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "ABBV"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2009-01-15",
+          "level": "soft",
+          "return": -0.184313,
+          "symbol": "BAC",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-01-20",
+          "level": "hard",
+          "return": -0.289694,
+          "symbol": "BAC",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-01-21",
+          "level": "hard",
+          "return": 0.309805,
+          "symbol": "BAC",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-02-06",
+          "level": "hard",
+          "return": 0.26653,
+          "symbol": "BAC",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-02-10",
+          "level": "soft",
+          "return": -0.193034,
+          "symbol": "BAC",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-02-24",
+          "level": "hard",
+          "return": 0.20972,
+          "symbol": "BAC",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-02-27",
+          "level": "hard",
+          "return": -0.257519,
+          "symbol": "BAC",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-03-09",
+          "level": "soft",
+          "return": 0.194267,
+          "symbol": "BAC",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-03-10",
+          "level": "hard",
+          "return": 0.277333,
+          "symbol": "BAC",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-03-12",
+          "level": "soft",
+          "return": 0.186613,
+          "symbol": "BAC",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-03-18",
+          "level": "hard",
+          "return": 0.223286,
+          "symbol": "BAC",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-03-23",
+          "level": "hard",
+          "return": 0.260097,
+          "symbol": "BAC",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-03-30",
+          "level": "soft",
+          "return": -0.178475,
+          "symbol": "BAC",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-04-09",
+          "level": "hard",
+          "return": 0.352691,
+          "symbol": "BAC",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-04-13",
+          "level": "soft",
+          "return": 0.153927,
+          "symbol": "BAC",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-04-20",
+          "level": "hard",
+          "return": -0.243396,
+          "symbol": "BAC",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-05-04",
+          "level": "soft",
+          "return": 0.193104,
+          "symbol": "BAC",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-05-06",
+          "level": "soft",
+          "return": 0.170664,
+          "symbol": "BAC",
+          "threshold": 0.15
+        },
+        {
+          "date": "2011-08-08",
+          "level": "hard",
+          "return": -0.203182,
+          "symbol": "BAC",
+          "threshold": 0.15
+        },
+        {
+          "date": "2011-08-09",
+          "level": "soft",
+          "return": 0.167435,
+          "symbol": "BAC",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-13",
+          "level": "soft",
+          "return": 0.177962,
+          "symbol": "BAC",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-16",
+          "level": "soft",
+          "return": -0.153973,
+          "symbol": "BAC",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-24",
+          "level": "soft",
+          "return": 0.163164,
+          "symbol": "BAC",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2009-01-15",
+          "level": "soft",
+          "return": -0.184313,
+          "symbol": "BAC",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-01-20",
+          "level": "hard",
+          "return": -0.289694,
+          "symbol": "BAC",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-01-21",
+          "level": "hard",
+          "return": 0.309805,
+          "symbol": "BAC",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-02-06",
+          "level": "hard",
+          "return": 0.26653,
+          "symbol": "BAC",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-02-10",
+          "level": "soft",
+          "return": -0.193034,
+          "symbol": "BAC",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-02-24",
+          "level": "hard",
+          "return": 0.20972,
+          "symbol": "BAC",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-02-27",
+          "level": "hard",
+          "return": -0.257519,
+          "symbol": "BAC",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-03-09",
+          "level": "soft",
+          "return": 0.194267,
+          "symbol": "BAC",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-03-10",
+          "level": "hard",
+          "return": 0.277333,
+          "symbol": "BAC",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-03-12",
+          "level": "soft",
+          "return": 0.186613,
+          "symbol": "BAC",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-03-18",
+          "level": "hard",
+          "return": 0.223286,
+          "symbol": "BAC",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-03-23",
+          "level": "hard",
+          "return": 0.260097,
+          "symbol": "BAC",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-03-30",
+          "level": "soft",
+          "return": -0.178475,
+          "symbol": "BAC",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-04-09",
+          "level": "hard",
+          "return": 0.352691,
+          "symbol": "BAC",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-04-13",
+          "level": "soft",
+          "return": 0.153927,
+          "symbol": "BAC",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-04-20",
+          "level": "hard",
+          "return": -0.243396,
+          "symbol": "BAC",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-05-04",
+          "level": "soft",
+          "return": 0.193104,
+          "symbol": "BAC",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-05-06",
+          "level": "soft",
+          "return": 0.170664,
+          "symbol": "BAC",
+          "threshold": 0.15
+        },
+        {
+          "date": "2011-08-08",
+          "level": "hard",
+          "return": -0.203182,
+          "symbol": "BAC",
+          "threshold": 0.15
+        },
+        {
+          "date": "2011-08-09",
+          "level": "soft",
+          "return": 0.167435,
+          "symbol": "BAC",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-13",
+          "level": "soft",
+          "return": 0.177962,
+          "symbol": "BAC",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-16",
+          "level": "soft",
+          "return": -0.153973,
+          "symbol": "BAC",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-24",
+          "level": "soft",
+          "return": 0.163164,
+          "symbol": "BAC",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "BAC"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [],
+      "final_gaps": [],
+      "flags_returns": [],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "MRK"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2009-08-21",
+          "level": "soft",
+          "return": 0.162191,
+          "symbol": "CRM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2010-08-20",
+          "level": "soft",
+          "return": 0.169485,
+          "symbol": "CRM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2010-11-19",
+          "level": "soft",
+          "return": 0.181135,
+          "symbol": "CRM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-16",
+          "level": "soft",
+          "return": -0.158885,
+          "symbol": "CRM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-08-26",
+          "level": "hard",
+          "return": 0.260449,
+          "symbol": "CRM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2024-05-30",
+          "level": "soft",
+          "return": -0.197371,
+          "symbol": "CRM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2026-08-27",
+          "level": "hard",
+          "return": 0.225805,
+          "symbol": "CRM",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2009-08-21",
+          "level": "soft",
+          "return": 0.162191,
+          "symbol": "CRM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2010-08-20",
+          "level": "soft",
+          "return": 0.169485,
+          "symbol": "CRM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2010-11-19",
+          "level": "soft",
+          "return": 0.181135,
+          "symbol": "CRM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-16",
+          "level": "soft",
+          "return": -0.158885,
+          "symbol": "CRM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-08-26",
+          "level": "hard",
+          "return": 0.260449,
+          "symbol": "CRM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2024-05-30",
+          "level": "soft",
+          "return": -0.197371,
+          "symbol": "CRM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2026-08-27",
+          "level": "hard",
+          "return": 0.225805,
+          "symbol": "CRM",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "CRM"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [],
+      "final_gaps": [],
+      "flags_returns": [],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "KO"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2010-09-22",
+          "level": "soft",
+          "return": -0.190346,
+          "symbol": "ADBE",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-13",
+          "level": "soft",
+          "return": 0.177193,
+          "symbol": "ADBE",
+          "threshold": 0.15
+        },
+        {
+          "date": "2022-09-15",
+          "level": "soft",
+          "return": -0.167932,
+          "symbol": "ADBE",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2010-09-22",
+          "level": "soft",
+          "return": -0.190346,
+          "symbol": "ADBE",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-13",
+          "level": "soft",
+          "return": 0.177193,
+          "symbol": "ADBE",
+          "threshold": 0.15
+        },
+        {
+          "date": "2022-09-15",
+          "level": "soft",
+          "return": -0.167932,
+          "symbol": "ADBE",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "ADBE"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [],
+      "final_gaps": [],
+      "flags_returns": [],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "PEP"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2016-04-22",
+          "level": "hard",
+          "return": 0.522901,
+          "symbol": "AMD",
+          "threshold": 0.3
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2016-04-22",
+          "level": "hard",
+          "return": 0.522901,
+          "symbol": "AMD",
+          "threshold": 0.3
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "AMD"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2011-10-25",
+          "level": "hard",
+          "return": -0.348956,
+          "symbol": "NFLX",
+          "threshold": 0.3
+        },
+        {
+          "date": "2013-01-24",
+          "level": "hard",
+          "return": 0.422235,
+          "symbol": "NFLX",
+          "threshold": 0.3
+        },
+        {
+          "date": "2022-04-20",
+          "level": "hard",
+          "return": -0.351166,
+          "symbol": "NFLX",
+          "threshold": 0.3
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2011-10-25",
+          "level": "hard",
+          "return": -0.348956,
+          "symbol": "NFLX",
+          "threshold": 0.3
+        },
+        {
+          "date": "2013-01-24",
+          "level": "hard",
+          "return": 0.422235,
+          "symbol": "NFLX",
+          "threshold": 0.3
+        },
+        {
+          "date": "2022-04-20",
+          "level": "hard",
+          "return": -0.351166,
+          "symbol": "NFLX",
+          "threshold": 0.3
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "NFLX"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [],
+      "final_gaps": [],
+      "flags_returns": [],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "TMO"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2020-03-09",
+          "level": "soft",
+          "return": -0.153693,
+          "symbol": "CVX",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-16",
+          "level": "soft",
+          "return": -0.164469,
+          "symbol": "CVX",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-18",
+          "level": "hard",
+          "return": -0.221248,
+          "symbol": "CVX",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-24",
+          "level": "hard",
+          "return": 0.227407,
+          "symbol": "CVX",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2020-03-09",
+          "level": "soft",
+          "return": -0.153693,
+          "symbol": "CVX",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-16",
+          "level": "soft",
+          "return": -0.164469,
+          "symbol": "CVX",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-18",
+          "level": "hard",
+          "return": -0.221248,
+          "symbol": "CVX",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-24",
+          "level": "hard",
+          "return": 0.227407,
+          "symbol": "CVX",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "CVX"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2010-11-11",
+          "level": "soft",
+          "return": -0.162107,
+          "symbol": "CSCO",
+          "threshold": 0.15
+        },
+        {
+          "date": "2011-08-11",
+          "level": "soft",
+          "return": 0.159505,
+          "symbol": "CSCO",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2010-11-11",
+          "level": "soft",
+          "return": -0.162107,
+          "symbol": "CSCO",
+          "threshold": 0.15
+        },
+        {
+          "date": "2011-08-11",
+          "level": "soft",
+          "return": 0.159505,
+          "symbol": "CSCO",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "CSCO"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2026-06-18",
+          "level": "soft",
+          "return": -0.179668,
+          "symbol": "ACN",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2026-06-18",
+          "level": "soft",
+          "return": -0.179668,
+          "symbol": "ACN",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "ACN"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2020-03-16",
+          "level": "soft",
+          "return": -0.158754,
+          "symbol": "MCD",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-24",
+          "level": "soft",
+          "return": 0.181254,
+          "symbol": "MCD",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2020-03-16",
+          "level": "soft",
+          "return": -0.158754,
+          "symbol": "MCD",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-24",
+          "level": "soft",
+          "return": 0.181254,
+          "symbol": "MCD",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "MCD"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2026-07-14",
+          "level": "hard",
+          "return": -0.252076,
+          "symbol": "IBM",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2026-07-14",
+          "level": "hard",
+          "return": -0.252076,
+          "symbol": "IBM",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "IBM"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [],
+      "final_gaps": [],
+      "flags_returns": [],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "LIN"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2015-11-05",
+          "level": "soft",
+          "return": -0.152506,
+          "symbol": "QCOM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2019-04-16",
+          "level": "hard",
+          "return": 0.232074,
+          "symbol": "QCOM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-07-30",
+          "level": "soft",
+          "return": 0.152209,
+          "symbol": "QCOM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2025-04-09",
+          "level": "soft",
+          "return": 0.151853,
+          "symbol": "QCOM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2026-04-30",
+          "level": "soft",
+          "return": 0.151154,
+          "symbol": "QCOM",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2015-11-05",
+          "level": "soft",
+          "return": -0.152506,
+          "symbol": "QCOM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2019-04-16",
+          "level": "hard",
+          "return": 0.232074,
+          "symbol": "QCOM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-07-30",
+          "level": "soft",
+          "return": 0.152209,
+          "symbol": "QCOM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2025-04-09",
+          "level": "soft",
+          "return": 0.151853,
+          "symbol": "QCOM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2026-04-30",
+          "level": "soft",
+          "return": 0.151154,
+          "symbol": "QCOM",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "QCOM"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2009-03-10",
+          "level": "soft",
+          "return": 0.197031,
+          "symbol": "GE",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-16",
+          "level": "soft",
+          "return": -0.151592,
+          "symbol": "GE",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2009-03-10",
+          "level": "soft",
+          "return": 0.197031,
+          "symbol": "GE",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-16",
+          "level": "soft",
+          "return": -0.151592,
+          "symbol": "GE",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "GE"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2010-08-20",
+          "level": "soft",
+          "return": 0.150374,
+          "symbol": "INTU",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-24",
+          "level": "hard",
+          "return": 0.200801,
+          "symbol": "INTU",
+          "threshold": 0.15
+        },
+        {
+          "date": "2026-05-21",
+          "level": "hard",
+          "return": -0.200193,
+          "symbol": "INTU",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2010-08-20",
+          "level": "soft",
+          "return": 0.150374,
+          "symbol": "INTU",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-24",
+          "level": "hard",
+          "return": 0.200801,
+          "symbol": "INTU",
+          "threshold": 0.15
+        },
+        {
+          "date": "2026-05-21",
+          "level": "hard",
+          "return": -0.200193,
+          "symbol": "INTU",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "INTU"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2018-04-19",
+          "level": "soft",
+          "return": -0.155757,
+          "symbol": "PM",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2018-04-19",
+          "level": "soft",
+          "return": -0.155757,
+          "symbol": "PM",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "PM"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [],
+      "final_gaps": [],
+      "flags_returns": [],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "CMCSA"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [],
+      "final_gaps": [],
+      "flags_returns": [],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "DIS"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2025-04-09",
+          "level": "soft",
+          "return": 0.16088,
+          "symbol": "TXN",
+          "threshold": 0.15
+        },
+        {
+          "date": "2026-04-23",
+          "level": "soft",
+          "return": 0.194321,
+          "symbol": "TXN",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2025-04-09",
+          "level": "soft",
+          "return": 0.16088,
+          "symbol": "TXN",
+          "threshold": 0.15
+        },
+        {
+          "date": "2026-04-23",
+          "level": "soft",
+          "return": 0.194321,
+          "symbol": "TXN",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "TXN"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [],
+      "final_gaps": [],
+      "flags_returns": [],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "CAT"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [],
+      "final_gaps": [],
+      "flags_returns": [],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "AMGN"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [],
+      "final_gaps": [],
+      "flags_returns": [],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "PFE"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2020-03-18",
+          "level": "soft",
+          "return": -0.151893,
+          "symbol": "SPGI",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2020-03-18",
+          "level": "soft",
+          "return": -0.151893,
+          "symbol": "SPGI",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "SPGI"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2025-09-10",
+          "level": "hard",
+          "return": -0.358373,
+          "symbol": "SNPS",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2025-09-10",
+          "level": "hard",
+          "return": -0.358373,
+          "symbol": "SNPS",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "SNPS"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2009-02-05",
+          "level": "soft",
+          "return": 0.150685,
+          "symbol": "CDNS",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-04-30",
+          "level": "soft",
+          "return": 0.160083,
+          "symbol": "CDNS",
+          "threshold": 0.15
+        },
+        {
+          "date": "2018-10-23",
+          "level": "soft",
+          "return": 0.153657,
+          "symbol": "CDNS",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2009-02-05",
+          "level": "soft",
+          "return": 0.150685,
+          "symbol": "CDNS",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-04-30",
+          "level": "soft",
+          "return": 0.160083,
+          "symbol": "CDNS",
+          "threshold": 0.15
+        },
+        {
+          "date": "2018-10-23",
+          "level": "soft",
+          "return": 0.153657,
+          "symbol": "CDNS",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "CDNS"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2016-02-18",
+          "level": "soft",
+          "return": -0.153673,
+          "symbol": "TYL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2026-02-12",
+          "level": "soft",
+          "return": -0.153898,
+          "symbol": "TYL",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2016-02-18",
+          "level": "soft",
+          "return": -0.153673,
+          "symbol": "TYL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2026-02-12",
+          "level": "soft",
+          "return": -0.153898,
+          "symbol": "TYL",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "TYL"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2009-01-08",
+          "level": "soft",
+          "return": -0.19144,
+          "symbol": "PTC",
+          "threshold": 0.15
+        },
+        {
+          "date": "2011-10-27",
+          "level": "soft",
+          "return": 0.177643,
+          "symbol": "PTC",
+          "threshold": 0.15
+        },
+        {
+          "date": "2012-01-26",
+          "level": "soft",
+          "return": 0.188688,
+          "symbol": "PTC",
+          "threshold": 0.15
+        },
+        {
+          "date": "2012-04-05",
+          "level": "hard",
+          "return": -0.211029,
+          "symbol": "PTC",
+          "threshold": 0.15
+        },
+        {
+          "date": "2019-07-25",
+          "level": "hard",
+          "return": -0.204148,
+          "symbol": "PTC",
+          "threshold": 0.15
+        },
+        {
+          "date": "2022-04-28",
+          "level": "soft",
+          "return": 0.171789,
+          "symbol": "PTC",
+          "threshold": 0.15
+        },
+        {
+          "date": "2025-07-09",
+          "level": "soft",
+          "return": 0.176467,
+          "symbol": "PTC",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2009-01-08",
+          "level": "soft",
+          "return": -0.19144,
+          "symbol": "PTC",
+          "threshold": 0.15
+        },
+        {
+          "date": "2011-10-27",
+          "level": "soft",
+          "return": 0.177643,
+          "symbol": "PTC",
+          "threshold": 0.15
+        },
+        {
+          "date": "2012-01-26",
+          "level": "soft",
+          "return": 0.188688,
+          "symbol": "PTC",
+          "threshold": 0.15
+        },
+        {
+          "date": "2012-04-05",
+          "level": "hard",
+          "return": -0.211029,
+          "symbol": "PTC",
+          "threshold": 0.15
+        },
+        {
+          "date": "2019-07-25",
+          "level": "hard",
+          "return": -0.204148,
+          "symbol": "PTC",
+          "threshold": 0.15
+        },
+        {
+          "date": "2022-04-28",
+          "level": "soft",
+          "return": 0.171789,
+          "symbol": "PTC",
+          "threshold": 0.15
+        },
+        {
+          "date": "2025-07-09",
+          "level": "soft",
+          "return": 0.176467,
+          "symbol": "PTC",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "PTC"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2009-02-05",
+          "level": "soft",
+          "return": 0.180663,
+          "symbol": "AKAM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-07-30",
+          "level": "soft",
+          "return": -0.190686,
+          "symbol": "AKAM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2010-04-29",
+          "level": "soft",
+          "return": 0.194394,
+          "symbol": "AKAM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2011-02-10",
+          "level": "soft",
+          "return": -0.150865,
+          "symbol": "AKAM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2011-07-28",
+          "level": "soft",
+          "return": -0.191316,
+          "symbol": "AKAM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2011-10-27",
+          "level": "soft",
+          "return": 0.154331,
+          "symbol": "AKAM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2011-12-22",
+          "level": "soft",
+          "return": 0.185977,
+          "symbol": "AKAM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2012-07-26",
+          "level": "hard",
+          "return": 0.240354,
+          "symbol": "AKAM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2013-02-07",
+          "level": "soft",
+          "return": -0.151996,
+          "symbol": "AKAM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2013-04-25",
+          "level": "soft",
+          "return": 0.177057,
+          "symbol": "AKAM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2014-02-06",
+          "level": "hard",
+          "return": 0.20582,
+          "symbol": "AKAM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2015-10-28",
+          "level": "soft",
+          "return": -0.167306,
+          "symbol": "AKAM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2016-02-10",
+          "level": "hard",
+          "return": 0.212029,
+          "symbol": "AKAM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2017-05-03",
+          "level": "soft",
+          "return": -0.1552,
+          "symbol": "AKAM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2018-10-30",
+          "level": "soft",
+          "return": 0.169218,
+          "symbol": "AKAM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2025-02-21",
+          "level": "hard",
+          "return": -0.21728,
+          "symbol": "AKAM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2026-04-10",
+          "level": "soft",
+          "return": -0.166591,
+          "symbol": "AKAM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2026-05-08",
+          "level": "hard",
+          "return": 0.265833,
+          "symbol": "AKAM",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2009-02-05",
+          "level": "soft",
+          "return": 0.180663,
+          "symbol": "AKAM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-07-30",
+          "level": "soft",
+          "return": -0.190686,
+          "symbol": "AKAM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2010-04-29",
+          "level": "soft",
+          "return": 0.194394,
+          "symbol": "AKAM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2011-02-10",
+          "level": "soft",
+          "return": -0.150865,
+          "symbol": "AKAM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2011-07-28",
+          "level": "soft",
+          "return": -0.191316,
+          "symbol": "AKAM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2011-10-27",
+          "level": "soft",
+          "return": 0.154331,
+          "symbol": "AKAM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2011-12-22",
+          "level": "soft",
+          "return": 0.185977,
+          "symbol": "AKAM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2012-07-26",
+          "level": "hard",
+          "return": 0.240354,
+          "symbol": "AKAM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2013-02-07",
+          "level": "soft",
+          "return": -0.151996,
+          "symbol": "AKAM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2013-04-25",
+          "level": "soft",
+          "return": 0.177057,
+          "symbol": "AKAM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2014-02-06",
+          "level": "hard",
+          "return": 0.20582,
+          "symbol": "AKAM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2015-10-28",
+          "level": "soft",
+          "return": -0.167306,
+          "symbol": "AKAM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2016-02-10",
+          "level": "hard",
+          "return": 0.212029,
+          "symbol": "AKAM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2017-05-03",
+          "level": "soft",
+          "return": -0.1552,
+          "symbol": "AKAM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2018-10-30",
+          "level": "soft",
+          "return": 0.169218,
+          "symbol": "AKAM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2025-02-21",
+          "level": "hard",
+          "return": -0.21728,
+          "symbol": "AKAM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2026-04-10",
+          "level": "soft",
+          "return": -0.166591,
+          "symbol": "AKAM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2026-05-08",
+          "level": "hard",
+          "return": 0.265833,
+          "symbol": "AKAM",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "AKAM"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2009-10-22",
+          "level": "soft",
+          "return": 0.155791,
+          "symbol": "FFIV",
+          "threshold": 0.15
+        },
+        {
+          "date": "2011-01-20",
+          "level": "hard",
+          "return": -0.213503,
+          "symbol": "FFIV",
+          "threshold": 0.15
+        },
+        {
+          "date": "2013-04-05",
+          "level": "soft",
+          "return": -0.190334,
+          "symbol": "FFIV",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2009-10-22",
+          "level": "soft",
+          "return": 0.155791,
+          "symbol": "FFIV",
+          "threshold": 0.15
+        },
+        {
+          "date": "2011-01-20",
+          "level": "hard",
+          "return": -0.213503,
+          "symbol": "FFIV",
+          "threshold": 0.15
+        },
+        {
+          "date": "2013-04-05",
+          "level": "soft",
+          "return": -0.190334,
+          "symbol": "FFIV",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "FFIV"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2012-03-27",
+          "level": "hard",
+          "return": 0.243227,
+          "symbol": "EPAM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2014-03-03",
+          "level": "hard",
+          "return": -0.236346,
+          "symbol": "EPAM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2014-03-04",
+          "level": "soft",
+          "return": 0.162086,
+          "symbol": "EPAM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-12",
+          "level": "soft",
+          "return": -0.193725,
+          "symbol": "EPAM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-13",
+          "level": "soft",
+          "return": 0.174743,
+          "symbol": "EPAM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-16",
+          "level": "soft",
+          "return": -0.16599,
+          "symbol": "EPAM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2021-12-08",
+          "level": "soft",
+          "return": 0.176706,
+          "symbol": "EPAM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2022-02-28",
+          "level": "hard",
+          "return": -0.456763,
+          "symbol": "EPAM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2022-03-02",
+          "level": "soft",
+          "return": 0.160788,
+          "symbol": "EPAM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2022-03-16",
+          "level": "hard",
+          "return": 0.251866,
+          "symbol": "EPAM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2023-06-05",
+          "level": "hard",
+          "return": -0.217215,
+          "symbol": "EPAM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2024-05-09",
+          "level": "hard",
+          "return": -0.269944,
+          "symbol": "EPAM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2026-02-19",
+          "level": "soft",
+          "return": -0.170135,
+          "symbol": "EPAM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2026-08-06",
+          "level": "soft",
+          "return": -0.152908,
+          "symbol": "EPAM",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2012-03-27",
+          "level": "hard",
+          "return": 0.243227,
+          "symbol": "EPAM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2014-03-03",
+          "level": "hard",
+          "return": -0.236346,
+          "symbol": "EPAM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2014-03-04",
+          "level": "soft",
+          "return": 0.162086,
+          "symbol": "EPAM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-12",
+          "level": "soft",
+          "return": -0.193725,
+          "symbol": "EPAM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-13",
+          "level": "soft",
+          "return": 0.174743,
+          "symbol": "EPAM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-16",
+          "level": "soft",
+          "return": -0.16599,
+          "symbol": "EPAM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2021-12-08",
+          "level": "soft",
+          "return": 0.176706,
+          "symbol": "EPAM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2022-02-28",
+          "level": "hard",
+          "return": -0.456763,
+          "symbol": "EPAM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2022-03-02",
+          "level": "soft",
+          "return": 0.160788,
+          "symbol": "EPAM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2022-03-16",
+          "level": "hard",
+          "return": 0.251866,
+          "symbol": "EPAM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2023-06-05",
+          "level": "hard",
+          "return": -0.217215,
+          "symbol": "EPAM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2024-05-09",
+          "level": "hard",
+          "return": -0.269944,
+          "symbol": "EPAM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2026-02-19",
+          "level": "soft",
+          "return": -0.170135,
+          "symbol": "EPAM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2026-08-06",
+          "level": "soft",
+          "return": -0.152908,
+          "symbol": "EPAM",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "EPAM"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2026-04-30",
+          "level": "soft",
+          "return": -0.196413,
+          "symbol": "CHKP",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2026-04-30",
+          "level": "soft",
+          "return": -0.196413,
+          "symbol": "CHKP",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "CHKP"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2017-03-01",
+          "level": "hard",
+          "return": -0.24154,
+          "symbol": "PANW",
+          "threshold": 0.15
+        },
+        {
+          "date": "2017-06-01",
+          "level": "soft",
+          "return": 0.172021,
+          "symbol": "PANW",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-02-25",
+          "level": "soft",
+          "return": -0.170101,
+          "symbol": "PANW",
+          "threshold": 0.15
+        },
+        {
+          "date": "2021-08-24",
+          "level": "soft",
+          "return": 0.186005,
+          "symbol": "PANW",
+          "threshold": 0.15
+        },
+        {
+          "date": "2024-02-21",
+          "level": "hard",
+          "return": -0.284411,
+          "symbol": "PANW",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2017-03-01",
+          "level": "hard",
+          "return": -0.24154,
+          "symbol": "PANW",
+          "threshold": 0.15
+        },
+        {
+          "date": "2017-06-01",
+          "level": "soft",
+          "return": 0.172021,
+          "symbol": "PANW",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-02-25",
+          "level": "soft",
+          "return": -0.170101,
+          "symbol": "PANW",
+          "threshold": 0.15
+        },
+        {
+          "date": "2021-08-24",
+          "level": "soft",
+          "return": 0.186005,
+          "symbol": "PANW",
+          "threshold": 0.15
+        },
+        {
+          "date": "2024-02-21",
+          "level": "hard",
+          "return": -0.284411,
+          "symbol": "PANW",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "PANW"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2015-05-05",
+          "level": "hard",
+          "return": -0.327705,
+          "symbol": "QLYS",
+          "threshold": 0.15
+        },
+        {
+          "date": "2016-02-09",
+          "level": "hard",
+          "return": -0.228787,
+          "symbol": "QLYS",
+          "threshold": 0.15
+        },
+        {
+          "date": "2016-02-10",
+          "level": "soft",
+          "return": 0.151498,
+          "symbol": "QLYS",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-12-18",
+          "level": "soft",
+          "return": 0.18666,
+          "symbol": "QLYS",
+          "threshold": 0.15
+        },
+        {
+          "date": "2022-11-03",
+          "level": "soft",
+          "return": -0.160215,
+          "symbol": "QLYS",
+          "threshold": 0.15
+        },
+        {
+          "date": "2024-11-06",
+          "level": "hard",
+          "return": 0.241753,
+          "symbol": "QLYS",
+          "threshold": 0.15
+        },
+        {
+          "date": "2025-11-05",
+          "level": "hard",
+          "return": 0.205594,
+          "symbol": "QLYS",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2015-05-05",
+          "level": "hard",
+          "return": -0.327705,
+          "symbol": "QLYS",
+          "threshold": 0.15
+        },
+        {
+          "date": "2016-02-09",
+          "level": "hard",
+          "return": -0.228787,
+          "symbol": "QLYS",
+          "threshold": 0.15
+        },
+        {
+          "date": "2016-02-10",
+          "level": "soft",
+          "return": 0.151498,
+          "symbol": "QLYS",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-12-18",
+          "level": "soft",
+          "return": 0.18666,
+          "symbol": "QLYS",
+          "threshold": 0.15
+        },
+        {
+          "date": "2022-11-03",
+          "level": "soft",
+          "return": -0.160215,
+          "symbol": "QLYS",
+          "threshold": 0.15
+        },
+        {
+          "date": "2024-11-06",
+          "level": "hard",
+          "return": 0.241753,
+          "symbol": "QLYS",
+          "threshold": 0.15
+        },
+        {
+          "date": "2025-11-05",
+          "level": "hard",
+          "return": 0.205594,
+          "symbol": "QLYS",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "QLYS"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2015-09-11",
+          "level": "soft",
+          "return": -0.162085,
+          "symbol": "MRVL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-24",
+          "level": "soft",
+          "return": 0.152954,
+          "symbol": "MRVL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2021-12-03",
+          "level": "soft",
+          "return": 0.176827,
+          "symbol": "MRVL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2022-11-10",
+          "level": "soft",
+          "return": 0.161809,
+          "symbol": "MRVL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2023-05-26",
+          "level": "hard",
+          "return": 0.324237,
+          "symbol": "MRVL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2024-12-04",
+          "level": "hard",
+          "return": 0.231884,
+          "symbol": "MRVL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2025-01-27",
+          "level": "soft",
+          "return": -0.191018,
+          "symbol": "MRVL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2025-03-06",
+          "level": "soft",
+          "return": -0.198136,
+          "symbol": "MRVL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2025-04-09",
+          "level": "hard",
+          "return": 0.218469,
+          "symbol": "MRVL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2025-08-29",
+          "level": "soft",
+          "return": -0.185938,
+          "symbol": "MRVL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2026-03-06",
+          "level": "soft",
+          "return": 0.183536,
+          "symbol": "MRVL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2026-06-02",
+          "level": "hard",
+          "return": 0.325206,
+          "symbol": "MRVL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2026-06-05",
+          "level": "soft",
+          "return": -0.167367,
+          "symbol": "MRVL",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2015-09-11",
+          "level": "soft",
+          "return": -0.162085,
+          "symbol": "MRVL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-24",
+          "level": "soft",
+          "return": 0.152954,
+          "symbol": "MRVL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2021-12-03",
+          "level": "soft",
+          "return": 0.176827,
+          "symbol": "MRVL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2022-11-10",
+          "level": "soft",
+          "return": 0.161809,
+          "symbol": "MRVL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2023-05-26",
+          "level": "hard",
+          "return": 0.324237,
+          "symbol": "MRVL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2024-12-04",
+          "level": "hard",
+          "return": 0.231884,
+          "symbol": "MRVL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2025-01-27",
+          "level": "soft",
+          "return": -0.191018,
+          "symbol": "MRVL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2025-03-06",
+          "level": "soft",
+          "return": -0.198136,
+          "symbol": "MRVL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2025-04-09",
+          "level": "hard",
+          "return": 0.218469,
+          "symbol": "MRVL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2025-08-29",
+          "level": "soft",
+          "return": -0.185938,
+          "symbol": "MRVL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2026-03-06",
+          "level": "soft",
+          "return": 0.183536,
+          "symbol": "MRVL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2026-06-02",
+          "level": "hard",
+          "return": 0.325206,
+          "symbol": "MRVL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2026-06-05",
+          "level": "soft",
+          "return": -0.167367,
+          "symbol": "MRVL",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "MRVL"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2009-02-06",
+          "level": "hard",
+          "return": 0.348605,
+          "symbol": "SWKS",
+          "threshold": 0.15
+        },
+        {
+          "date": "2011-07-22",
+          "level": "soft",
+          "return": 0.189594,
+          "symbol": "SWKS",
+          "threshold": 0.15
+        },
+        {
+          "date": "2012-09-20",
+          "level": "soft",
+          "return": -0.184871,
+          "symbol": "SWKS",
+          "threshold": 0.15
+        },
+        {
+          "date": "2012-11-02",
+          "level": "soft",
+          "return": -0.171511,
+          "symbol": "SWKS",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-16",
+          "level": "soft",
+          "return": -0.181928,
+          "symbol": "SWKS",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-24",
+          "level": "soft",
+          "return": 0.164643,
+          "symbol": "SWKS",
+          "threshold": 0.15
+        },
+        {
+          "date": "2024-05-01",
+          "level": "soft",
+          "return": -0.152828,
+          "symbol": "SWKS",
+          "threshold": 0.15
+        },
+        {
+          "date": "2025-02-06",
+          "level": "hard",
+          "return": -0.24667,
+          "symbol": "SWKS",
+          "threshold": 0.15
+        },
+        {
+          "date": "2025-04-09",
+          "level": "hard",
+          "return": 0.225,
+          "symbol": "SWKS",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2009-02-06",
+          "level": "hard",
+          "return": 0.348605,
+          "symbol": "SWKS",
+          "threshold": 0.15
+        },
+        {
+          "date": "2011-07-22",
+          "level": "soft",
+          "return": 0.189594,
+          "symbol": "SWKS",
+          "threshold": 0.15
+        },
+        {
+          "date": "2012-09-20",
+          "level": "soft",
+          "return": -0.184871,
+          "symbol": "SWKS",
+          "threshold": 0.15
+        },
+        {
+          "date": "2012-11-02",
+          "level": "soft",
+          "return": -0.171511,
+          "symbol": "SWKS",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-16",
+          "level": "soft",
+          "return": -0.181928,
+          "symbol": "SWKS",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-24",
+          "level": "soft",
+          "return": 0.164643,
+          "symbol": "SWKS",
+          "threshold": 0.15
+        },
+        {
+          "date": "2024-05-01",
+          "level": "soft",
+          "return": -0.152828,
+          "symbol": "SWKS",
+          "threshold": 0.15
+        },
+        {
+          "date": "2025-02-06",
+          "level": "hard",
+          "return": -0.24667,
+          "symbol": "SWKS",
+          "threshold": 0.15
+        },
+        {
+          "date": "2025-04-09",
+          "level": "hard",
+          "return": 0.225,
+          "symbol": "SWKS",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "SWKS"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2015-11-06",
+          "level": "hard",
+          "return": 0.232254,
+          "symbol": "QRVO",
+          "threshold": 0.15
+        },
+        {
+          "date": "2018-02-01",
+          "level": "soft",
+          "return": 0.161209,
+          "symbol": "QRVO",
+          "threshold": 0.15
+        },
+        {
+          "date": "2019-11-01",
+          "level": "hard",
+          "return": 0.202325,
+          "symbol": "QRVO",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-16",
+          "level": "soft",
+          "return": -0.156325,
+          "symbol": "QRVO",
+          "threshold": 0.15
+        },
+        {
+          "date": "2024-10-30",
+          "level": "hard",
+          "return": -0.273089,
+          "symbol": "QRVO",
+          "threshold": 0.15
+        },
+        {
+          "date": "2025-04-03",
+          "level": "soft",
+          "return": -0.159003,
+          "symbol": "QRVO",
+          "threshold": 0.15
+        },
+        {
+          "date": "2025-04-09",
+          "level": "hard",
+          "return": 0.222397,
+          "symbol": "QRVO",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2015-11-06",
+          "level": "hard",
+          "return": 0.232254,
+          "symbol": "QRVO",
+          "threshold": 0.15
+        },
+        {
+          "date": "2018-02-01",
+          "level": "soft",
+          "return": 0.161209,
+          "symbol": "QRVO",
+          "threshold": 0.15
+        },
+        {
+          "date": "2019-11-01",
+          "level": "hard",
+          "return": 0.202325,
+          "symbol": "QRVO",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-16",
+          "level": "soft",
+          "return": -0.156325,
+          "symbol": "QRVO",
+          "threshold": 0.15
+        },
+        {
+          "date": "2024-10-30",
+          "level": "hard",
+          "return": -0.273089,
+          "symbol": "QRVO",
+          "threshold": 0.15
+        },
+        {
+          "date": "2025-04-03",
+          "level": "soft",
+          "return": -0.159003,
+          "symbol": "QRVO",
+          "threshold": 0.15
+        },
+        {
+          "date": "2025-04-09",
+          "level": "hard",
+          "return": 0.222397,
+          "symbol": "QRVO",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "QRVO"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2013-10-25",
+          "level": "soft",
+          "return": 0.170352,
+          "symbol": "MPWR",
+          "threshold": 0.15
+        },
+        {
+          "date": "2014-10-10",
+          "level": "soft",
+          "return": -0.151501,
+          "symbol": "MPWR",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-13",
+          "level": "soft",
+          "return": 0.168299,
+          "symbol": "MPWR",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-16",
+          "level": "hard",
+          "return": -0.202803,
+          "symbol": "MPWR",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-17",
+          "level": "soft",
+          "return": 0.170111,
+          "symbol": "MPWR",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-24",
+          "level": "soft",
+          "return": 0.161888,
+          "symbol": "MPWR",
+          "threshold": 0.15
+        },
+        {
+          "date": "2023-05-25",
+          "level": "soft",
+          "return": 0.174608,
+          "symbol": "MPWR",
+          "threshold": 0.15
+        },
+        {
+          "date": "2024-10-31",
+          "level": "soft",
+          "return": -0.174503,
+          "symbol": "MPWR",
+          "threshold": 0.15
+        },
+        {
+          "date": "2025-04-03",
+          "level": "soft",
+          "return": -0.15571,
+          "symbol": "MPWR",
+          "threshold": 0.15
+        },
+        {
+          "date": "2025-04-09",
+          "level": "hard",
+          "return": 0.234298,
+          "symbol": "MPWR",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2013-10-25",
+          "level": "soft",
+          "return": 0.170352,
+          "symbol": "MPWR",
+          "threshold": 0.15
+        },
+        {
+          "date": "2014-10-10",
+          "level": "soft",
+          "return": -0.151501,
+          "symbol": "MPWR",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-13",
+          "level": "soft",
+          "return": 0.168299,
+          "symbol": "MPWR",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-16",
+          "level": "hard",
+          "return": -0.202803,
+          "symbol": "MPWR",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-17",
+          "level": "soft",
+          "return": 0.170111,
+          "symbol": "MPWR",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-24",
+          "level": "soft",
+          "return": 0.161888,
+          "symbol": "MPWR",
+          "threshold": 0.15
+        },
+        {
+          "date": "2023-05-25",
+          "level": "soft",
+          "return": 0.174608,
+          "symbol": "MPWR",
+          "threshold": 0.15
+        },
+        {
+          "date": "2024-10-31",
+          "level": "soft",
+          "return": -0.174503,
+          "symbol": "MPWR",
+          "threshold": 0.15
+        },
+        {
+          "date": "2025-04-03",
+          "level": "soft",
+          "return": -0.15571,
+          "symbol": "MPWR",
+          "threshold": 0.15
+        },
+        {
+          "date": "2025-04-09",
+          "level": "hard",
+          "return": 0.234298,
+          "symbol": "MPWR",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "MPWR"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2020-03-16",
+          "level": "hard",
+          "return": -0.203576,
+          "symbol": "AMAT",
+          "threshold": 0.15
+        },
+        {
+          "date": "2025-04-09",
+          "level": "soft",
+          "return": 0.161057,
+          "symbol": "AMAT",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2020-03-16",
+          "level": "hard",
+          "return": -0.203576,
+          "symbol": "AMAT",
+          "threshold": 0.15
+        },
+        {
+          "date": "2025-04-09",
+          "level": "soft",
+          "return": 0.161057,
+          "symbol": "AMAT",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "AMAT"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2019-01-24",
+          "level": "soft",
+          "return": 0.156965,
+          "symbol": "LRCX",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-16",
+          "level": "soft",
+          "return": -0.184277,
+          "symbol": "LRCX",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-18",
+          "level": "soft",
+          "return": -0.153336,
+          "symbol": "LRCX",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-24",
+          "level": "hard",
+          "return": 0.20313,
+          "symbol": "LRCX",
+          "threshold": 0.15
+        },
+        {
+          "date": "2025-04-09",
+          "level": "soft",
+          "return": 0.180249,
+          "symbol": "LRCX",
+          "threshold": 0.15
+        },
+        {
+          "date": "2026-07-30",
+          "level": "soft",
+          "return": 0.17979,
+          "symbol": "LRCX",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2019-01-24",
+          "level": "soft",
+          "return": 0.156965,
+          "symbol": "LRCX",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-16",
+          "level": "soft",
+          "return": -0.184277,
+          "symbol": "LRCX",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-18",
+          "level": "soft",
+          "return": -0.153336,
+          "symbol": "LRCX",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-24",
+          "level": "hard",
+          "return": 0.20313,
+          "symbol": "LRCX",
+          "threshold": 0.15
+        },
+        {
+          "date": "2025-04-09",
+          "level": "soft",
+          "return": 0.180249,
+          "symbol": "LRCX",
+          "threshold": 0.15
+        },
+        {
+          "date": "2026-07-30",
+          "level": "soft",
+          "return": 0.17979,
+          "symbol": "LRCX",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "LRCX"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2009-01-05",
+          "level": "soft",
+          "return": 0.188406,
+          "symbol": "DXCM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-03-05",
+          "level": "soft",
+          "return": -0.163683,
+          "symbol": "DXCM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2010-11-05",
+          "level": "hard",
+          "return": -0.219986,
+          "symbol": "DXCM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2011-08-04",
+          "level": "soft",
+          "return": -0.181479,
+          "symbol": "DXCM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2011-11-03",
+          "level": "soft",
+          "return": -0.196939,
+          "symbol": "DXCM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2013-08-08",
+          "level": "hard",
+          "return": 0.212921,
+          "symbol": "DXCM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2013-11-07",
+          "level": "hard",
+          "return": 0.219897,
+          "symbol": "DXCM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2015-10-15",
+          "level": "soft",
+          "return": 0.193914,
+          "symbol": "DXCM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2016-11-02",
+          "level": "soft",
+          "return": -0.192377,
+          "symbol": "DXCM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2017-01-13",
+          "level": "hard",
+          "return": 0.259133,
+          "symbol": "DXCM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2017-09-28",
+          "level": "hard",
+          "return": -0.326516,
+          "symbol": "DXCM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2018-08-02",
+          "level": "hard",
+          "return": 0.306475,
+          "symbol": "DXCM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2019-11-07",
+          "level": "hard",
+          "return": 0.271552,
+          "symbol": "DXCM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-16",
+          "level": "soft",
+          "return": -0.17097,
+          "symbol": "DXCM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2022-10-28",
+          "level": "soft",
+          "return": 0.193778,
+          "symbol": "DXCM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2024-07-26",
+          "level": "hard",
+          "return": -0.406583,
+          "symbol": "DXCM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2025-05-02",
+          "level": "soft",
+          "return": 0.161685,
+          "symbol": "DXCM",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2009-01-05",
+          "level": "soft",
+          "return": 0.188406,
+          "symbol": "DXCM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-03-05",
+          "level": "soft",
+          "return": -0.163683,
+          "symbol": "DXCM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2010-11-05",
+          "level": "hard",
+          "return": -0.219986,
+          "symbol": "DXCM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2011-08-04",
+          "level": "soft",
+          "return": -0.181479,
+          "symbol": "DXCM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2011-11-03",
+          "level": "soft",
+          "return": -0.196939,
+          "symbol": "DXCM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2013-08-08",
+          "level": "hard",
+          "return": 0.212921,
+          "symbol": "DXCM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2013-11-07",
+          "level": "hard",
+          "return": 0.219897,
+          "symbol": "DXCM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2015-10-15",
+          "level": "soft",
+          "return": 0.193914,
+          "symbol": "DXCM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2016-11-02",
+          "level": "soft",
+          "return": -0.192377,
+          "symbol": "DXCM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2017-01-13",
+          "level": "hard",
+          "return": 0.259133,
+          "symbol": "DXCM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2017-09-28",
+          "level": "hard",
+          "return": -0.326516,
+          "symbol": "DXCM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2018-08-02",
+          "level": "hard",
+          "return": 0.306475,
+          "symbol": "DXCM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2019-11-07",
+          "level": "hard",
+          "return": 0.271552,
+          "symbol": "DXCM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-16",
+          "level": "soft",
+          "return": -0.17097,
+          "symbol": "DXCM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2022-10-28",
+          "level": "soft",
+          "return": 0.193778,
+          "symbol": "DXCM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2024-07-26",
+          "level": "hard",
+          "return": -0.406583,
+          "symbol": "DXCM",
+          "threshold": 0.15
+        },
+        {
+          "date": "2025-05-02",
+          "level": "soft",
+          "return": 0.161685,
+          "symbol": "DXCM",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "DXCM"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2009-07-23",
+          "level": "hard",
+          "return": 0.268449,
+          "symbol": "ISRG",
+          "threshold": 0.15
+        },
+        {
+          "date": "2013-07-09",
+          "level": "soft",
+          "return": -0.161534,
+          "symbol": "ISRG",
+          "threshold": 0.15
+        },
+        {
+          "date": "2014-07-23",
+          "level": "soft",
+          "return": 0.177147,
+          "symbol": "ISRG",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-24",
+          "level": "soft",
+          "return": 0.174439,
+          "symbol": "ISRG",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2009-07-23",
+          "level": "hard",
+          "return": 0.268449,
+          "symbol": "ISRG",
+          "threshold": 0.15
+        },
+        {
+          "date": "2013-07-09",
+          "level": "soft",
+          "return": -0.161534,
+          "symbol": "ISRG",
+          "threshold": 0.15
+        },
+        {
+          "date": "2014-07-23",
+          "level": "soft",
+          "return": 0.177147,
+          "symbol": "ISRG",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-24",
+          "level": "soft",
+          "return": 0.174439,
+          "symbol": "ISRG",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "ISRG"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2014-08-29",
+          "level": "hard",
+          "return": 0.200721,
+          "symbol": "VEEV",
+          "threshold": 0.15
+        },
+        {
+          "date": "2015-03-04",
+          "level": "hard",
+          "return": -0.213215,
+          "symbol": "VEEV",
+          "threshold": 0.15
+        },
+        {
+          "date": "2022-03-03",
+          "level": "soft",
+          "return": -0.162432,
+          "symbol": "VEEV",
+          "threshold": 0.15
+        },
+        {
+          "date": "2023-06-01",
+          "level": "soft",
+          "return": 0.196741,
+          "symbol": "VEEV",
+          "threshold": 0.15
+        },
+        {
+          "date": "2025-05-29",
+          "level": "soft",
+          "return": 0.189987,
+          "symbol": "VEEV",
+          "threshold": 0.15
+        },
+        {
+          "date": "2026-08-27",
+          "level": "soft",
+          "return": 0.151974,
+          "symbol": "VEEV",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2014-08-29",
+          "level": "hard",
+          "return": 0.200721,
+          "symbol": "VEEV",
+          "threshold": 0.15
+        },
+        {
+          "date": "2015-03-04",
+          "level": "hard",
+          "return": -0.213215,
+          "symbol": "VEEV",
+          "threshold": 0.15
+        },
+        {
+          "date": "2022-03-03",
+          "level": "soft",
+          "return": -0.162432,
+          "symbol": "VEEV",
+          "threshold": 0.15
+        },
+        {
+          "date": "2023-06-01",
+          "level": "soft",
+          "return": 0.196741,
+          "symbol": "VEEV",
+          "threshold": 0.15
+        },
+        {
+          "date": "2025-05-29",
+          "level": "soft",
+          "return": 0.189987,
+          "symbol": "VEEV",
+          "threshold": 0.15
+        },
+        {
+          "date": "2026-08-27",
+          "level": "soft",
+          "return": 0.151974,
+          "symbol": "VEEV",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "VEEV"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2009-04-24",
+          "level": "soft",
+          "return": 0.172147,
+          "symbol": "ALGN",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-07-24",
+          "level": "hard",
+          "return": 0.211416,
+          "symbol": "ALGN",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-08-17",
+          "level": "hard",
+          "return": 0.283317,
+          "symbol": "ALGN",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-10-23",
+          "level": "soft",
+          "return": 0.150845,
+          "symbol": "ALGN",
+          "threshold": 0.15
+        },
+        {
+          "date": "2010-07-23",
+          "level": "soft",
+          "return": 0.154417,
+          "symbol": "ALGN",
+          "threshold": 0.15
+        },
+        {
+          "date": "2011-04-21",
+          "level": "soft",
+          "return": 0.168303,
+          "symbol": "ALGN",
+          "threshold": 0.15
+        },
+        {
+          "date": "2011-10-28",
+          "level": "hard",
+          "return": 0.327906,
+          "symbol": "ALGN",
+          "threshold": 0.15
+        },
+        {
+          "date": "2012-04-24",
+          "level": "soft",
+          "return": 0.157434,
+          "symbol": "ALGN",
+          "threshold": 0.15
+        },
+        {
+          "date": "2012-10-18",
+          "level": "hard",
+          "return": -0.20418,
+          "symbol": "ALGN",
+          "threshold": 0.15
+        },
+        {
+          "date": "2013-10-18",
+          "level": "hard",
+          "return": 0.262356,
+          "symbol": "ALGN",
+          "threshold": 0.15
+        },
+        {
+          "date": "2017-10-27",
+          "level": "soft",
+          "return": 0.162381,
+          "symbol": "ALGN",
+          "threshold": 0.15
+        },
+        {
+          "date": "2018-10-25",
+          "level": "hard",
+          "return": -0.202042,
+          "symbol": "ALGN",
+          "threshold": 0.15
+        },
+        {
+          "date": "2019-07-25",
+          "level": "hard",
+          "return": -0.269879,
+          "symbol": "ALGN",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-16",
+          "level": "soft",
+          "return": -0.174392,
+          "symbol": "ALGN",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-24",
+          "level": "hard",
+          "return": 0.200116,
+          "symbol": "ALGN",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-10-22",
+          "level": "hard",
+          "return": 0.349662,
+          "symbol": "ALGN",
+          "threshold": 0.15
+        },
+        {
+          "date": "2022-04-28",
+          "level": "soft",
+          "return": -0.154732,
+          "symbol": "ALGN",
+          "threshold": 0.15
+        },
+        {
+          "date": "2022-10-27",
+          "level": "soft",
+          "return": -0.180969,
+          "symbol": "ALGN",
+          "threshold": 0.15
+        },
+        {
+          "date": "2023-02-02",
+          "level": "hard",
+          "return": 0.273776,
+          "symbol": "ALGN",
+          "threshold": 0.15
+        },
+        {
+          "date": "2023-10-26",
+          "level": "hard",
+          "return": -0.248847,
+          "symbol": "ALGN",
+          "threshold": 0.15
+        },
+        {
+          "date": "2025-07-31",
+          "level": "hard",
+          "return": -0.366262,
+          "symbol": "ALGN",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2009-04-24",
+          "level": "soft",
+          "return": 0.172147,
+          "symbol": "ALGN",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-07-24",
+          "level": "hard",
+          "return": 0.211416,
+          "symbol": "ALGN",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-08-17",
+          "level": "hard",
+          "return": 0.283317,
+          "symbol": "ALGN",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-10-23",
+          "level": "soft",
+          "return": 0.150845,
+          "symbol": "ALGN",
+          "threshold": 0.15
+        },
+        {
+          "date": "2010-07-23",
+          "level": "soft",
+          "return": 0.154417,
+          "symbol": "ALGN",
+          "threshold": 0.15
+        },
+        {
+          "date": "2011-04-21",
+          "level": "soft",
+          "return": 0.168303,
+          "symbol": "ALGN",
+          "threshold": 0.15
+        },
+        {
+          "date": "2011-10-28",
+          "level": "hard",
+          "return": 0.327906,
+          "symbol": "ALGN",
+          "threshold": 0.15
+        },
+        {
+          "date": "2012-04-24",
+          "level": "soft",
+          "return": 0.157434,
+          "symbol": "ALGN",
+          "threshold": 0.15
+        },
+        {
+          "date": "2012-10-18",
+          "level": "hard",
+          "return": -0.20418,
+          "symbol": "ALGN",
+          "threshold": 0.15
+        },
+        {
+          "date": "2013-10-18",
+          "level": "hard",
+          "return": 0.262356,
+          "symbol": "ALGN",
+          "threshold": 0.15
+        },
+        {
+          "date": "2017-10-27",
+          "level": "soft",
+          "return": 0.162381,
+          "symbol": "ALGN",
+          "threshold": 0.15
+        },
+        {
+          "date": "2018-10-25",
+          "level": "hard",
+          "return": -0.202042,
+          "symbol": "ALGN",
+          "threshold": 0.15
+        },
+        {
+          "date": "2019-07-25",
+          "level": "hard",
+          "return": -0.269879,
+          "symbol": "ALGN",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-16",
+          "level": "soft",
+          "return": -0.174392,
+          "symbol": "ALGN",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-24",
+          "level": "hard",
+          "return": 0.200116,
+          "symbol": "ALGN",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-10-22",
+          "level": "hard",
+          "return": 0.349662,
+          "symbol": "ALGN",
+          "threshold": 0.15
+        },
+        {
+          "date": "2022-04-28",
+          "level": "soft",
+          "return": -0.154732,
+          "symbol": "ALGN",
+          "threshold": 0.15
+        },
+        {
+          "date": "2022-10-27",
+          "level": "soft",
+          "return": -0.180969,
+          "symbol": "ALGN",
+          "threshold": 0.15
+        },
+        {
+          "date": "2023-02-02",
+          "level": "hard",
+          "return": 0.273776,
+          "symbol": "ALGN",
+          "threshold": 0.15
+        },
+        {
+          "date": "2023-10-26",
+          "level": "hard",
+          "return": -0.248847,
+          "symbol": "ALGN",
+          "threshold": 0.15
+        },
+        {
+          "date": "2025-07-31",
+          "level": "hard",
+          "return": -0.366262,
+          "symbol": "ALGN",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "ALGN"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2011-04-21",
+          "level": "soft",
+          "return": 0.151669,
+          "symbol": "BIIB",
+          "threshold": 0.15
+        },
+        {
+          "date": "2015-07-24",
+          "level": "hard",
+          "return": -0.220802,
+          "symbol": "BIIB",
+          "threshold": 0.15
+        },
+        {
+          "date": "2018-07-06",
+          "level": "soft",
+          "return": 0.196346,
+          "symbol": "BIIB",
+          "threshold": 0.15
+        },
+        {
+          "date": "2019-03-21",
+          "level": "hard",
+          "return": -0.292305,
+          "symbol": "BIIB",
+          "threshold": 0.15
+        },
+        {
+          "date": "2019-10-22",
+          "level": "hard",
+          "return": 0.261107,
+          "symbol": "BIIB",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-02-05",
+          "level": "soft",
+          "return": 0.175015,
+          "symbol": "BIIB",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-11-04",
+          "level": "hard",
+          "return": 0.439739,
+          "symbol": "BIIB",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-11-09",
+          "level": "hard",
+          "return": -0.281666,
+          "symbol": "BIIB",
+          "threshold": 0.15
+        },
+        {
+          "date": "2021-06-07",
+          "level": "hard",
+          "return": 0.383414,
+          "symbol": "BIIB",
+          "threshold": 0.15
+        },
+        {
+          "date": "2022-09-28",
+          "level": "hard",
+          "return": 0.398503,
+          "symbol": "BIIB",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2011-04-21",
+          "level": "soft",
+          "return": 0.151669,
+          "symbol": "BIIB",
+          "threshold": 0.15
+        },
+        {
+          "date": "2015-07-24",
+          "level": "hard",
+          "return": -0.220802,
+          "symbol": "BIIB",
+          "threshold": 0.15
+        },
+        {
+          "date": "2018-07-06",
+          "level": "soft",
+          "return": 0.196346,
+          "symbol": "BIIB",
+          "threshold": 0.15
+        },
+        {
+          "date": "2019-03-21",
+          "level": "hard",
+          "return": -0.292305,
+          "symbol": "BIIB",
+          "threshold": 0.15
+        },
+        {
+          "date": "2019-10-22",
+          "level": "hard",
+          "return": 0.261107,
+          "symbol": "BIIB",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-02-05",
+          "level": "soft",
+          "return": 0.175015,
+          "symbol": "BIIB",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-11-04",
+          "level": "hard",
+          "return": 0.439739,
+          "symbol": "BIIB",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-11-09",
+          "level": "hard",
+          "return": -0.281666,
+          "symbol": "BIIB",
+          "threshold": 0.15
+        },
+        {
+          "date": "2021-06-07",
+          "level": "hard",
+          "return": 0.383414,
+          "symbol": "BIIB",
+          "threshold": 0.15
+        },
+        {
+          "date": "2022-09-28",
+          "level": "hard",
+          "return": 0.398503,
+          "symbol": "BIIB",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "BIIB"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2009-11-11",
+          "level": "soft",
+          "return": 0.199367,
+          "symbol": "REGN",
+          "threshold": 0.15
+        },
+        {
+          "date": "2010-11-22",
+          "level": "soft",
+          "return": 0.197,
+          "symbol": "REGN",
+          "threshold": 0.15
+        },
+        {
+          "date": "2011-04-27",
+          "level": "hard",
+          "return": 0.285961,
+          "symbol": "REGN",
+          "threshold": 0.15
+        },
+        {
+          "date": "2011-04-29",
+          "level": "hard",
+          "return": -0.210029,
+          "symbol": "REGN",
+          "threshold": 0.15
+        },
+        {
+          "date": "2022-09-08",
+          "level": "soft",
+          "return": 0.188468,
+          "symbol": "REGN",
+          "threshold": 0.15
+        },
+        {
+          "date": "2025-05-30",
+          "level": "soft",
+          "return": -0.190142,
+          "symbol": "REGN",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2009-11-11",
+          "level": "soft",
+          "return": 0.199367,
+          "symbol": "REGN",
+          "threshold": 0.15
+        },
+        {
+          "date": "2010-11-22",
+          "level": "soft",
+          "return": 0.197,
+          "symbol": "REGN",
+          "threshold": 0.15
+        },
+        {
+          "date": "2011-04-27",
+          "level": "hard",
+          "return": 0.285961,
+          "symbol": "REGN",
+          "threshold": 0.15
+        },
+        {
+          "date": "2011-04-29",
+          "level": "hard",
+          "return": -0.210029,
+          "symbol": "REGN",
+          "threshold": 0.15
+        },
+        {
+          "date": "2022-09-08",
+          "level": "soft",
+          "return": 0.188468,
+          "symbol": "REGN",
+          "threshold": 0.15
+        },
+        {
+          "date": "2025-05-30",
+          "level": "soft",
+          "return": -0.190142,
+          "symbol": "REGN",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "REGN"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2026-05-07",
+          "level": "hard",
+          "return": -0.214979,
+          "symbol": "ZTS",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2026-05-07",
+          "level": "hard",
+          "return": -0.214979,
+          "symbol": "ZTS",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "ZTS"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [],
+      "final_gaps": [],
+      "flags_returns": [],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "PYPL"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [],
+      "final_gaps": [],
+      "flags_returns": [],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "BR"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2020-03-13",
+          "level": "soft",
+          "return": 0.159636,
+          "symbol": "STAG",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-16",
+          "level": "hard",
+          "return": -0.209591,
+          "symbol": "STAG",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-23",
+          "level": "soft",
+          "return": -0.152315,
+          "symbol": "STAG",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2020-03-13",
+          "level": "soft",
+          "return": 0.159636,
+          "symbol": "STAG",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-16",
+          "level": "hard",
+          "return": -0.209591,
+          "symbol": "STAG",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-23",
+          "level": "soft",
+          "return": -0.152315,
+          "symbol": "STAG",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "STAG"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2009-03-23",
+          "level": "soft",
+          "return": 0.187602,
+          "symbol": "AXP",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-04-09",
+          "level": "soft",
+          "return": 0.197837,
+          "symbol": "AXP",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-04-24",
+          "level": "hard",
+          "return": 0.206485,
+          "symbol": "AXP",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-13",
+          "level": "soft",
+          "return": 0.192386,
+          "symbol": "AXP",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-24",
+          "level": "hard",
+          "return": 0.218822,
+          "symbol": "AXP",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-11-09",
+          "level": "hard",
+          "return": 0.213879,
+          "symbol": "AXP",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2009-03-23",
+          "level": "soft",
+          "return": 0.187602,
+          "symbol": "AXP",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-04-09",
+          "level": "soft",
+          "return": 0.197837,
+          "symbol": "AXP",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-04-24",
+          "level": "hard",
+          "return": 0.206485,
+          "symbol": "AXP",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-13",
+          "level": "soft",
+          "return": 0.192386,
+          "symbol": "AXP",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-24",
+          "level": "hard",
+          "return": 0.218822,
+          "symbol": "AXP",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-11-09",
+          "level": "hard",
+          "return": 0.213879,
+          "symbol": "AXP",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "AXP"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2020-03-13",
+          "level": "soft",
+          "return": 0.191347,
+          "symbol": "SCHW",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2020-03-13",
+          "level": "soft",
+          "return": 0.191347,
+          "symbol": "SCHW",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "SCHW"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2009-03-23",
+          "level": "soft",
+          "return": 0.175501,
+          "symbol": "BLK",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2009-03-23",
+          "level": "soft",
+          "return": 0.175501,
+          "symbol": "BLK",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "BLK"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [],
+      "final_gaps": [],
+      "flags_returns": [],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "UPS"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [],
+      "final_gaps": [],
+      "flags_returns": [],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "UNP"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [],
+      "final_gaps": [],
+      "flags_returns": [],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "DE"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2020-03-24",
+          "level": "hard",
+          "return": 0.232646,
+          "symbol": "ETN",
+          "threshold": 0.15
+        },
+        {
+          "date": "2025-01-27",
+          "level": "soft",
+          "return": -0.155645,
+          "symbol": "ETN",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2020-03-24",
+          "level": "hard",
+          "return": 0.232646,
+          "symbol": "ETN",
+          "threshold": 0.15
+        },
+        {
+          "date": "2025-01-27",
+          "level": "soft",
+          "return": -0.155645,
+          "symbol": "ETN",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "ETN"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2020-03-16",
+          "level": "soft",
+          "return": -0.160775,
+          "symbol": "PH",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-18",
+          "level": "soft",
+          "return": -0.166883,
+          "symbol": "PH",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-24",
+          "level": "soft",
+          "return": 0.184195,
+          "symbol": "PH",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2020-03-16",
+          "level": "soft",
+          "return": -0.160775,
+          "symbol": "PH",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-18",
+          "level": "soft",
+          "return": -0.166883,
+          "symbol": "PH",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-24",
+          "level": "soft",
+          "return": 0.184195,
+          "symbol": "PH",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "PH"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [],
+      "final_gaps": [],
+      "flags_returns": [],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "WM"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2020-03-18",
+          "level": "soft",
+          "return": -0.151914,
+          "symbol": "MAR",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-04-06",
+          "level": "soft",
+          "return": 0.194821,
+          "symbol": "MAR",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-05-18",
+          "level": "soft",
+          "return": 0.173771,
+          "symbol": "MAR",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2020-03-18",
+          "level": "soft",
+          "return": -0.151914,
+          "symbol": "MAR",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-04-06",
+          "level": "soft",
+          "return": 0.194821,
+          "symbol": "MAR",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-05-18",
+          "level": "soft",
+          "return": 0.173771,
+          "symbol": "MAR",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "MAR"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2009-07-22",
+          "level": "soft",
+          "return": 0.183799,
+          "symbol": "SBUX",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-16",
+          "level": "soft",
+          "return": -0.162042,
+          "symbol": "SBUX",
+          "threshold": 0.15
+        },
+        {
+          "date": "2024-05-01",
+          "level": "soft",
+          "return": -0.158775,
+          "symbol": "SBUX",
+          "threshold": 0.15
+        },
+        {
+          "date": "2024-08-13",
+          "level": "hard",
+          "return": 0.244969,
+          "symbol": "SBUX",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2009-07-22",
+          "level": "soft",
+          "return": 0.183799,
+          "symbol": "SBUX",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-16",
+          "level": "soft",
+          "return": -0.162042,
+          "symbol": "SBUX",
+          "threshold": 0.15
+        },
+        {
+          "date": "2024-05-01",
+          "level": "soft",
+          "return": -0.158775,
+          "symbol": "SBUX",
+          "threshold": 0.15
+        },
+        {
+          "date": "2024-08-13",
+          "level": "hard",
+          "return": 0.244969,
+          "symbol": "SBUX",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "SBUX"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2009-01-30",
+          "level": "soft",
+          "return": -0.173249,
+          "symbol": "RCL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-02-24",
+          "level": "hard",
+          "return": 0.212766,
+          "symbol": "RCL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-03-10",
+          "level": "hard",
+          "return": 0.204819,
+          "symbol": "RCL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-03-12",
+          "level": "soft",
+          "return": 0.167883,
+          "symbol": "RCL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-04-23",
+          "level": "hard",
+          "return": 0.20596,
+          "symbol": "RCL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-04-27",
+          "level": "soft",
+          "return": -0.163209,
+          "symbol": "RCL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-07-29",
+          "level": "soft",
+          "return": -0.151312,
+          "symbol": "RCL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2016-02-02",
+          "level": "soft",
+          "return": -0.15168,
+          "symbol": "RCL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-05",
+          "level": "soft",
+          "return": -0.162891,
+          "symbol": "RCL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-09",
+          "level": "hard",
+          "return": -0.257499,
+          "symbol": "RCL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-12",
+          "level": "hard",
+          "return": -0.317782,
+          "symbol": "RCL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-18",
+          "level": "soft",
+          "return": -0.192697,
+          "symbol": "RCL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-23",
+          "level": "soft",
+          "return": 0.183957,
+          "symbol": "RCL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-24",
+          "level": "hard",
+          "return": 0.222774,
+          "symbol": "RCL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-25",
+          "level": "hard",
+          "return": 0.230345,
+          "symbol": "RCL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-27",
+          "level": "soft",
+          "return": -0.150456,
+          "symbol": "RCL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-04-01",
+          "level": "soft",
+          "return": -0.198943,
+          "symbol": "RCL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-04-06",
+          "level": "hard",
+          "return": 0.214022,
+          "symbol": "RCL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-04-13",
+          "level": "soft",
+          "return": -0.170313,
+          "symbol": "RCL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-04-29",
+          "level": "soft",
+          "return": 0.155566,
+          "symbol": "RCL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-05-18",
+          "level": "soft",
+          "return": 0.166889,
+          "symbol": "RCL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-06-05",
+          "level": "hard",
+          "return": 0.203675,
+          "symbol": "RCL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-07-15",
+          "level": "hard",
+          "return": 0.212046,
+          "symbol": "RCL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-11-09",
+          "level": "hard",
+          "return": 0.287861,
+          "symbol": "RCL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2022-06-24",
+          "level": "soft",
+          "return": 0.157749,
+          "symbol": "RCL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2022-10-04",
+          "level": "soft",
+          "return": 0.166534,
+          "symbol": "RCL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2025-04-09",
+          "level": "soft",
+          "return": 0.162717,
+          "symbol": "RCL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2026-01-29",
+          "level": "soft",
+          "return": 0.186488,
+          "symbol": "RCL",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2009-01-30",
+          "level": "soft",
+          "return": -0.173249,
+          "symbol": "RCL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-02-24",
+          "level": "hard",
+          "return": 0.212766,
+          "symbol": "RCL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-03-10",
+          "level": "hard",
+          "return": 0.204819,
+          "symbol": "RCL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-03-12",
+          "level": "soft",
+          "return": 0.167883,
+          "symbol": "RCL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-04-23",
+          "level": "hard",
+          "return": 0.20596,
+          "symbol": "RCL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-04-27",
+          "level": "soft",
+          "return": -0.163209,
+          "symbol": "RCL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-07-29",
+          "level": "soft",
+          "return": -0.151312,
+          "symbol": "RCL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2016-02-02",
+          "level": "soft",
+          "return": -0.15168,
+          "symbol": "RCL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-05",
+          "level": "soft",
+          "return": -0.162891,
+          "symbol": "RCL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-09",
+          "level": "hard",
+          "return": -0.257499,
+          "symbol": "RCL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-12",
+          "level": "hard",
+          "return": -0.317782,
+          "symbol": "RCL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-18",
+          "level": "soft",
+          "return": -0.192697,
+          "symbol": "RCL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-23",
+          "level": "soft",
+          "return": 0.183957,
+          "symbol": "RCL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-24",
+          "level": "hard",
+          "return": 0.222774,
+          "symbol": "RCL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-25",
+          "level": "hard",
+          "return": 0.230345,
+          "symbol": "RCL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-27",
+          "level": "soft",
+          "return": -0.150456,
+          "symbol": "RCL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-04-01",
+          "level": "soft",
+          "return": -0.198943,
+          "symbol": "RCL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-04-06",
+          "level": "hard",
+          "return": 0.214022,
+          "symbol": "RCL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-04-13",
+          "level": "soft",
+          "return": -0.170313,
+          "symbol": "RCL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-04-29",
+          "level": "soft",
+          "return": 0.155566,
+          "symbol": "RCL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-05-18",
+          "level": "soft",
+          "return": 0.166889,
+          "symbol": "RCL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-06-05",
+          "level": "hard",
+          "return": 0.203675,
+          "symbol": "RCL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-07-15",
+          "level": "hard",
+          "return": 0.212046,
+          "symbol": "RCL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-11-09",
+          "level": "hard",
+          "return": 0.287861,
+          "symbol": "RCL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2022-06-24",
+          "level": "soft",
+          "return": 0.157749,
+          "symbol": "RCL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2022-10-04",
+          "level": "soft",
+          "return": 0.166534,
+          "symbol": "RCL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2025-04-09",
+          "level": "soft",
+          "return": 0.162717,
+          "symbol": "RCL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2026-01-29",
+          "level": "soft",
+          "return": 0.186488,
+          "symbol": "RCL",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "RCL"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2009-03-18",
+          "level": "soft",
+          "return": 0.199665,
+          "symbol": "DRI",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-11",
+          "level": "soft",
+          "return": -0.15,
+          "symbol": "DRI",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-12",
+          "level": "soft",
+          "return": -0.157243,
+          "symbol": "DRI",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-16",
+          "level": "hard",
+          "return": -0.246632,
+          "symbol": "DRI",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-18",
+          "level": "soft",
+          "return": -0.185309,
+          "symbol": "DRI",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-19",
+          "level": "hard",
+          "return": 0.241803,
+          "symbol": "DRI",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-24",
+          "level": "hard",
+          "return": 0.313429,
+          "symbol": "DRI",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-04-01",
+          "level": "soft",
+          "return": -0.154976,
+          "symbol": "DRI",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-04-06",
+          "level": "soft",
+          "return": 0.152155,
+          "symbol": "DRI",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-11-09",
+          "level": "soft",
+          "return": 0.180474,
+          "symbol": "DRI",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2009-03-18",
+          "level": "soft",
+          "return": 0.199665,
+          "symbol": "DRI",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-11",
+          "level": "soft",
+          "return": -0.15,
+          "symbol": "DRI",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-12",
+          "level": "soft",
+          "return": -0.157243,
+          "symbol": "DRI",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-16",
+          "level": "hard",
+          "return": -0.246632,
+          "symbol": "DRI",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-18",
+          "level": "soft",
+          "return": -0.185309,
+          "symbol": "DRI",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-19",
+          "level": "hard",
+          "return": 0.241803,
+          "symbol": "DRI",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-24",
+          "level": "hard",
+          "return": 0.313429,
+          "symbol": "DRI",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-04-01",
+          "level": "soft",
+          "return": -0.154976,
+          "symbol": "DRI",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-04-06",
+          "level": "soft",
+          "return": 0.152155,
+          "symbol": "DRI",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-11-09",
+          "level": "soft",
+          "return": 0.180474,
+          "symbol": "DRI",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "DRI"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2020-03-09",
+          "level": "hard",
+          "return": -0.274214,
+          "symbol": "SLB",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-12",
+          "level": "soft",
+          "return": -0.170311,
+          "symbol": "SLB",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-19",
+          "level": "soft",
+          "return": 0.151037,
+          "symbol": "SLB",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-11-09",
+          "level": "soft",
+          "return": 0.19908,
+          "symbol": "SLB",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2020-03-09",
+          "level": "hard",
+          "return": -0.274214,
+          "symbol": "SLB",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-12",
+          "level": "soft",
+          "return": -0.170311,
+          "symbol": "SLB",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-19",
+          "level": "soft",
+          "return": 0.151037,
+          "symbol": "SLB",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-11-09",
+          "level": "soft",
+          "return": 0.19908,
+          "symbol": "SLB",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "SLB"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2013-07-25",
+          "level": "hard",
+          "return": 0.255428,
+          "symbol": "OKE",
+          "threshold": 0.15
+        },
+        {
+          "date": "2015-12-21",
+          "level": "soft",
+          "return": 0.154253,
+          "symbol": "OKE",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-09",
+          "level": "hard",
+          "return": -0.377553,
+          "symbol": "OKE",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-12",
+          "level": "hard",
+          "return": -0.208124,
+          "symbol": "OKE",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-16",
+          "level": "soft",
+          "return": -0.185872,
+          "symbol": "OKE",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-18",
+          "level": "hard",
+          "return": -0.284784,
+          "symbol": "OKE",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-19",
+          "level": "hard",
+          "return": 0.333116,
+          "symbol": "OKE",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-06-11",
+          "level": "soft",
+          "return": -0.158409,
+          "symbol": "OKE",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-11-09",
+          "level": "soft",
+          "return": 0.165861,
+          "symbol": "OKE",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2013-07-25",
+          "level": "hard",
+          "return": 0.255428,
+          "symbol": "OKE",
+          "threshold": 0.15
+        },
+        {
+          "date": "2015-12-21",
+          "level": "soft",
+          "return": 0.154253,
+          "symbol": "OKE",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-09",
+          "level": "hard",
+          "return": -0.377553,
+          "symbol": "OKE",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-12",
+          "level": "hard",
+          "return": -0.208124,
+          "symbol": "OKE",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-16",
+          "level": "soft",
+          "return": -0.185872,
+          "symbol": "OKE",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-18",
+          "level": "hard",
+          "return": -0.284784,
+          "symbol": "OKE",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-19",
+          "level": "hard",
+          "return": 0.333116,
+          "symbol": "OKE",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-06-11",
+          "level": "soft",
+          "return": -0.158409,
+          "symbol": "OKE",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-11-09",
+          "level": "soft",
+          "return": 0.165861,
+          "symbol": "OKE",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "OKE"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2009-06-03",
+          "level": "soft",
+          "return": -0.177837,
+          "symbol": "VLO",
+          "threshold": 0.15
+        },
+        {
+          "date": "2011-10-26",
+          "level": "soft",
+          "return": 0.151557,
+          "symbol": "VLO",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-12",
+          "level": "soft",
+          "return": -0.192209,
+          "symbol": "VLO",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-16",
+          "level": "soft",
+          "return": -0.165731,
+          "symbol": "VLO",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-23",
+          "level": "soft",
+          "return": -0.156234,
+          "symbol": "VLO",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-26",
+          "level": "soft",
+          "return": 0.150644,
+          "symbol": "VLO",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-04-17",
+          "level": "soft",
+          "return": 0.150222,
+          "symbol": "VLO",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-11-09",
+          "level": "hard",
+          "return": 0.312025,
+          "symbol": "VLO",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2009-06-03",
+          "level": "soft",
+          "return": -0.177837,
+          "symbol": "VLO",
+          "threshold": 0.15
+        },
+        {
+          "date": "2011-10-26",
+          "level": "soft",
+          "return": 0.151557,
+          "symbol": "VLO",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-12",
+          "level": "soft",
+          "return": -0.192209,
+          "symbol": "VLO",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-16",
+          "level": "soft",
+          "return": -0.165731,
+          "symbol": "VLO",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-23",
+          "level": "soft",
+          "return": -0.156234,
+          "symbol": "VLO",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-26",
+          "level": "soft",
+          "return": 0.150644,
+          "symbol": "VLO",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-04-17",
+          "level": "soft",
+          "return": 0.150222,
+          "symbol": "VLO",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-11-09",
+          "level": "hard",
+          "return": 0.312025,
+          "symbol": "VLO",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "VLO"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2012-12-05",
+          "level": "soft",
+          "return": -0.159874,
+          "symbol": "FCX",
+          "threshold": 0.15
+        },
+        {
+          "date": "2015-08-27",
+          "level": "hard",
+          "return": 0.286616,
+          "symbol": "FCX",
+          "threshold": 0.15
+        },
+        {
+          "date": "2015-12-23",
+          "level": "soft",
+          "return": 0.160436,
+          "symbol": "FCX",
+          "threshold": 0.15
+        },
+        {
+          "date": "2016-01-11",
+          "level": "hard",
+          "return": -0.203327,
+          "symbol": "FCX",
+          "threshold": 0.15
+        },
+        {
+          "date": "2016-02-04",
+          "level": "soft",
+          "return": 0.179381,
+          "symbol": "FCX",
+          "threshold": 0.15
+        },
+        {
+          "date": "2016-02-16",
+          "level": "soft",
+          "return": 0.151898,
+          "symbol": "FCX",
+          "threshold": 0.15
+        },
+        {
+          "date": "2016-03-02",
+          "level": "soft",
+          "return": 0.155928,
+          "symbol": "FCX",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-16",
+          "level": "soft",
+          "return": -0.171315,
+          "symbol": "FCX",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-18",
+          "level": "soft",
+          "return": -0.180556,
+          "symbol": "FCX",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-24",
+          "level": "hard",
+          "return": 0.296846,
+          "symbol": "FCX",
+          "threshold": 0.15
+        },
+        {
+          "date": "2025-04-09",
+          "level": "soft",
+          "return": 0.155084,
+          "symbol": "FCX",
+          "threshold": 0.15
+        },
+        {
+          "date": "2025-09-24",
+          "level": "soft",
+          "return": -0.169533,
+          "symbol": "FCX",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2012-12-05",
+          "level": "soft",
+          "return": -0.159874,
+          "symbol": "FCX",
+          "threshold": 0.15
+        },
+        {
+          "date": "2015-08-27",
+          "level": "hard",
+          "return": 0.286616,
+          "symbol": "FCX",
+          "threshold": 0.15
+        },
+        {
+          "date": "2015-12-23",
+          "level": "soft",
+          "return": 0.160436,
+          "symbol": "FCX",
+          "threshold": 0.15
+        },
+        {
+          "date": "2016-01-11",
+          "level": "hard",
+          "return": -0.203327,
+          "symbol": "FCX",
+          "threshold": 0.15
+        },
+        {
+          "date": "2016-02-04",
+          "level": "soft",
+          "return": 0.179381,
+          "symbol": "FCX",
+          "threshold": 0.15
+        },
+        {
+          "date": "2016-02-16",
+          "level": "soft",
+          "return": 0.151898,
+          "symbol": "FCX",
+          "threshold": 0.15
+        },
+        {
+          "date": "2016-03-02",
+          "level": "soft",
+          "return": 0.155928,
+          "symbol": "FCX",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-16",
+          "level": "soft",
+          "return": -0.171315,
+          "symbol": "FCX",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-18",
+          "level": "soft",
+          "return": -0.180556,
+          "symbol": "FCX",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-24",
+          "level": "hard",
+          "return": 0.296846,
+          "symbol": "FCX",
+          "threshold": 0.15
+        },
+        {
+          "date": "2025-04-09",
+          "level": "soft",
+          "return": 0.155084,
+          "symbol": "FCX",
+          "threshold": 0.15
+        },
+        {
+          "date": "2025-09-24",
+          "level": "soft",
+          "return": -0.169533,
+          "symbol": "FCX",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "FCX"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [],
+      "final_gaps": [],
+      "flags_returns": [],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "NEM"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2009-01-20",
+          "level": "soft",
+          "return": -0.192033,
+          "symbol": "PLD",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-01-21",
+          "level": "soft",
+          "return": 0.158028,
+          "symbol": "PLD",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-01-29",
+          "level": "soft",
+          "return": -0.164993,
+          "symbol": "PLD",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-03-10",
+          "level": "soft",
+          "return": 0.199222,
+          "symbol": "PLD",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-03-23",
+          "level": "hard",
+          "return": 0.221577,
+          "symbol": "PLD",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-03-24",
+          "level": "soft",
+          "return": -0.163723,
+          "symbol": "PLD",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-04-09",
+          "level": "soft",
+          "return": 0.17405,
+          "symbol": "PLD",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-16",
+          "level": "soft",
+          "return": -0.172706,
+          "symbol": "PLD",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2009-01-20",
+          "level": "soft",
+          "return": -0.192033,
+          "symbol": "PLD",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-01-21",
+          "level": "soft",
+          "return": 0.158028,
+          "symbol": "PLD",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-01-29",
+          "level": "soft",
+          "return": -0.164993,
+          "symbol": "PLD",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-03-10",
+          "level": "soft",
+          "return": 0.199222,
+          "symbol": "PLD",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-03-23",
+          "level": "hard",
+          "return": 0.221577,
+          "symbol": "PLD",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-03-24",
+          "level": "soft",
+          "return": -0.163723,
+          "symbol": "PLD",
+          "threshold": 0.15
+        },
+        {
+          "date": "2009-04-09",
+          "level": "soft",
+          "return": 0.17405,
+          "symbol": "PLD",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-16",
+          "level": "soft",
+          "return": -0.172706,
+          "symbol": "PLD",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "PLD"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2010-10-06",
+          "level": "hard",
+          "return": -0.330669,
+          "symbol": "EQIX",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2010-10-06",
+          "level": "hard",
+          "return": -0.330669,
+          "symbol": "EQIX",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "EQIX"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2013-10-30",
+          "level": "soft",
+          "return": -0.15268,
+          "symbol": "DLR",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2013-10-30",
+          "level": "soft",
+          "return": -0.15268,
+          "symbol": "DLR",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "DLR"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2009-03-23",
+          "level": "soft",
+          "return": 0.152217,
+          "symbol": "WELL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-12",
+          "level": "soft",
+          "return": -0.186582,
+          "symbol": "WELL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-16",
+          "level": "hard",
+          "return": -0.243955,
+          "symbol": "WELL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-19",
+          "level": "hard",
+          "return": 0.231788,
+          "symbol": "WELL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-04-08",
+          "level": "soft",
+          "return": 0.161937,
+          "symbol": "WELL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-11-09",
+          "level": "hard",
+          "return": 0.214429,
+          "symbol": "WELL",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2009-03-23",
+          "level": "soft",
+          "return": 0.152217,
+          "symbol": "WELL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-12",
+          "level": "soft",
+          "return": -0.186582,
+          "symbol": "WELL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-16",
+          "level": "hard",
+          "return": -0.243955,
+          "symbol": "WELL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-03-19",
+          "level": "hard",
+          "return": 0.231788,
+          "symbol": "WELL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-04-08",
+          "level": "soft",
+          "return": 0.161937,
+          "symbol": "WELL",
+          "threshold": 0.15
+        },
+        {
+          "date": "2020-11-09",
+          "level": "hard",
+          "return": 0.214429,
+          "symbol": "WELL",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "WELL"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [],
+      "final_gaps": [],
+      "flags_returns": [],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "XEL"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2009-08-06",
+          "level": "hard",
+          "return": -0.291568,
+          "symbol": "TMUS",
+          "threshold": 0.15
+        },
+        {
+          "date": "2011-08-02",
+          "level": "hard",
+          "return": -0.365884,
+          "symbol": "TMUS",
+          "threshold": 0.15
+        },
+        {
+          "date": "2012-07-26",
+          "level": "hard",
+          "return": 0.367835,
+          "symbol": "TMUS",
+          "threshold": 0.15
+        },
+        {
+          "date": "2012-10-02",
+          "level": "soft",
+          "return": 0.177951,
+          "symbol": "TMUS",
+          "threshold": 0.15
+        },
+        {
+          "date": "2013-05-01",
+          "level": "soft",
+          "return": -0.158002,
+          "symbol": "TMUS",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2009-08-06",
+          "level": "hard",
+          "return": -0.291568,
+          "symbol": "TMUS",
+          "threshold": 0.15
+        },
+        {
+          "date": "2011-08-02",
+          "level": "hard",
+          "return": -0.365884,
+          "symbol": "TMUS",
+          "threshold": 0.15
+        },
+        {
+          "date": "2012-07-26",
+          "level": "hard",
+          "return": 0.367835,
+          "symbol": "TMUS",
+          "threshold": 0.15
+        },
+        {
+          "date": "2012-10-02",
+          "level": "soft",
+          "return": 0.177951,
+          "symbol": "TMUS",
+          "threshold": 0.15
+        },
+        {
+          "date": "2013-05-01",
+          "level": "soft",
+          "return": -0.158002,
+          "symbol": "TMUS",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "TMUS"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2022-12-14",
+          "level": "soft",
+          "return": -0.163848,
+          "symbol": "CHTR",
+          "threshold": 0.15
+        },
+        {
+          "date": "2024-02-02",
+          "level": "soft",
+          "return": -0.165115,
+          "symbol": "CHTR",
+          "threshold": 0.15
+        },
+        {
+          "date": "2024-07-26",
+          "level": "soft",
+          "return": 0.166196,
+          "symbol": "CHTR",
+          "threshold": 0.15
+        },
+        {
+          "date": "2025-07-25",
+          "level": "soft",
+          "return": -0.184868,
+          "symbol": "CHTR",
+          "threshold": 0.15
+        },
+        {
+          "date": "2026-04-24",
+          "level": "hard",
+          "return": -0.254984,
+          "symbol": "CHTR",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2022-12-14",
+          "level": "soft",
+          "return": -0.163848,
+          "symbol": "CHTR",
+          "threshold": 0.15
+        },
+        {
+          "date": "2024-02-02",
+          "level": "soft",
+          "return": -0.165115,
+          "symbol": "CHTR",
+          "threshold": 0.15
+        },
+        {
+          "date": "2024-07-26",
+          "level": "soft",
+          "return": 0.166196,
+          "symbol": "CHTR",
+          "threshold": 0.15
+        },
+        {
+          "date": "2025-07-25",
+          "level": "soft",
+          "return": -0.184868,
+          "symbol": "CHTR",
+          "threshold": 0.15
+        },
+        {
+          "date": "2026-04-24",
+          "level": "hard",
+          "return": -0.254984,
+          "symbol": "CHTR",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "CHTR"
+    },
+    {
+      "actions": [],
+      "contamination": [],
+      "final_flags": [
+        {
+          "date": "2025-07-31",
+          "level": "soft",
+          "return": 0.182955,
+          "symbol": "EBAY",
+          "threshold": 0.15
+        },
+        {
+          "date": "2025-10-30",
+          "level": "soft",
+          "return": -0.158831,
+          "symbol": "EBAY",
+          "threshold": 0.15
+        }
+      ],
+      "final_gaps": [],
+      "flags_returns": [
+        {
+          "date": "2025-07-31",
+          "level": "soft",
+          "return": 0.182955,
+          "symbol": "EBAY",
+          "threshold": 0.15
+        },
+        {
+          "date": "2025-10-30",
+          "level": "soft",
+          "return": -0.158831,
+          "symbol": "EBAY",
+          "threshold": 0.15
+        }
+      ],
+      "gaps": [],
+      "mosaic": [],
+      "symbol": "EBAY"
+    }
+  ],
+  "summary": {
+    "contamination": 0,
+    "gaps": 0,
+    "hard_flags": 141,
+    "mosaic": 0,
+    "remaining_gaps": 0,
+    "remaining_hard_flags": 141
+  },
+  "ts": "2026-09-03T21:29:36.232698"
+}

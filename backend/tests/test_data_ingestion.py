@@ -16,6 +16,18 @@ import pandas as pd
 import pytest
 
 
+@pytest.fixture(autouse=True)
+def _disable_integrity_hook(monkeypatch):
+    """Estos tests ejercitan el refresh/backfill con datos sintéticos cuyo
+    close salta de 100 a 200 (irreal a propósito): el hook A0 de integridad
+    (que vive en download_data) lo flaguearía como salto imposible y entraría
+    a re-descargar. El harness tiene sus propios tests en
+    test_cache_integrity.py — acá se aísla para probar solo el refresh."""
+    import app.core.data_ingestion as di
+
+    monkeypatch.setattr(di, "INTEGRITY_CHECK_ON_UPDATE", False)
+
+
 def _ohlcv_frame(dates, start_close=100.0):
     n = len(dates)
     close = [start_close + i for i in range(n)]
