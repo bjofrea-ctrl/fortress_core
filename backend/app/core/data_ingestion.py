@@ -6,6 +6,16 @@ import yfinance as yf
 
 CACHE_DIR = "data/cache"
 
+# A0 (PLAN_REMEDIO_BRECHAS_20260903): el harness de integridad corre en CADA
+# actualización de cache, no como pasada única. La reconciliación fresca
+# completa de 102 símbolos en cada corrida duplicaría las llamadas a Yahoo
+# del updater; por eso el hook diario hace la parte barata (sanidad de
+# retornos + huecos con calendario, cero red) y la descarga fresca de
+# verificación SOLO para los símbolos que levantaron flag — donde la
+# especificación exige re-descarga de todos modos. reconcile_cache() del
+# módulo sigue existiendo para la pasada full cuando se quiera.
+INTEGRITY_CHECK_ON_UPDATE = True
+
 
 def _flatten_columns(df: pd.DataFrame) -> pd.DataFrame:
     """Flatten MultiIndex or tuple columns from yfinance 1.x."""
@@ -13,6 +23,78 @@ def _flatten_columns(df: pd.DataFrame) -> pd.DataFrame:
         df.columns = df.columns.get_level_values(0)
     elif any(isinstance(c, tuple) for c in df.columns):
         df.columns = [c[0] if isinstance(c, tuple) else c for c in df.columns]
+    return df
+
+
+def _integrity_hook(ticker: str, df: pd.DataFrame, cache_path: str) -> pd.DataFrame:
+    """A0: sanidad + huecos sobre el cache recién actualizado (cero red).
+
+    Corre al final de download_data cuando el cache existe y tiene filas.
+    La parte con red (reconcile vs fresco) la dispara el validador cuando
+    un símbolo tiene hard-flag: un |retorno| >20% en large-cap es la firma
+    de la contaminación documentada (COMPARACION §3) y paga la descarga de
+    verificación. Todo falla blando: el hook jamás rompe la actualización
+    de precios — un error de integridad se loguea y se sigue.
+
+    Devuelve el DataFrame a devolver (el saneado si hubo reparación).
+    """
+    if not INTEGRITY_CHECK_ON_UPDATE or df is None or len(df) == 0:
+        return df
+    try:
+        from app.core.cache_integrity import (
+            find_intermediate_gaps,
+            reconcile_symbol,
+            validate_returns,
+        )
+    except ImportError:  # pragma: no cover — módulo propio, siempre presente en backend
+        return df
+
+    flags = validate_returns(df, ticker)
+    hard = [f for f in flags if f["level"] == "hard"]
+    if hard:
+        for f in hard:
+            print(
+                f"[cache_integrity] {ticker} SANIDAD: retorno {f['return']*100:+.1f}% "
+                f"el {f['date']} supera {f['threshold']*100:.0f}% ({f['level']}) — "
+                "verificar contra descarga fresca"
+            )
+        # hard-flag: paga la reconciliación con descarga fresca de HOY para
+        # este símbolo (contaminación -> re-descarga completa; mosaico/hueco
+        # -> reparación dirigida). yf.download directo — el mismo canal del
+        # updater, misma base de reajuste del día.
+        reconcile_symbol(
+            ticker,
+            os.path.dirname(cache_path),
+            downloader=yf.download,
+            start="2015-01-01",
+        )
+        # el parquet pudo cambiar (re-descarga): releer para devolver lo sano
+        if os.path.exists(cache_path):
+            repaired = pd.read_parquet(cache_path)
+            if len(repaired):
+                repaired = _flatten_columns(repaired)
+                repaired.columns = [str(c).lower() for c in repaired.columns]
+                return repaired
+        return df
+    gaps = find_intermediate_gaps(df)
+    if gaps:
+        print(
+            f"[cache_integrity] {ticker} HUECOS: {len(gaps)} fechas de mercado "
+            f"ausentes en el rango del archivo ({gaps[0]}..{gaps[-1]}) — "
+            "reparando el tramo (no solo el extremo derecho)"
+        )
+        reconcile_symbol(
+            ticker,
+            os.path.dirname(cache_path),
+            downloader=yf.download,
+            start="2015-01-01",
+        )
+        if os.path.exists(cache_path):
+            repaired = pd.read_parquet(cache_path)
+            if len(repaired):
+                repaired = _flatten_columns(repaired)
+                repaired.columns = [str(c).lower() for c in repaired.columns]
+                return repaired
     return df
 
 
@@ -139,6 +221,9 @@ def download_data(ticker: str, start="2010-01-01", end=None) -> pd.DataFrame:
 
     df = _flatten_columns(df)
     df.columns = [str(c).lower() for c in df.columns]
+
+    # A0: el harness de integridad queda activo en cada actualización de cache.
+    df = _integrity_hook(ticker, df, f"{CACHE_DIR}/{ticker}.parquet")
     return df
 
 

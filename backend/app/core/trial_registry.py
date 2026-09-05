@@ -378,6 +378,27 @@ def _git_reconciliation_error(path: str) -> None:
         )
 
 
+def _attach_cache_snapshot_if_absent(entry: dict) -> dict:
+    """A0: congela el hash del cache en el pre-registro si no viene ya congelado.
+
+    La especificacion (PLAN_REMEDIO §A0 parte 3 + COMPARACION §10.2 punto 3)
+    pide que TODO pre-registro registre el hash del cache que consume (o copia
+    congelada). Si la entrada ya trae 'cache_manifest_sha256' se respeta. Falla
+    blando: sin pandas/pyarrow (tests aislados del ledger) registra sin
+    snapshot — el ledger no puede dejar de funcionar por el cache.
+    """
+    if "cache_manifest_sha256" in entry:
+        return entry
+    try:
+        from app.core.cache_integrity import attach_cache_snapshot
+
+        here = os.path.dirname(os.path.abspath(__file__))  # backend/app/core/
+        backend_root = os.path.normpath(os.path.join(here, "..", ".."))
+        return attach_cache_snapshot(entry, os.path.join(backend_root, "data", "cache"))
+    except Exception:  # noqa: BLE001 — fail-blando documentado arriba
+        return entry
+
+
 def register_trial(entry: dict, path: Optional[str] = None, check_git: bool = True) -> None:
     """Agrega una entrada al registro. Lanza TrialRegistryError si el id ya existe
     o si la entrada (o el registro resultante) viola las garantias de integridad:
@@ -386,10 +407,19 @@ def register_trial(entry: dict, path: Optional[str] = None, check_git: bool = Tr
     Track A: entradas sin status explicito se registran COMPLETED (registro
     post-hoc con veredicto). Para reservar un slot ANTES de correr el trial,
     usar register_trial_reservation().
+
+    A0 (cache integrity): si la entrada no trae snapshot del cache, se adjunta
+    automaticamente (attach_cache_snapshot: hash SHA-256 del manifiesto de los
+    parquets del universo que el trial consume — defensa contra el reajuste
+    retroactivo de yfinance, COMPARACION_FUENTES_DATOS §10.2 punto 3). Si la
+    entrada ya trae 'cache_manifest_sha256' se respeta (el caller ya congelo
+    su propio snapshot). Falla blando: sin el modulo de cache disponible
+    (p.ej. entorno de test sin pandas), registra sin snapshot.
     """
     path = path or _default_path()
     entry = dict(entry)
     entry.setdefault("status", STATUS_COMPLETED)
+    entry = _attach_cache_snapshot_if_absent(entry)
     if check_git:
         _git_reconciliation_error(path)
     entries = _load_raw(path)
@@ -424,6 +454,7 @@ def register_trial_reservation(
             f"{entry['status']!r} — para un trial ya corrido usar register_trial()"
         )
     entry["status"] = STATUS_RESERVED
+    entry = _attach_cache_snapshot_if_absent(entry)
     if preregistro is not None:
         contenido = preregistro
         if "\n" not in preregistro and os.path.isfile(preregistro):
@@ -617,3 +648,42 @@ def current_threshold(familia: str, path: Optional[str] = None) -> float:
 def all_trials(path: Optional[str] = None) -> List[dict]:
     """Todas las entradas en orden de aparicion."""
     return _load_raw(path or _default_path())
+
+
+def verify_trial_cache_snapshot(trial_id: str, path: Optional[str] = None,
+                                cache_dir: Optional[str] = None) -> dict:
+    """A0: verifica si el cache ACTUAL sigue siendo el del pre-registro.
+
+    Recalcula el manifiesto del cache y lo compara contra el sha256 guardado
+    en la entrada del trial. Devuelve:
+      {"trial_id", "match": bool, "checked": bool}
+    checked=False significa que la entrada no tiene snapshot (previa a A0)
+    o que el cache no esta disponible — sin veredicto de integridad.
+    """
+    entries = _load_raw(path or _default_path())
+    found = [e for e in entries if e["id"] == trial_id]
+    if not found:
+        raise TrialRegistryError(f"id inexistente: {trial_id}")
+    recorded = found[0].get("cache_manifest_sha256")
+    if not recorded:
+        return {"trial_id": trial_id, "match": False, "checked": False}
+    try:
+        from app.core.cache_integrity import snapshot_hash
+
+        if cache_dir is None:
+            here = os.path.dirname(os.path.abspath(__file__))
+            cache_dir = os.path.normpath(os.path.join(here, "..", "..", "data", "cache"))
+        import hashlib
+        import json as _json
+
+        manifest = snapshot_hash(cache_dir)
+        present = [v for v in manifest.values() if not v.get("missing")]
+        if not present:
+            # cache vacío/inexistente: sin datos no hay veredicto de integridad
+            return {"trial_id": trial_id, "match": False, "checked": False}
+        current = hashlib.sha256(
+            _json.dumps(manifest, sort_keys=True).encode("utf-8")
+        ).hexdigest()
+        return {"trial_id": trial_id, "match": current == recorded, "checked": True}
+    except Exception:  # noqa: BLE001 — sin cache disponible no hay veredicto
+        return {"trial_id": trial_id, "match": False, "checked": False}
