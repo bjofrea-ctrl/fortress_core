@@ -50,8 +50,28 @@ from typing import Any, Dict, List, Optional, Tuple
 import pandas as pd
 from app.api.routes.opportunities_universe import SYMBOLS as UNIVERSE
 from app.config import settings
+
+# A5 (PLAN_REMEDIO_BRECHAS_20260903): slippage implicito por orden — libro de
+# costos propio. Import liviano (sqlite3 + typing), sin estado global.
+from app.core.execution_telemetry import ExecutionTelemetry, compute_slippage  # noqa: E402
 from app.core.indicators import calculate_all_indicators
 from app.core.signal_engine import SignalEngine
+
+# A3 (PLAN_REMEDIO_BRECHAS_20260903): kill-switch por divergencia — reglas
+# pre-declaradas. Import sin estado global; los gatherers reciben los
+# objetos por parámetro (testeable con fixtures).
+from scripts.kill_switch import (  # noqa: E402
+    REARME_HINT,
+    daily_pnls_from_ledger,
+    enforce_stop,
+    evaluate_fill_rate,
+    evaluate_health,
+    evaluate_pre_order,
+    fill_rate_counts_today,
+    is_stopped,
+    read_stop,
+    update_peak_equity,
+)
 
 # Track B (paso 4b): logging best-effort de senales/ordenes para futura
 # reconciliacion pipeline-backtest (paso 4c, en 2-4 semanas).
@@ -358,13 +378,18 @@ def _net_return_r(buy_fill: Optional[float], sell_fill: Optional[float],
 
 def execute_plans(plans: List[Dict[str, Any]], state: Dict[str, Any],
                   dry_run: bool, phase: str, ref: dt.date,
-                  client_factory=None, ledger=None) -> List[Dict[str, Any]]:
+                  client_factory=None, ledger=None,
+                  telemetry=None) -> List[Dict[str, Any]]:
     """Ejecuta planes contra el cliente paper; muta y devuelve resultados por plan.
 
     En dry_run NUNCA construye cliente ni manda órdenes. En real, una orden
     rechazada/time-out se registra como error en la entrada y NO corta el resto.
     Si se pasa `ledger` (SignalLedger real), compra abre fila (open_order) y
     venta la cierra (close_order) — fuente de verdad desde merge 838934b.
+    Telemetría A5: si se pasa `telemetry` (ExecutionTelemetry), cada orden
+    enviada (submitted o error) queda en la tabla execution_telemetry con
+    decision_price/fill_price/slippage_implicit. En dry_run no registra (no
+    hay orden real que medir).
     """
     results = []
     client = None
@@ -386,12 +411,30 @@ def execute_plans(plans: List[Dict[str, Any]], state: Dict[str, Any],
             client = client_factory()
         side = "buy" if p["action"] == "buy" else "sell"
         coid = client_order_id(phase, ref, p["symbol"])
+        # A5: precio de decisión ANTES del submit (para buy, el price_ref de la
+        # señal; para sell, el último trade del símbolo — la referencia contra
+        # la que la salida mecánica decide vender).
+        decision_price: Optional[float] = None
+        if side == "buy":
+            decision_price = p.get("price_ref")
+        else:
+            try:
+                decision_price = client.last_trade_price(p["symbol"])
+            except Exception:  # noqa: BLE001 — la venta no depende del precio
+                decision_price = None
         try:
             resp = client.submit_market_order(p["symbol"], p["qty"], side)
             fill = resp.get("filled_avg_price") if isinstance(resp, dict) else None
             res.update({"status": "submitted", "qty": p["qty"], "fill": fill, "client_order_id": coid})
         except Exception as exc:  # noqa: BLE001 — registrar y seguir (patrón repo)
             res.update({"status": "error", "error": str(exc)[:200]})
+            if telemetry is not None:
+                telemetry.record(phase=phase, run_ref=ref.isoformat(),
+                                 symbol=p["symbol"], side=side, qty=p["qty"],
+                                 decision_price=decision_price, fill_price=None,
+                                 checkpoint_override=bool(p.get("checkpoint_override")),
+                                 client_order_id=coid, status="error",
+                                 error=str(exc)[:200])
             if p["action"] == "buy":
                 state["entries"][p["sid"]] = {
                     "symbol": p["symbol"], "status": "ERROR",
@@ -399,6 +442,15 @@ def execute_plans(plans: List[Dict[str, Any]], state: Dict[str, Any],
                 }
             results.append(res)
             continue
+        # A5: fila de telemetría por orden enviada (fill real).
+        if telemetry is not None:
+            telemetry.record(phase=phase, run_ref=ref.isoformat(),
+                             symbol=p["symbol"], side=side, qty=p["qty"],
+                             decision_price=decision_price, fill_price=fill,
+                             checkpoint_override=bool(p.get("checkpoint_override")),
+                             client_order_id=coid, status="submitted")
+            res["decision_price"] = decision_price
+            res["slippage_implicit"] = compute_slippage(decision_price, fill)
         if side == "buy":
             prev = state["entries"].get(p["sid"])
             state["entries"][p["sid"]] = {
@@ -453,6 +505,30 @@ def _artifact(lines: List[str], payload: Dict[str, Any], tag: str) -> str:
 def _cache_stale_days() -> int:
     days = trading_days()
     return (pd.Timestamp(dt.date.today()) - days[-1]).days
+
+
+def _cache_stale_ruedas() -> Optional[int]:
+    """Ruedas (días hábiles Lun-Vie) desde la última barra del cache.
+
+    Para la regla (iv) del kill-switch (A3): staleness > 2 ruedas = updater
+    muerto. None si el calendario no está disponible (abstención).
+    """
+    try:
+        days = trading_days()
+    except Exception:  # noqa: BLE001 — sin parquet SPY no hay calendario
+        return None
+    last = days[-1].date() if len(days) else None
+    if last is None:
+        return None
+    # días hábiles (Lun-Vie) estrictamente posteriores a la última barra
+    n = 0
+    d = last
+    today = dt.date.today()
+    while d < today:
+        d = d + dt.timedelta(days=1)
+        if d.weekday() < 5:
+            n += 1
+    return n
 
 
 def phase_decide(dry_run: bool, inject_symbols: Optional[List[str]] = None) -> int:
@@ -580,13 +656,54 @@ def phase_enter(dry_run: bool, only_symbols: Optional[List[str]]) -> int:
         dec = json.load(fh)
     signals = [s for s in dec["signals"]
                if only_symbols is None or s["symbol"] in only_symbols]
+    # A3: STOP activo -> aborta entradas nuevas. EXIT y reconcile (fase exit)
+    # NUNCA se bloquean — el STOP solo pausa comprometer dinero NUEVO.
+    if is_stopped():
+        stop = read_stop() or {}
+        lines.append(f"[stop] KILL-SWITCH ACTIVO ({stop.get('fired_at', '?')}): "
+                     "entradas nuevas en pausa. " + (stop.get('rearme', '') or ''))
+        lines.append(f"[stop] motivo: {stop.get('summary', 'ver data/STOP_FILE')}")
+        _artifact(lines, {"phase": "enter", "aborted": "kill_switch_stop",
+                         "stop": stop}, "enter")
+        return 1
     client, budget, src, held = _open_client_and_budget(lines, dry_run)
+    # A3: reglas pre-orden (drawdown con equity real, pnl diario, staleness).
+    # Solo en corrida real (dry-run no mide nada del paper). Un disparo
+    # aquí frena ESTA fase antes de enviar la primera orden.
+    if not dry_run:
+        equity = None
+        try:
+            acct = client.get_account() if client is not None else None
+            equity = float(acct.get("equity")) if isinstance(acct, dict) else None
+        except Exception as exc:  # noqa: BLE001 — sin equity la regla se abstiene
+            lines.append(f"[info] equity no legible para kill-switch ({str(exc)[:60]})")
+        peak = update_peak_equity(equity)
+        try:
+            from app.core.signal_ledger import SignalLedger
+            _led = SignalLedger()
+            today_pnl, pnl_history = daily_pnls_from_ledger(_led, today.isoformat())
+        except Exception as exc:  # noqa: BLE001 — sin ledger la regla (ii) se abstiene
+            lines.append(f"[info] ledger no legible para kill-switch ({str(exc)[:60]})")
+            today_pnl, pnl_history = None, []
+        v = evaluate_pre_order(equity, peak, today_pnl, pnl_history,
+                               _cache_stale_ruedas())
+        for r in v["evaluated"]:
+            tag = " STOP" if r["fired"] else (" (abstencion)" if r.get("abstained") else "")
+            lines.append(f"[kill-switch] {r['summary']}{tag}")
+        if v["stopped"]:
+            enforce_stop(v["fired"])
+            lines.append("[stop] KILL-SWITCH DISPARADO pre-orden: "
+                         "NO se envían órdenes hoy. " + REARME_HINT)
+            _artifact(lines, {"phase": "enter", "aborted": "kill_switch_pre_order",
+                             "verdict": v}, "enter")
+            return 1
     sized = sizing(signals, budget)
     lines.append(f"Senales: {len(signals)} | presupuesto {budget} ({src}) | tamanos: "
                  + ", ".join(f"{o['symbol']}x{o['qty']}" for o in sized))
     state = load_state()
     ledger = None
     skip_sids: set = set()
+    telemetry = None
     if not dry_run:
         try:
             from app.core.signal_ledger import SignalLedger
@@ -595,13 +712,30 @@ def phase_enter(dry_run: bool, only_symbols: Optional[List[str]]) -> int:
             lines.append(f"Open orders en ledger real: {len(skip_sids)}")
         except Exception as exc:  # noqa: BLE001
             lines.append(f"[warn] ledger no disponible ({str(exc)[:60]}) -> dedup solo estado propio")
+        try:
+            telemetry = ExecutionTelemetry()
+        except Exception as exc:  # noqa: BLE001
+            lines.append(f"[warn] telemetria no disponible ({str(exc)[:60]}) -> ordenes sin registro A5")
     plans = plan_enter(state, mk, sized, today, only_symbols=only_symbols,
                        skip_sids=skip_sids, held_symbols=held)
     results = execute_plans(plans, state, dry_run, "enter", today,
                             client_factory=(None if dry_run else (lambda: client)),
-                            ledger=ledger)
+                            ledger=ledger, telemetry=telemetry)
     # Track B (paso 4b): log best-effort de ejecucion en enter (FUDE: no ejecuta nada).
     log_execution("enter", results)
+    # A3: regla (iii) post-órdenes — fill rate del día (telemetría acumulada,
+    # incluye corridas previas de hoy). Nunca deshace lo ejecutado; protege
+    # las entradas FUTURAS.
+    if not dry_run and telemetry is not None:
+        n_total, n_filled = fill_rate_counts_today(telemetry, today.isoformat())
+        v = evaluate_fill_rate(n_total, n_filled)
+        r = v["evaluated"][0]
+        tag = " STOP" if r["fired"] else (" (abstencion)" if r.get("abstained") else "")
+        lines.append(f"[kill-switch] {r['summary']}{tag}")
+        if v["stopped"]:
+            enforce_stop(v["fired"])
+            lines.append("[stop] KILL-SWITCH DISPARADO (fill rate): "
+                         "entradas nuevas en pausa. " + REARME_HINT)
     state.setdefault("months", {}).setdefault(mk, {})["enter"] = (
         "dry_run" if dry_run else ("done" if all(r.get("status") != "error" for r in results) else "partial"))
     if not dry_run:
@@ -634,6 +768,7 @@ def phase_exit(dry_run: bool, only_symbols: Optional[List[str]]) -> int:
     state = load_state()
     open_n = sum(1 for e in state["entries"].values() if e.get("status") == "OPEN")
     ledger = None
+    telemetry = None
     open_rows: List[Dict[str, Any]] = []
     if not dry_run:
         try:
@@ -642,6 +777,10 @@ def phase_exit(dry_run: bool, only_symbols: Optional[List[str]]) -> int:
             open_rows = ledger.open_orders()
         except Exception as exc:  # noqa: BLE001
             lines.append(f"[warn] ledger no disponible ({str(exc)[:60]}) -> estado propio")
+        try:
+            telemetry = ExecutionTelemetry()
+        except Exception as exc:  # noqa: BLE001
+            lines.append(f"[warn] telemetria no disponible ({str(exc)[:60]}) -> ordenes sin registro A5")
     if open_rows:
         plans = plan_exit_from_ledger(open_rows, only_symbols)
         source = f"ledger real ({len(open_rows)} abiertas)"
@@ -651,9 +790,22 @@ def phase_exit(dry_run: bool, only_symbols: Optional[List[str]]) -> int:
     lines.append(f"Fuente de verdad EXIT: {source} | OPEN estado={open_n}")
     results = execute_plans(plans, state, dry_run, "exit", dt.date.today(),
                             client_factory=(None if dry_run else _make_client_factory()),
-                            ledger=ledger)
+                            ledger=ledger, telemetry=telemetry)
     # Track B (paso 4b): log best-effort de ejecucion en exit (FUDE: no ejecuta nada).
     log_execution("exit", results)
+    # A3: regla (iii) post-órdenes también en EXIT — un fill rate roto al
+    # VENDER es ejecución rota igual que al comprar (protege la próxima
+    # entrada). El STOP jamás bloquea ESTA venta ya ejecutada.
+    if not dry_run and telemetry is not None:
+        n_total, n_filled = fill_rate_counts_today(telemetry, dt.date.today().isoformat())
+        v = evaluate_fill_rate(n_total, n_filled)
+        r = v["evaluated"][0]
+        tag = " STOP" if r["fired"] else (" (abstencion)" if r.get("abstained") else "")
+        lines.append(f"[kill-switch] {r['summary']}{tag}")
+        if v["stopped"]:
+            enforce_stop(v["fired"])
+            lines.append("[stop] KILL-SWITCH DISPARADO (fill rate): "
+                         "entradas nuevas en pausa. " + REARME_HINT)
     if not dry_run:
         save_state(state)
     lines += ["", f"Resultados ({'DRY-RUN' if dry_run else 'REAL'}):"]
@@ -675,6 +827,36 @@ def phase_health() -> int:
     stale = _cache_stale_days()
     ok = stale <= STALENESS_MAX_DAYS
     lines.append(f"Cache: ultimo habil hace {stale} dias -> {'OK' if ok else 'ESTANCADO'}")
+    # A3: kill-switch — estado + reglas baratas (ii)+(iii)+(iv), sin cliente.
+    if is_stopped():
+        stop = read_stop() or {}
+        lines.append(f"[stop] KILL-SWITCH ACTIVO desde {stop.get('fired_at', '?')} "
+                     f"— {stop.get('summary', '')}")
+    else:
+        try:
+            from app.core.signal_ledger import SignalLedger
+            _led = SignalLedger()
+            today_pnl, pnl_history = daily_pnls_from_ledger(_led, dt.date.today().isoformat())
+        except Exception as exc:  # noqa: BLE001 — la regla (ii) se abstiene
+            lines.append(f"[info] ledger no legible para kill-switch ({str(exc)[:60]})")
+            today_pnl, pnl_history = None, []
+        try:
+            telemetry = ExecutionTelemetry()
+            n_total, n_filled = fill_rate_counts_today(
+                telemetry, dt.date.today().isoformat())
+        except Exception as exc:  # noqa: BLE001 — la regla (iii) se abstiene
+            lines.append(f"[info] telemetria no legible ({str(exc)[:60]})")
+            n_total, n_filled = 0, 0
+        v = evaluate_health(today_pnl, pnl_history, n_total, n_filled,
+                            _cache_stale_ruedas())
+        for r in v["evaluated"]:
+            tag = " STOP" if r["fired"] else (" (abstencion)" if r.get("abstained") else "")
+            lines.append(f"[kill-switch] {r['summary']}{tag}")
+        if v["stopped"]:
+            enforce_stop(v["fired"])
+            lines.append("[stop] KILL-SWITCH DISPARADO: entradas nuevas en pausa. "
+                         + REARME_HINT)
+            ok = False
     state = load_state()
     open_n = sum(1 for e in state["entries"].values() if e.get("status") == "OPEN")
     closed_n = sum(1 for e in state["entries"].values() if e.get("status") == "CLOSED")
