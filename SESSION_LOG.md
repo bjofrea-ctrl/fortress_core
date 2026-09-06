@@ -3300,3 +3300,55 @@ borrado, B7 ahora o post-gate.
 
 Pendiente: conversación Boris+Claude sobre las open questions → aprobación por fase →
 arranque Fase A (A6 primero, freeze del núcleo inmediatamente después).
+
+## 2026-09-06 (madrugada) — Ticket A2: contador de días limpios automático (Kilo)
+
+Contexto: PLAN_48H_20260905.md sección Kilo (ticket A2 de
+PLAN_REMEDIO_BRECHAS_20260903.md §A2). Base: tmp-merge-check → actualizada a
+origin/main (d95ef72, fast-forward) al descubrir que el merge a main ya ocurrió.
+Trabajo sucio previo del worktree (variante local A6 con fallback 5 + scripts
+screening) preservado en stash `pre-A2-base` — superseda por A6 de Cline
+(fallback conservador 29) ya verificado en main.
+
+Implementación:
+- `backend/scripts/clean_days_counter.py`: evalúa por día hábil las 3
+  condiciones del gate con evidencia — (a) rc=0 en las 3 ventanas programadas
+  (09:35/15:40/22:10 ET) del pipeline_diario.log, (b) corrida del updater sin
+  `PRECIOS: ERROR`, (c) `reconcile unexplained=0` del día. Escribe
+  `backend/data/clean_days.json` (racha + tabla por día + porqué de cada
+  condición). Funciones puras (parseo/evaluación) + I/O fina.
+- `scripts/daily_signal_pipeline.sh`: invoca el contador al final de la
+  ventana 22:10, best-effort (fallo → warn, nunca rompe la corrida).
+- Semántica de racha: día verificado-roto corta; UNVERIFIED_C puro
+  ((a)+(b) OK, (c) sin correr) no suma ni corta (decisión pre-declarada §A2);
+  días previos al deploy del reconciler (2026-09-04) = UNVERIFIED_C.
+- `backend/tests/test_clean_days_counter.py`: 19 tests herméticos con los
+  formatos EXACTOS de los logs reales, incluido el caso roto real del 05-09
+  (rc=2 por hash drift + `PRECIOS: ERROR - 84/102`).
+
+Salida real de tests (worktree, venv del repo real, base d95ef72):
+```
+$ .venv/bin/python -m pytest tests/test_clean_days_counter.py tests/test_pipeline_daily_signal.py tests/test_kill_switch.py tests/test_a8_pbo_lag0_docs.py tests/test_motor_manifest.py -q
+115 passed, 3 warnings in 3.89s
+```
+
+Validación contra producción (logs reales del Desktop):
+- 17-26/08: pre-instalación del pipeline en ventanas → (a) rota, no cuentan.
+- 27/08-04/09: (a)+(b) OK, (c) UNVERIFIED (reconciler deployado 04-09 18:39,
+  primera corrida real el 05-09) → no suman, no cortan.
+- 05-09 (sábado): NO hábil por definición (sin corrida válida del updater en
+  día de semana) — su rc=2 + PRECIOS ERROR no afecta la racha futura.
+- **Racha oficial arranca el primer hábil con las 3 condiciones OK.** Hoy hay
+  hash drift sin declarar (bump pendiente de decisión humana, ver A4) — cuando
+  se declare, el contador recomienza automáticamente desde ese día.
+
+E2E shell verificado (sandbox con logs sintéticos): happy path racha=3 con
+JSON correcto, caso sin logs racha=0, fallo de escritura → warn y shell sigue
+rc=0.
+
+Suite completa del repo real (referencia baseline, no tocada por A2):
+793 passed / 4 failed conocidas (test_backtest_2023 + 3 test_predict_cache) —
+idénticas al plan 48H.
+
+NO se mergeó a main desde este worktree (regla del plan). Stash pendiente:
+`pre-A2-base` con la variante A6 local descartable + screening scripts.
