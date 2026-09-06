@@ -128,7 +128,14 @@ El contador de días limpios arrancó el 2026-09-02 con 2 condiciones verificabl
 
 ## FASE C — Evaluación del gate (2026-12-01, o contador ≥ 60)
 
-C1. El 1/12 (o cuando `clean_days.json` marque ≥60): `monthly_report` de la racha + DSR por ventanas con N_eff del ledger + veredicto contra el criterio pre-declarado (DSR≥0.90 en ≥2/3 ventanas). La decisión (a) mantenimiento / (b) pivotar / (c) laboratorio ya está pre-declarada en ROADMAP:26-56 — solo se ejecuta con los datos. Sin debate nuevo, sin kickear la decisión.
+C1. El 1/12 (o cuando `clean_days.json` marque ≥60): `monthly_report` de la racha + telemetría A5 + veredicto contra el criterio **re-especificado por Boris el 2026-09-05**. Fundamento: `ANALISIS_MDE_GATE_DICIEMBRE_2026.md §6 opción 1` (el análisis vive en la rama `bjofrea-ctrl/fundamentales-automatizado`, commit `c602a30`, y llega al tronco con B5). El texto original de este ítem pedía `DSR≥0.90 en ≥2/3 ventanas` **sobre el paper de diciembre**; eso es exactamente lo que se corrige, porque 60 días con horizonte semanal piden un SR anual ~6.7-8.5 contra un efecto plausible de 0.10: casi imposible por construcción.
+
+- **DSR≥0.90 en ≥2/3 ventanas se evalúa y mantiene válido SOLO sobre las ventanas OOS históricas pre-corte (W1/W2/W3, ~500 días hábiles c/u)** — es el criterio que siempre se usó ahí y sigue vigente sin cambios.
+- **El gate de diciembre verifica el TUBO, no el edge**: **(a)** racha de días limpios ininterrumpida (condiciones a+b+c ya definidas), **(b)** `fill rate`/slippage medido (A5) dentro de lo esperado, **(c)** coherencia paper-vs-señal (las señales que debieron dispararse, se dispararon; sin discrepancias no explicadas).
+- **Explícito**: esto **NO** es una segunda prueba estadística de edge — es un chequeo operativo de que el tubo corrió limpio. La prueba de edge sigue siendo la de las ventanas históricas.
+- **Trabajo paralelo**: se sigue acumulando data (intradía B1, IV B2) con la aspiración declarada de alcanzar DSR≥0.90 también sobre ventanas de paper más largas, sin que eso bloquee el gate de diciembre.
+
+El `monthly_report` y el DSR por ventanas con N_eff del ledger **se siguen calculando y reportando** como evidencia descriptiva del período; lo que ya no constituyen es la condición de paso de diciembre. La decisión (a) mantenimiento / (b) pivotar / (c) laboratorio sigue pre-declarada en `ROADMAP.md`, ítem 0 «REGLA VIGENTE — GATE» — su disparador pasa a ser el estado del tubo, no la DSR del paper. Solo se ejecuta con los datos. Sin debate nuevo, sin kickear la decisión.
 
 ---
 
@@ -164,7 +171,7 @@ Ya computados y validados vs Marchenko-Pastur (`rmt_factor_scores_8factors.csv` 
 | #4 Patrón ≠ ineficiencia capturable | A1 reconciler + A3 kill-switch + A5 telemetría fills + A4 hash-guard | D1 meta-labeling con labels de ejecución real + costo vigente medido (no supuesto) |
 | Opciones ausentes | B2 superficie IV acumulando desde hoy | D2 VRP/GEX/PEAD-options |
 
-**Qué NO remedia este plan (honestidad Simons)**: no garantiza que exista edge detectable en este universo/frecuencia — remedia la CAPACIDAD de detectarlo y de no mentirse sobre lo que no puede detectar. El MDE (B5) hace explícito "esto es indecidible con los datos disponibles" ANTES de quemar el slot; el 1/12 (C1) decide el futuro del proyecto con datos, no con esperanza. Si la respuesta es "no hay edge en EOD equity de 102 líquidos", el plan ya habrá construido el caño intradía + opciones donde la evidencia interna dice que vive la estructura.
+**Qué NO remedia este plan (honestidad Simons)**: no garantiza que exista edge detectable en este universo/frecuencia — remedia la CAPACIDAD de detectarlo y de no mentirse sobre lo que no puede detectar. El MDE (B5) hace explícito "esto es indecidible con los datos disponibles" ANTES de quemar el slot; el 1/12 (C1) decide el futuro del proyecto con datos, no con esperanza (desde la re-especificación de Boris del 2026-09-05: C1 verifica el **tubo**; el veredicto de **edge** sale de las ventanas OOS históricas — ver C1 arriba). Si la respuesta es "no hay edge en EOD equity de 102 líquidos", el plan ya habrá construido el caño intradía + opciones donde la evidencia interna dice que vive la estructura.
 
 ## Cronograma y dependencias
 
