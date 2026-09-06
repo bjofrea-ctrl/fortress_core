@@ -1,0 +1,6 @@
+Pipeline EXIT — venta mecanica de posiciones OPEN del pipeline
+==============================================================
+Fuente de verdad EXIT: ledger real (1 abiertas) | OPEN estado=1
+
+Resultados (REAL):
+  sell MSFT  submitted [OVERRIDE_MECANISMO] qty=52 fill=497.848654

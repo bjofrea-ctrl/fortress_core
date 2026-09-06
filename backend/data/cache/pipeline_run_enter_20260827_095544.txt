@@ -1,0 +1,9 @@
+Pipeline ENTER — compras equal-weight del decision file
+============================================================
+Equity fuente: get_account() = 25200.01
+Posiciones broker: ['MSFT']
+Senales: 1 | presupuesto 25200.01 (get_account) | tamanos: MSFTx52
+Open orders en ledger real: 1
+
+Resultados (REAL):
+  buy  MSFT  skipped [OVERRIDE_MECANISMO] [ya_registrado_en_estado]

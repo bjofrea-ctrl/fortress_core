@@ -1,0 +1,8 @@
+============================================================
+Corrida 2026-08-28T22:01:50
+Universo: 50 símbolos (48 con earnings, 2 ETF excluidos: SPY, QQQ)
+Símbolos procesados: 48 — AAPL, ABBV, ACN, ADBE, AMD, AMGN, AMZN, AVGO, BAC, BRK-B, CAT, CMCSA, COST, CRM, CSCO, CVX, DIS, GE, GOOGL, HD, IBM, INTU, JNJ, JPM, KO, LIN, LLY, MA, MCD, META, MRK, MSFT, NFLX, NVDA, ORCL, PEP, PFE, PG, PM, QCOM, SPGI, TMO, TSLA, TXN, UNH, V, WMT, XOM
+8-Ks nuevos: 0
+Total en store: 374
+ERRORES: ninguno
+============================================================

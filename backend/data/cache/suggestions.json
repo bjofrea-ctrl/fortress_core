@@ -46,5 +46,45 @@
     "win_prob": 0.527,
     "outcome": null,
     "evaluated_at": null
+  },
+  {
+    "symbol": "PANW",
+    "date": "2026-09-02",
+    "score": 0.7523,
+    "win_prob": 0.485,
+    "outcome": null,
+    "evaluated_at": null
+  },
+  {
+    "symbol": "BIIB",
+    "date": "2026-09-02",
+    "score": 0.7684,
+    "win_prob": 0.4897,
+    "outcome": null,
+    "evaluated_at": null
+  },
+  {
+    "symbol": "SLB",
+    "date": "2026-09-02",
+    "score": 0.7599,
+    "win_prob": 0.4872,
+    "outcome": null,
+    "evaluated_at": null
+  },
+  {
+    "symbol": "OKE",
+    "date": "2026-09-02",
+    "score": 0.6359,
+    "win_prob": 0.451,
+    "outcome": null,
+    "evaluated_at": null
+  },
+  {
+    "symbol": "VLO",
+    "date": "2026-09-02",
+    "score": 0.7985,
+    "win_prob": 0.4985,
+    "outcome": null,
+    "evaluated_at": null
   }
 ]
