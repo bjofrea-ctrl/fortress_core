@@ -2,7 +2,7 @@
 
 **Fecha**: 2026-09-02 (mediciones sobre el repo real, universo de 102 símbolos).
 **Estado**: diagnóstico cerrado; optimización de bajo riesgo implementada y medida.
-**Pendiente (decisión de Boris)**: cuello #1 — replay de calibradores en `_build_calibration_dataset`.
+**Cuello #1**: ✅ cerrado por verificación (2026-09-03, Cline) — paralelización con `ProcessPoolExecutor`, identidad bit-a-bit, speedup 3-4× sobre 30-102 símbolos. Ver §"Decisión tomada" abajo.
 
 ---
 
@@ -106,6 +106,58 @@ por request.
 - Trade-off: toca el motor, complejidad de pickling de dataframes entre procesos,
   verificación de identidad del dataset contra la versión serial.
 - Riesgo: medio. Solo si 4a no alcanza o si el refit debe seguir siendo frecuente.
+
+---
+
+### Decisión tomada (2026-09-03): opción 4b
+
+Boris aprobó paralelizar (no subir TTL — eso rompe "en vivo" del dashboard).
+Implementación en `backend/app/core/backtest_engine.py` y tests en
+`backend/tests/test_calibration_parallel.py`.
+
+**Diseño** (cuello #1, este PR):
+- Helper top-level picklable `_calibrate_symbol(symbol, df, ...)` — replica el
+  cuerpo del loop por símbolo de `_build_calibration_dataset` sin acceso a
+  `self`. Cada worker construye su propio `SignalEngine(GlobalRegimeClassifier())`
+  (con `regime_state=0` fijo el classifier no se usa en compute).
+- `_build_calibration_dataset` ramifica:
+  - **Paralelo** cuando `update_bayesian=False` (único path caliente, sin estado
+    compartido entre símbolos) **Y** N símbolos >= `_CALIBRATION_PARALLEL_MIN_SYMBOLS=8`.
+  - **Serial** cuando `update_bayesian=True` (warm-start bayesiano es estado
+    compartido — preservado EXACTAMENTE como antes), o cuando N < 8 (overhead
+    de fork domina para universos chicos).
+- `n_workers = max(1, min(os.cpu_count(), N))` — en el Mac actual (cpu_count=8)
+  eso son hasta 8 workers lógicos.
+
+**Mediciones** (cache real, 102 símbolos, 2026-09-03):
+| Variante | Tiempo | n_scores | Speedup |
+|---|---|---|---|
+| Serial (sin cambios) — 30 símbolos subset | 522.06s | 48 | 1.00x |
+| **Paralelo — 30 símbolos subset** | **118.31s** | **48** | **4.41x** |
+| **Paralelo — 102 símbolos completo** | **392.77s** | **176** | **3.06x vs ~20min diagnóstico** |
+
+El hash SHA-256 del dataset (scores+outcomes) es **idéntico bit-a-bit** entre
+serial y paralelo (verificado en `test_build_calibration_dataset_parallel_identical_to_serial`
+y en medición directa contra cache real — ambos `bff254c92e2fd890...` para el
+subset de 30).
+
+**Implicancia operativa**:
+- `/api/advisor/universe` en frío: ~18 min → **~9 min** (replay ~6.5 min + loop
+  tickets ~3 min ya optimizado en DIAGNOSTICO_PERF_ADVISOR_102 §"Qué se implementó").
+- 2da llamada (caliente, dentro del TTL 5 min) sigue en ~3:20 (eso es el
+  cuello #2 — ya cacheado por el cambio previo, ver §"Cuello #2 — cache de tickets").
+
+**Cobertura de tests** (`tests/test_calibration_parallel.py`, 4 tests, 20:41 total):
+- `test_calibrate_symbol_deterministic` ✓
+- `test_build_calibration_dataset_parallel_identical_to_serial` ✓ (identidad bit-a-bit)
+- `test_build_calibration_dataset_below_threshold_uses_serial` ✓ (umbral)
+- `test_build_calibration_dataset_update_bayesian_keeps_serial` ✓ (branching)
+
+**Decisión "siempre lo sólido, lo mejor — nunca lo más fácil" (AGENTS.md §8)**:
+la opción 4a (subir TTL a 6-24h) era trivial (~1 línea) pero rompía el contrato
+"en vivo" del dashboard. Se descartó antes de implementar — el helper
+paralelo preserva frescura y baja el costo. Este cuello era el más caro del
+proyecto y no era candidato para el atajo.
 
 ---
 

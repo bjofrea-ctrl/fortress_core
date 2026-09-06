@@ -64,8 +64,8 @@ El contador de días limpios arrancó el 2026-09-02 con 2 condiciones verificabl
 - **Verificación**: test que el DSR default deflaciona con N del ledger; el 0.6077 de la validación OOS NO se recalcula (usó N correcto — solo el default del motor sub-deflacionaba).
 - **Esfuerzo**: 0.5 sesión.
 
-### A7. Enforcement técnico del gate — el ledger obedece la Regla 0
-- **Qué**: `trial_registry.py` rechaza pre-registros con fecha dentro de la ventana del gate salvo categoría allow-list explícita (`bugfix`/`infraestructura`), con mensaje que cite la Regla 0 del ROADMAP. Un agente que intente un trial "inocente" durante el gate choca contra código, no contra documento.
+### A7. Enforcement técnico del gate — el ledger obedece la Regla 1 de ONBOARDING.md
+- **Qué**: `trial_registry.py` rechaza pre-registros con fecha dentro de la ventana del gate salvo categoría allow-list explícita (`bugfix`/`infraestructura`), con mensaje que cite la Regla 1 de ONBOARDING.md. Un agente que intente un trial "inocente" durante el gate choca contra código, no contra documento.
 - **Remedia**: amenaza #2 (pilotos sin pre-registro durante el gate — ya pasó una vez). **Esfuerzo**: 0.5 sesión.
 
 ### A8. PBO §39 lag-0 (D6) — documentar ahora, re-corregir post-gate
@@ -85,7 +85,7 @@ El contador de días limpios arrancó el 2026-09-02 con 2 condiciones verificabl
 ### B0. Granja de ejecución fantasma (PROPUESTO 2026-09-03 por Kilo — requiere OK de Boris: segunda cuenta paper Alpaca) — el dato que nadie está acumulando
 - **Qué**: `backend/scripts/shadow_executor.py` — misma señal congelada del pipeline, **cero variantes de señal, cero evaluación de retornos**, cuenta paper Alpaca SEPARADA, órdenes chicas fijas (qty 1/3/10) muestreadas a horas distintas del día (09:35, 12:00, 14:00, 15:30) sobre los 30 símbolos de B1. Todo taggeado `SHADOW_` en client_order_id. Mide por orden: fill vs decision price, latencia de fill, fills parciales, spread proxy (quotes IEX), hora del día, tamaño.
 - **Por qué es lo más palanca por dólar**: agosto midió n=156 fills en total; la granja produce **600-1800 fills reales para el 1/12** — el libro de costos propio (A5) pasa de anecdótico a estadística, con curva de costo por hora/tamaño que D3 (intradía) necesita DESDE el día 1, features de fill real para el meta-labeling (D1) y el modelo de costos que la familia opciones (D2) también requerirá. Convierte 60 días de gate muerto en el dataset más escaso del proyecto: la microestructura de nuestra propia ejecución.
-- **Gate-legal**: es telemetría de ejecución I9 amplificada — plomería, no hipótesis; el Regla 0 la permite explícitamente ("telemetría de ejecución I9"). La cuenta separada es el detalle estructural que impide contaminar el ledger oficial del gate.
+- **Gate-legal**: es telemetría de ejecución I9 amplificada — plomería, no hipótesis; la Regla 1 de ONBOARDING.md la permite explícitamente ("telemetría de ejecución I9"). La cuenta separada es el detalle estructural que impide contaminar el ledger oficial del gate.
 - **Verificación**: los reportes de A5 separan oficial vs SHADOW_ por tag; ningún flujo del pipeline oficial lee la cuenta shadow; kills del shadow executor no tocan el pipeline.
 - **Esfuerzo**: 1-2 sesiones + la cuenta (10 min).
 
