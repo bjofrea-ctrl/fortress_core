@@ -28,6 +28,9 @@ ESTADOS DE RESERVA (Track A, aprobado por Boris 2026-08-26):
 - COMPLETED: el trial corrio y tiene veredicto CUMPLE|NO_CUMPLE + artefacto.
 - EXPIRED: se reservo y no corrio dentro de RESERVATION_TTL_DAYS dias
   (default 14). El slot se LIBERA (no cuenta presupuesto).
+- INEJECUTABLE (B5, 2026-09-04): el pre-registro declaro un diseno con
+  potencia insuficiente (diseno_mde con MDE > efecto plausible). NO consume
+  slot Bonferroni ni cuenta como refutacion: el trial nunca corrio.
 - Backward-compatible: entradas viejas sin campo status se tratan como
   COMPLETED (tienen veredicto: corrieron) — normalizado al leer.
 - consumed_budget() cuenta RESERVED(frescas) + COMPLETED. Una reserva expirada
@@ -113,10 +116,23 @@ HOLDOUT_EXEMPT_MODOS = frozenset({HOLDOUT_PAPER_MODE})
 # consume el holdout que se selló para eso.
 HOLDOUT_ESCAPE_ENV = "FORTRESS_ALLOW_HOLDOUT_TOUCH"
 
+# ---------------------------------------------------------------------------
+# B5 (PLAN_REMEDIO_BRECHAS_20260903 §B5): GATE DE POTENCIA EX-ANTE (MDE).
+# Un pre-registro cuyo diseño declarado (diseno_mde) tenga un IC mínimo
+# detectable mayor que el efecto plausible se registra como INEJECUTABLE:
+# no consume slot Bonferroni ni cuenta como refutación ("no pude detectarlo"
+# con un diseño ciego no es evidencia de nada).
+# ---------------------------------------------------------------------------
+MDE_EFFECT_PLAUSIBLE = 0.10
+
 # Track A (2026-08-26): estados del ciclo de vida de una entrada.
 STATUS_RESERVED = "RESERVED"    # Boris aprobo el pre-registro; slot contado, trial sin correr
 STATUS_COMPLETED = "COMPLETED"  # corrio; veredicto + artefacto presentes
 STATUS_EXPIRED = "EXPIRED"      # reserva vencida sin correr; slot liberado
+# B5 (PLAN_REMEDIO_BRECHAS_20260903 §B5): diseño declarado con potencia
+# insuficiente (MDE > efecto plausible). NO consume slot Bonferroni ni cuenta
+# como refutación — el trial nunca corrió: un "no detectó" sería teatro.
+STATUS_INEJECUTABLE = "INEJECUTABLE"
 STATUS_DEFAULT = STATUS_COMPLETED  # backward-compat: entradas viejas sin status
 
 # Dias que vive una reserva sin correr antes de considerarse expirada. Pasado el
@@ -325,6 +341,43 @@ def _holdout_check(entry: dict, preregistro: Optional[str] = None) -> None:
         )
 
 
+def _mde_check(entry: dict) -> Optional[dict]:
+    """B5: evalúa la potencia del diseño declarado en `diseno_mde` (si viene).
+
+    Sin declaración no se puede juzgar potencia -> None (regla por escritura,
+    igual que B4: lo no declarado no se juzga). El campo es un dict:
+      "diseno_mde": {"n_symbols": 50, "T_dates": 250, "horizon_days": 5,
+                     "n_family": 17, "autocorr": {"1": 0.2},
+                     "ic_std": null, "effect_plausible": null}
+    (autocorr con claves string: viene de JSON).
+    """
+    diseno = entry.get("diseno_mde")
+    if not isinstance(diseno, dict):
+        return None
+    try:
+        from scripts.mde_power import mde_ic  # scripts no depende de app: sin ciclo
+    except ImportError as exc:  # noqa: BLE001 — fallar ruidoso, no callar
+        raise TrialRegistryError(
+            f"diseno_mde declarado pero scripts.mde_power no importable: {exc}"
+        ) from exc
+    autocorr = diseno.get("autocorr")
+    if isinstance(autocorr, dict):
+        autocorr = {int(k): float(v) for k, v in autocorr.items()}
+    kwargs = {}
+    for key in ("horizon_days", "n_family", "ic_std", "effect_plausible"):
+        if diseno.get(key) is not None:
+            kwargs[key] = diseno[key]
+    try:
+        return mde_ic(
+            n_symbols=int(diseno.get("n_symbols", 0) or 0),
+            T_dates=int(diseno.get("T_dates", 0) or 0),
+            autocorr=autocorr,
+            **kwargs,
+        )
+    except ValueError as exc:
+        raise TrialRegistryError(f"diseno_mde invalido: {exc}") from exc
+
+
 def effective_status(entry: dict, today: Optional[date] = None) -> str:
     """Estado EFECTIVO de una entrada (Track A).
 
@@ -335,10 +388,11 @@ def effective_status(entry: dict, today: Optional[date] = None) -> str:
     estado EXPIRED queda a cargo de expire_stale_reservations().
     """
     stored = entry.get("status", STATUS_DEFAULT)
-    if stored not in (STATUS_RESERVED, STATUS_COMPLETED, STATUS_EXPIRED):
+    if stored not in (STATUS_RESERVED, STATUS_COMPLETED, STATUS_EXPIRED,
+                      STATUS_INEJECUTABLE):
         raise TrialRegistryError(
             f"status desconocido: {stored!r} — valido: "
-            f"{(STATUS_RESERVED, STATUS_COMPLETED, STATUS_EXPIRED)}"
+            f"{(STATUS_RESERVED, STATUS_COMPLETED, STATUS_EXPIRED, STATUS_INEJECUTABLE)}"
         )
     if stored == STATUS_RESERVED:
         ref = today or date.today()
@@ -363,10 +417,11 @@ def _validate_entry(entry: dict, today: Optional[date] = None) -> None:
     if missing:
         raise TrialRegistryError(f"entrada incompleta, faltan: {missing} — {entry!r}")
     status = entry.get("status", STATUS_DEFAULT)
-    if status not in (STATUS_RESERVED, STATUS_COMPLETED, STATUS_EXPIRED):
+    if status not in (STATUS_RESERVED, STATUS_COMPLETED, STATUS_EXPIRED,
+                      STATUS_INEJECUTABLE):
         raise TrialRegistryError(f"status invalido: {status!r}")
     _parse_fecha(entry["fecha"])  # falla ruidoso si no es YYYY-MM-DD
-    if status in (STATUS_RESERVED, STATUS_EXPIRED):
+    if status in (STATUS_RESERVED, STATUS_EXPIRED, STATUS_INEJECUTABLE):
         for campo_prohibido in ("veredicto", "artefacto"):
             if campo_prohibido in entry:
                 raise TrialRegistryError(
@@ -387,10 +442,15 @@ def _validate_entry(entry: dict, today: Optional[date] = None) -> None:
     # Garantia 3 (cierra F2): el cero es una EXENCION tipificada de los re-tests
     # (Fase 0.6), no un valor libre. Sin esta regla, evadir Bonferroni no requiere
     # ni la etiqueta re_test: basta escribir cero en cualquier familia.
-    if entry["n_trials_consumidos"] == 0 and entry["familia"] != "re_test":
+    # B5: un INEJECUTABLE también es legítimamente cero — el diseño fue
+    # rechazado por potencia ANTES de correr: no consumió nada (y
+    # consumed_budget no cuenta INEJECUTABLE, así que el cero no evade nada).
+    if (entry["n_trials_consumidos"] == 0 and entry["familia"] != "re_test"
+            and status != STATUS_INEJECUTABLE):
         raise TrialRegistryError(
             f"n_trials_consumidos=0 solo es legal en familia 're_test' "
-            f"(exencion Fase 0.6), no en '{entry['familia']}' — {entry!r}"
+            f"(exencion Fase 0.6) o status INEJECUTABLE (B5), no en "
+            f"'{entry['familia']}' — {entry!r}"
         )
     # Track A: una reserva consume slot Bonferroni por definicion. Sin slot nuevo
     # (re_test) no hay nada que reservar, y n=1 es el piso de una reserva real.
@@ -444,10 +504,11 @@ def _validate_cross_entries(entries: List[dict]) -> None:
                     f"posterior en el registro — el objetivo debe ser una entrada ya registrada"
                 )
             target = entries[ids_antes[target_id]]
-            if target["veredicto"] != "NO_CUMPLE":
+            if target.get("veredicto") != "NO_CUMPLE":
                 raise TrialRegistryError(
-                    f"re_test '{entry['id']}' apunta a '{target_id}' con veredicto "
-                    f"{target['veredicto']!r} — solo se permite re-test de hallazgos NO_CUMPLE"
+                    f"re_test '{entry['id']}' apunta a '{target_id}' sin veredicto "
+                    f"NO_CUMPLE (status={target.get('status', 'COMPLETED')!r}) — solo "
+                    f"se permite re-test de hallazgos NO_CUMPLE"
                 )
             if target["familia"] not in RESEARCH_FAMILIES:
                 raise TrialRegistryError(
@@ -559,6 +620,19 @@ def register_trial(entry: dict, path: Optional[str] = None, check_git: bool = Tr
     # B4: holdout sellado — por escritura, sin texto de pre-registro (esta
     # ruta es post-hoc: la ventana se juzga por lo que DECLARA la entrada).
     _holdout_check(entry)
+    # B5: gate de potencia ex-ante también en la ruta post-hoc. Acá el diseño
+    # sub-potente NO puede degradarse a INEJECUTABLE (la entrada afirma un
+    # veredicto y un artefacto): se rechaza outright, porque registrar el
+    # "no detectó" de un diseño ciego es exactamente la refutación-teatro que
+    # el ticket quiere matar.
+    mde_verdict = _mde_check(entry)
+    if mde_verdict is not None and not mde_verdict["ejecutable"]:
+        raise TrialRegistryError(
+            f"diseño sub-potente declarado (B5): {mde_verdict['inejecutable_reason']} "
+            f"— no se registra el veredicto de un trial que no podía detectar el "
+            "efecto plausible. Rediseñar (más símbolos/fechas/horizonte) o "
+            "registrar la reserva para que quede INEJECUTABLE con evidencia."
+        )
     entries = _load_raw(path)
     if any(e["id"] == entry["id"] for e in entries):
         raise TrialRegistryError(f"id duplicado: {entry['id']}")
@@ -608,6 +682,14 @@ def register_trial_reservation(
     # (cuando existe) para detectar ventanas de datos post-corte no
     # declaradas en la entrada.
     _holdout_check(entry, contenido if preregistro is not None else None)
+    # B5: gate de potencia ex-ante (MDE). Un diseño sub-potente NO se reserva:
+    # queda INEJECUTABLE — no consume slot Bonferroni (consumed_budget no lo
+    # cuenta) ni cuenta como refutación (no tiene veredicto: nunca corrió).
+    mde_verdict = _mde_check(entry)
+    if mde_verdict is not None and not mde_verdict["ejecutable"]:
+        entry["status"] = STATUS_INEJECUTABLE
+        entry["n_trials_consumidos"] = 0
+        entry["mde"] = mde_verdict
     entries = _load_raw(path)
     if any(e["id"] == entry["id"] for e in entries):
         raise TrialRegistryError(f"id duplicado: {entry['id']}")

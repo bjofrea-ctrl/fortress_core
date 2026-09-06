@@ -10,7 +10,8 @@ Code, Cline, OpenCode), leer este documento primero. Al cerrar, actualizarlo ant
 — marcar lo que se cerró, agregar lo que apareció nuevo. Ningún ítem se da por cerrado sin
 marcarlo acá, aunque se haya resuelto "de pasada" en otra conversación.
 
-Última actualización: 2026-09-03 (cierre Fase A de remediación: A4/A6/A7/A8/A9).
+Última actualización: 2026-09-05 (cierre **B5** — gate de potencia ex-ante MDE dentro del
+ledger + fix del endpoint de evidencia que reventaba con reservas sin veredicto).
 
 ## PENDIENTE AHORA — chequear primero, antes de leer el resto
 
@@ -39,6 +40,40 @@ Cline como implementadores). Verificar contra `git log --oneline -10`,
 > Ya está corregido en código, mensajes de error y tests; el plan queda sin tocar porque
 > es el ticket de Boris, pero hay que arreglarlo ahí también o el próximo agente va a
 > volver a copiar la cita errónea.
+>
+> ✅ **B5 CERRADO (2026-09-05, worktree `fundamentales-automatizado`)** — el gate de
+> potencia ex-ante ahora vive **en el ledger**, no en un documento.
+> `backend/scripts/mde_power.py` computa el IC mínimo detectable de un diseño
+> (`mde_ic`), el SR diario requerido por la DSR (`sr_requerido_dsr`) y el veredicto del
+> paper de diciembre (`gate_diciembre_2026`: **INEJECUTABLE** — 60 días piden un SR anual
+> ~6.7-8.5 contra un efecto plausible de 0.10; números y sensibilidad en
+> `ANALISIS_MDE_GATE_DICIEMBRE_2026.md`). `trial_registry` lee el campo `diseno_mde` de
+> cada reserva: si `MDE > efecto plausible` (default 0.10) la entrada se guarda como
+> **`INEJECUTABLE` con `n_trials_consumidos=0`** → no quema slot Bonferroni
+> (`consumed_budget` no lo cuenta) y no produce refutación (no tiene veredicto: nunca
+> corrió). En la ruta post-hoc (`register_trial`) el diseño sub-potente se **rechaza**:
+> registrar el "no detectó" de un diseño ciego es justo el teatro que el ticket mata.
+> `audit_trial_budget.py` muestra la columna `rechazados B5` para que el rechazo siga
+> siendo auditable. Efecto colateral corregido: `/api/advisor/evidence` leía `veredicto`
+> a pelo y con el ledger real (que tiene una reserva `RESERVED`) devolvía HTTP 500; ahora
+> es status-aware (`status_ultimo`, `n_sin_correr`, `n_inejecutables`) y el footer del
+> dashboard muestra el **estado** en vez de inventarse un veredicto.
+> Verificado: backend **706 passed / 4 failed / 1 skipped** (los 4 fallos son
+> preexistentes y ajenos a B5 — ver el bloque de abajo), ruff limpio en los archivos
+> tocados, frontend **59/59** + `tsc --noEmit` limpio.
+> ⚠️ **Pendiente de traspaso**: `PLAN_REMEDIO_BRECHAS_20260903.md` no existe en esta rama
+> (vive en `main`); al mergear hay que marcar B5 como cerrado ahí y corregir la cita de la
+> "Regla 0" en el mismo archivo.
+>
+> 🔴 **4 fallos PRE-EXISTENTES en la suite de esta rama** (verificados el 2026-09-05:
+> 706 passed / 4 failed, y los 3 primeros reproducidos con los cambios de B5
+> `git stash`-eados, o sea ajenos a B5): `tests/test_predict_cache.py` ×3 —
+> `'types.SimpleNamespace' object has no attribute 'motor'` en `app/api/routes/predict.py:169`
+> (fixture del test desactualizado vs. el Settings real), y
+> `tests/test_config_registry.py::test_backtest_2023_inalterado_por_ajuste_futuro` —
+> el panel sintético no opera en 2023 (`total_trades == 0`), falla aislado y no importa
+> nada de lo tocado por B5 (solo `adaptive_risk`/`backtest_engine`/`config_registry`).
+> Nadie los arregló en esta sesión: son del frente de predict/motor, no del ledger.
 
 
 1. **A6.3 — screening PALA/RESTO/POOLED** — 🟢 trial original CERRADO

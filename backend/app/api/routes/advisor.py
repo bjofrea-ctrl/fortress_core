@@ -397,18 +397,27 @@ async def advisor_evidence():
 
         families = []
         for fam, es in by_family.items():
-            raw_umbral = es[-1]["umbral_aplicado"]
+            ultimo = es[-1]
+            raw_umbral = ultimo["umbral_aplicado"]
             try:
                 umbral = round(float(raw_umbral), 5)
             except (TypeError, ValueError):
                 umbral = raw_umbral
+            # Track A / B5: la última entrada de una familia puede NO haber
+            # corrido (RESERVED / EXPIRED / INEJECUTABLE) y por lo tanto NO
+            # tiene veredicto. Antes se leía `es[-1]["veredicto"]` a pelo: con
+            # el ledger real (screening_palas_saneada_a63 en RESERVED) eso
+            # reventaba el endpoint con 500. No se inventa veredicto — se
+            # muestra el estado, que es lo que el registro sabe.
             families.append({
                 "familia": fam,
                 "n_consumidos": trial_registry.consumed_budget(fam),
                 "umbral_aplicado_ultimo": umbral,
-                "ultimo_veredicto": es[-1]["veredicto"],
-                "ultima_seccion": es[-1]["seccion_doc"],
+                "status_ultimo": ultimo.get("status", "COMPLETED"),
+                "ultimo_veredicto": ultimo.get("veredicto"),
+                "ultima_seccion": ultimo.get("seccion_doc"),
                 "n_trials_en_ledger": len(es),
+                "n_sin_correr": sum(1 for e in es if "veredicto" not in e),
             })
 
         recent = [
@@ -416,20 +425,26 @@ async def advisor_evidence():
                 "id": e["id"],
                 "fecha": e["fecha"],
                 "familia": e["familia"],
-                "veredicto": e["veredicto"],
-                "seccion": e["seccion_doc"],
+                "status": e.get("status", "COMPLETED"),
+                "veredicto": e.get("veredicto"),
+                "seccion": e.get("seccion_doc"),
             }
             for e in entries[-5:]
         ][::-1]
 
         return {
             "total_trials": len(entries),
+            "n_inejecutables": sum(
+                1 for e in entries
+                if e.get("status") == trial_registry.STATUS_INEJECUTABLE
+            ),
             "families": families,
             "recent": recent,
             "note": (
                 "Cada trial es una hipótesis pre-registrada con umbral Bonferroni. "
                 "Ninguna señal comercial validada a la fecha: el dashboard es apoyo "
-                "a decisión, no un generador de señales."
+                "a decisión, no un generador de señales. Un diseño INEJECUTABLE (B5) "
+                "nunca corrió: no consume presupuesto ni cuenta como refutación."
             ),
         }
     except Exception as e:

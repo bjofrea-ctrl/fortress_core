@@ -1,5 +1,71 @@
 # Fortress Core — Memoria de Sesiones (Última sesión resumida)
 
+## 2026-09-05 — B5: el gate de potencia ex-ante entra al ledger + fix del footer de evidencia (Cline)
+
+**Qué**: se cerró el ticket **B5** de `PLAN_REMEDIO_BRECHAS_20260903.md` (gate MDE
+ex-ante, fin de la refutación-teatro) y se arregló el endpoint `/api/advisor/evidence`,
+que devolvía HTTP 500 con el ledger real.
+
+**B5 — la pieza nueva**: `backend/scripts/mde_power.py` (`mde_ic`, `sr_requerido_dsr`,
+`gate_diciembre_2026`) calcula, dado un diseño (n símbolos, T fechas, horizonte,
+autocorrelación, n de la familia), el IC mínimo detectable y el Sharpe que exigiría un
+DSR≥0.90. `trial_registry.py` consume esa función desde el chokepoint de escritura: toda
+reserva que declare `diseno_mde` se evalúa antes de escribir; si `MDE > efecto plausible`
+(default 0.10, constante `MDE_EFFECT_PLAUSIBLE`) la entrada se registra
+**`INEJECUTABLE`** con `n_trials_consumidos=0` y el dictamen guardado en `mde`. Nuevo
+estado en el ciclo de vida (junto a RESERVED/EXPIRED/COMPLETED): no consume presupuesto
+(`consumed_budget` solo cuenta RESERVED vigentes + COMPLETED), no tiene veredicto — y por
+lo tanto no puede anclar un `re_test` (la validación cruzada exige `NO_CUMPLE` en el
+objetivo, ahora con `.get()` para no reventar contra entradas sin veredicto).
+
+**La decisión de diseño que importa**: en la ruta **post-hoc** (`register_trial`) un
+diseño sub-potente se **rechaza** en vez de degradarse a `INEJECUTABLE`. La razón: esa
+entrada afirma un veredicto y un artefacto — registrar el "no detecté" de un diseño que no
+podía detectar el efecto es exactamente la refutación-teatro que el ticket quiere matar.
+El mensaje empuja a rediseñar o a reservar primero (donde sí queda INEJECUTABLE con
+evidencia). Regla por escritura, como B4: **lo no declarado no se juzga** (ausencia de
+`diseno_mde` → `None`, sin tocar los 51 registros históricos).
+
+**El bug del footer**: `advisor_evidence()` asumía que toda entrada del ledger tiene
+`veredicto`. El ledger real tiene `screening_palas_saneada_a63` en `RESERVED` (sin
+correr), así que el endpoint tiraba `KeyError: 'veredicto'` → 500 → "Error leyendo ledger"
+en el dashboard. Ahora es status-aware: `ultimo_veredicto` puede ser `null`, y se suman
+`status_ultimo`, `n_sin_correr`, `n_inejecutables` y una nota B5. El frontend
+(`client.ts` + `EvidenceFooter.tsx`) muestra el **estado traducido** (RESERVADO / EXPIRADO /
+INEJECUTABLE) cuando no hay veredicto — nunca "undefined" y nunca un veredicto inventado.
+`audit_trial_budget.py` gana la columna `rechazados B5` para que el rechazo siga auditable.
+
+**Verificado contra el artefacto real** (Regla 1 de ONBOARDING):
+- Ledger real a través de la corutina del router: `total=51`, `n_inejecutables=0`,
+  `signal_diagnosis` reporta `n_sin_correr=1` y `status_ultimo=COMPLETED` sin excepción.
+- `pytest tests/test_advisor_api.py tests/test_mde_power.py` → **38 passed**.
+- Suite completa de backend: **706 passed / 4 failed / 1 skipped** — los 4 fallos son
+  preexistentes y ajenos a B5 (3 en `test_predict_cache.py` por un fixture que no conoce
+  el atributo `settings.motor`, 1 en `test_config_registry.py` por el panel sintético de
+  2023); los 3 primeros se reprodujeron con los cambios de B5 stasheados. `ruff check`
+  limpio en los archivos tocados; frontend **59/59** con `tsc --noEmit` sin errores.
+- Tests nuevos: 2 en `test_advisor_api.py` (regresión del 500 con entradas sin veredicto y
+  ledger vacío), 2 en `test_mde_power.py` (rechazo post-hoc sub-potente + pase de diseño
+  bien dimensionado), 7 en `frontend/src/test/EvidenceFooter.test.tsx` (contrato de
+  estados, contador B5, tolerancia a backend viejo).
+
+**Números que dejó el análisis** (`ANALISIS_MDE_GATE_DICIEMBRE_2026.md`): el paper de 60
+días con horizonte semanal exige un Sharpe diario ~0.42-0.53 (anual 6.7-8.5) para
+DSR≥0.90 con 17 trials; con un efecto plausible de 0.10 el DSR alcanzado es 0.114 → el
+criterio de diciembre es **matemáticamente casi imposible** y por eso el gate lo marca
+INEJECUTABLE. Un diseño diario de 250 fechas y 50 símbolos, en cambio, detecta IC≈0.025:
+el gate no bloquea la investigación bien dimensionada, solo los tests perdidos de antemano.
+
+**Archivos**: `backend/scripts/mde_power.py`, `backend/tests/test_mde_power.py` (nuevos),
+`backend/app/core/trial_registry.py`, `backend/app/api/routes/advisor.py`,
+`backend/scripts/audit_trial_budget.py`, `backend/tests/test_advisor_api.py`,
+`frontend/src/api/client.ts`, `frontend/src/components/advisor/EvidenceFooter.tsx`,
+`frontend/src/test/EvidenceFooter.test.tsx`, `ROADMAP.md`, `ANALISIS_MDE_GATE_DICIEMBRE_2026.md`.
+
+**Pendiente**: marcar B5 como cerrado en `PLAN_REMEDIO_BRECHAS_20260903.md` al mergear a
+`main` (el archivo no existe en esta rama) y corregir ahí la cita de la "Regla 0".
+
+
 ## 2026-09-03 — Cierre Fase A del gate: A7, A8, A9 + 3 fixes de auditoría (Cline)
 
 **Qué**: se completaron los tres tickets pendientes de `PLAN_REMEDIO_BRECHAS_20260903.md`

@@ -11,6 +11,8 @@ Lo que se valida es el CONTRATO que el frontend consume:
 - honestidad: sin cobertura EDGAR -> null + flag, nunca datos inventados.
 """
 import asyncio
+import json
+from datetime import date
 from types import SimpleNamespace
 
 import numpy as np
@@ -380,3 +382,72 @@ def test_cache_date_ignora_artefactos(tmp_path, monkeypatch):
 
     assert llamadas_yahoo == [], f"no debe golpear Yahoo, llamó con {llamadas_yahoo}"
     assert resultado == pd.Timestamp("2026-08-14")  # solo el universo cuenta
+
+
+# --- GET /api/advisor/evidence (footer del ledger de trials) -----------------
+
+def _ledger_entry(trial_id, familia, status="COMPLETED", **extra):
+    """Entrada mínima válida del contrato de trial_registry, por status.
+    RESERVED/EXPIRED/INEJECUTABLE NO llevan veredicto (nunca corrieron)."""
+    entry = {
+        "id": trial_id,
+        "fecha": date.today().isoformat(),
+        "familia": familia,
+        "hipotesis": "h",
+        "n_trials_consumidos": 1,
+        "umbral_aplicado": "0.95",
+        "seccion_doc": "§test",
+        "status": status,
+    }
+    if status == "COMPLETED":
+        entry["veredicto"] = "NO_CUMPLE"
+        entry["artefacto"] = "data/cache/a.txt"
+    if status == "INEJECUTABLE":
+        entry["n_trials_consumidos"] = 0
+    entry.update(extra)
+    return entry
+
+
+def _punter_ledger(monkeypatch, tmp_path, entries):
+    ledger = tmp_path / "trial_registry.json"
+    ledger.write_text(json.dumps(entries, ensure_ascii=False), encoding="utf-8")
+    monkeypatch.setattr(advisor.trial_registry, "_default_path", lambda: str(ledger))
+    return ledger
+
+
+def test_evidence_no_revienta_con_entradas_sin_veredicto(monkeypatch, tmp_path):
+    """Regresión (B5): el endpoint leía `es[-1]["veredicto"]` a pelo. Con el
+    ledger real — screening_palas_saneada_a63 en RESERVED — eso devolvía HTTP
+    500 ('Error leyendo ledger: veredicto'), y B5 agrega un estado que tampoco
+    tiene veredicto (INEJECUTABLE). El contrato ahora es status-aware."""
+    _punter_ledger(monkeypatch, tmp_path, [
+        _ledger_entry("t_ok", "motor_signal"),
+        _ledger_entry("t_reservado", "signal_diagnosis", status="RESERVED"),
+        _ledger_entry("t_inejecutable", "signal_diagnosis", status="INEJECUTABLE"),
+    ])
+    body = asyncio.run(advisor.advisor_evidence())
+
+    assert body["total_trials"] == 3
+    assert body["n_inejecutables"] == 1
+    fams = {f["familia"]: f for f in body["families"]}
+    assert fams["motor_signal"]["ultimo_veredicto"] == "NO_CUMPLE"
+    assert fams["motor_signal"]["status_ultimo"] == "COMPLETED"
+    sd = fams["signal_diagnosis"]
+    assert sd["ultimo_veredicto"] is None          # no se inventa veredicto
+    assert sd["status_ultimo"] == "INEJECUTABLE"   # se muestra el estado real
+    assert sd["n_trials_en_ledger"] == 2
+    assert sd["n_sin_correr"] == 2
+    # el presupuesto sigue siendo contable: solo la reserva fresca consume slot
+    assert sd["n_consumidos"] == 1
+    recent = {r["id"]: r for r in body["recent"]}
+    assert recent["t_reservado"]["veredicto"] is None
+    assert recent["t_reservado"]["status"] == "RESERVED"
+
+
+def test_evidence_ledger_vacio_sigue_vivo(monkeypatch, tmp_path):
+    """Sin ledger no hay 500: el footer muestra cero trials (contrato previo)."""
+    _punter_ledger(monkeypatch, tmp_path, [])
+    body = asyncio.run(advisor.advisor_evidence())
+    assert body["total_trials"] == 0
+    assert body["families"] == [] and body["recent"] == []
+    assert body["n_inejecutables"] == 0
