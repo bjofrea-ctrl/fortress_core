@@ -358,7 +358,9 @@ def test_reconcile_cierra_huerfana_con_pnl_r_real_y_registra_en_state_y_log(tmp_
     assert res["unexplained"] == 0
     fila = led.fetch(symbol="ORPH")[0]
     assert fila["status"] == "closed"
-    assert fila["exit_reason"] == "RECONCILE"
+    # A5/A3: el cierre usó last_trade (no fill real) -> exit_reason lo declara
+    # explícitamente, no se oculta la aproximación.
+    assert fila["exit_reason"] == "RECONCILE (APPROX last_trade)"
     # pnl_r real = (close-open)/open con el último trade, NO 0.0 a ciegas.
     assert fila["pnl_r"] == pytest.approx((110.0 - 100.0) / 100.0, abs=1e-9)
     assert fila["close_fill_price"] == pytest.approx(110.0, abs=1e-9)

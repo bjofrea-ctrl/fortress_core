@@ -3060,7 +3060,7 @@ retorno medio mensual de la config ACTUAL debe ser positivo sin costos.
 
 **No se toca**: T1.4/RESUMEN_STOP_ESTRUCTURAL (mejora calidad por trade, informativo no promovible) y Tarea L DSR/N_eff (solo calibración) — decisión del usuario.
 
-### 40.1.1 Limitación declarada del PBO=0.2358 vigente — lag de ejecución (2026-09-03, A8 del `PLAN_REMEDIO_BRECHAS_20260903.md`)
+### 40.1 Limitación declarada del PBO=0.2358 vigente — lag de ejecución (2026-09-03, A8 del `PLAN_REMEDIO_BRECHAS_20260903.md`)
 
 **Contexto**: el PBO=0.2358 de §39 (vigente al cierre del plan, bucket **INTERMEDIO** del criterio pre-registrado 0.20–0.50) se calculó con el default del motor `EXECUTION_LAG_DAYS=1` (`backend/app/core/backtest_engine.py:646`), que rebalancea en `close[m-1]→close[m]`: la señal del mes m se ejecuta en el cierre del mes siguiente. Esa convención es conservadora para el edge del baseline (evita mirar el cierre del propio mes de la señal), pero **no es la convención estándar de la literatura de PBO** (Bailey, Borwein, López de Prado & Zhu 2014–2017), que usa `open(m)→close(m)` (rebalanceo intra-mes al apertura tras la señal).
 
@@ -3081,7 +3081,7 @@ retorno medio mensual de la config ACTUAL debe ser positivo sin costos.
 
 ---
 
-### 40.1 RESOLUCIÓN — PBO vigente (2026-09-02, decisión de Boris)
+### 40.2 RESOLUCIÓN — PBO vigente (2026-09-02, decisión de Boris)
 
 Comparación fundamentada (`COMPARACION_PBO_39_VS_MOMRSI.md`, OpenCode, revisada por
 Claude Code y aprobada por Boris): **§39 (PBO=0.2358) queda como el PBO vigente del
