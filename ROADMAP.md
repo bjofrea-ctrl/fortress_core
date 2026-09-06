@@ -27,12 +27,18 @@ Cline como implementadores). Verificar contra `git log --oneline -10`,
 > `GOVERNANCE_LLM_ENABLED` + cartel explícito en el dashboard). Verificado corrido:
 > backend **162/162**, ruff limpio, frontend **52/52** + `tsc` + `vite build`.
 >
-> 🔴 **Falta A2, y es lo único que impide que el gate sea evaluable**: no existe
-> `backend/data/clean_days.json` en NINGÚN repo (verificado 2026-09-03 con `find` sobre
-> `~/Desktop/fortress_core` y este worktree). Sin ese contador la racha de días limpios
-> **no está corriendo**; el `motor_manifest bump` que declaró el drift de A6 ordena
-> "reiniciar el contador a mano" sobre un archivo que todavía no existe. Crearlo es la
-> próxima pieza, no es opcional ni delegable en el hash-guard.
+> ✅ **A2 cerrado (2026-09-05, Cline)**: existe `backend/data/clean_days.json` y el
+> contador lo regenera de forma reproducible. El `motor_manifest bump` de A4 ya tiene
+> qué reiniciar. El contador es módulo puro (`app/core/clean_days.py`) + wrapper CLI
+> (`scripts/clean_days_counter.py`) que parsea 3 condiciones verificables sobre los
+> artefactos que el pipeline ya emite: (a) `pipeline_daily_signal end rc=0` en
+> `scripts/pipeline_diario.log`; (b) ausencia de `PRECIOS: ERROR` en `scripts/data_updater.log`;
+> (c) `reconcile.unexplained == 0` en `data/cache/pipeline_state.json` (o último artefacto
+> decide del día; `UNVERIFIED_C` si el reconciler A1 aún no corrió). Un día limpio cumple
+> (a)+(b)+(c); la racha es la cantidad de hábiles consecutivos limpios desde
+> `GATE_START_DATE` (2026-09-02). 24 tests en `tests/test_clean_days_counter.py`. La racha
+> real arranca en 0 en este worktree porque no hay logs vivos acá — en producción
+> (`~/Desktop/fortress_core`) los logs del cron lo alimentan día a día.
 >
 > 🔴 **El ticket `PLAN_REMEDIO_BRECHAS_20260903.md` cita una "Regla 0 del ROADMAP" que no
 > existe** (líneas 67, 68 y 88; el ROADMAP no tiene reglas numeradas — la regla real es la
@@ -651,8 +657,8 @@ gantt
 | Gate | **A7 — enforcement técnico del gate en el ledger** (Cline, 2026-09-03) | 🟢 cerrado (2026-09-03) | — | `gate_window.py` (nuevo) + `_gate_window_check()` en `trial_registry.py`: trial con fecha dentro de 2026-09-02..GATE_END y `categoria` fuera del allow-list cerrado `{bugfix, infraestructura}` → `TrialRegistryError` ANTES de escribir el archivo. Chokepoint único cubre `register_trial` y `register_trial_reservation`; escape declarado `FORTRESS_ALLOW_GATE_TRIAL=1` (el conftest lo deja activo para que el resto de la suite pruebe mecánica). El mensaje cita la **Regla 1 de ONBOARDING.md con su contenido real**, verificado leyendo el doc (no un literal del test) + guarda anti-renumeración. 22 tests en `test_trial_registry_gate.py`. |
 | Investigación | **A8 — PBO baseline con lag-0: pre-registro sellado, NO ejecutado** (Cline, 2026-09-03) | 🟢 cerrado como docs-only (2026-09-03) · corrida post-gate pendiente | Boris evalúa correrlo cuando exista racha ≥60 en `clean_days.json` | `PRE_REGISTRO_PBO_BASELINE_LAG0_20260903.md` + §40.1 en `PLAN_MEJORA_MATEMATICA.md` declarando la limitación lag-0 del PBO=0.2358 vigente. Criterio, umbrales (0.20/0.50), checks de fidelidad y los campos del ledger (`Umbral_aplicado`, `Familia: signal_diagnosis`, `Categoría: bugfix`) escritos ANTES de correr, per Regla 1. Red de seguridad: 15 tests `test_a8_pbo_lag0_docs.py`. **No se ejecutó ningún trial durante el gate ni se tocó `app/*.py`.** |
 | Gobernanza | **A9 — flag `GOVERNANCE_LLM_ENABLED` + cartel explícito en el dashboard** (Cline, 2026-09-03) | 🟢 cerrado (2026-09-03) | — | Default `False` en `config.py`; NIM/OpenRouter guardados en `advanced_agents.py`, `predict.py` y `governance.py` (no quema llamadas decorativas). `/api/governance/status` expone `governance_llm_enabled` y `nvidia_nim_blocked_by_a9`; `GovernancePanel.tsx` muestra banner NO colapsable con el texto del plan ("descriptiva — no conectada a decisiones del pipeline") en tri-estado ACTIVA / DESACTIVADA (A9) / DESCONOCIDA — nunca asume activa si el `/status` no carga. Arreglado de paso: NVIDIA NIM decía "ACTIVO" con el pipeline bloqueado → ahora "BLOQUEADA (A9)". Contrato backend↔frontend verificado campo a campo. 6 tests nuevos, frontend 52/52, tsc y build limpios. |
-| Motor | **A4 — hash-guard: drift de `backtest_engine.py` por A6 declarado y re-verify limpio** (Cline, 2026-09-03) | 🟢 cerrado (2026-09-03) | — | `motor_manifest verify` detectó drift real (rc=2) causado por A6 y no declarado al commitear. Antes de bump se verificó contra el diff que el cambio es 100% A6 (n_trials del ledger + trazabilidad; no toca señal, riesgo ni rebalanceo) → `bump --note` con la razón. `verify` → OK 7 módulos, rc=0. El reinicio del contador queda pendiente porque A2 no existe (ver ítem siguiente). |
-| Gate | **A2 — contador de días limpios `backend/data/clean_days.json`** | 🔴 no existe en ningún repo (verificado 2026-09-03) | Crear el contador: sin él la racha del gate no corre y el bump de A4 no tiene qué reiniciar | Descubierto al cerrar A4: el `bump` ordena reiniciar "a mano" un archivo que nunca se creó. No es un efecto de A4/A6 — es Fase A incompleta. |
+| Motor | **A4 — hash-guard: drift de `backtest_engine.py` por A6 declarado y re-verify limpio** (Cline, 2026-09-03) | 🟢 cerrado (2026-09-03) | — | `motor_manifest verify` detectó drift real (rc=2) causado por A6 y no declarado al commitear. Antes de bump se verificó contra el diff que el cambio es 100% A6 (n_trials del ledger + trazabilidad; no toca señal, riesgo ni rebalanceo) → `bump --note` con la razón. `verify` → OK 7 módulos, rc=0. El reinicio del contador ya es accionable porque A2 (2026-09-05) creó `data/clean_days.json` y el CLI que lo regenera. |
+| Gate | **A2 — contador de días limpios `backend/data/clean_days.json`** | 🟢 cerrado (2026-09-05, Cline) | — | Módulo puro `app/core/clean_days.py` (parsea 3 condiciones: rc=0 del pipeline, ausencia de `PRECIOS: ERROR`, `reconcile.unexplained==0`; `UNVERIFIED_C` si el reconciler A1 no corrió) + wrapper CLI `scripts/clean_days_counter.py` que persiste `data/clean_days.json` (gitignored). La racha es la cantidad de hábiles consecutivos limpios desde `GATE_START_DATE` (2026-09-02). 24 tests en `tests/test_clean_days_counter.py`. Cierra la Fase A del gate (A2→A9 completos). El `motor_manifest bump` de A4 ya tiene qué reiniciar. |
 | Docs | **`PLAN_REMEDIO_BRECHAS_20260903.md` cita una "Regla 0 del ROADMAP" inexistente** (líneas 67, 68, 88) | 🔴 sin corregir en el plan (es ticket de Boris) | Corregirla a "Regla 1 de ONBOARDING.md" o el próximo agente vuelve a copiarla | Es el origen del error de cita que A7 arrastró; ya corregido en código, mensajes y tests. El ROADMAP no tiene reglas numeradas. |
 
 

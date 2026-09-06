@@ -3232,3 +3232,56 @@ de nunca mezclar sin etiqueta. **Fix commit `57a4c66`**:
   `chkpt__MSFT__2026-08-26` en el fixture y verifica que no aparece en `/combined` ni en
   `paper_total`; las 3 reales sí. Suite `test_trades_api.py`: **9/9 passed**, ruff limpio.
 
+## 2026-09-05 — A2: contador de días limpios del gate de 60 días (Cline)
+
+**Qué**: se cerró el ticket **A2** de `PLAN_REMEDIO_BRECHAS_20260903.md` — el contador de
+días limpios que era lo único que faltaba para que el gate de 60 días fuera evaluable.
+
+**Por qué importaba**: al cerrar A4 (hash-guard) se descubrió que `motor_manifest bump`
+ordenaba reiniciar "a mano" un archivo `data/clean_days.json` que **nunca se había creado**.
+Sin ese contador, la racha de días limpios del gate no corre (la "Regla 0" era una cuenta
+manual frágil). A2 reemplaza eso por un parsing reproducible de 3 condiciones verificables
+sobre los artefactos que el pipeline ya emite.
+
+**La pieza**:
+- `backend/app/core/clean_days.py` — módulo puro (recibe textos/paths, devuelve dicts).
+  `evaluate_day()` evalúa 3 condiciones por día:
+  - (a) `pipeline_daily_signal end rc=0` en `scripts/pipeline_diario.log` (>=1 corrida
+    exitosa; el plan pedía 3 pero se relaja a >=1 para no romper días con 1 corrida).
+  - (b) ausencia de `PRECIOS: ERROR` en `scripts/data_updater.log`.
+  - (c) `reconcile.unexplained == 0` en `data/cache/pipeline_state.json` (o último
+    artefacto decide del día). `UNVERIFIED_C` si el reconciler A1 aún no corrió ese día
+    — decisión pre-declarada por Boris al aprobar el plan.
+  Un día "limpio" cumple (a)+(b)+(c). `compute_streak()` cuenta hábiles consecutivos limpios
+  desde `GATE_START_DATE` (2026-09-02, tomado de `gate_window.py`). El piso (a) se puede
+  endurecer a 3 si Boris lo quiere.
+- `backend/scripts/clean_days_counter.py` — wrapper CLI: hace la I/O, parsea los logs/state
+  reales, persiste `data/clean_days.json` (gitignored: `backend/data/*.json`), escritura
+  atómica. Flags `--today`, `--print`, paths overrideables.
+- `backend/tests/test_clean_days_counter.py` — **24 tests** cubriendo cada condición rota,
+  `UNVERIFIED_C`, fallback a log cuando el state está vacío, calendario de hábiles, streak
+  (consecutivo / roto intermedio / último día no limpio / vacío), registro atómico,
+  end-to-end con paths custom, y contrato de claves (definition/evidence) contra el docstring.
+
+**Verificado contra el artefacto real** (Regla 1 de ONBOARDING):
+- `pytest tests/test_clean_days_counter.py` → **24 passed**.
+- `python3 -m scripts.clean_days_counter --print --today 2026-09-05` → genera
+  `data/clean_days.json` sin error (en este worktree: streak=0, n_clean=0 porque no hay
+  logs vivos acá — los del cron de producción lo alimentan día a día).
+- `from app.core.gate_window import GATE_START_DATE` → `2026-09-02` (ancla correcta).
+- Las 3 filas de la tabla de estado del gate (A2→A9) quedan **completas**: la Fase A del
+  gate está 100% cerrada.
+
+**Streak real arranca en 0** en este worktree (sin logs). En producción
+(`~/Desktop/fortress_core`, donde corre el cron) el contador se alimenta solo; conviene
+correr `python3 -m scripts.clean_days_counter` una vez para sembrar el JSON con historia
+desde 2026-09-02.
+
+**Archivos**: `backend/app/core/clean_days.py`, `backend/scripts/clean_days_counter.py`,
+`backend/tests/test_clean_days_counter.py` (nuevos, sin commitear al cierre de la edición).
+ROADMAP.md: nota del gate + fila A2 + fila A4 actualizadas.
+
+---
+
+*Fin de Sesión — 2026-09-05 (Cline)*
+
