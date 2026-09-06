@@ -3352,3 +3352,73 @@ idénticas al plan 48H.
 
 NO se mergeó a main desde este worktree (regla del plan). Stash pendiente:
 `pre-A2-base` con la variante A6 local descartable + screening scripts.
+
+## 2026-09-06 (tarde) — A2 consolidado: fusión 3 implementaciones + reconciler DIARIO (Kilo)
+
+Contexto: Boris aprobó la opción (i) — reconciler diario en la ventana 22:10
+— y pidió lo más sólido, no lo más fácil. Antes de implementar audité las 3
+implementaciones A2 que existían en paralelo (la mía 65c5d09, la de Cline
+55606a3, una tercera sin commitear en el repo real de otra sesión) contra
+los logs REALES de producción.
+
+Bugs encontrados en la auditoría cruzada (todos con evidencia):
+- Cline: (a) usa regex con timestamp "2026-09-02T…" que NO existe en el
+  pipeline_diario.log real (la shell escribe "2026-09-02 09:35:05") → (a)
+  falla siempre → contador estructuralmente en 0. Además relaja a "≥1
+  corrida rc=0" en vez de las 3 programadas (viola la definición congelada
+  02-09). Su (b) sí acierta: atribución por bloques [ts] inicio…fin.
+- Kilo (mía): (b) parsea por "Corrida <ts>" — el encabezado va DESPUÉS del
+  paso de precios, así que la corrida manual del mediodía del 02-09 con
+  "PRECIOS: ERROR - 1/102" quedaba fuera del bloque → reportaba b=OK en un
+  día que falló. Verificado contra el log real.
+- Las 3: el test de regresión de A1
+  (test_reconcile_escribe_al_log_canonico) escribe líneas reconcile FALSAS
+  al pipeline_diario.log real en cada pytest de cada agente — 7 líneas
+  contaminantes ya presentes, ninguna era corrida real.
+
+Implementación (worktree test-kilo-orca, sobre origin/main d95ef72):
+1. clean_days_counter.py consolidado: (a) mía (3 ventanas, pares
+   start/end); (b) de Cline (bloques inicio/fin, multi-corrida/día);
+   (c) última línea del día + state.json. Racha ininterrumpida (semántica
+   C1): todo weekday desde el gate 02-09 es evaluable — updater muerto =
+   día ROTO, no invisible. Tras activarse la cadencia diaria
+   (auto-calibrada por primer par de weekdays adyacentes con líneas
+   reconcile — sin constantes mágicas de fecha que desincronicen con el
+   merge), weekday sin línea propia = MISSING_AFTER_DAILY (fallo
+   verificado, corta racha). Las líneas de pytest (clusters de un día /
+   fines de semana) NO activan la cadencia — testeado explícito.
+2. Reconciler diario: _run_reconcile compartido (factorización verbatim
+   del bloque de decide), phase_health(reconcile=False) + flag --reconcile,
+   shell lo pasa SOLO en la ventana 22:10 (9:35/15:40 siguen baratos).
+   decide queda intacto (tests de regresión A1 pasan sin cambios).
+3. append_diario_log resuelve DIARIO_LOG en runtime (path=None → default
+   en el momento del append): los tests pueden redirigir con monkeypatch —
+   fin de la contaminación del log real. Test anti-contaminación verifica
+   snapshot antes==después del canónico.
+
+Salida real de tests (venv py3.9.6 del repo real):
+```
+$ .venv/bin/python -m pytest tests/test_clean_days_counter.py tests/test_pipeline_daily_signal.py tests/test_kill_switch.py tests/test_motor_manifest.py tests/test_execution_telemetry.py -q
+121 passed, 3 warnings in 7.76s
+```
+(counter: 24, pipeline incl. 4 nuevos de _run_reconcile/health: 29, resto
+de regresión)
+
+Validación contra producción (logs reales, tras la consolidación):
+- 02-09: (b) ahora FALLA con "PRECIOS: ERROR - 1/102" (mi bug del
+  mediodía, capturado). Antes: b=OK falso.
+- 03/04-09: UNVERIFIED_C puro ((a)+(b) OK, reconciler no corrió) — no
+  suman, no cortan. Sábado 05-09: no evaluable (no weekday).
+- Racha oficial arranca lunes 07-09 con el reconciler diario deployado.
+
+E2E shell (sandbox, logs sintéticos): días 02-09 (sin updater) rotos,
+racha 07/08/09-09 = 3 limpios consecutivos, JSON con evidencia por
+condición, fallo del contador no rompe la corrida.
+
+Deuda reconocida NO cerrada acá (infra del repo real, decisión de quien
+orqueste el merge): limpiar las 7 líneas reconcile falsas ya presentes en
+el pipeline_diario.log real de producción (artefactos de pytest previo al
+fix) y commitear/merge de esta consolidación + la A2 de Cline (55606a3,
+obsoleta: su (a) nunca matchea el formato real).
+
+Sin merge a main desde este worktree (regla 48H).

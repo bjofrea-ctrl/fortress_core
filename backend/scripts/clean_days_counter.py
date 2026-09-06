@@ -76,7 +76,16 @@ _RE_RECONCILE = re.compile(
     r"^(\d{4}-\d{2}-\d{2})T\d{2}:\d{2}:\d{2} \[pipeline\] reconcile "
     r"orphan_closed=(\d+) unexplained=(\d+)"
 )
-_RE_UPDATER_CORRIDA = re.compile(r"^Corrida (\d{4})-(\d{2})-(\d{2})T")
+# Updater: los bloques de corrida arrancan en "[ts] data_updater: inicio" y
+# cierran en "data_updater: fin" (formato de data_updater.sh; el encabezado
+# "Corrida <ts>" aparece DESPUÉS del paso de precios, no puede delimitar el
+# bloque — bug encontrado contra el caso real del 02-09: la corrida de las
+# 12:10 con "PRECIOS: ERROR" caía fuera del bloque "Corrida" y el contador
+# la ignoraba). Una corrida puede abarcar el cambio de medianoche: la
+# atribución es por el día del INICIO (coincide con la corrida nominal).
+_RE_UPDATER_INICIO = re.compile(
+    r"^\[(\d{4})-(\d{2})-(\d{2}) \d{2}:\d{2}:\d{2}\] data_updater: inicio"
+)
 _RE_UPDATER_FIN = re.compile(r"data_updater: fin")
 
 
@@ -129,16 +138,16 @@ def evaluar_condicion_a(runs: Dict[str, Dict[int, int]], date_str: str) -> Dict:
 def parse_updater_days(text: str) -> Dict[str, List[str]]:
     """Parsea data_updater.log → {fecha: [líneas del bloque de esa corrida]}.
 
-    El bloque de una corrida arranca en ``Corrida <ts>`` y las líneas de
-    precios (``precios: N/M OK`` / ``PRECIOS: ERROR ...``) caen dentro.
-    La clave es la FECHA del timestamp de la corrida (una corrida por día
-    en producción; si hubiera varias, se concatenan — cualquier ERROR del
-    día rompe (b)).
+    Bloque = ``[ts] data_updater: inicio`` … ``data_updater: fin`` (puede
+    haber varias corridas por día — p.ej. re-run manual del mediodía, como
+    el caso real del 02-09 que descubrió el bug del parseo por "Corrida").
+    La clave es la FECHA del inicio; las líneas de ambas corridas del mismo
+    día se concatenan — cualquier ``PRECIOS: ERROR`` del día rompe (b)).
     """
     days: Dict[str, List[str]] = {}
     cur: Optional[str] = None
     for line in text.splitlines():
-        m = _RE_UPDATER_CORRIDA.match(line)
+        m = _RE_UPDATER_INICIO.match(line)
         if m:
             cur = f"{m.group(1)}-{m.group(2)}-{m.group(3)}"
             days.setdefault(cur, [])
@@ -172,9 +181,14 @@ def parse_reconcile_lines(text: str) -> Dict[str, List[Dict]]:
     """Parsea pipeline_diario.log → {fecha: [{orphan_closed, unexplained}]}.
 
     Toda línea ``reconcile orphan_closed=N unexplained=M`` con timestamp
-    del pipeline_diario.log, agrupada por FECHA del timestamp (el
-    reconciller corre en la fase decide y también manual; lo que importa
-    es la última línea del día — unexplained es un conteo puntual).
+    del pipeline_diario.log, agrupada por FECHA del timestamp. Importa la
+    última línea del día — unexplained es un conteo puntual.
+
+    NOTA anti-contaminación: los tests de pytest escriben líneas reconcile
+    FALSAS al log canónico (test_pipeline_daily_signal.py, hasta fix 2026-
+    09-06). Este parseo es vulnerable a eso — la activación por cadencia
+    (ver ``daily_reconcile_active``) mitiga lo ya escrito: solo las líneas
+    caídas en horas válidas de corridas 22:10 cuentan como verificación.
     """
     out: Dict[str, List[Dict]] = {}
     for line in text.splitlines():
@@ -185,6 +199,37 @@ def parse_reconcile_lines(text: str) -> Dict[str, List[Dict]]:
     return out
 
 
+def daily_reconcile_active(reconcile_by_day: Dict[str, List[Dict]],
+                           date_str: str) -> bool:
+    """¿El reconciler diario estaba activo en la fecha dada? (aprobación Boris 2026-09-06)
+
+    No usa una constante mágica de fecha (que desincronizaría con el merge a
+    main): se CALIBRA con la evidencia del propio log — el reconciler diario
+    está activo desde el primer par de WEEKDAYS adyacentes ambos con líneas
+    reconcile (el patrón de la corrida real 22:10 de lunes a viernes; las
+    líneas de tests manuales caen a horas arbitrarias y en clusters de un
+    mismo día o fines de semana, y JAMÁS en dos weekdays consecutivos con
+    corrida nocturna). Desde esa fecha de activación en adelante, TODO
+    weekday se considera bajo cadencia diaria: la ausencia de línea propia
+    es evidencia de corrida faltante, no de ausencia de sistema.
+    """
+    days_sorted = sorted(reconcile_by_day)
+    activation = None
+    for prev, cur in zip(days_sorted, days_sorted[1:]):
+        d_prev, d_cur = dt.date.fromisoformat(prev), dt.date.fromisoformat(cur)
+        gap = (d_cur - d_prev).days
+        # par de días CONSECUTIVOS de semana (Lun-Vie) ambos con líneas:
+        # lunes→martes tras fin de semana (gap 1) o viernes→lunes (gap 3).
+        if (d_prev.weekday() < 5 and d_cur.weekday() < 5
+                and gap in (1, 3)):
+            activation = d_prev
+            break
+    if activation is None:
+        return False
+    date = dt.date.fromisoformat(date_str)
+    return date >= activation and date.weekday() < 5
+
+
 def evaluar_condicion_c(reconcile_by_day: Dict[str, List[Dict]],
                         state_reconcile: Optional[Dict], date_str: str,
                         reconciler_start: dt.date = RECONCILER_START) -> Dict:
@@ -192,9 +237,12 @@ def evaluar_condicion_c(reconcile_by_day: Dict[str, List[Dict]],
 
     Prioridad de fuentes: (1) última línea ``reconcile`` del día en
     pipeline_diario.log; (2) state['reconcile'] de pipeline_state.json si
-    su fecha coincide con el día evaluado (exit_date); (3) si el día es
-    anterior al arranque del reconciler → ``UNVERIFIED_C`` (no suma, no
-    rompe racha retroactivamente — decisión pre-declarada de Boris §A2).
+    su fecha coincide con el día evaluado (exit_date); (3) sin evidencia:
+    - día anterior al arranque del reconciler → ``UNVERIFIED_C`` (no suma,
+      no rompe racha retroactivamente — decisión pre-declarada de Boris §A2)
+    - día posterior a la activación del reconciler DIARIO (2026-09-06) sin
+      línea propia → FALLO verificado: la corrida 22:10 debió dejar
+      evidencia; su ausencia es un día con (c) rota, no un día sin evaluar.
 
     Nota: ``orphan_closed > 0`` NO rompe (c) — el reconciler cerrar
     huérfanas con pnl_r real es SU trabajo. Solo ``unexplained > 0``
@@ -219,26 +267,44 @@ def evaluar_condicion_c(reconcile_by_day: Dict[str, List[Dict]],
         return {"ok": False, "status": "UNVERIFIED_C",
                 "reason": "día anterior al arranque del reconciler (A1, "
                           f"{reconciler_start.isoformat()}) — no verificable"}
+    if daily_reconcile_active(reconcile_by_day, date_str):
+        return {"ok": False, "status": "MISSING_AFTER_DAILY",
+                "reason": "reconciler diario activo pero sin línea del día — "
+                          "la corrida 22:10 no dejó evidencia (fallo, no ausencia)"}
     return {"ok": False, "status": "UNVERIFIED_C",
-            "reason": "reconciler no corrió ese día (solo corre en fase decide)"}
+            "reason": "reconciler no corrió ese día (cadencia diaria no activa aún)"}
 
 
 # --------------------------------------------------------------------------
-# Día hábil y evaluación por día
+# Días evaluables y evaluación por día
 # --------------------------------------------------------------------------
 
 def business_days(updater_days: Dict[str, List[str]],
-                  pipeline_runs: Dict[str, Dict[int, int]]) -> List[str]:
-    """Días hábiles del registro: día de semana con corrida del updater.
+                  pipeline_runs: Dict[str, Dict[int, int]],
+                  last_date: Optional[str] = None) -> List[str]:
+    """Días hábiles EVALUABLES: todo weekday desde el gate (2026-09-02) hasta
+    el último día con evidencia.
 
-    La corrida del updater es la definición operativa de día hábil del
-    gate (ticket A2); si el updater no corrió no hay evidencia (b) y el
-    día no puede ser limpio de todos modos.
+    Semántica de racha del gate (misma que C1 — "racha de días limpios
+    ininterrumpida"): un weekday en el que el updater no corrió es un día
+    con el tubo MUERTO, no un día invisible — cuenta como hábil evaluable
+    y rompe la racha por (b) sin corrida. Solo el fin de semana no se
+    evalúa. Los días previos al gate no existen para el contador.
     """
-    days = set(updater_days) | set(d for d in pipeline_runs
-                                   if pipeline_runs[d])
-    return sorted(d for d in days
-                  if dt.date.fromisoformat(d).weekday() < 5)
+    gate_start = dt.date(2026, 9, 2)
+    days_with_evidence = set(updater_days) | set(d for d in pipeline_runs
+                                                 if pipeline_runs[d])
+    if last_date is None:
+        last_date = max(days_with_evidence) if days_with_evidence else None
+    out = []
+    if last_date is not None:
+        cur = gate_start
+        end = dt.date.fromisoformat(last_date)
+        while cur <= end:
+            if cur.weekday() < 5:
+                out.append(cur.isoformat())
+            cur += dt.timedelta(days=1)
+    return out
 
 
 def evaluar_dia(pipeline_runs, updater_days, reconcile_by_day,
@@ -250,8 +316,9 @@ def evaluar_dia(pipeline_runs, updater_days, reconcile_by_day,
     # UNVERIFIED_C solo "no corta racha" cuando es la ÚNICA evidencia
     # faltante: (a) y (b) verificadas OK (el día probablemente era limpio,
     # simplemente el reconciler no corrió aún). Si (a) o (b) tienen
-    # evidencia de FALLO, el día está verificado-roto y corta la racha
-    # aunque (c) quede sin verificar.
+    # evidencia de FALLO, o (c) es MISSING_AFTER_DAILY (reconciler diario
+    # activo que no dejó línea = corrida 22:10 rota), el día está
+    # verificado-roto y corta la racha.
     unverified_only_c = (c.get("status") == "UNVERIFIED_C"
                          and a["ok"] and b["ok"])
     clean = a["ok"] and b["ok"] and c["ok"]
@@ -324,7 +391,10 @@ def build_report_from_text(pipeline_log_text: str, updater_log_text: str,
         "generated_at": dt.datetime.now().isoformat(timespec="seconds"),
         "definicion": "día limpio = (a) rc=0 en 3 corridas programadas + "
                       "(b) updater sin PRECIOS: ERROR + (c) reconcile unexplained=0 "
-                      "(ROADMAP.md, fijada 2026-09-02; ver PLAN_REMEDIO_BRECHAS_20260903.md §A2)",
+                      "(ROADMAP.md, fijada 2026-09-02; ver PLAN_REMEDIO_BRECHAS_20260903.md §A2). "
+                      "Racha ininterrumpida: todo weekday desde el gate 2026-09-02 es "
+                      "evaluable; reconciler diario desde 2026-09-06 (aprobación Boris) "
+                      "— su ausencia ese día es fallo, no ausencia de evidencia.",
         **summary,
         "days": table,
     }

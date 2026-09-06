@@ -79,7 +79,16 @@ else
 fi
 
 echo "Fase detectada: $PHASE"
-"$VENV" -m scripts.pipeline_daily_signal --phase "$PHASE"
+# A1 diario (aprobación Boris 2026-09-06): el reconciler corre también en la
+# corrida 22:10 (phase health) para que la condición (c) del gate sea
+# verificable todos los días — con decide mensual la racha de 60 era
+# matemáticamente imposible. Solo en la ventana 22:10: las 9:35/15:40 son
+# health barato sin cliente. La shell decide el flag, el pipeline no adivina.
+RECONCILE_FLAG=""
+if [ "$HOUR_ET" -eq 22 ] && [ "$MIN_ET" -ge 5 ] && [ "$MIN_ET" -le 15 ]; then
+    RECONCILE_FLAG="--reconcile"
+fi
+"$VENV" -m scripts.pipeline_daily_signal --phase "$PHASE" $RECONCILE_FLAG
 rc=$?
 echo "pipeline_daily_signal end rc=$rc"
 
