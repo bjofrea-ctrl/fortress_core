@@ -48,14 +48,42 @@ Cline como implementadores). Verificar contra `git log --oneline -10`,
    NO cuenta y no rompe la racha retroactivamente — solo no suma. Universo:
    **102 confirmado en vivo desde 2026-09-02** (corrida 09:35 ya lo usó, sin
    paso de migración pendiente) — el contador no espera nada más para
-   arrancar. Criterio pre-declarado —
-   el mismo estándar que ya rige todos los trials formales del proyecto, no
-   uno nuevo más permisivo: **DSR≥0.90 en ≥2/3 ventanas**. Si a esa fecha
-   nada cruza el umbral: se decide CON DATOS entre (a) reducir el proyecto a
-   mantenimiento, (b) pivotar el frente de investigación, o (c) aceptarlo
-   como laboratorio personal sin aspiración de capital — no se seguirá
-   pateando la decisión sin condición de salida (esto es lo que el
-   pre-mortem señaló como causa real de burnout, no el código).
+   arrancar. **Criterio pre-declarado — RE-ESPECIFICADO por Boris el 2026-09-05**
+   (fundamento: `ANALISIS_MDE_GATE_DICIEMBRE_2026.md §6 opción 1`; el análisis
+   vive en la rama `bjofrea-ctrl/fundamentales-automatizado`, commit `c602a30`, y
+   llega al tronco con B5). El texto del 2026-09-02 queda reemplazado acá, en
+   este único lugar, y la re-especificación **no es precedente para tocar ningún
+   otro criterio estadístico**:
+
+   - **DSR≥0.90 en ≥2/3 ventanas se evalúa y sigue vigente SOLO sobre las
+     ventanas OOS históricas pre-corte (W1/W2/W3, ~500 días hábiles c/u).** No
+     es una barra nueva ni más permisiva: es exactamente el mismo estándar que ya
+     rigió todos los trials formales del proyecto, aplicado donde el diseño **sí
+     tiene potencia para decidir**. Sin cambios.
+   - **El gate de diciembre (paper prospectivo, ~60-90 días) verifica el TUBO, no
+     el edge.** Tres condiciones, todas medibles y ninguna de ellas una prueba de
+     descubrimiento: **(a)** racha de días limpios ininterrumpida bajo las
+     condiciones a+b+c ya definidas arriba; **(b)** `fill rate` y slippage
+     medidos (A5) dentro de lo que predice el modelo de costos; **(c)** coherencia
+     paper-vs-señal — las señales que debieron dispararse se dispararon, sin
+     discrepancias no explicadas.
+   - **Para que nadie lo lea al revés: esto NO es una segunda prueba estadística
+     de edge**, es un chequeo operativo de que el tubo corrió limpio y acumuló el
+     único activo que el proyecto necesita. **La prueba de edge sigue siendo la
+     de las ventanas OOS históricas.** Exigir DSR≥0.90 a ~60 días de paper con
+     horizonte semanal pedía un SR anual ~6.7-8.5 contra un efecto plausible de
+     0.10: era casi imposible por construcción y habría convertido el gate en
+     teatro — refutación garantizada por falta de potencia, no por falta de edge.
+   - **La condición de salida NO se toca**: si a la fecha el tubo no corre limpio
+     o la coherencia paper-vs-señal no se sostiene, se decide CON DATOS entre
+     (a) reducir el proyecto a mantenimiento, (b) pivotar el frente de
+     investigación, o (c) aceptarlo como laboratorio personal sin aspiración de
+     capital — no se seguirá pateando la decisión sin condición de salida (esto es
+     lo que el pre-mortem señaló como causa real de burnout, no el código).
+   - **Trabajo paralelo, sin bloquear nada**: se sigue acumulando data (intradía
+     B1, IV B2) con la aspiración declarada de alcanzar DSR≥0.90 también sobre
+     ventanas de paper más largas. Es aspiración, no precondición: no frena el
+     gate de diciembre mientras tanto.
    **Lo único permitido en paralelo mientras corre el gate** (mecánico,
    ninguno depende de investigación nueva): F0 de la auditoría (bugs, no
    decisiones), el colector intradía I3, telemetría de ejecución I9, y

@@ -1,5 +1,30 @@
 # Fortress Core — Memoria de Sesiones (Última sesión resumida)
 
+## 2026-09-05 — C1: re-especificación del criterio del gate de diciembre (Cline, plan 48h)
+
+**Qué**: se implementa en texto la decisión de Boris del 2026-09-05 sobre el gate de
+diciembre — la DSR≥0.90 se mantiene SOLO sobre las ventanas OOS históricas pre-corte
+(W1/W2/W3) y diciembre verifica el TUBO (racha de días limpios a+b+c + fill
+rate/slippage A5 + coherencia paper-vs-señal), no el edge desde cero. Fundamento:
+`ANALISIS_MDE_GATE_DICIEMBRE_2026.md §6 opción 1` (vive en la rama
+bjofrea-ctrl/fundamentales-automatizado c602a30, llega al tronco con B5; no se
+reinventa el argumento, solo se aplica).
+
+**Archivos**: `ROADMAP.md` (ítem 0 «REGLA VIGENTE — GATE», reemplaza el criterio
+pre-declarado del 2026-09-02 por la re-especificación; la condición de salida no se
+toca) y `PLAN_REMEDIO_BRECHAS_20260903.md` (definición de C1 en FASE C — verifica
+tubo no edge + clarificador en «Qué NO remedia este plan»). **No se toca código**
+(no backtest_engine ni estimador DSR) — docs only.
+
+**Verificación**: B5 verificado independientemente corriendo
+`pytest tests/test_mde_power.py -q` en el worktree fundamentales-automatizado →
+14 passed (además de la confirmación de la sesión B5: 706/4 preexistentes). C1 sin
+prueba porque no toca código.
+
+**Rama**: `bjofrea-ctrl/gate-c1-diciembre` (base `tmp-merge-check`). **No mergeado a
+main** — queda listo para el orquestador tras la suite completa de la rama de
+integración.
+
 ## 2026-09-03 — Cierre Fase A del gate: A7, A8, A9 + 3 fixes de auditoría (Cline)
 
 **Qué**: se completaron los tres tickets pendientes de `PLAN_REMEDIO_BRECHAS_20260903.md`
