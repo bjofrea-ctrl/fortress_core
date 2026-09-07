@@ -3763,7 +3763,62 @@ en el mismo worktree fundamentales-automatizado, pidiéndole retomar sus
 tareas pendientes. Kilo reenvió el task por orca terminal send (la
 reasignación vía worker-start falló por mismatch de worktree en el Run
 bindeado). Cline trabaja con el contexto completo en SESSION_LOG.md
-del worktree (sección 2026-09-07 mañana).
+del worktree (sección 2026-09-07 mañana).*Fin de Sesión — 2026-09-07 (Cline)*
+---
+
+## 2026-09-07 — Fix tests task_9b16891015ee: predict_cache fixture + raíz test_backtest_2023 (Cline)
+
+**Re-encuadre de Kilo** (terminal anterior cerró mid-task; task `task_9b16891015ee`,
+dispatch `ctx_670dfe5c57b6`, autorizado por Boris). Los 2 archivos que la sesión
+2026-09-07 había dejado como "suciedad preexistente NO de mis tickets"
+(`test_config_registry.py` + `test_predict_cache.py`) resultaron ser JUSTO mi
+tarea pendiente. Cierro ambos aquí.
+
+**(1) `test_predict_cache.py` (3 tests que serializan):** el fixture `SimpleNamespace`
+`_fake_result` ahora incluye `motor="heuristico_no_validado"` y
+`probabilidades_calibradas=False`, que `_serialize_result` lee SIEMPRE en
+`app/api/routes/predict.py:169-170`. Sin ellos: `AttributeError` al serializar.
+Fix test-only. **5/5 pass.**
+
+**(2) `test_config_registry.py::test_backtest_2023_inalterado_por_ajuste_futuro` —
+RAÍZ INVESTIGADA CON EVIDENCIA (no de memoria):**
+
+CATEGORÍA: **(a)/(c) bug de test / aislamiento mal puesto — NO (b) fuga de
+lookahead en `config_registry`** (descartada de forma definitiva).
+
+- **Evidencia régimen:** corrí `GlobalRegimeClassifier` real (HMM estocástico,
+  `random_state=42`) sobre el panel sintético 2023 → lo clasifica como **régimen 3
+  (DEFLATION) en 141/256 días** (causal-fit hasta 2022 → régimen 3). Y
+  `signal_engine.generate_signal` (`signal_engine.py:197`) hace
+  `if regime_state == 3: return None` ⇒ el backtest 2023 no abre posiciones ⇒
+  `total_trades == 0` ⇒ falla la precondición `assert total_trades > 0`.
+- **Evidencia SIN FUGA:** `get_at` es lookup puramente point-in-time
+  (`WHERE key=? AND valid_from <= ? ORDER BY version DESC LIMIT 1`). Lo verifiqué
+  empíricamente: lookup 2023 = `0.08` **antes y después** de un ajuste futuro
+  (valid_from 2024); lookup 2024 = `0.50`. No hay mecanismo de fuga posible → (b)
+  queda cerrada.
+- **Conclusión:** la unidad bajo test es la reconstrucción PIT de `ConfigRegistry`,
+  no el HMM. El test estaba acoplado a un clasificador estocástico frágil (ya se
+  rompió antes por lo mismo; depende de hmmlearn/versiones). No es bug de motor.
+
+**FIX (test-only, ya en el árbol, ahora VERIFICADO):** `_FixedRegimeClassifier`
+fija régimen 2 (STAGFLATION, donde la estrategia opera) aislando la unidad bajo
+test del HMM, + `_build_2023_panel` con `drift=0.003/sd=0.012` para que el score
+compuesto supere el gate `overall >= 0.6` y el backtest opere. Test pasa
+(251s standalone; dentro de la regresión).
+
+**Regresión:** `test_config_registry` + `test_backtest_engine` +
+`test_predict_cache` → **37 passed en 1031s (0:17:11)**.
+
+**Commit:** `5479df7` en rama `bjofrea-ctrl/fundamentales-automatizado` (solo los 2
+test files, +54/−10). **Sin push/merge** (Kilo verifica y mergea por protocolo).
+
+**Pendiente fuera de scope:** `backend/scripts/explore_smc_ob_*.py` +
+`backend/data/cache/explore_smc_ob_*.txt` siguen sin trackear (exploración de hoy,
+no de este ticket). Decisión de Boris/Kilo: commitear aparte o descartar.
+
+*Fin de Sesión — 2026-09-07 (Cline)*
+
 
 M5 sigue ACTIVO en producción: caffeinate -i -s (PID 63704) hasta las
 16:05 ET, intraday de hoy captura la sesión completa sin gaps de
