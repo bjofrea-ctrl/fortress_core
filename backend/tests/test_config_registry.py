@@ -23,6 +23,7 @@ from app.core import adaptive_risk
 from app.core.adaptive_risk import AdaptiveRiskManager
 from app.core.backtest_engine import BacktestEngine
 from app.core.config_registry import INITIAL_ESTIMATE, ConfigRegistry
+from app.core.regime_classifier import GlobalRegimeClassifier
 
 _MARKET_TICKERS = ["SPY", "EFA", "QQQ", "GLD", "DBC", "TIP", "TLT", "AGG", "^VIX"]
 
@@ -150,10 +151,14 @@ def test_check_all_stops_registra_la_fecha_del_backtest(monkeypatch, tmp_path):
 # ---------- Criterio 2: backtest 2023 inalterado por un ajuste futuro ----------
 
 
-def _build_2023_panel(n=1350, drift=0.0008, sd=0.005, seed=42, floor=-0.02):
+def _build_2023_panel(n=1350, drift=0.003, sd=0.012, seed=42, floor=-0.02):
     """Panel sintético determinístico (mismo seed que el HMM random_state=42):
-    tendencia suave + ruido pequeño, calibrado para que generate_signal opere
-    varias veces durante 2023 en régimen 2 (verificado empíricamente)."""
+    tendencia marcada + ruido moderado, calibrado para que generate_signal
+    opere varias veces durante 2023. Parámetros ajustados (drift 0.003 / sd
+    0.012) para que el score compuesto momentum+rsi supere el gate `overall
+    >= 0.6` de SignalEngine en ~150/260 días de 2023 (el panel original con
+    drift 0.0008 quedaba en overall ~0.43 y no generaba señales). El régimen
+    lo fija _FixedRegimeClassifier en el test (ver su docstring)."""
     dates = pd.bdate_range("2019-01-01", periods=n)
     rng = np.random.default_rng(seed)
     rets = drift + rng.normal(0, sd, n)
@@ -194,6 +199,36 @@ class _RecordingEngine(BacktestEngine):
         return _RecordingRiskManager(self.initial_capital, self._capture)
 
 
+class _FixedRegimeClassifier:
+    """Clasificador de régimen determinista (siempre régimen 2 / STAGFLATION).
+
+    Aísla la prueba de ConfigRegistry del HMM estocástico de regime_classifier.
+
+    Root cause de la falla (SESSION_LOG / ROADMAP, "test_backtest_2023"):
+    `_build_2023_panel` era clasificado por GlobalRegimeClassifier como régimen
+    3 (DEFLATION) durante casi todo 2023, y `SignalEngine.generate_signal` hace
+    `return None` cuando `regime_state == 3` (signal_engine.py:197) -> el
+    backtest no abre ninguna posición (total_trades == 0) y la precondición
+    `assert res_before["metrics"]["total_trades"] > 0` falla. El mapeo
+    HMM->régimen es frágil (depende de la versión de hmmlearn y de los internos
+    del clasificador) y ya se rompió una vez de forma idéntica.
+
+    La unidad bajo test es ConfigRegistry (no el HMM), así que fijamos el
+    régimen en 2 —el que este test está diseñado a ejercitar— y así el backtest
+    opera y la reconstrucción point-in-time (get_at por valid_from <= fecha) se
+    valida de forma determinista. REGIME_ALLOCATION se hereda del clasificador
+    real para no alterar la lógica de exposición por régimen.
+    """
+
+    REGIME_ALLOCATION = GlobalRegimeClassifier.REGIME_ALLOCATION
+
+    def fit(self, price_data, *args, **kwargs):
+        return None
+
+    def predict_current_regime(self, price_data, *args, **kwargs):
+        return {"state": 2, "state_name": "STAGFLATION"}
+
+
 def test_backtest_2023_inalterado_por_ajuste_futuro(monkeypatch, tmp_path):
     registry = ConfigRegistry(str(tmp_path / "backtest.db"))
     monkeypatch.setattr(adaptive_risk, "_REGISTRY", registry)
@@ -202,10 +237,15 @@ def test_backtest_2023_inalterado_por_ajuste_futuro(monkeypatch, tmp_path):
     market = {t: panel.copy() for t in _MARKET_TICKERS}
     start, end = pd.Timestamp("2023-01-02"), pd.Timestamp("2023-12-31")
 
+    def _run(capture):
+        # Régimen fijado en 2 (ver _FixedRegimeClassifier): aísla la prueba del
+        # HMM estocástico y garantiza que el backtest opere en 2023.
+        engine = _RecordingEngine(capture, initial_capital=25000)
+        engine.regime_classifier = _FixedRegimeClassifier()
+        return engine.run({"SYN": panel}, market, start, end)
+
     capture_before = []
-    res_before = _RecordingEngine(capture_before, initial_capital=25000).run(
-        {"SYN": panel}, market, start, end
-    )
+    res_before = _run(capture_before)
     assert res_before["metrics"]["total_trades"] > 0, "el panel sintético debe operar en 2023"
 
     # Ajuste FUTURO (2024) del stop del régimen que opera en este backtest (2).
@@ -216,9 +256,7 @@ def test_backtest_2023_inalterado_por_ajuste_futuro(monkeypatch, tmp_path):
     )
 
     capture_after = []
-    res_after = _RecordingEngine(capture_after, initial_capital=25000).run(
-        {"SYN": panel}, market, start, end
-    )
+    res_after = _run(capture_after)
 
     # (a) resultados del MISMO backtest 2023: idénticos
     assert res_after["metrics"] == res_before["metrics"]
@@ -246,5 +284,5 @@ def test_backtest_2023_inalterado_por_ajuste_futuro(monkeypatch, tmp_path):
         valid_from=datetime(2020, 1, 1, tzinfo=timezone.utc),
     )
     monkeypatch.setattr(adaptive_risk, "_REGISTRY", alt_registry)
-    res_alt = _RecordingEngine([], initial_capital=25000).run({"SYN": panel}, market, start, end)
+    res_alt = _run([])
     assert res_alt["metrics"] != res_before["metrics"]

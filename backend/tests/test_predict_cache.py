@@ -27,6 +27,12 @@ def _df(n=250, seed=1):
 def _fake_result(symbol="TESTA"):
     return SimpleNamespace(
         symbol=symbol, timestamp="2024-01-02T00:00:00",
+        # F0.2 (AUDITORIA_NIVEL_DIOS_20260902): _serialize_result (predict.py:169-170)
+        # lee SIEMPRE estos dos campos del PredictionResult real. El fixture debe
+        # reflejarlos o AttributeError al serializar. Coinciden con los valores
+        # por defecto del endpoint (siempre "heuristico_no_validado" / False).
+        motor="heuristico_no_validado",
+        probabilidades_calibradas=False,
         regime_state=0, regime_name="GOLDILOCKS",
         technical_score=0.3, fundamental_score=0.1, macro_score=0.2,
         sentiment_score=0.0, volatility_score=0.1, composite_score=0.55,
