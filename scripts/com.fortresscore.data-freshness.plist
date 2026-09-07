@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.fortresscore.data-freshness</string>
+    <key>ProgramArguments</key>
+    <array>
+        <string>/usr/bin/python3</string>
+        <string>/Users/boris/Desktop/fortress_core/scripts/check_session_log_freshness.py</string>
+    </array>
+    <key>StartInterval</key>
+    <integer>14400</integer>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>StandardOutPath</key>
+    <string>/Users/boris/Desktop/fortress_core/scripts/data_freshness_launchd.log</string>
+    <key>StandardErrorPath</key>
+    <string>/Users/boris/Desktop/fortress_core/scripts/data_freshness_launchd.log</string>
+</dict>
+</plist>

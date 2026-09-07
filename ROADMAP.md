@@ -195,8 +195,12 @@ Cline como implementadores). Verificar contra `git log --oneline -10`,
 >   frescos de los demás, que el guard liviano no descarga; el hard-flag la captura como
 >   proxy. Test: `backend/tests/test_cache_integrity_m4.py` (3 tests, todos PASS).
 > - **M3 — ritual de cierre de sesión**: `scripts/check_session_log_freshness.py` avisa
->   (WARNING, exit 1) si SESSION_LOG.md no tiene entrada en 48h; entry catch-up 04-06 sep
->   agregada en SESSION_LOG.md. Falta: merge a main + correr suite completa.
+>   (WARNING, exit 1) si SESSION_LOG.md no tiene entrada en 48h. Fix de auditoría (07-09):
+>   ahora parsea SOLO headers `## ` (primera fecha YYYY-MM-DD de la línea, cubre ambos
+>   formatos del log) e ignora/clampa fechas futuras (WARNING, no OK). Cableado al latido
+>   vía `scripts/com.fortresscore.data-freshness.plist` (StartInterval 4h, RunAtLoad).
+>   Test: `scripts/test_check_session_log_freshness.py` (4 tests: fecha futura->WARN,
+>   >48h->rc1, reciente->OK, fecha-en-cuerpo no engaña). Falta: merge a main.
 > 
 
 

@@ -3654,4 +3654,26 @@ Pendientes de la auditoría externa que SIGUEN abiertos:
 - M5 política Mac despierta en horario de mercado — decisión de Boris.
 - M6 parcial: I2/I8 sin registrar como post-gate en ROADMAP.
 - test_backtest_2023 + 3 fixtures predict_cache — aprobados para Cline,
-  aún no iniciados (no bloquean).
+  aún no iniciados (no bloquean).---
+
+## 2026-09-07 — M3-fix: auditoría de frescura del SESSION_LOG (Cline)
+
+**Asignación de Kilo (task_765db546e5dd, autorizado por Boris).** Auditoría del
+07-09 encontró 2 brechas en el M3 original:
+
+1. **Ciego a fechas futuras.** El regex agarraba CUALQUIER fecha del texto; una
+   cita de '2026-12-01' en el *cuerpo* daba edad -2032h y reportaba OK. Fix:
+   parsear SOLO headers `## ` (primera `YYYY-MM-DD` de la línea). Esto cubre los
+   dos formatos reales del log (`## 2026-09-06 — ...` y `## B8 — ... (2026-09-06,
+   Cline)`) y descarta fechas en el cuerpo. Fecha futura -> WARNING + rc=1 (nunca OK).
+2. **No cableado a ningún launchd.** Fix: creado `scripts/com.fortresscore.data-freshness.plist`
+   (Label `com.fortresscore.data-freshness`, `/usr/bin/python3` sobre el script,
+   `StartInterval` 14400 = 4h, `RunAtLoad`, log a `data_freshness_launchd.log`) —
+   el latido de frescura del repo.
+
+Tests: `scripts/test_check_session_log_freshness.py` (4 tests PASS: fecha futura->WARNING,
+>48h->rc1, entrada reciente->OK, fecha-en-cuerpo-no-engana). El script sobre el
+SESSION_LOG real ahora da OK (ultima entrada 2026-09-06, 32h). Commiteado en la
+rama `bjofrea-ctrl/fundamentales-automatizado` (sin push/merge; Kilo verifica).
+
+*Fin de Sesión — 2026-09-07 (Cline)*
