@@ -3858,3 +3858,46 @@ ORCHESTRATOR_INBOX.md + log. Kilo lee el inbox y da continuidad
 (verificar → merge → asignar siguiente). Baseline auto-registrada.
 
 main = 63def1a pusheada. Ambas tasks cerradas en orca.
+
+## 2026-09-07 (noche) — AUDITORÍA PROFUNDA: hallazgo crítico de TZ + delegación (Kilo)
+
+Auditoría de punta a punta pedida por Boris ("¿todo funcionando como
+esperamos?"). Respuesta honesta: NO — el gate estaba roto en silencio
+por tercera vez, ahora por zona horaria.
+
+HALLAZGO 1 — CRÍTICO: desfase launchd↔shell. Los plists disparan en
+hora LOCAL ART; la shell computa ET real; las ventanas 9/15/22 ET nunca
+matcheaban (hour_ET logueado 08/14/21 en TODAS las corridas post-merge).
+Consecuencias verificadas: 0 líneas reconcile en pipeline_diario.log
+(el reconciler diario JAMÁS corrió por launchd), clean_days.json solo se
+regeneró manualmente, y el decide mensual no habría disparado nunca.
+STOP-GAP aplicado por Kilo AHORA: plist del pipeline → 10:35/16:40/23:10
+ART (= 9:35/15:40/22:10 ET). Esta noche (23:10 ART) es la PRIMERA corrida
+real del sistema con --reconcile. Riesgo residual: 2/11 EST rompe el
+stop-gap (+2h) → fix de raíz delegado a Cline: scripts/tz_dispatcher.sh
+DST-proof (launchd cada 5 min, dispara por ventana ET con anti-doble).
+
+HALLAZGO 2 — CRÍTICO (datos): fundamentals_screen rc=3 desde el 04/09 —
+FMP empty/invalid 510/510 fetches, dashboard sirve stale sin marcar.
+Delegado a Cline (diagnóstico key/cuota/endpoint + cross-check Finnhub
+B0 como respaldo + flag STALE).
+
+HALLAZGO 3 — VERIFICADO OK (falsa alarma inicial): keepawake M5. Guard
+ET del script mató caffeinate exactamente 16:06 ET. Bucle dormido hasta
+mañana 09:25 ET. Correcto.
+
+HALLAZGO 4 — MENOR: plists sin documentar relación ART/ET (mismo patrón
+causal del hallazgo 1). Delegado a OpenCode: documentación + auditoría
+PLIST_TZ_AUDIT.md de los 14 jobs.
+
+HALLAZGO 5 — MENOR: M3 check_session_log_freshness posiblemente no
+integrado en la salida del latido. Delegado a OpenCode (verificación +
+cableado).
+
+Higiene: 2 stashes sin popear (pendiente menor); hash-guard rc=0;
+suite main sin fallas conocidas (las 4 históricas en 0); worktrees
+agentes limpios.
+
+Delegación: task_53589bf75d31 (Cline: TZ-dispatcher + FMP, URGENTE) y
+task_e4e345a8e442 (OpenCode: plist-docs + latido). Ambos notificados en
+sus terminales. El agent_watcher detectará las entregas.
