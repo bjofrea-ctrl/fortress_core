@@ -419,7 +419,7 @@ def test_reconcile_dia_limpio_sin_huerfanas_ni_inexplicadas(tmp_path):
     assert [r["signal_id"] for r in led.open_orders()] == ["SYNC__2026-08-03"]
 
 
-def test_reconcile_escribe_al_log_canonico_scripts_del_repo(tmp_path):
+def test_reconcile_escribe_al_log_canonico_scripts_del_repo(tmp_path, monkeypatch):
     # A1 regresión: DIARIO_LOG debe apuntar al log canónico que la shell
     # redirige (scripts/pipeline_diario.log en la RAÍZ del repo, no a
     # backend/scripts/). Es el archivo que A2 va a parsear para la condición
@@ -439,9 +439,84 @@ def test_reconcile_escribe_al_log_canonico_scripts_del_repo(tmp_path):
     )
 
     # La línea de reconcile cae AHÍ usando el default (sin log_path override).
+    # ANTI-CONTAMINACIÓN (fix 2026-09-06): versiones previas de este test
+    # corrían el reconcile contra el log REAL (worktree o producción) en cada
+    # pytest — dejó líneas "reconcile ..." falsas que A2 podía leer como
+    # evidencia (c) de días en que el reconciler jamás corrió. Ahora el
+    # default DIARIO_LOG se resuelve EN runtime dentro de append_diario_log,
+    # así que el monkeypatch redirige el append al sandbox y este test
+    # verifica exactamente eso: la línea cae en el path redirigido.
+    sandbox_log = tmp_path / "pipeline_diario.log"
+    canonico_antes = canonico.read_text(encoding="utf-8") if canonico.exists() else ""
+    if canonico_antes:
+        sandbox_log.write_text(canonico_antes, encoding="utf-8")
+    monkeypatch.setattr(pl, "DIARIO_LOG", str(sandbox_log))
     led = _sembrar_ledger(tmp_path, ("ORPH__2026-08-03", "ORPH", 100.0))
     client = ReconFakeClient(positions=[], prices={"ORPH": 110.0})
     pl.reconcile_orphans(led, client, exit_date="2026-09-02")
-    assert canonico.exists()
-    with open(canonico, encoding="utf-8") as fh:
+    with open(sandbox_log, encoding="utf-8") as fh:
+        assert "reconcile orphan_closed=1 unexplained=0" in fh.read()
+    # Y el log canónico del repo NO creció con esta corrida del test: la
+    # línea nueva vive SOLO en el sandbox (snapshot antes == después).
+    canonico_despues = canonico.read_text(encoding="utf-8") if canonico.exists() else ""
+    assert canonico_despues == canonico_antes
+
+
+# ---------------- A1 reconciler DIARIO en health 22:10 (aprobación Boris 2026-09-06)
+
+def test_run_reconcile_cierra_huerfana_y_registra_en_state(tmp_path, monkeypatch):
+    # _run_reconcile (el bloque compartido decide/health): misma mecánica A1,
+    # nunca lanza, deja state['reconcile'] + línea parseable.
+    monkeypatch.setattr(pl, "DIARIO_LOG", str(tmp_path / "pipeline_diario.log"))
+    led = _sembrar_ledger(tmp_path, ("ORPH__2026-08-03", "ORPH", 100.0))
+    client = ReconFakeClient(positions=[], prices={"ORPH": 110.0})
+    lines = []
+    pl._run_reconcile(lines, payload=None, ledger=led,
+                      client_factory=lambda: client, today_iso="2026-09-07")
+    assert any("orphan_closed=1" in ln for ln in lines)
+    # state persistido con el resultado del reconcile
+    state = pl.load_state()
+    assert state["reconcile"]["unexplained"] == 0
+    assert state["reconcile"]["orphan_closed"] == 1
+    # línea parseable en el log (la que A2 lee como condición (c))
+    with open(tmp_path / "pipeline_diario.log", encoding="utf-8") as fh:
+        assert "reconcile orphan_closed=1 unexplained=0" in fh.read()
+
+
+def test_run_reconcile_sin_ledger_registra_unavailable_visible(tmp_path):
+    # cliente inexistente -> warn VISIBLE en lines, no un 0/0 falso, sin lanzar
+    lines = []
+    pl._run_reconcile(lines, payload=None, ledger=None,
+                      client_factory=lambda: (_ for _ in ()).throw(
+                          RuntimeError("sin credenciales")),
+                      today_iso="2026-09-07")
+    assert any("reconcile" in ln and ("no construible" in ln or "falló" in ln)
+               for ln in lines)
+
+
+def test_run_reconcile_cliente_roto_no_lanza(tmp_path, monkeypatch):
+    # un reconcile roto se ve en el log, no rompe la fase health
+    monkeypatch.setattr(pl, "DIARIO_LOG", str(tmp_path / "pipeline_diario.log"))
+
+    def boom():
+        raise RuntimeError("cliente roto")
+
+    lines = []
+    pl._run_reconcile(lines, payload=None, ledger=None,
+                      client_factory=boom, today_iso="2026-09-07")
+    assert any("no construible" in ln or "falló" in ln for ln in lines)
+
+
+def test_phase_health_reconcile_flag_invoca_reconciler(tmp_path, monkeypatch):
+    # health --reconcile: deja línea en el log + state['reconcile'] del día.
+    # Sin flag: reconcile='not_run' (health 9:35/15:40 sigue siendo barato).
+    monkeypatch.setattr(pl, "DIARIO_LOG", str(tmp_path / "pipeline_diario.log"))
+    led = _sembrar_ledger(tmp_path, ("ORPH__2026-08-03", "ORPH", 100.0))
+    client = ReconFakeClient(positions=[], prices={"ORPH": 110.0})
+    monkeypatch.setattr("app.core.signal_ledger.SignalLedger", lambda: led)
+
+    # fase health CON reconcile: el reconciler corre y la línea cae al log
+    rc = pl.phase_health(reconcile=True)
+    assert rc in (0, 1, 2)  # el rc lo definen cache/hash-guard, no el reconcile
+    with open(tmp_path / "pipeline_diario.log", encoding="utf-8") as fh:
         assert "reconcile orphan_closed=1 unexplained=0" in fh.read()

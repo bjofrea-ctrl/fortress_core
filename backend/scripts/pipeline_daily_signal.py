@@ -544,8 +544,17 @@ def _cache_stale_ruedas() -> Optional[int]:
 # A1 reconciler (PLAN_REMEDIO_BRECHAS_20260903.md §A1) — condición (c) del gate
 # --------------------------------------------------------------------------
 
-def append_diario_log(line: str, path: str = DIARIO_LOG) -> None:
-    """Append con timestamp al log canónico del pipeline (scripts/pipeline_diario.log)."""
+def append_diario_log(line: str, path: Optional[str] = None) -> None:
+    """Append con timestamp al log canónico del pipeline (scripts/pipeline_diario.log).
+
+    ``path=None`` resuelve ``DIARIO_LOG`` EN runtime (no default ligado al
+    import): permite a los tests redirigir el append a un sandbox con
+    monkeypatch.setattr(pl, 'DIARIO_LOG', ...) sin tocar el log de producción
+    — versiones previas contaminaban pipeline_diario.log real en cada pytest
+    con líneas reconcile falsas que A2 podía leer como evidencia (c).
+    """
+    if path is None:
+        path = DIARIO_LOG
     ts = dt.datetime.now().isoformat(timespec="seconds")
     with open(path, "a", encoding="utf-8") as fh:
         fh.write(f"{ts} [pipeline] {line}\n")
@@ -557,7 +566,7 @@ def reconcile_orphans(
     exit_date: str,
     exit_reason: str = "RECONCILE",
     state: Optional[Dict[str, Any]] = None,
-    log_path: str = DIARIO_LOG,
+    log_path: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Cierre contable de órdenes huérfanas + posiciones sin explicación (A1).
 
@@ -724,6 +733,54 @@ def phase_decide(dry_run: bool, inject_symbols: Optional[List[str]] = None,
                 payload["reconcile"] = {"status": "error", "reason": str(exc)[:120]}
     _artifact(lines, payload, "decide")
     return 0
+
+
+def _run_reconcile(lines: List[str], payload: Optional[Dict[str, Any]] = None,
+                   ledger=None, client_factory=None, today_iso: Optional[str] = None
+                   ) -> None:
+    """Reconciler A1 reutilizable (decide + health 22:10) — condición (c) del gate.
+
+    Mismo contrato que el bloque histórico de phase_decide: cierra órdenes
+    huérfanas con pnl_r real, cuenta posiciones inexplicadas, persiste
+    state['reconcile'] y deja la línea parseable en pipeline_diario.log.
+    Si ledger/cliente no existen se registra 'unavailable' — NUNCA se
+    inventa un 0/0 como si la condición (c) hubiera quedado verificada.
+    Nunca lanza: un reconcile roto se ve en el log, no rompe la fase.
+    """
+    if today_iso is None:
+        today_iso = dt.date.today().isoformat()
+    result_key = "reconcile"
+    _led = ledger
+    if _led is None:
+        try:
+            from app.core.signal_ledger import SignalLedger
+            _led = SignalLedger()
+        except Exception as exc:  # noqa: BLE001
+            lines.append(f"[warn] reconcile: ledger no disponible ({str(exc)[:60]})")
+            if payload is not None:
+                payload[result_key] = {"status": "unavailable", "reason": "ledger_no_disponible"}
+            return
+    _client = None
+    try:
+        _fac = client_factory if client_factory is not None else _make_client_factory()
+        _client = _fac()
+    except Exception as exc:  # noqa: BLE001
+        lines.append(f"[warn] reconcile: cliente no construible ({str(exc)[:60]})")
+        if payload is not None:
+            payload[result_key] = {"status": "unavailable", "reason": "cliente_no_disponible"}
+        return
+    try:
+        state = load_state()
+        result = reconcile_orphans(_led, _client, exit_date=today_iso, state=state)
+        save_state(state)
+        if payload is not None:
+            payload[result_key] = result
+        lines.append(f"Reconcile: orphan_closed={result['orphan_closed']} "
+                     f"unexplained={result['unexplained']}")
+    except Exception as exc:  # noqa: BLE001
+        lines.append(f"[warn] reconcile falló ({str(exc)[:80]})")
+        if payload is not None:
+            payload[result_key] = {"status": "error", "reason": str(exc)[:120]}
 
 
 def plan_exit_from_ledger(open_rows: List[Dict[str, Any]],
@@ -958,7 +1015,7 @@ def phase_exit(dry_run: bool, only_symbols: Optional[List[str]]) -> int:
     return 0
 
 
-def phase_health() -> int:
+def phase_health(reconcile: bool = False) -> int:
     lines = ["Pipeline HEALTH", "=" * 40]
     stale = _cache_stale_days()
     ok = stale <= STALENESS_MAX_DAYS
@@ -999,6 +1056,23 @@ def phase_health() -> int:
     err_n = sum(1 for e in state["entries"].values() if e.get("status") == "ERROR")
     lines.append(f"Estado: {open_n} OPEN / {closed_n} CLOSED / {err_n} ERROR | meses: {list(state.get('months', {}).keys())}")
     lines.append(f"Hoy: {dt.date.today()} | fase auto sugerida: {detect_auto_phase()}")
+    # --- A1 reconciler DIARIO en la ventana 22:10 (aprobación Boris 2026-09-06) ---
+    # La condición (c) del gate exige verificar el ledger todos los días, pero
+    # el reconciler solo corría en decide (mensual) → (c) verificable ~1 día/mes
+    # → la racha de 60 era matemáticamente imposible. La shell pasa --reconcile
+    # SOLO en la corrida 22:10 (tras el updater, con el día completo en el log);
+    # las 9:35/15:40 siguen siendo health barato sin cliente. Idempotente: solo
+    # toca huérfanas, y su resultado queda en state['reconcile'] + log diario.
+    reconcile_payload: Dict[str, Any] = {}
+    if reconcile:
+        _run_reconcile(lines, payload=None, ledger=None, client_factory=None,
+                        today_iso=dt.date.today().isoformat())
+        # El estado de (c) de HOY queda visible en el artefacto health.
+        try:
+            rec = load_state().get("reconcile") or {}
+        except Exception:  # noqa: BLE001
+            rec = {}
+        reconcile_payload = rec
     # --- A4 hash-guard (PLAN_REMEDIO_BRECHAS_20260903.md §A4) ---
     # Verifica que los 7 módulos críticos del motor siguen idénticos al
     # momento de arranque del gate. Si alguno driftó sin bump declarado,
@@ -1032,7 +1106,8 @@ def phase_health() -> int:
     payload = {"phase": "health", "stale_days": stale, "cache_ok": ok,
                "open": open_n, "closed": closed_n, "errors": err_n,
                "hash_ok": hash_ok, "hash_drift": drifted,
-               "manifest_commit": manifest.get("commit") if manifest_present else None}
+               "manifest_commit": manifest.get("commit") if manifest_present else None,
+               "reconcile": reconcile_payload if reconcile else "not_run"}
     _artifact(lines, payload, "health")
     # rc=2 si hash driftó (A4); rc=1 si cache estancado; rc=0 si todo OK.
     if manifest_present and not hash_ok:
@@ -1051,9 +1126,13 @@ def main(argv: Optional[List[str]] = None) -> int:
     parser.add_argument("--symbols", default="",
                         help="filtro opcional 'AAPL,MSFT' (checkpoint controlado)")
     parser.add_argument("--checkpoint-inject", default="",
-                        help="SOLO checkpoint S1: 'AAPL,MSFT' a inyectar para validar "
-                             "el tubo. Marcado OVERRIDE_MECANISMO en artefacto y en la "
-                             "fila futura de ledger (prefijo chkpt__). NUNCA es senal real.")
+                        help="SOLO checkpoint S1: 'AAPL,MSFT' a inyectar para "
+                             "validar el tubo. Marcado OVERRIDE_MECANISMO en artefacto y en "
+                             "la fila futura de ledger (prefijo chkpt__). NUNCA es senal real.")
+    parser.add_argument("--reconcile", action="store_true",
+                        help="A1 en health: corre el reconciler (condición (c) del gate) "
+                             "y deja la línea parseable en pipeline_diario.log. La shell lo "
+                             "pasa SOLO en la ventana 22:10; sin el flag, health es barato.")
     args = parser.parse_args(argv)
     only = [s.strip().upper() for s in args.symbols.split(",") if s.strip()] or None
     inject = [s.strip().upper() for s in args.checkpoint_inject.split(",") if s.strip()] or None
@@ -1064,7 +1143,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         return phase_enter(args.dry_run, only)
     if phase == "exit":
         return phase_exit(args.dry_run, only)
-    return phase_health()
+    return phase_health(reconcile=args.reconcile)
 
 
 if __name__ == "__main__":

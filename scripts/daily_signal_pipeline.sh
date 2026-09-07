@@ -79,9 +79,31 @@ else
 fi
 
 echo "Fase detectada: $PHASE"
-"$VENV" -m scripts.pipeline_daily_signal --phase "$PHASE"
+# A1 diario (aprobación Boris 2026-09-06): el reconciler corre también en la
+# corrida 22:10 (phase health) para que la condición (c) del gate sea
+# verificable todos los días — con decide mensual la racha de 60 era
+# matemáticamente imposible. Solo en la ventana 22:10: las 9:35/15:40 son
+# health barato sin cliente. La shell decide el flag, el pipeline no adivina.
+RECONCILE_FLAG=""
+if [ "$HOUR_ET" -eq 22 ] && [ "$MIN_ET" -ge 5 ] && [ "$MIN_ET" -le 15 ]; then
+    RECONCILE_FLAG="--reconcile"
+fi
+"$VENV" -m scripts.pipeline_daily_signal --phase "$PHASE" $RECONCILE_FLAG
 rc=$?
 echo "pipeline_daily_signal end rc=$rc"
+
+# A2 (PLAN_REMEDIO_BRECHAS_20260903 §A2): contador de días limpios automático.
+# Corre al final de la ventana 22:10 — para entonces las 3 corridas del día ya
+# están en el log y el data_updater de las 22:05 ya cerró. Parsea (a) rc de
+# las 3 ventanas, (b) PRECIOS: ERROR del updater, (c) reconcile unexplained
+# y escribe backend/data/clean_days.json (racha + evidencia por condición).
+# Best-effort: un fallo del contador NO rompe la corrida del pipeline (el
+# rc de la fase queda intacto arriba; el contador se re-intenta mañana).
+if [ "$HOUR_ET" -eq 22 ] && [ "$MIN_ET" -ge 5 ] && [ "$MIN_ET" -le 15 ]; then
+    "$VENV" -m scripts.clean_days_counter \
+        && echo "[clean-days] contador actualizado" \
+        || echo "[clean-days] [warn] contador falló (no rompe la corrida)"
+fi
 } >> "$LOG" 2>&1
 
 exit 0
