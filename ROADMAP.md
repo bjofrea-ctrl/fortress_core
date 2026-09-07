@@ -125,7 +125,55 @@ Cline como implementadores). Verificar contra `git log --oneline -10`,
 > Settings real), y `tests/test_config_registry.py::test_backtest_2023_inalterado_por_ajuste_futuro`
 > — el panel sintético no opera en 2023 (`total_trades == 0`), falla aislada del frente
 > predict/motor. NOTA Kilo 06-09: los 3 de predict_cache están en el ticket de Cline
-> (fix de fixtures, ya aprobado en su sesión); test_backtest_2023 sigue 🔴 abierto.
+> (fix de fixtures, ya aprobado en su sesión); test_backtest_2023 sigue 🔴 abierto.> 🔴 **4 fallos PRE-EXISTENTES en la suite de esta rama** (verificados el 2026-09-05:
+> 706 passed / 4 failed, y los 3 primeros reproducidos con los cambios de B5
+> `git stash`-eados, o sea ajenos a B5): `tests/test_predict_cache.py` ×3 —
+> `'types.SimpleNamespace' object has no attribute 'motor'` en `app/api/routes/predict.py:169`
+> (fixture del test desactualizado vs. el Settings real), y
+> `tests/test_config_registry.py::test_backtest_2023_inalterado_por_ajuste_futuro` —
+> el panel sintético no opera en 2023 (`total_trades == 0`), falla aislado y no importa
+> nada de lo tocado por B5 (solo `adaptive_risk`/`backtest_engine`/`config_registry`).
+> Nadie los arregló en esta sesión: son del frente de predict/motor, no del ledger.
+> 🟡 **B8 IMPLEMENTADO en esta rama (2026-09-06, worktree `fundamentales-automatizado`) —
+> NO mergeado a main.** Ticket nuevo (no estaba en `PLAN_REMEDIO_BRECHAS_20260903.md`).
+> Pre-registro: `PRE_REGISTRO_WINRATE_RR_SIZING_CAP_20260906.md` (en `main`). Categoría
+> instrumentation/infra (igual que A2): **no es trial, no consume slot Bonferroni**.
+> Dos entregables:
+> - **2a Medición** (`backend/scripts/measure_realized_edge.py`): win-rate real,
+>   R:R real (`mediana(ganancias)/|mediana(pérdidas)|`) y frecuencia trades/mes sobre
+>   `signal_ledger` con `status='closed'`, IC bootstrap (sin asumir normalidad). Si `n<30`
+>   devuelve `"n insuficiente para estimar, no inventar un número"` y TODO `None` — jamás
+>   usa el 25-40%/4-8:1 de la simulación (queda como firma ASPIRACIONAL documentada).
+>   R:R es `None` si la muestra no tiene ganadores o no tiene perdedores.
+> - **2b Cap de sizing** (`app/core/adaptive_risk.py`): `risk_per_trade_cap()` y
+>   `effective_risk_per_trade()` en `AdaptiveRiskManager` — techo fractional-Kelly
+>   (`Kelly/4`, parametrizable) combinado (mínimo) con `max_exposure` del régimen vía
+>   `get_regime_thresholds()`. No reemplaza nada; si 2a dice "n insuficiente" o el edge no
+>   es positivo, usa el default conservador `min(RISK_PER_TRADE, max_exposure)` (NUNCA Kelly
+>   de la simulación). Cableado en `compute_position_size` vía `measured_win_rate` /
+>   `measured_reward_risk` opcionales (sin ellos: comportamiento original, sin regresión).
+> Verificado: **15 tests nuevos** (`tests/test_measure_realized_edge.py` ×8,
+> `tests/test_risk_kelly_cap.py` ×7) en el venv py3.9.6 de Desktop; ruff limpio;
+> `tests/test_risk_manager.py` 5/5 sin regresión. CLI `--json` corre sobre el ledger real.
+> Falta: merge a main + verificación independiente (correr la suite completa en `main`).
+> 
+> 🟡 **M4 + M3 (Cline, 2026-09-06, rama `fundamentales-automatizado`) — asignación de
+> Kilo, NO mergeado a main.** Categoría bugfix/infra (gate-legal), como A2/B8.
+> - **M4 — blindar `repair_full_redownload` (A0) contra destrucción del cache**: antes de
+>   pisar el parquet, se corre `validate_returns` (hard-flag = firma de contaminación) +
+>   `find_intermediate_gaps` sobre el dataframe fresco; si falla, se CONSERVA el cache
+>   existente y se loguea la razón (`cache existente conservado; descarga fresca inválida:
+>   <detalle>`). La contaminación cruzada completa (fila de OTRO símbolo) requiere los
+>   frescos de los demás, que el guard liviano no descarga; el hard-flag la captura como
+>   proxy. Test: `backend/tests/test_cache_integrity_m4.py` (3 tests, todos PASS).
+> - **M3 — ritual de cierre de sesión**: `scripts/check_session_log_freshness.py` avisa
+>   (WARNING, exit 1) si SESSION_LOG.md no tiene entrada en 48h; entry catch-up 04-06 sep
+>   agregada en SESSION_LOG.md. Falta: merge a main + correr suite completa.
+> 
+
+
+
+
 1. **A6.3 — screening PALA/RESTO/POOLED** — 🟢 trial original CERRADO
    (29/08, `COMPLETED`/`NO_CUMPLE`, ver §12 de `PRE_REGISTRO_SCREENING_PALAS.md`).
    **Saneamiento del check APROBADO por Boris (29/08) — 🟢 CERRADO (31/08)**:

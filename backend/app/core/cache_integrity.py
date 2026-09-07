@@ -449,8 +449,68 @@ def repair_full_redownload(
     if fresh is None or len(fresh) == 0:
         return None
     fresh = _norm(fresh)
+
+    # ---- Blindaje M4 (re-auditoría externa): validar el fresco ANTES de
+    #      destruir el cache BUENO. Si la descarga fresca falla la integridad,
+    #      se conserva el cache existente y se registra la razón — el remedio
+    #      no debe volverse la enfermedad (yfinance puede devolver barras
+    #      corruptas frescas: cruzadas, con retornos anómalos o huecos). ----
+    razon = _fresh_download_invalid_reason(fresh, symbol)
+    if razon:
+        conservado = _read_existing_cache(cache_path)
+        if conservado is not None:
+            print(
+                f"[cache_integrity] {symbol} cache existente conservado; "
+                f"descarga fresca inválida: {razon}"
+            )
+            return conservado
+        # Sin cache previo que conservar: no escribir basura, fallar ruidosamente.
+        raise RuntimeError(
+            f"[cache_integrity] {symbol} descarga fresca inválida y sin cache "
+            f"previo para conservar: {razon}"
+        )
+
     fresh.to_parquet(cache_path)
     return fresh
+
+
+def _fresh_download_invalid_reason(fresh: pd.DataFrame, symbol: str) -> Optional[str]:
+    """M4: razón por la que el fresco repararía un cache BUENO con datos corruptos.
+
+    Reusa las MISMAS validaciones del harness (Parte 1 + 2c): retornos anómalos
+    (hard-flag = firma documentada de contaminación/bad-tick, ver COMPARACION
+    §3: KO +187%, CMCSA +623%) y huecos intermedios vs calendario NYSE. La
+    contaminación cruzada completa (fila de OTRO símbolo) exige los frescos de
+    los demás símbolos, que este guard liviano NO descarga; el hard-flag de
+    retorno la captura como proxy (ticket A0 Verificación #1: una barra que
+    diverge de su fresco propio con hard-flag es basura congelada).
+    """
+    flags = validate_returns(fresh, symbol)
+    hard = [f for f in flags if f["level"] == "hard"]
+    if hard:
+        ej = hard[0]
+        return (
+            f"retorno anómalo hard en {len(hard)} barra(s) "
+            f"(ej. {ej['date']}: {ej['return']*100:+.1f}% > "
+            f"{HARD_THRESHOLD_LARGE_CAP*100:.0f}%)"
+        )
+    gaps = find_intermediate_gaps(fresh)
+    if gaps:
+        return f"huecos intermedios vs calendario NYSE: {len(gaps)} ({gaps[0]}..{gaps[-1]})"
+    return None
+
+
+def _read_existing_cache(cache_path: str) -> Optional[pd.DataFrame]:
+    """M4: lee el cache existente (para conservarlo si el fresco es inválido)."""
+    if not os.path.exists(cache_path):
+        return None
+    try:
+        df = pd.read_parquet(cache_path)
+    except Exception:
+        return None
+    if df is None or len(df) == 0:
+        return None
+    return _norm(df)
 
 
 def repair_gap_range(

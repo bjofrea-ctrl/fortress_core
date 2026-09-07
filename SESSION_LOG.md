@@ -3516,3 +3516,33 @@ completa) y merge.
 
 *Fin de Sesión — 2026-09-06 (Cline)*
 
+---
+
+## 2026-09-04 → 2026-09-06 — Catch-up M3: gap de ritual + merges de Kilo (Cline)
+
+**Contexto (re-auditoría externa)**: SESSION_LOG.md había quedado sin entradas
+del 03 al 06-sep (violación del ritual de ONBOARDING — "el rastro que no se
+escribe no existe para el próximo agente"). Esta entrada cierra el gap; B5
+(2026-09-05) y B8 (2026-09-06) ya tienen su entrada propia más arriba.
+
+**Commits de Cline en la rama `bjofrea-ctrl/fundamentales-automatizado`** (estado
+al 06-09, según asignación de Kilo):
+- **B4** = `2d3c888` — `feat(gate) [B4]: holdout sellado 2025-09-01 en
+  trial_registry — regla por escritura`. (No tenía entrada de Sesión propia).
+- **B5** = `c602a30` — ver entrada `2026-09-05 — B5` arriba.
+- **B8** = `c057031` — ver entrada `2026-09-06 — B8` arriba. **NO mergeado a
+  main** (criterio de cierre del ticket).
+
+**Merge de Kilo a main (2026-09-06, según reporte de Kilo)**:
+- A2 = `55606a3` (mi contador de días limpios) **DESCARTADA** por Kilo: su
+  parser usa un regex con timestamp-T que no existe en `pipeline_diario.log`
+  real (verificado por Kilo contra el log). La A2 vigente es la consolidación
+  de Kilo (formato real + bloques inicio/fin + reconciler diario 22:10).
+- B8 vía cherry-pick de `c057031`; más C1.
+- Las 7 líneas reconcile falsas del log de producción ya fueron limpiadas.
+
+**A0 / integridad del cache**: A0 (`cache_integrity.py`, `repair_full_redownload`)
+está en main (merge de Kilo). M4 (este ticket) blinda `repair_full_redownload`
+contra descarga fresca corrupta — ver bloque M4 en ROADMAP.
+
+*Fin de Sesión — 2026-09-06 (Cline)*
