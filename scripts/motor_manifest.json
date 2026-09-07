@@ -1,13 +1,13 @@
 {
-  "commit": "6b162b9ea9de",
+  "commit": "e8d79f2d996e",
   "hashes": {
     "backend/app/api/routes/decision.py": "0afd301e9b1b59710591255d46104dfaa57711477c43289231075c8ad82455bd",
-    "backend/app/core/adaptive_risk.py": "9ce657dd0fc6ef402c748c62afa3e05207ecf8d730f74c97565b1943578953a1",
+    "backend/app/core/adaptive_risk.py": "2d3d2c9d5261e54cdeae66c04de744af06d5748372985c2de6cbba687badc583",
     "backend/app/core/backtest_engine.py": "2e1a053bfea149aa5955247768419facf2d208ea6a5f56b81c5ce40d05c5350f",
     "backend/app/core/conformal.py": "941205f49009510138a0d6503d90f4a9638cc2511a233227e56823bb9695918b",
     "backend/app/core/paper_trading.py": "a58fbec61e93ae04b1ac9751d48a09731a88fca23a5a620b18260ef8206311a1",
     "backend/app/core/regime_classifier.py": "176cac0aee0c7a713b8377a9e09ca75b6515ca04ec535fb01a8a79bc6e25e27f",
-    "backend/app/core/signal_engine.py": "1d09ed7c2a34b8d43944dff5cbde62f83b75ff0d281a28f2c57173ce48a15103"
+    "backend/app/core/signal_engine.py": "17a76673dd71cdc5ca541712767fc34ded32d0272e40675af3d76f942fb72ead"
   },
-  "note": "merge Fase A/B tmp-merge-check: A1+A3+A4+A5+A6+A7+A8+A9+B1 consolidados (Kilo/Cline/OpenCode), congela motor post-verificacion 2026-09-05"
+  "note": "merge 2026-09-06 (Kilo orquestador): B6 contrato se\u00f1al \u00fanica (signal_engine lee pesos/umbrales del contrato can\u00f3nico, equivalencia dorada bit-id\u00e9ntica verificada 30 tests) + B8 cap sizing fractional-Kelly en adaptive_risk (params opcionales, sin ellos comportamiento original) + B4/B5/B6fix/B2/M4/M3 merges. Verificaci\u00f3n: suite post-merge en main."
 }

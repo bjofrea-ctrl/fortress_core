@@ -76,6 +76,13 @@ class _FakeSession:
         sym = url.split("/stocks/")[1].split("/")[0]
         return _FakeResp({"trade": {"p": self.prices[sym]}})
 
+    def request(self, method, url, **kwargs):
+        """Interfaz session.request (B1 rate-monitor enruta por acá);
+        delega en get/post como la sesión real de requests."""
+        if method.upper() == "POST":
+            return self.post(url, **kwargs)
+        return self.get(url, **kwargs)
+
     def post(self, url, json=None, timeout=None):
         self.post_calls.append((url, json))
         if self.order_status >= 400:

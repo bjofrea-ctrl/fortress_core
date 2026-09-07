@@ -52,6 +52,13 @@ class _FakeSession:
                             "submitted_at": "2026-08-25T10:00:00Z"}
         return _FakeResp(self.orders[oid])
 
+    def request(self, method, url, **kwargs):
+        """Interfaz session.request (B1 rate-monitor enruta por acá);
+        delega en get/post como la sesión real de requests."""
+        if method.upper() == "POST":
+            return self.post(url, **kwargs)
+        return self.get(url, **kwargs)
+
     def get(self, url, timeout=None):
         self.calls.append(("GET", url))
         if "/v2/account" in url:
