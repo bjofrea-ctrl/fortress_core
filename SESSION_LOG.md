@@ -3709,3 +3709,19 @@ Pendientes que siguen abiertos (de la auditoría externa, sin asignar):
 - test_backtest_2023 + 3 fixtures predict_cache — aprobados Cline, no iniciados.
 - HOY 22:10: primera corrida del pipeline con --reconcile + contador
   evaluando el primer weekday con cadencia diaria (lunes 07-09).
+
+## 2026-09-07 (mediodía) — Re-handoff: terminal vieja de Cline cerrada, reasignación a la nueva (Kilo)
+
+El task 9b16891015ee (fix de los 3 fixtures predict_cache + diagnóstico
+de test_backtest_2023) tenía dispatch ctx_670dfe5c57b6 que apuntaba a
+term_40d19eea (terminal vieja de Cline, ahora `status: exited`).
+Boris reinició la sesión de Cline en una terminal nueva (term_86e3313c)
+en el mismo worktree fundamentales-automatizado, pidiéndole retomar sus
+tareas pendientes. Kilo reenvió el task por orca terminal send (la
+reasignación vía worker-start falló por mismatch de worktree en el Run
+bindeado). Cline trabaja con el contexto completo en SESSION_LOG.md
+del worktree (sección 2026-09-07 mañana).
+
+M5 sigue ACTIVO en producción: caffeinate -i -s (PID 63704) hasta las
+16:05 ET, intraday de hoy captura la sesión completa sin gaps de
+despertar. main=f3182a7 pusheada.
