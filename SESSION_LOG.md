@@ -3677,3 +3677,35 @@ SESSION_LOG real ahora da OK (ultima entrada 2026-09-06, 32h). Commiteado en la
 rama `bjofrea-ctrl/fundamentales-automatizado` (sin push/merge; Kilo verifica).
 
 *Fin de Sesión — 2026-09-07 (Cline)*
+
+## 2026-09-07 (media mañana) — Cierre de ciclo de auditoría: brechas delegadas, corregidas y verificadas (Kilo)
+
+Resultado de la segunda ronda de delegación (ambos agentes entregaron y
+Kilo verificó + mergeó):
+
+CLINE — M3-fix (737585c → main a3ca82c):
+- Guard de frescura ya no ciego: parsea SOLO headers de sección '^## ...'
+  (la fecha del cuerpo no cuenta), fecha futura → WARNING + rc=1.
+- Cableado real: plist com.fortresscore.data-freshness con el check.
+- Tests 4/4 verificados por Kilo en su rama (fecha futura→WARN, sin
+  secciones recientes→rc=1, cuerpo no cuenta, reciente→OK).
+
+OPENCODE — B1-tests + B2-load (77cd362 → main 9b9fd00):
+- 7 tests nuevos del rate monitor: warn 70%, throttle 85% escalonado
+  (0.5s·excess), cap 5s, ventana deslizante >60s, stacklevel. Verificados
+  22/22 en su rama y 34/34 en main (conviviendo con el fix de fakes de Kilo).
+- Template plist + doc de carga (B2_LAUNCHD_LOAD_VERIFICATION.md).
+- Kilo ejecutó la carga en producción: launchctl load + test-fire manual
+  → iv_snapshot_20260907.parquet: 47.056 filas, 30 símbolos OK / 0 FAIL,
+  expiries 2026-09-08→2027-06-17, 1.1MB. La familia opciones acumula desde
+  HOY de corrido (22:35 diario).
+
+main = 9b9fd00 (pusheada) + espejo EMPRESA. Ambos tasks cerrados en la
+run de orquestación (task_765db546e5dd, task_8ed7e4b4c2b0) con veredicto.
+
+Pendientes que siguen abiertos (de la auditoría externa, sin asignar):
+- M5 política Mac despierta en horario de mercado — decisión de Boris.
+- M6 parcial: I2/I8 como post-gate en ROADMAP.
+- test_backtest_2023 + 3 fixtures predict_cache — aprobados Cline, no iniciados.
+- HOY 22:10: primera corrida del pipeline con --reconcile + contador
+  evaluando el primer weekday con cadencia diaria (lunes 07-09).
