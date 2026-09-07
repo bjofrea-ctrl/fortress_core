@@ -3569,3 +3569,52 @@ está en main (merge de Kilo). M4 (este ticket) blinda `repair_full_redownload`
 contra descarga fresca corrupta — ver bloque M4 en ROADMAP.
 
 *Fin de Sesión — 2026-09-06 (Cline)*
+
+## 2026-09-06 (noche) — Orquestación de merges a main (Kilo, autorizado por Boris)
+
+Boris autorizó explícitamente: "si te autorizo a mergear a main y pushear".
+Determinación de aportes de la re-auditoría externa: contador-roto
+CONFIRMADO (ya fixeado en b89654c), racha-real-0 CONFIRMADO, rc=2-del-05-09
+= A4 cazando drift CONFIRMADO con evidencia, "A1 en producción" REFUTADO
+(eran líneas falsas del test contaminante — limpiadas del log real), M3-M6
+aceptados y delegados.
+
+Delegación vía Orca orchestration (Run run_eda7a453d968):
+- Cline (task_e475ec004055 → commit 034455a): M4 blindar
+  repair_full_redownload (validar fresco antes de pisar cache bueno;
+  test: cache bueno sobrevive a descarga corrupta — verificado 3/3) + M3
+  ritual SESSION_LOG (scripts/check_session_log_freshness.py WARNING
+  >48h — verificado funcionando).
+- OpenCode (task_ffdfdbb761c1 → commit a99cc6d): marker slow en pytest.ini
+  + docstring tiempo esperado del golden 60d + B1 throttle rate Alpaca
+  (WARNING 70%, sleep escalonado 85%) — verificado.
+
+Merges a main (orden, cada uno con verificación):
+1. test-kilo-orca 07c1a31+b89654c (merge 0f8ca91): A2 consolidado +
+   reconciler diario 22:10 + fix ledger gate-check-antes-de-snapshot +
+   sandbox FORTRESS_LEDGER_CACHE_DIR (suite de 3 archivos: minutos → 15s;
+   suite completa de la rama: 792 passed / 1 failed preexistente).
+2. Cherry-picks Cline: B4 holdout (cf3c8e9), B5 MDE (e83a47c, trae
+   ANALISIS_MDE_GATE_DICIEMBRE_2026.md citado por C1), B8 edge real
+   (6531bed), M4+M3 (5901814). SIN 55606a3 (A2 de Cline descartada:
+   su parser (a) usa regex con timestamp-T que no existe en el log real).
+3. Cherry-picks OpenCode: B2 colector IV (ac06830), B6 contrato señal
+   (9d70156, golden 30 passed 7m35s verificado por Kilo), B6fix+B1
+   (663a5d9). Strays untracked idénticos a los commits integrados (29c7238).
+4. C1 docs (efc413c): criterio gate diciembre re-especificado.
+
+Limpieza de producción: 7 líneas reconcile falsas eliminadas del
+pipeline_diario.log real (backup /tmp/pipeline_diario.log.bak_*); 3ª A2
+untracked descartada (backup /tmp/a2_obsoleta_backup); PLAN_REMEDIO y
+DIAGNOSTICO con fixes pendientes commiteados (dac987b).
+
+Contador del gate REAL en producción tras el merge: racha=0/3 (02-09 (b)
+rota con el ERROR del mediodía capturado; 03/04-09 UNVERIFIED_C puro;
+05-09 fin de semana). La racha oficial arranca 07-09 con reconciler
+diario deployado. ROADMAP corregido: "día 1/60" era ficción — ahora dice
+0/60 con la semántica exacta.
+
+Suite post-merge completa: corriendo al cierre de esta entrada (ver
+commit del push). Pendientes: push origin main (tras suite), stash pop
+de trackers, I2/I8 registrados como post-gate en ROADMAP (M6 parcial:
+C1 propagado en el merge e83a47c; los ítems I quedan con línea propia).
