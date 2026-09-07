@@ -126,42 +126,42 @@ class AlpacaPaperClient:
     def _rate_limit_check(self) -> None:
         """Verifica rate limit y aplica warn/throttle si corresponde.
 
-        Limpia timestamps > 60s, cuenta requests en la ventana, y:
+        Limpia timestamps > 60s, cuenta requests en la ventana (INCLUYENDO el actual), y:
         - >= 70% (140 req/min): WARNING via warnings.warn (visible en logs/tests)
-        - >= 85% (170 req/min): sleep escalonado (0.5s, 1.0s, 2.0s...) hasta bajar.
+        - >= 85% (170 req/min): sleep escalonado (0.5s, 1.0s, 2.0s...) UNA VEZ por request.
+          La próxima request volverá a chequear y escalará si sigue sobre el límite.
         """
         now = time.monotonic()
         # Limpiar ventana: solo timestamps en los últimos 60s
         while self._request_timestamps and (now - self._request_timestamps[0]) > _RATE_WINDOW_SECONDS:
             self._request_timestamps.popleft()
 
+        # Registrar ESTE request primero, luego chequear (incluye el actual en el conteo)
+        self._request_timestamps.append(now)
         current_count = len(self._request_timestamps)
         warn_limit = int(ALPACA_RATE_LIMIT_PER_MIN * RATE_WARN_THRESHOLD)
         throttle_limit = int(ALPACA_RATE_LIMIT_PER_MIN * RATE_THROTTLE_THRESHOLD)
 
         if current_count >= throttle_limit:
             # Throttle escalonado: 0.5s, 1.0s, 2.0s... según cuánto exceda
+            # UNA SOLA VEZ por request; la siguiente request re-evaluará.
             excess = current_count - throttle_limit + 1
             sleep_s = min(0.5 * excess, 5.0)  # cap 5s
             warnings.warn(
                 f"[AlpacaPaperClient] RATE THROTTLE: {current_count}/{ALPACA_RATE_LIMIT_PER_MIN} req/min "
                 f"(>{RATE_THROTTLE_THRESHOLD*100:.0f}%). Sleep {sleep_s:.1f}s",
                 RuntimeWarning,
-                stacklevel=3,
+                stacklevel=4,  # test -> last_trade_price -> _request -> _rate_limit_check -> warn
             )
             time.sleep(sleep_s)
-            # Re-chequear después del sleep (puede haber limpiado la ventana)
-            self._rate_limit_check()
+            # NO re-chequear aquí: la siguiente request limpiará la ventana con su time.monotonic()
         elif current_count >= warn_limit:
             warnings.warn(
                 f"[AlpacaPaperClient] RATE WARN: {current_count}/{ALPACA_RATE_LIMIT_PER_MIN} req/min "
                 f"(>{RATE_WARN_THRESHOLD*100:.0f}%). Próximo throttle al {RATE_THROTTLE_THRESHOLD*100:.0f}%.",
                 RuntimeWarning,
-                stacklevel=3,
+                stacklevel=4,
             )
-
-        # Registrar este request
-        self._request_timestamps.append(now)
 
     @staticmethod
     def _alpaca_symbol(symbol: str) -> str:

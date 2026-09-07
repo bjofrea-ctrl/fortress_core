@@ -5,6 +5,9 @@ verificar con un fake del cliente de Alpaca, sin pegar a la red, y que el contra
 salida sale exactamente como lo especifica ORDENES_MODULOS.md M4. La API se mockea
 siempre: jamás una orden real ni en paper desde los tests.
 """
+import time
+import warnings
+from unittest.mock import patch
 import numpy as np
 import pytest
 from app.core.execution_costs import (
@@ -13,6 +16,9 @@ from app.core.execution_costs import (
     ExecutionCostRecorder,
     measure_slippage,
     summarize,
+    ALPACA_RATE_LIMIT_PER_MIN,
+    RATE_WARN_THRESHOLD,
+    RATE_THROTTLE_THRESHOLD,
 )
 
 BASE_URL = "https://paper-api.alpaca.markets"
@@ -103,6 +109,15 @@ class _FakeSession:
                      "filled_avg_price": None, "commission": 0.0}
         self.orders[oid] = order
         return _FakeResp(dict(order))
+
+    def request(self, method: str, url: str, **kwargs):
+        """Wrapper compatible con requests.Session.request."""
+        if method.upper() == "GET":
+            return self.get(url, **kwargs)
+        elif method.upper() == "POST":
+            return self.post(url, **kwargs)
+        else:
+            raise NotImplementedError(f"method {method} not implemented in _FakeSession")
 
     def close(self):
         self.closed = True
@@ -332,3 +347,212 @@ def test_recorder_acumula_ordenes(tmp_path):
         assert len(r.records()) == 2
     finally:
         r.close()
+
+
+# --------------------------------------------------------------------------- #
+# AlpacaPaperClient — Rate Limit Monitor (B1)
+# --------------------------------------------------------------------------- #
+# Límite Alpaca paper: 200 req/min. Warn al 70% (140), throttle al 85% (170).
+# Ventana deslizante: 60s. Tests usan monkeypatch time.monotonic + catch_warnings.
+# El mock de time.sleep debe TAMBIÉN avanzar time.monotonic para simular paso del tiempo real.
+
+def _make_rate_test_client(monkeypatch, base_time, time_step=0.01, max_calls=200):
+    """Helper: crea cliente con time.monotonic y time.sleep mockeados que avanzan el reloj."""
+    time_vals = [base_time + i * time_step for i in range(max_calls)]
+    call_count = 0
+    sleep_advance = 0.0
+
+    def mock_monotonic():
+        nonlocal call_count, sleep_advance
+        if call_count < len(time_vals):
+            t = time_vals[call_count] + sleep_advance
+            call_count += 1
+            return t
+        return time_vals[-1] + sleep_advance
+
+    monkeypatch.setattr(time, "monotonic", mock_monotonic)
+
+    sleep_calls = []
+
+    def mock_sleep(s):
+        nonlocal sleep_advance
+        sleep_calls.append(s)
+        sleep_advance += s  # avanazar reloj simulado
+
+    monkeypatch.setattr(time, "sleep", mock_sleep)
+
+    def make_client(prices):
+        sess = _FakeSession(prices, fill_mult=1.0, pending_polls=0)
+        return AlpacaPaperClient(api_key="k", secret_key="s", base_url=BASE_URL, session=sess), sleep_calls
+
+    return make_client
+
+
+def test_rate_monitor_warn_al_70_porciento(monkeypatch):
+    """Al llegar a 140 req/min (70%), emite RuntimeWarning visible."""
+    make_client = _make_rate_test_client(monkeypatch, base_time=1_000_000.0, max_calls=150)
+
+    prices = {f"SYM{i}": 100.0 + i for i in range(150)}
+    c, sleep_calls = make_client(prices)
+
+    # Hacer 139 requests = 69.5% -> sin warn
+    for i in range(139):
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            c.last_trade_price(f"SYM{i}")
+            assert not any("RATE WARN" in str(x.message) for x in w), f"warn prematuro en request {i}"
+
+    # Request 140 = 70% -> WARNING
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+        c.last_trade_price("SYM140")
+        assert any("RATE WARN" in str(x.message) for x in w), "no se emitió warn al 70%"
+        assert "140/200 req/min" in str(w[0].message)
+
+
+def test_rate_monitor_throttle_al_85_porciento(monkeypatch):
+    """Al llegar a 170 req/min (85%), aplica sleep escalonado y re-chequea."""
+    make_client = _make_rate_test_client(monkeypatch, base_time=2_000_000.0, max_calls=180)
+
+    prices = {f"SYM{i}": 100.0 + i for i in range(180)}
+    c, sleep_calls = make_client(prices)
+
+    # Hacer 169 requests = 84.5% -> sin throttle
+    for i in range(169):
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            c.last_trade_price(f"SYM{i}")
+            assert not any("RATE THROTTLE" in str(x.message) for x in w)
+
+    # Request 170 = 85% -> THROTTLE (sleep 0.5s)
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+        c.last_trade_price("SYM170")
+        assert any("RATE THROTTLE" in str(x.message) for x in w), "no se emitió throttle al 85%"
+        assert "170/200 req/min" in str(w[0].message)
+        assert len(sleep_calls) == 1
+        assert sleep_calls[0] == pytest.approx(0.5, abs=0.1)
+
+
+def test_rate_monitor_throttle_escalonado_si_sigue_sobre_limite(monkeypatch):
+    """Si tras sleep sigue sobre 85%, sleep escala: 0.5s -> 1.0s -> 2.0s..."""
+    make_client = _make_rate_test_client(monkeypatch, base_time=3_000_000.0, max_calls=175)
+
+    prices = {f"SYM{i}": 100.0 + i for i in range(175)}
+    c, sleep_calls = make_client(prices)
+
+    # 170 requests -> throttle 0.5s
+    for i in range(170):
+        c.last_trade_price(f"SYM{i}")
+
+    # request 171: sleep avanza reloj 0.5s, pero ventana sigue teniendo 171 req (61s no pasó)
+    # -> segundo throttle 1.0s
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+        c.last_trade_price("SYM171")
+        assert any("RATE THROTTLE" in str(x.message) for x in w)
+    # sleep 0.5s (first throttle) + 1.0s (second throttle)
+    assert len(sleep_calls) == 2
+    assert sleep_calls[0] == pytest.approx(0.5, abs=0.1)
+    assert sleep_calls[1] == pytest.approx(1.0, abs=0.1)
+
+
+def test_rate_monitor_ventana_deslizante_limpia_timestamps_viejos(monkeypatch):
+    """Requests > 60s se eliminan de la ventana -> contador baja."""
+    make_client = _make_rate_test_client(monkeypatch, base_time=4_000_000.0, max_calls=151)
+
+    # Precios para 151 símbolos (0-150)
+    prices = {f"SYM{i}": 100.0 + i for i in range(151)}
+    c, sleep_calls = make_client(prices)
+
+    # Hacer 100 requests a t=0
+    for i in range(100):
+        c.last_trade_price(f"SYM{i}")
+
+    # Mock time.monotonic para saltar 61s
+    # El helper usa time_step=0.01, así que necesitamos avanzar manualmente
+    # El sleep de 61s será simulado por el helper si lo llamamos, pero aquí no hay sleep.
+    # En su lugar, recreamos el cliente con base_time avanzado 61s para los requests 101+
+    # Más simple: hacemos 100 req, luego creamos NUEVO cliente con base_time + 61
+    # (simula que pasó 1 minuto real)
+
+    # Verificar que ventana tiene 100 requests
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+        c.last_trade_price("SYM100")
+        # 101 req en ventana -> 50.5% -> sin warn
+        assert not any("RATE WARN" in str(x.message) for x in w)
+
+    # Ahora simular que pasó 61s: recrear cliente con base_time + 61
+    # (en test real, el tiempo real avanza; aquí recreamos)
+    make_client2 = _make_rate_test_client(monkeypatch, base_time=4_000_061.0, max_calls=51)
+    c2, _ = make_client2(prices)
+    # Los timestamps del cliente anterior NO se comparten (nueva instancia)
+    # Así que este test verifica la limpieza dentro de UNA instancia:
+    # hacemos 100 req, luego 61s de sleep simulado (mock_sleep), luego verificamos
+
+    # Test correcto: un cliente, 100 req, sleep 61s, luego más req
+    make_client3 = _make_rate_test_client(monkeypatch, base_time=4_000_000.0, max_calls=151)
+    c3, sleep_calls3 = make_client3(prices)
+    for i in range(100):
+        c3.last_trade_price(f"SYM{i}")
+
+    # Simular sleep de 61s llamando a sleep (que avanza sleep_advance)
+    time.sleep(61.0)  # esto avanza el reloj interno del mock
+
+    # Ahora ventana debería tener solo los req hechos después del sleep (0)
+    # Hacer 50 req más = 50 req/min -> sin warn
+    for i in range(100, 150):
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            c3.last_trade_price(f"SYM{i}")
+            assert not any("RATE WARN" in str(x.message) for x in w), f"warn en req {i} tras sleep 61s"
+
+
+def test_rate_monitor_no_emit_warn_si_bajo_70(monkeypatch):
+    """Confirmar que NO hay warn si siempre bajo 140 req/min."""
+    make_client = _make_rate_test_client(monkeypatch, base_time=5_000_000.0, time_step=0.5, max_calls=100)
+
+    prices = {f"SYM{i}": 100.0 + i for i in range(100)}
+    c, sleep_calls = make_client(prices)
+
+    for i in range(100):
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            c.last_trade_price(f"SYM{i}")
+            assert not any("RATE WARN" in str(x.message) for x in w)
+
+
+def test_rate_monitor_throttle_cap_5s(monkeypatch):
+    """Sleep máximo 5s aunque exceda mucho el límite."""
+    make_client = _make_rate_test_client(monkeypatch, base_time=6_000_000.0, max_calls=250)
+
+    prices = {f"SYM{i}": 100.0 + i for i in range(250)}
+    c, sleep_calls = make_client(prices)
+
+    # Llenar hasta 250 req/min (25% sobre límite) -> throttle múltiple
+    for i in range(250):
+        c.last_trade_price(f"SYM{i}")
+
+    # Verificar que ningún sleep supera 5s
+    assert all(s <= 5.0 for s in sleep_calls), f"sleep supera cap 5s: {sleep_calls}"
+
+
+def test_rate_monitor_usa_stacklevel_correcto(monkeypatch):
+    """stacklevel=4 para que el warning apunte al caller del cliente, no interno."""
+    make_client = _make_rate_test_client(monkeypatch, base_time=7_000_000.0, max_calls=150)
+
+    prices = {f"SYM{i}": 100.0 + i for i in range(150)}
+    c, sleep_calls = make_client(prices)
+
+    # Llegar al 70%
+    for i in range(140):
+        c.last_trade_price(f"SYM{i}")
+
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+        c.last_trade_price("SYM140")
+        # El filename en el warning debe ser ESTE archivo de test, no execution_costs.py
+        assert len(w) == 1
+        # stacklevel=4 apunta al llamador de _rate_limit_check -> _request -> last_trade_price -> TEST
+        assert "test_execution_costs.py" in w[0].filename
