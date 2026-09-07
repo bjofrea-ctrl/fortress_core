@@ -1,5 +1,48 @@
 # Fortress Core — Memoria de Sesiones (Última sesión resumida)
 
+## 2026-09-07 — M5b verificación intradía + cableado keep-awake + registro post-gate D3/I4 (OpenCode)
+
+**Qué**: asignación de Kilo (task `task_000ed0c7b7dc`, dispatch `ctx_2588fa9253e1`),
+tres entregables que cierran brechas de la auditoría externa del 06-09. Commit en rama
+`bjofrea-ctrl/test-opencode-orca` (worktree `test-opencode-orca`), SIN push (Kilo verifica
+y mergea).
+
+1. **M5b-VERIFICATION** (`M5B_VERIFICATION_20260907.md`, NUEVO): verificado contra
+   artefactos que el mecanismo M5 funciona — tras la activación del keep-awake
+   (caffeinate PID 63704, 11:56:43 -03), el colector intradía corrió SIN gaps
+   (runs 12:02/12:32/13:02/13:33/14:03/14:34, decodificados de `X-RateLimit-Reset`
+   en `intraday_collector.log`). El día produce 0 barras nuevas porque es **Labor
+   Day** — confirmado contra el calendario oficial de Alpaca (`/v2/calendar`
+   paper-api: días de trading 03, 04, 08 — el 07 ausente), no por dormida ni falla.
+   Benchmark pre-gate (viernes 04-09): Mac dormida 7h31m DENTRO de sesión (runs
+   13:21→20:52) pero SPY igual terminó con 400 barras completas porque el diseño
+   incremental (`collect_one` desde `last_ts+1min`) recuperó todo al primer run
+   post-wake — resiliente por diseño, M5 elimina la degradación de latencia.
+2. **CABLEADO INTRADAY**: ni el plist `com.fortresscore.intraday` ni
+   `collect_intraday_1min.py` llaman caffeinate (verificado: grep cero refs) —
+   la energía la gestiona el job dedicado `com.fortresscore.keepawake` (launchd
+   KeepAlive → `keep_awake_market_hours.sh`, bucle 30s, caffeinate `-i -s`
+   09:25–16:05 ET weekdays). **Cableado CORRECTO por diseño** (separación de
+   responsabilidades); nada que cambiar — el fix gate-legal era reportar +
+   confirmar instalación, ya cargada (PID 63677) y verificada.
+3. **ROADMAP post-gate**: nueva sección **0b. POST-GATE** en "PENDIENTE AHORA"
+   con los dos tickets pre-registrados que abren al cierre del gate, con
+   plan_ref a `PLAN_REMEDIO_BRECHAS_20260903.md` Fase D: **D3 Intradía genuina**
+   e **I4/D4 Shrinkage James-Stein per-ticker**. Nota de alias documentada: el
+   dispatch de Kilo los llamó "I2/I8", pero en las fuentes canónicas
+   (`AUDITORIA_NIVEL_DIOS_20260902.md` §I1-I10) I2 = unificar motores (ya
+   cerrado por B6) e I8 = White/Hansen SPA — los conceptos pedidos son D3 e
+   I4/D4; se registraron con los IDs canónicos + alias para trazabilidad.
+
+**Also done**: merge de origin/main al worktree (`bf7a401`, conflictos resueltos
+en `pipeline_daily_signal.py` — A1 reconciler de Kilo prevaleció — y
+`check_data_freshness.sh`), dejando la rama en base limpia para el trabajo
+post-gate. Los tickets previos B6/B1 ya estaban mergeados por Kilo (verificado
+contra `git ls-tree origin/main`).
+
+**Pendiente para Kilo**: verificar + merge a main. El parquet intradía sigue
+acumulando (30/30 símbolos intactos, última barra 2026-09-04 20:00Z).
+
 ## 2026-09-05 — B5: el gate de potencia ex-ante entra al ledger + fix del footer de evidencia (Cline)
 
 **Qué**: se cerró el ticket **B5** de `PLAN_REMEDIO_BRECHAS_20260903.md` (gate MDE

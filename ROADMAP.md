@@ -364,6 +364,43 @@ Cline como implementadores). Verificar contra `git log --oneline -10`,
 Si alguna de estas cambió de estado cuando leas esto, actualizá esta sección
 (borrala o marcá cerrado) — no la dejes desactualizada.
 
+0b. **POST-GATE — tickets pre-registrados que abren cuando el gate de 90 días
+    cierre** (registrados 2026-09-07 por OpenCode, asignación de Kilo, task
+    `task_000ed0c7b7dc` — ver detalle y justificación en
+    `PLAN_REMEDIO_BRECHAS_20260903.md` Fase D). **NO iniciar durante la ventana
+    del gate**: la Regla 0 (arriba) veta hipótesis nuevas hasta diciembre; estos
+    tickets existen para que el día que el gate cierre no haya que redescubrir
+    qué estaba planeado.
+
+    - **D3 — Intradía genuina** (`PLAN_REMEDIO_BRECHAS_20260903.md` §D3, alias
+      "I2" en el dispatch de Kilo): hipótesis intradía NUEVAS (no recalentar
+      gap-reversion §13 — muerto con costos EOD) con costos intradía modelados
+      desde el día 1 usando el libro propio (A5 execution_telemetry) y la
+      cross-section de barras 1-min que B1 ya acumula (30 símbolos desde
+      2026-08-26, verificado 2026-09-07 en `M5B_VERIFICATION_20260907.md`).
+      LEAN solo si la acumulación + un trial intradía pre-registrado lo
+      justifican. Precondiciones ya cubiertas: colector B1 corriendo (launchd
+      30 min), keep-awake M5 activo (caffeinate PID 63704, runs sin gaps
+      post-11:56 verificados), libro de costos A5.
+    - **D4/I4 — Pesos jerárquicos shrinkage James-Stein per-ticker**
+      (`PLAN_REMEDIO_BRECHAS_20260903.md` §D4 = I4 de
+      `AUDITORIA_NIVEL_DIOS_20260902.md`, alias "I8" en el dispatch de Kilo):
+      arregla la vulnerabilidad w_mom 0.6642 (pooled no representativo vs
+      mediana per-ticker −0.074) con el estimador correcto para la
+      heterogeneidad medida (shrinkage hacia la media). Ataca brecha #3
+      (estructura más rica que el score lineal) sin cambiar de familia.
+      Trial pre-registrable post-gate; MDE ex-ante obligatorio (B5 ya vive en
+      el ledger).
+
+    **Nota de alias de IDs** (metodológica, para el próximo agente): el
+    dispatch de Kilo llamó "I2" a intradía genuina e "I8" a shrinkage; en las
+    fuentes canónicas I2 = unificar motores (CERRADO por B6, contrato de señal
+    única) e I8 = test omnibus White Reality Check / Hansen SPA
+    (`AUDITORIA_NIVEL_DIOS_20260902.md` §I1-I10). Los conceptos pedidos son
+    canónicamente **D3** e **I4/D4**; se registran con esos IDs y el alias
+    queda documentado acá para trazabilidad — no propagar los IDs rotados a
+    otros documentos.
+
 ---
 
 ## Backlog futuro — NO AHORA, sólo después de cerrar lo de arriba
