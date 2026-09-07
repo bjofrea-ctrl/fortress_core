@@ -14,7 +14,14 @@ import sys
 # Sin esto, `from app.core...` falla al ejecutar el archivo directamente.
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from app.core.trial_registry import BASE_THRESHOLD, all_trials, consumed_budget, current_threshold, trials_by_family
+from app.core.trial_registry import (
+    BASE_THRESHOLD,
+    STATUS_INEJECUTABLE,
+    all_trials,
+    consumed_budget,
+    current_threshold,
+    trials_by_family,
+)
 
 
 def main() -> None:
@@ -39,15 +46,19 @@ def main() -> None:
     print(f"umbral base (criterio DSR del proyecto): {BASE_THRESHOLD:.2f}")
     print()
     print(f"{'familia':22s} {'entradas':>8s} {'consumidos':>10s} {'umbral actual':>14s} "
-          f"{'umbral +N':>10s}")
-    print("-" * 72)
+          f"{'umbral +N':>10s} {'rechazados B5':>14s}")
+    print("-" * 88)
     for familia, lista in sorted(por_familia.items()):
         n_entradas = len(lista)
         consumidos = consumed_budget(familia)
         umbral_actual = current_threshold(familia)
         umbral_proyectado = 1.0 - (1.0 - BASE_THRESHOLD) / (consumidos + args.proyectar_trials + 1)
+        # B5: los diseños rechazados por potencia ANTES de correr no consumen
+        # presupuesto — se muestran aparte para que el rechazo sea visible y
+        # auditable (no desaparece del registro, solo deja de contar como trial).
+        n_rechazados = sum(1 for e in lista if e.get("status") == STATUS_INEJECUTABLE)
         print(f"{familia:22s} {n_entradas:8d} {consumidos:10d} {umbral_actual:14.4f} "
-              f"{umbral_proyectado:10.4f}")
+              f"{umbral_proyectado:10.4f} {n_rechazados:14d}")
 
     print()
     print("ADVERTENCIA (contrato M6): este umbral es el Bonferroni vigente para la")

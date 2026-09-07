@@ -119,19 +119,26 @@ export interface AdvisorThesesResponse {
 
 export interface EvidenceResponse {
   total_trials: number;
+  /** B5: diseños rechazados por potencia ex-ante (nunca corrieron). */
+  n_inejecutables?: number;
   families: Array<{
     familia: string;
     n_consumidos: number;
     umbral_aplicado_ultimo: number;
-    ultimo_veredicto: string;
+    /** Track A / B5: RESERVED | EXPIRED | INEJECUTABLE | COMPLETED. */
+    status_ultimo?: string;
+    /** null cuando la última entrada de la familia NO tiene veredicto. */
+    ultimo_veredicto: string | null;
     ultima_seccion: string;
     n_trials_en_ledger: number;
+    n_sin_correr?: number;
   }>;
   recent: Array<{
     id: string;
     fecha: string;
     familia: string;
-    veredicto: string;
+    status?: string;
+    veredicto: string | null;
     seccion: string;
   }>;
   note: string;

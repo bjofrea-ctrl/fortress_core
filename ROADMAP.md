@@ -10,14 +10,19 @@ Code, Cline, OpenCode), leer este documento primero. Al cerrar, actualizarlo ant
 — marcar lo que se cerró, agregar lo que apareció nuevo. Ningún ítem se da por cerrado sin
 marcarlo acá, aunque se haya resuelto "de pasada" en otra conversación.
 
-Última actualización: 2026-09-05 (Fase A casi cerrada: A0/A1/A3/A4/A5/A6/A7/A8/A9
-comiteados y verificados; falta A2. B1 comiteado; B2 pendiente de re-auditoría).
+Última actualización: 2026-09-06 (merges orquestados por Kilo: A2 consolidado + reconciler
+diario 22:10 + B4 holdout + B5 MDE + B8 edge real + M4 blindaje cache + M3 ritual + B2/B6
+verificados. Fase A COMPLETA; contador del gate AUTOMATIZADO).
 
-**⏱️ CONTADOR DEL GATE — día 1/60 limpio, arrancado 2026-09-02.** Universo 102
-confirmado en vivo desde el 02/09. **El contador sigue sin correr de verdad**:
-no existe `backend/data/clean_days.json` en ningún repo — es A2, el próximo
-ticket. Actualizar esta línea a mano cada vez que se verifique un día limpio
-(ver definición en regla 0) hasta que A2 lo automatice.
+**⏱️ CONTADOR DEL GATE — 0/60 días limpios verificados (realidad, no ficción).** La
+re-auditoría externa del 06-09 lo confirmó y A2 (mergeado hoy) lo corrige de raíz:
+`backend/data/clean_days.json` ahora lo escribe automáticamente el contador al final
+de la ventana 22:10. Semántica: racha ininterrumpida de weekdays limpios desde el
+gate 02-09; hoy el número real es 0 (02-09 falló (b), 03/04-09 UNVERIFIED_C puro,
+05-09 fin de semana no evaluable). La racha oficial arranca el 07-09 con el
+reconciler diario deployado: cada día hábil con (a) 3 corridas rc=0 + (b) updater sin
+PRECIOS: ERROR + (c) reconcile unexplained=0 suma 1. Ver
+`backend/scripts/clean_days_counter.py` y PLAN_REMEDIO_BRECHAS_20260903.md §A2.
 
 ## PENDIENTE AHORA — chequear primero, antes de leer el resto
 
@@ -86,14 +91,41 @@ Cline como implementadores). Verificar contra `git log --oneline -10`,
 > ordena "reiniciar el contador a mano" sobre un archivo que todavía no existe. Es
 > el próximo ticket en curso (2026-09-05).
 >
-> **B2** (colector de superficie IV) implementado por OpenCode, autoreporte 12/12 +
-> 524/524, pero la auditoría independiente se cortó por un rate-limit de sesión (no
-> por hallazgo) — sigue sin comitear hasta reintentarla.
->
 > ✅ **La cita "Regla 0 del ROADMAP" (bug real, propagado a código y al propio ticket)
 > ya está corregida en todos lados**: código, mensajes de error, tests, y
-> `PLAN_REMEDIO_BRECHAS_20260903.md` líneas 67/68/88 (era la **Regla 1 de
-> `ONBOARDING.md`**: "Ningún trial de motor sin criterio pre-registrado").
+> `PLAN_REMEDIO_BRECHAS_20260903.md` líneas 67/68/88 (corregido en el plan por Kilo,
+> commit dac987b, 2026-09-06 — era la **Regla 1 de `ONBOARDING.md`**: "Ningún trial de
+> motor sin criterio pre-registrado").
+>
+> ✅ **B5 CERRADO (2026-09-05, worktree `fundamentales-automatizado`) — mergeado a main
+> por Kilo 2026-09-06** — el gate de potencia ex-ante ahora vive **en el ledger**, no en
+> un documento. `backend/scripts/mde_power.py` computa el IC mínimo detectable de un
+> diseño (`mde_ic`), el SR diario requerido por la DSR (`sr_requerido_dsr`) y el veredicto
+> del paper de diciembre (`gate_diciembre_2026`: **INEJECUTABLE** — 60 días piden un SR
+> anual ~6.7-8.5 contra un efecto plausible de 0.10; números y sensibilidad en
+> `ANALISIS_MDE_GATE_DICIEMBRE_2026.md`, ahora en main). `trial_registry` lee el campo
+> `diseno_mde` de cada reserva: si `MDE > efecto plausible` (default 0.10) la entrada se
+> guarda como **`INEJECUTABLE` con `n_trials_consumidos=0`** → no quema slot Bonferroni
+> (`consumed_budget` no lo cuenta) y no produce refutación (no tiene veredicto: nunca
+> corrió). En la ruta post-hoc (`register_trial`) el diseño sub-potente se **rechaza**:
+> registrar el "no detectó" de un diseño ciego es justo el teatro que el ticket mata.
+> `audit_trial_budget.py` muestra la columna `rechazados B5` para que el rechazo siga
+> siendo auditable. Efecto colateral corregido: `/api/advisor/evidence` leía `veredicto`
+> a pelo y con el ledger real (que tiene una reserva `RESERVED`) devolvía HTTP 500; ahora
+> es status-aware (`status_ultimo`, `n_sin_correr`, `n_inejecutables`) y el footer del
+> dashboard muestra el **estado** en vez de inventarse un veredicto.
+> Verificado por Cline: backend **706 passed / 4 failed / 1 skipped** (los 4 fallos son
+> preexistentes y ajenos a B5 — ver el bloque de abajo), ruff limpio en los archivos
+> tocados, frontend **59/59** + `tsc --noEmit` limpio.
+>
+> 🔴 **4 fallos PRE-EXISTENTES en la suite** (verificados el 2026-09-05 y reproducidos
+> con los cambios de B5 `git stash`-eados, o sea ajenos a B5):
+> `tests/test_predict_cache.py` ×3 — `'types.SimpleNamespace' object has no attribute
+> 'motor'` en `app/api/routes/predict.py:169` (fixture del test desactualizado vs. el
+> Settings real), y `tests/test_config_registry.py::test_backtest_2023_inalterado_por_ajuste_futuro`
+> — el panel sintético no opera en 2023 (`total_trades == 0`), falla aislada del frente
+> predict/motor. NOTA Kilo 06-09: los 3 de predict_cache están en el ticket de Cline
+> (fix de fixtures, ya aprobado en su sesión); test_backtest_2023 sigue 🔴 abierto.
 
 1. **A6.3 — screening PALA/RESTO/POOLED** — 🟢 trial original CERRADO
    (29/08, `COMPLETED`/`NO_CUMPLE`, ver §12 de `PRE_REGISTRO_SCREENING_PALAS.md`).
