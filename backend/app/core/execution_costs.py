@@ -20,10 +20,17 @@ REGLAS NO NEGOCIABLES (heredadas de ORDENES_MODULOS.md M4):
 DISEÑO PARA TESTEABILIDAD (obligación del contrato M4): la medición se inyecta un
 cliente con dos métodos (`last_trade_price` / `submit_market_order`) para poder testear
 con un fake, sin pegar a la red. `AlpacaPaperClient` es la implementación HTTP real.
+
+RATE LIMIT MONITOR (B1 — PLAN_REMEDIO_BRECHAS_20260903):
+  Alpaca paper trading: 200 req/min por cuenta. El monitor registra cada request,
+  emite WARNING visible al 70% (140 req/min) y aplica throttle escalonado al 85%
+  (170 req/min) para evitar exceder el límite. No bloquea: solo alerta y ralentiza.
 """
 import os
 import sqlite3
 import time
+import warnings
+from collections import deque
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any, Dict, List, Optional
@@ -46,6 +53,15 @@ DEFAULT_TIMEOUT_SECONDS = 15.0
 # esperar el estado, no el envío.
 TERMINAL_UNFILLED = ("rejected", "canceled", "expired")
 
+# Rate limit Alpaca paper (documentado): 200 requests/minute por cuenta.
+ALPACA_RATE_LIMIT_PER_MIN = 200
+# Umbrales de alerta/throttle (fracción del límite).
+RATE_WARN_THRESHOLD = 0.70   # 70% -> WARNING visible (140 req/min)
+RATE_THROTTLE_THRESHOLD = 0.85  # 85% -> sleep escalonado (170 req/min)
+
+# Ventana deslizante de 60 segundos para conteo de requests.
+_RATE_WINDOW_SECONDS = 60.0
+
 
 class ConfigurationError(RuntimeError):
     """Falta configuración (credenciales paper) para instanciar el cliente de medición."""
@@ -60,6 +76,9 @@ class AlpacaPaperClient:
     Emula los dos métodos que `measure_slippage` necesita. Levanta
     `ConfigurationError` si faltan credenciales — la medición es la única pieza que
     las requiere; el resto del proyecto construye sin ellas.
+
+    Rate limit monitor: registra cada request HTTP, alerta al 70% del límite
+    (140 req/min) y aplica throttle (sleep escalonado) al 85% (170 req/min).
     """
 
     def __init__(
@@ -101,6 +120,48 @@ class AlpacaPaperClient:
                 "APCA-API-SECRET-KEY": self.secret_key,
             }
         )
+        # Rate limit monitor: timestamps de requests en ventana deslizante 60s.
+        self._request_timestamps: deque[float] = deque()
+
+    def _rate_limit_check(self) -> None:
+        """Verifica rate limit y aplica warn/throttle si corresponde.
+
+        Limpia timestamps > 60s, cuenta requests en la ventana, y:
+        - >= 70% (140 req/min): WARNING via warnings.warn (visible en logs/tests)
+        - >= 85% (170 req/min): sleep escalonado (0.5s, 1.0s, 2.0s...) hasta bajar.
+        """
+        now = time.monotonic()
+        # Limpiar ventana: solo timestamps en los últimos 60s
+        while self._request_timestamps and (now - self._request_timestamps[0]) > _RATE_WINDOW_SECONDS:
+            self._request_timestamps.popleft()
+
+        current_count = len(self._request_timestamps)
+        warn_limit = int(ALPACA_RATE_LIMIT_PER_MIN * RATE_WARN_THRESHOLD)
+        throttle_limit = int(ALPACA_RATE_LIMIT_PER_MIN * RATE_THROTTLE_THRESHOLD)
+
+        if current_count >= throttle_limit:
+            # Throttle escalonado: 0.5s, 1.0s, 2.0s... según cuánto exceda
+            excess = current_count - throttle_limit + 1
+            sleep_s = min(0.5 * excess, 5.0)  # cap 5s
+            warnings.warn(
+                f"[AlpacaPaperClient] RATE THROTTLE: {current_count}/{ALPACA_RATE_LIMIT_PER_MIN} req/min "
+                f"(>{RATE_THROTTLE_THRESHOLD*100:.0f}%). Sleep {sleep_s:.1f}s",
+                RuntimeWarning,
+                stacklevel=3,
+            )
+            time.sleep(sleep_s)
+            # Re-chequear después del sleep (puede haber limpiado la ventana)
+            self._rate_limit_check()
+        elif current_count >= warn_limit:
+            warnings.warn(
+                f"[AlpacaPaperClient] RATE WARN: {current_count}/{ALPACA_RATE_LIMIT_PER_MIN} req/min "
+                f"(>{RATE_WARN_THRESHOLD*100:.0f}%). Próximo throttle al {RATE_THROTTLE_THRESHOLD*100:.0f}%.",
+                RuntimeWarning,
+                stacklevel=3,
+            )
+
+        # Registrar este request
+        self._request_timestamps.append(now)
 
     @staticmethod
     def _alpaca_symbol(symbol: str) -> str:
@@ -112,6 +173,11 @@ class AlpacaPaperClient:
         """
         return symbol.replace("-", ".")
 
+    def _request(self, method: str, url: str, **kwargs) -> requests.Response:
+        """Wrapper que hace rate limit check antes de cada request HTTP."""
+        self._rate_limit_check()
+        return self._session.request(method, url, **kwargs)
+
     def last_trade_price(self, symbol: str) -> float:
         """Precio del último trade del símbolo — el *precio de decisión* de la medición.
 
@@ -119,7 +185,8 @@ class AlpacaPaperClient:
         endpoint `/v2/stocks/{symbol}/trades/latest`. Mismo esquema de auth y misma
         forma de respuesta ({"symbol", "trade": {"p"}}).
         """
-        resp = self._session.get(
+        resp = self._request(
+            "GET",
             f"{self.market_data_base_url}/v2/stocks/{self._alpaca_symbol(symbol)}/trades/latest",
             timeout=DEFAULT_TIMEOUT_SECONDS,
         )
@@ -133,8 +200,10 @@ class AlpacaPaperClient:
         long_market_value, pattern_day_trader, status, etc.). Es la fuente para
         el pipeline diario (cuánto hay para posicionar / exposición total).
         """
-        resp = self._session.get(
-            f"{self.base_url}/v2/account", timeout=DEFAULT_TIMEOUT_SECONDS
+        resp = self._request(
+            "GET",
+            f"{self.base_url}/v2/account",
+            timeout=DEFAULT_TIMEOUT_SECONDS,
         )
         resp.raise_for_status()
         return resp.json()
@@ -147,8 +216,10 @@ class AlpacaPaperClient:
         al formato interno). Base para reconciliar el `signal_ledger` contra el
         estado real del paper y para cerrar posiciones con el precio actual.
         """
-        resp = self._session.get(
-            f"{self.base_url}/v2/positions", timeout=DEFAULT_TIMEOUT_SECONDS
+        resp = self._request(
+            "GET",
+            f"{self.base_url}/v2/positions",
+            timeout=DEFAULT_TIMEOUT_SECONDS,
         )
         resp.raise_for_status()
         positions = resp.json()
@@ -236,8 +307,11 @@ class AlpacaPaperClient:
             "type": "market",
             "time_in_force": "day",
         }
-        resp = self._session.post(
-            f"{self.base_url}/v2/orders", json=payload, timeout=DEFAULT_TIMEOUT_SECONDS
+        resp = self._request(
+            "POST",
+            f"{self.base_url}/v2/orders",
+            json=payload,
+            timeout=DEFAULT_TIMEOUT_SECONDS,
         )
         resp.raise_for_status()
         order = resp.json()
@@ -254,7 +328,8 @@ class AlpacaPaperClient:
                     "no se registra. Revisá la orden manualmente."
                 )
             time.sleep(1.0)
-            resp = self._session.get(
+            resp = self._request(
+                "GET",
                 f"{self.base_url}/v2/orders/{order['id']}",
                 timeout=DEFAULT_TIMEOUT_SECONDS,
             )
