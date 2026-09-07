@@ -3823,3 +3823,38 @@ no de este ticket). Decisión de Boris/Kilo: commitear aparte o descartar.
 M5 sigue ACTIVO en producción: caffeinate -i -s (PID 63704) hasta las
 16:05 ET, intraday de hoy captura la sesión completa sin gaps de
 despertar. main=f3182a7 pusheada.
+
+## 2026-09-07 (tarde) — Cierre de ciclo doble + agent_watcher en producción (Kilo)
+
+Verificación y merge de las dos entregas de la tarde:
+
+OPENCODE (bd1fb21 → main b203271):
+- M5b VERIFICADO: tras caffeinate (11:56), 7 corridas intradía sin un gap;
+  0 barras nuevas es CORRECTO — hoy es Labor Day (calendario Alpaca
+  autoritativo: 03, 04, 08 — el 07 ausente). El benchmark del viernes
+  muestra el contraste (Mac dormida 7h31m en sesión; el diseño incremental
+  igual recuperó, pero con latencia — M5 la elimina).
+- Corrección de IDs por OpenCode (bien auditada): mi dispatch decía I2/I8
+  pero los canónicos son D3 (intradía genuina) e I4/D4 (shrinkage
+  James-Stein); I2 real = unificar motores (ya cerrado por B6), I8 real =
+  test White/Hansen SPA. Registrados con IDs correctos + nota de alias.
+- ROADMAP 0b.POST-GATE nuevo: D3/I4 con veto explícito durante la ventana.
+
+CLINE (5479df7+cc4ef3e → main ac58518+14f5c11):
+- predict_cache 5/5: fixture SimpleNamespace ahora con motor y
+  probabilidades_calibradas (lo que _serialize_result siempre leyó).
+- test_backtest_2023 CERRADO CON RAÍZ: (a)/(c) bug de test — el HMM real
+  clasifica el panel sintético 2023 como régimen 3 (DEFLATION) 141/256
+  días → generate_signal devuelve None → 0 trades → precondición falla.
+  Fuga de lookahead DESCARTADA con evidencia: get_at es PIT puro (lookup
+  2023 = 0.08 antes y después de ajuste 2024). Fix: _FixedRegimeClassifier
+  régimen 2 + panel con drift.
+- Verificado por Kilo en main: 6/6 (predict + 2023). Las 4 fallas
+  preexistentes conocidas de la suite quedan en 0.
+
+AGENT_WATCHER (63def1a): monitoreo en tiempo real pedido por Boris —
+launchd 60s sobre los worktrees de ambos agentes; commit nuevo →
+ORCHESTRATOR_INBOX.md + log. Kilo lee el inbox y da continuidad
+(verificar → merge → asignar siguiente). Baseline auto-registrada.
+
+main = 63def1a pusheada. Ambas tasks cerradas en orca.
