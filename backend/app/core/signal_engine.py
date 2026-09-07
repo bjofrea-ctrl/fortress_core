@@ -1,3 +1,10 @@
+"""
+SignalEngine — motor de señal técnico (refactor B6: usa signal_contract).
+
+La definición congelada de scoring/gates vive EN signal_contract.py (CONTRATO ÚNICO).
+Este motor delega en el contrato y añade: BMA online, stops/targets estructurales,
+puerta RR, ranking G2/G3, y utilidades de régimen.
+"""
 from typing import Dict, List, Optional
 
 import numpy as np
@@ -6,6 +13,16 @@ import pandas as pd
 from app.core.indicators import calculate_all_indicators
 from app.core.probabilistic_engine import BayesianOnlineUpdater
 from app.core.regime_classifier import GlobalRegimeClassifier
+from app.core.signal_contract import (
+    CONTRACT,
+    compute_factor_frame as _compute_factor_frame,
+    compute_score_series as _compute_score_series,
+    factor_scores as _factor_scores,
+    frozen_echo,
+    is_eligible,
+    overall_score,
+    signal_passes,
+)
 
 # Puerta de riesgo/recompensa mínimo para una señal con resolución estructural
 # (T1.4, PLAN_INTEGRACION_INDICAGENT.md): el VALOR 1.5 es el default del ticket y
@@ -70,24 +87,10 @@ class SignalEngine:
                  bayesian_updater: Optional[BayesianOnlineUpdater] = None):
         self.regime_classifier = regime_classifier
         self.bayesian_updater = bayesian_updater
-        # Priors derivados de diagnose_factor_ic (pooled 2019-2024, SPY/QQQ/
-        # AAPL/MSFT/GOOGL/AMZN/NVDA, sólo días elegibles): momentum IC=0.064,
-        # rsi IC=0.032 -> peso proporcional a |IC|. trend y adx quedaron
-        # afuera del score ponderado porque trend es constante dentro de la
-        # población elegible (no discrimina) y adx no resiste la corrección
-        # de comparaciones múltiples: IC +0.0679 (t=+2.31) nominal intra-día
-        # con Newey-West (§0.5a, rr2_intraday_20260811_150741.txt) — marginal,
-        # no robusto bajo Bonferroni-4 (umbral ≈2.5). Ambos siguen
-        # como gates duros en generate_signal, sólo salieron del promedio.
-        # No hay evidencia por-régimen todavía; el mismo prior se usa en los
-        # 4 regímenes y el BayesianOnlineUpdater lo refina online con el
+        # Pesos base (priors) derivados del contrato único — mismo valor para
+        # los 4 regímenes; el BayesianOnlineUpdater los refina online con el
         # régimen real de cada fecha a medida que cierran trades.
-        _momentum_ic, _rsi_ic = 0.0637, 0.0322
-        _mom_w = _momentum_ic / (_momentum_ic + _rsi_ic)
-        self.factor_weights = {
-            regime: {"momentum": round(_mom_w, 4), "rsi": round(1 - _mom_w, 4)}
-            for regime in (0, 1, 2, 3)
-        }
+        self.factor_weights = CONTRACT.factor_weights
 
     def _get_factor_weights(self, regime_state: int) -> Dict[str, float]:
         priors = self.factor_weights.get(regime_state, self.factor_weights[0])
@@ -104,75 +107,35 @@ class SignalEngine:
             return priors
         return {f: w / total for f, w in raw.items()}
 
-    def _normalize(self, value, lo, hi) -> float:
-        return float(np.clip((value - lo) / (hi - lo), 0, 1))
-
-    def _factor_scores(self, stock_data: pd.DataFrame) -> Dict[str, float]:
-        """
-        Sólo momentum y rsi entran al score ponderado: son los únicos factores
-        con IC positivo confirmado dentro de la población que pasa el filtro
-        duro de entrada (ver diagnose_factor_ic). trend y adx quedaron
-        afuera del promedio -siguen actuando como gates en generate_signal-
-        porque trend es constante entre los días elegibles (no discrimina) y
-        adx no resiste la corrección de comparaciones múltiples (IC +0.0679,
-        t=+2.31 nominal intra-día con Newey-West — §0.5a — marginal, no
-        robusto bajo Bonferroni-4 ≈2.5).
-        """
-        latest = stock_data.iloc[-1]
-        mom = latest.get("momentum_12_1")
-        momentum_score = self._normalize(mom, -50, 100) if pd.notna(mom) else 0.5
-
-        rsi_v = latest.get("rsi14")
-        rsi_score = (0.8 if 45 < rsi_v < 70 else 0.4) if pd.notna(rsi_v) else 0.5
-
-        return {"momentum": momentum_score, "rsi": rsi_score}
-
     def compute_score_series(self, indicators_df: pd.DataFrame, regime_state: int = 0) -> pd.Series:
         """
-        Reproduce _factor_scores de forma vectorizada para toda la serie
-        (no sólo el último día). Se usa para diagnóstico walk-forward de la
-        calidad predictiva del score compuesto, independiente del filtro BUY.
+        Score compuesto vectorizado para toda la serie (no sólo el último día).
+        Delega en signal_contract con pesos del régimen (incluye BMA si hay updater).
         """
-        mom = indicators_df.get("momentum_12_1", pd.Series(np.nan, index=indicators_df.index))
-        momentum_score = ((mom + 50) / 150).clip(0, 1)
-        momentum_score = momentum_score.where(mom.notna(), 0.5)
+        base_series = _compute_score_series(indicators_df, regime_state)
+        if self.bayesian_updater is None:
+            return base_series
 
-        rsi = indicators_df.get("rsi14", pd.Series(np.nan, index=indicators_df.index))
-        rsi_score = pd.Series(np.where(rsi.between(45, 70, inclusive="neither"), 0.8, 0.4), index=indicators_df.index)
-        rsi_score = rsi_score.where(rsi.notna(), 0.5)
-
+        # Con BMA online: ajustar pesos del régimen vs base (regimen 0)
         weights = self._get_factor_weights(regime_state)
-        return momentum_score * weights["momentum"] + rsi_score * weights["rsi"]
+        base_weights = self.factor_weights[0]
+        if weights == base_weights:
+            return base_series
+
+        # Recalcular con pesos del régimen (factor_scores ya usa el contrato)
+        # Nota: _compute_score_series usa pesos del régimen; para BMA necesitamos
+        # la descomposición por factor. Usamos compute_factor_frame + pesos BMA.
+        frame = _compute_factor_frame(indicators_df)
+        momentum = frame["momentum"]
+        rsi = frame["rsi"]
+        return momentum * weights["momentum"] + rsi * weights["rsi"]
 
     def compute_factor_frame(self, indicators_df: pd.DataFrame) -> pd.DataFrame:
         """
-        Componentes de factor individuales (no combinados) + máscara de
-        elegibilidad reproduciendo los filtros duros de generate_signal.
-        Para diagnóstico de IC por factor dentro de la población de días
-        que realmente serían candidatos a señal, no en todos los días.
+        Componentes de factor individuales + máscara de elegibilidad.
+        Delega en signal_contract (CONTRATO ÚNICO B6).
         """
-        df = indicators_df
-        mom = df.get("momentum_12_1", pd.Series(np.nan, index=df.index))
-        momentum = ((mom + 50) / 150).clip(0, 1)
-
-        trend_ok = (df["close"] > df["ema50"]) & (df["ema50"] > df["ema200"])
-        trend = pd.Series(np.where(trend_ok, 1.0, 0.0), index=df.index)
-
-        rsi = df.get("rsi14", pd.Series(np.nan, index=df.index))
-        rsi_score = pd.Series(np.where(rsi.between(45, 70, inclusive="neither"), 0.8, 0.4), index=df.index)
-        rsi_score = rsi_score.where(rsi.notna())
-
-        adx = df.get("adx14", pd.Series(np.nan, index=df.index))
-        adx_score = pd.Series(np.where(adx > 25, 0.9, 0.3), index=df.index)
-        adx_score = adx_score.where(adx.notna())
-
-        vol_ratio = df.get("volume_ratio", pd.Series(np.nan, index=df.index))
-        eligible = trend_ok & (adx >= 20) & (rsi > 40) & (rsi < 75) & (vol_ratio >= 1.0)
-
-        return pd.DataFrame({
-            "momentum": momentum, "trend": trend, "rsi": rsi_score, "adx": adx_score,
-            "eligible": eligible.fillna(False), "close": df["close"],
-        }, index=df.index)
+        return _compute_factor_frame(indicators_df)
 
     def generate_signal(self, stock_data: pd.DataFrame, symbol: str, regime_state: int,
                         market_structure: Optional[Dict] = None) -> Optional[Dict]:
@@ -201,19 +164,13 @@ class SignalEngine:
         if len(stock_data) == 0:
             return None
         latest = stock_data.iloc[-1]
-        scores = self._factor_scores(stock_data)
-        weights = self._get_factor_weights(regime_state)
-        overall = sum(scores[f] * weights[f] for f in weights)
 
-        if not (latest.close > latest.ema50 > latest.ema200):
+        # Delegar elegibilidad y scoring al contrato único
+        if not is_eligible(latest):
             return None
-        if latest.get("adx14", 0) < 20:
-            return None
-        if not (40 < latest.get("rsi14", 50) < 75):
-            return None
-        if latest.get("volume_ratio", 1) < 1.0:
-            return None
-        if overall < 0.6:
+
+        score = overall_score(latest, regime_state)
+        if score < CONTRACT.entry_threshold:
             return None
 
         atr_v = latest.atr14
@@ -227,11 +184,13 @@ class SignalEngine:
         if reward <= 0 or reward / risk < MIN_RR:
             return None  # puerta RR mínima (trade_framer de indicAgent)
         payoff_ratio = reward / risk
+
+        scores = _factor_scores(latest)
         return {
             "symbol": symbol,
             "date": stock_data.index[-1],
             "signal_type": "BUY",
-            "score": float(overall),
+            "score": float(score),
             "entry_price": float(entry),
             "stop_loss": float(stop_loss),
             "take_profit": float(take_profit),
@@ -252,18 +211,11 @@ class SignalEngine:
 
     def _fixed_score_series(self, indicators_df: pd.DataFrame) -> pd.Series:
         """Score técnico con pesos FIJOS (factor_weights[0], sin BMA online)
-        para toda la serie. Comparte definición con compute_g2_rank_scores."""
-        mom = indicators_df.get("momentum_12_1", pd.Series(np.nan, index=indicators_df.index))
-        momentum_score = ((mom + 50) / 150).clip(0, 1).where(mom.notna(), 0.5)
+        para toda la serie. Comparte definición con compute_g2_rank_scores.
 
-        rsi = indicators_df.get("rsi14", pd.Series(np.nan, index=indicators_df.index))
-        rsi_score = pd.Series(
-            np.where(rsi.between(45, 70, inclusive="neither"), 0.8, 0.4),
-            index=indicators_df.index,
-        ).where(rsi.notna(), 0.5)
-
-        priors = self.factor_weights[0]
-        return momentum_score * priors["momentum"] + rsi_score * priors["rsi"]
+        Delega en signal_contract con régimen 0 (priors base).
+        """
+        return _compute_score_series(indicators_df, regime_state=0)
 
     @staticmethod
     def _rolling_rank01(s: pd.Series, window: int = 260, min_periods: int = 60) -> pd.Series:

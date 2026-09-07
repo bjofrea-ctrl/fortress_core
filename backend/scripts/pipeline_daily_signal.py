@@ -57,6 +57,8 @@ from app.core.execution_telemetry import ExecutionTelemetry, compute_slippage  #
 from app.core.indicators import calculate_all_indicators
 from app.core.signal_engine import SignalEngine
 from scripts.motor_manifest import load_manifest, verify_manifest  # noqa: E402
+# B6: contrato de señal única — la fuente canónica de pesos/umbrales/gates.
+from app.core.signal_contract import CONTRACT, frozen_echo as contract_frozen_echo, is_eligible, overall_score  # noqa: E402
 
 # A3 (PLAN_REMEDIO_BRECHAS_20260903): kill-switch por divergencia — reglas
 # pre-declaradas. Import sin estado global; los gatherers reciben los
@@ -95,37 +97,21 @@ CALENDAR_SYMBOL = "SPY"
 STALENESS_MAX_DAYS = 6          # fin de semana + feriado US + margen
 PAPER_CAPITAL_BUDGET = 25000.0  # fallback si la lectura de cuenta (Cline) no existe
 
-# ---- Definición CONGELADA (valores eco para auditoría; los pesos vivos vienen
-# ---- del motor en runtime vía frozen_echo()). Fuente literal:
-# ---- validacion_oos_fresca_mom_rsi.py:58-62 (que referencia signal_engine.py:216).
-ENTRY_THRESHOLD = 0.60
-RSI_SCORE_BAND = (45, 70)
-RSI_GATE = (40, 75)
-ADX_MIN = 20
-VR_MIN = 1.0
-
 
 # --------------------------------------------------------------------------
-# Definición congelada
+# Definición congelada (delega en signal_contract — CONTRATO ÚNICO B6)
 # --------------------------------------------------------------------------
 
 def frozen_echo() -> Dict[str, Any]:
-    """Valores vigentes LEÍDOS DEL MOTOR en runtime + constantes congeladas."""
-    eng = SignalEngine(regime_classifier=None)
-    w = eng.factor_weights[0]
-    return {
-        "w_mom_runtime": w["momentum"],
-        "w_rsi_runtime": w["rsi"],
-        "entry_threshold": ENTRY_THRESHOLD,
-        "rsi_score_band": list(RSI_SCORE_BAND),
-        "rsi_gate": list(RSI_GATE),
-        "adx_min": ADX_MIN,
-        "vr_min": VR_MIN,
+    """Valores vigentes LEÍDOS DEL CONTRATO ÚNICO + campos del pipeline."""
+    base = contract_frozen_echo()
+    base.update({
         "cost_per_side": float(settings.COST_PER_SIDE),
         "slippage_referencia": 0.0005,
         "universe_n": len(UNIVERSE),
-        "fuente": "validacion_oos_fresca_mom_rsi.py (congelada; pesos del motor en runtime)",
-    }
+        "fuente": "signal_contract.py (CONTRATO ÚNICO B6) + pipeline_daily_signal",
+    })
+    return base
 
 
 def load_symbol(symbol: str):
@@ -146,22 +132,21 @@ def load_symbol(symbol: str):
 
 
 def latest_signal(eng: SignalEngine, ind: pd.DataFrame) -> Optional[Dict[str, float]]:
-    """Señal de HOY con la definición congelada sobre la última barra.
+    """Señal de HOY con la definición congelada (CONTRATO ÚNICO B6) sobre la última barra.
 
     Devuelve {'eligible':bool,'score':float,'close':float} o None si no hay filas.
-    Usa compute_factor_frame (gates duros) + compute_score_series (score compuesto
+    Delega en signal_contract: is_eligible (gates duros) + overall_score (score compuesto
     con pesos del motor, régimen 0) — camino verificado max|Δ|=0 vs la validación.
     """
     if len(ind) == 0:
         return None
-    frame = eng.compute_factor_frame(ind)
-    score = eng.compute_score_series(ind, regime_state=0)
-    eligible = bool(frame["eligible"].iloc[-1])
-    s = score.iloc[-1]
+    latest = ind.iloc[-1]
+    eligible = is_eligible(latest)
+    score = overall_score(latest, regime_state=0)
     return {
         "eligible": eligible,
-        "score": float(s) if pd.notna(s) else 0.0,
-        "close": float(frame["close"].iloc[-1]),
+        "score": float(score) if pd.notna(score) else 0.0,
+        "close": float(latest.close),
     }
 
 
@@ -223,7 +208,7 @@ def ledger_row_payload(entry: Dict[str, Any], exit_reason: str = "",
 
 
 def compute_signals(verbose_lines: List[str]) -> Tuple[List[Dict[str, Any]], Dict[str, int]]:
-    """Aplica la definición congelada al universo completo (datos del cache)."""
+    """Aplica la definición congelada (CONTRATO ÚNICO B6) al universo completo (datos del cache)."""
     eng = SignalEngine(regime_classifier=None)
     signals: List[Dict[str, Any]] = []
     n_loaded = n_failed = 0
@@ -241,7 +226,7 @@ def compute_signals(verbose_lines: List[str]) -> Tuple[List[Dict[str, Any]], Dic
         sig = latest_signal(eng, ind)
         if sig is None:
             continue
-        if sig["eligible"] and sig["score"] >= ENTRY_THRESHOLD:
+        if sig["eligible"] and sig["score"] >= CONTRACT.entry_threshold:
             signals.append({"symbol": sym, "score": round(sig["score"], 6),
                             "price_ref": round(sig["close"], 4)})
     stats = {"n_loaded": n_loaded, "n_failed": n_failed, "n_signals": len(signals)}
