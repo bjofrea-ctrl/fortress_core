@@ -3910,6 +3910,93 @@ no de este ticket). Decisión de Boris/Kilo: commitear aparte o descartar.
 
 *Fin de Sesión — 2026-09-07 (Cline)*
 
+---
+
+## Asignación Kilo 07/09 — Frente 1 (tz_dispatcher) + Frente 2 (fundamentals_screen rc=3)
+
+**Contexto (hallazgo de auditoría profunda de Kilo):** el desfase launchd(ART)↔shell(ET)
+hizo que reconciler diario y decide mensual NUNCA dispararan (0 líneas reconcile en
+producción). Kilo aplicó un stop-gap al plist, pero el cambio DST del 2/11 (invierno,
+−2h) lo rompía de nuevo. Segundo frente: `fundamentals_screen` con `rc=3` desde el
+04/09 — FMP vacío/inválido para todo el universo.
+
+### FRENTE 1 — raíz confirmada (verificada contra el Mac real)
+- El Mac está en **ART (UTC-3)** (`date` → `-03 20:12`; `TZ=America/New_York date` →
+  `EDT 19:12`). El plist viejo usaba `StartCalendarInterval` en la hora LOCAL del
+  sistema (ART), pero `daily_signal_pipeline.sh` espera ventanas en **ET (9/15/22)**.
+- launchd disparaba a 9:35/15:40/22:10 **ART** → ET real 8:35/14:40/21:10 (verano,
+  −1h) o 7:35/13:40/20:10 (invierno tras 2/11, −2h). `hour_ET` nunca era 9/15/22 →
+  siempre caía en `health`; `decide`/`exit`/reconciler NUNCA corrían. Coincide con el
+  reporte de Kilo (hour_ET logueado 08/14/21, ventanas esperan 9/15/22).
+- **Fix robusto (DST-proof):** `scripts/tz_dispatcher.sh` corre cada 5 min
+  (plist con `StartInterval=300`), computa ET en runtime (`TZ=America/New_York date`,
+  sin offset fijo) y dispara `daily_signal_pipeline.sh` **UNA vez por ventana** usando
+  un state-file anti-doble-disparo. La lógica de ventana + state vive en
+  `backend/scripts/tz_dispatcher_lib.py` (stdlib-only, testeable); el bash es thin
+  wrapper. El plist `com.fortresscore.pipeline.plist` ahora invoca el dispatcher.
+- **Ventanas = espejo exacto** de `daily_signal_pipeline.sh` (9:35-45 / 15:35-45 /
+  22:5-15 ET) para no disparar "antes" y producir un `health`.
+- **Tests** (`tests/test_tz_dispatcher.py`): mapeo de ventanas, anti-doble-disparo
+  (una vez por ventana/día), y DST-proof vía `et_from_utc` en ambos regímenes
+  (invierno EST UTC-5 / verano EDT UTC-4) demostrando que NO usa offset fijo.
+
+### FRENTE 2 — diagnóstico (reportado ANTES de cambios grandes)
+- **Síntoma:** `fundamentals_screen` → `rc=3` desde 04/09; FMP vacío/inválido para todo
+  el universo.
+- **Mecanismo (verificado en código):** `rc=3` sólo lo lanza `render_artifacts`
+  (`ValueError("sin resultados")` cuando `results` vacío). Eso pasa cuando TODOS los
+  `ingest_symbol()` devuelven `None` → FMP devolvió statements vacíos/inválidos y no
+  había cache cálido que servir.
+- **Causa (EXTERNA, fuera de nuestro código):** falla total y súbita desde una fecha
+  puntual = (a) `FMP_API_KEY` revocada/expirada, (b) cuota 250/día agotada (429), o
+  (c) cambio de contrato de endpoint. La migración 2026-08-30 ya fijó `/stable`, así
+  que (c) es menos probable salvo nuevo cambio. **No verificable en vivo** (sin red/key
+  y jamás se tocan credenciales), pero la evidencia apunta a causa externa.
+- **Limitación estructural hallada:** el screening (`compute_scores`/`screen`) consume
+  los **statements FMP** (`income_statement`/`balance_sheet`/`cash_flow` como listas).
+  Finnhub (B0) sólo provee **ratios** (`pe_ratio`, `roe`, …), no statements. Un
+  "respaldo Finnhub total" que mantenga el screening idéntico exigiría reescribir Fase 2
+  → cambio grande que el instructivo pide reportar primero. Por eso el respaldo
+  correcto y honesto es cross-check de disponibilidad/cobertura + degradación elegante +
+  dashboard STALE, NO reemplazo silencioso.
+
+### FRENTE 2 — implementación (degradación elegante + cross-check B0 + STALE)
+- `FundamentalsIngestion.crosscheck_finnhub_availability(sym)`: cuando FMP falla,
+  consulta Finnhub para confirmar si el símbolo TIENE datos en fuente independiente
+  (distingue outage de FMP de símbolo muerto). Reusa `_finnhub_cross` (ya existente).
+- `run_fundamentals_screen.py`: en fallo FMP registra el cross-check; calcula
+  `data_stale` y `finnhub_crosscheck_summary`; pasa `stale` a `render_artifacts`; y
+  si `results` queda vacío NO revienta con `rc=3` → emite dashboard placeholder STALE
+  y devuelve **`rc=4`** (completó pero datos totalmente STALE), distinguible de
+  `rc=0`/`rc=2`/`rc=3`.
+- `fundamentals_artifacts.render_artifacts(..., stale=False)`: con `stale=True` inyecta
+  un banner STALE visible en el dashboard (post-proceso del HTML del motor vendorizado,
+  sin tocarlo).
+- **Tests** (`test_fundamentals_screen_job.py`): parcial-falla marca STALE + cross-check
+  invocado + banner en HTML; falla-total → `rc=4` + placeholder STALE; unidad de
+  `_inject_stale_banner`.
+
+**Regresión:** `test_tz_dispatcher.py` (18) + `test_fundamentals_screen_job.py` (25) +
+`test_fundamentals_ingestion.py`/`test_fundamentals_client.py`/`test_fundamentals_screen_e2e.py`
+(20) → **todos verde**. El `rc=3` del e2e (render roto) se preserva.
+
+**Commit:** en rama `bjofrea-ctrl/fundamentales-automatizado`. **Sin push** (Kilo verifica
+y mergea por protocolo). Archivos: `scripts/tz_dispatcher.sh` (nuevo),
+`scripts/com.fortresscore.pipeline.plist` (reemplaza StartCalendarInterval por
+StartInterval=300 → dispatcher), `backend/scripts/tz_dispatcher_lib.py` (nuevo),
+`backend/app/core/fundamentals_ingestion.py` (crosscheck Finnhub),
+`backend/scripts/run_fundamentals_screen.py` (STALE + rc=4),
+`backend/app/core/fundamentals_artifacts.py` (banner STALE), + tests.
+
+**Pendiente fuera de scope / para Boris-Kilo:**
+1. Verificar en vivo la causa Frente 2 (key/cuota/endpoint FMP) — requiere red + key
+   reales. El cross-check Finnhub ya queda grabado en `finnhub_crosscheck_summary` para
+   confirmar si el outage es de FMP.
+2. Si se quiere Finnhub como fuente PRIMARIA de ratios, es trabajo de Fase 2 (re-escribir
+   `compute_scores` para aceptar ratios Finnhub) — fuera de este fix.
+3. `launchctl unload/load` del plist actualizado para activar el dispatcher (operación
+   de Boris/Kilo; el plist ya apunta a él).
+
 
 M5 sigue ACTIVO en producción: caffeinate -i -s (PID 63704) hasta las
 16:05 ET, intraday de hoy captura la sesión completa sin gaps de
