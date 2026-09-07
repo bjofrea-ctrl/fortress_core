@@ -661,12 +661,6 @@ def register_trial(entry: dict, path: Optional[str] = None, check_git: bool = Tr
     # B4: holdout sellado — por escritura, sin texto de pre-registro (esta
     # ruta es post-hoc: la ventana se juzga por lo que DECLARA la entrada).
     _holdout_check(entry)
-<<<<<<< HEAD
-    # A0: snapshot del cache SIEMPRE ÚLTIMO — es el paso caro (hashea los
-    # parquets del cache) y solo los registros que pasaron todos los checks
-    # merecen pagar el hash (fix 07c1a31: trabajo muerto si un check rechaza).
-    entry = _attach_cache_snapshot_if_absent(entry)
-=======
     # B5: gate de potencia ex-ante también en la ruta post-hoc. Acá el diseño
     # sub-potente NO puede degradarse a INEJECUTABLE (la entrada afirma un
     # veredicto y un artefacto): se rechaza outright, porque registrar el
@@ -680,7 +674,10 @@ def register_trial(entry: dict, path: Optional[str] = None, check_git: bool = Tr
             "efecto plausible. Rediseñar (más símbolos/fechas/horizonte) o "
             "registrar la reserva para que quede INEJECUTABLE con evidencia."
         )
->>>>>>> c602a30 (B5: gate de potencia ex-ante (MDE) dentro del ledger + footer de evidencia status-aware)
+    # A0: snapshot del cache SIEMPRE ÚLTIMO — es el paso caro (hashea los
+    # parquets del cache) y solo los registros que pasaron todos los checks
+    # merecen pagar el hash (fix 07c1a31: trabajo muerto si un check rechaza).
+    entry = _attach_cache_snapshot_if_absent(entry)
     entries = _load_raw(path)
     if any(e["id"] == entry["id"] for e in entries):
         raise TrialRegistryError(f"id duplicado: {entry['id']}")
@@ -733,10 +730,6 @@ def register_trial_reservation(
     # (cuando existe) para detectar ventanas de datos post-corte no
     # declaradas en la entrada.
     _holdout_check(entry, contenido if preregistro is not None else None)
-<<<<<<< HEAD
-    # A0: snapshot del cache SIEMPRE ÚLTIMO (fix 07c1a31) — ver register_trial.
-    entry = _attach_cache_snapshot_if_absent(entry)
-=======
     # B5: gate de potencia ex-ante (MDE). Un diseño sub-potente NO se reserva:
     # queda INEJECUTABLE — no consume slot Bonferroni (consumed_budget no lo
     # cuenta) ni cuenta como refutación (no tiene veredicto: nunca corrió).
@@ -745,7 +738,11 @@ def register_trial_reservation(
         entry["status"] = STATUS_INEJECUTABLE
         entry["n_trials_consumidos"] = 0
         entry["mde"] = mde_verdict
->>>>>>> c602a30 (B5: gate de potencia ex-ante (MDE) dentro del ledger + footer de evidencia status-aware)
+    # A0: snapshot del cache SIEMPRE ÚLTIMO (fix 07c1a31) — ver register_trial.
+    # OJO: se corre también para reservas INEJECUTABLES (su entrada SÍ se
+    # escribe — con n_consumidos=0 — y congelar el cache de ese momento es
+    # evidencia útil, no trabajo muerto como en un rechazo por raise).
+    entry = _attach_cache_snapshot_if_absent(entry)
     entries = _load_raw(path)
     if any(e["id"] == entry["id"] for e in entries):
         raise TrialRegistryError(f"id duplicado: {entry['id']}")
