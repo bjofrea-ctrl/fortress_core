@@ -33,6 +33,31 @@ def _gate_trial_escape_during_full_suite():
     # del escape y los tests siguen pasando. Es explícito en el docstring.
 
 
+@pytest.fixture(autouse=True, scope="session")
+def _ledger_cache_sandbox(tmp_path_factory):
+    """A0 + suite speed: `register_trial` congela un snapshot SHA-256 del
+    cache de parquets en cada entrada. Con el cache REAL del worktree son
+    130 archivos / ~230MB — hashearlos en cada test que registra trials
+    vuelve la suite insoportablemente lenta (~7min x test de A7 aceptado).
+    Redirigimos el cache que el ledger hashea a un sandbox mínimo con un
+    parquet simbólico: los tests de MECÁNICA del registro no dependen del
+    contenido del cache, y los de A0 prueban el snapshot con paths explícitos.
+    `FORTRESS_LEDGER_CACHE_DIR` es la var documentada del helper."""
+    import os
+    import pandas as _pd
+
+    sandbox = tmp_path_factory.mktemp("ledger_cache_sandbox")
+    dates = _pd.bdate_range("2024-01-01", periods=30)
+    df = _pd.DataFrame(
+        {"open": 1.0, "high": 1.0, "low": 1.0, "close": 1.0, "volume": 1.0},
+        index=dates,
+    )
+    df.to_parquet(sandbox / "SANDBOX.parquet")
+    os.environ["FORTRESS_LEDGER_CACHE_DIR"] = str(sandbox)
+    yield sandbox
+    os.environ.pop("FORTRESS_LEDGER_CACHE_DIR", None)
+
+
 @pytest.fixture
 def ohlcv_df():
     """OHLCV sintético con tendencia alcista suave, suficiente para el

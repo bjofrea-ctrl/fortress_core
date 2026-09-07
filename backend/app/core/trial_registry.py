@@ -386,6 +386,10 @@ def _attach_cache_snapshot_if_absent(entry: dict) -> dict:
     congelada). Si la entrada ya trae 'cache_manifest_sha256' se respeta. Falla
     blando: sin pandas/pyarrow (tests aislados del ledger) registra sin
     snapshot — el ledger no puede dejar de funcionar por el cache.
+
+    `FORTRESS_LEDGER_CACHE_DIR` permite redirigir el cache que el ledger hashea
+    (tests: sandbox pequeño; producción: NO setear — hashea el cache real).
+    Sin la var, el default es backend/data/cache (el cache real del pipeline).
     """
     if "cache_manifest_sha256" in entry:
         return entry
@@ -394,7 +398,10 @@ def _attach_cache_snapshot_if_absent(entry: dict) -> dict:
 
         here = os.path.dirname(os.path.abspath(__file__))  # backend/app/core/
         backend_root = os.path.normpath(os.path.join(here, "..", ".."))
-        return attach_cache_snapshot(entry, os.path.join(backend_root, "data", "cache"))
+        cache_dir = os.environ.get("FORTRESS_LEDGER_CACHE_DIR")
+        if not cache_dir:
+            cache_dir = os.path.join(backend_root, "data", "cache")
+        return attach_cache_snapshot(entry, cache_dir)
     except Exception:  # noqa: BLE001 — fail-blando documentado arriba
         return entry
 
@@ -424,15 +431,20 @@ def register_trial(entry: dict, path: Optional[str] = None, check_git: bool = Tr
     path = path or _default_path()
     entry = dict(entry)
     entry.setdefault("status", STATUS_COMPLETED)
-    entry = _attach_cache_snapshot_if_absent(entry)
     if check_git:
         _git_reconciliation_error(path)
-    # A7: gate window check ANTES de validar forma — un trial que no pasa
-    # el gate no merece ni un check de entry. Skip el helper si el caller
-    # no quiere el check (passa `check_git=False`... no, ese flag es para
-    # git; para el gate usamos un flag separado si hace falta, pero por
-    # ahora la regla es uniforme: TODA escritura respeta el gate).
+    # A7: gate window check ANTES de validar forma y ANTES del snapshot del
+    # cache — un trial que no pasa el gate no merece ni un check de entry,
+    # y mucho fondo: attach_cache_snapshot hashea los 130 parquets del cache
+    # (minutos); hacerlo para después de que el gate rechazue el registro es
+    # trabajo muerto (bug encontrado al diagnosticar por qué la suite full
+    # moría 'al 27%': 8 tests de A7, cada uno disparando un snapshot completo
+    # del cache real antes del raise). Skip el helper si el caller no quiere
+    # el check (passa `check_git=False`... no, ese flag es para git; para el
+    # gate usamos un flag separado si hace falta, pero por ahora la regla es
+    # uniforme: TODA escritura respeta el gate).
     _gate_window_check(entry)
+    entry = _attach_cache_snapshot_if_absent(entry)
     entries = _load_raw(path)
     if any(e["id"] == entry["id"] for e in entries):
         raise TrialRegistryError(f"id duplicado: {entry['id']}")
@@ -468,6 +480,12 @@ def register_trial_reservation(
             f"{entry['status']!r} — para un trial ya corrido usar register_trial()"
         )
     entry["status"] = STATUS_RESERVED
+    if check_git:
+        _git_reconciliation_error(path)
+    # A7: gate check ANTES del snapshot del cache — mismo fix que
+    # register_trial: no hashear 230MB de parquets para un registro que el
+    # gate va a rechazar inmediatamente después.
+    _gate_window_check(entry)
     entry = _attach_cache_snapshot_if_absent(entry)
     if preregistro is not None:
         contenido = preregistro
@@ -475,10 +493,6 @@ def register_trial_reservation(
             with open(preregistro, "r", encoding="utf-8") as fh:
                 contenido = fh.read()
         validate_umbral_aplicado(contenido, str(entry["umbral_aplicado"]))
-    if check_git:
-        _git_reconciliation_error(path)
-    # A7: gate window check (idéntico al de register_trial).
-    _gate_window_check(entry)
     entries = _load_raw(path)
     if any(e["id"] == entry["id"] for e in entries):
         raise TrialRegistryError(f"id duplicado: {entry['id']}")
