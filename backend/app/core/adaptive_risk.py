@@ -17,6 +17,17 @@ REGIME_THRESHOLDS = {
     3: {"position_stop": 0.03, "portfolio_stop": 0.03, "max_exposure": 0.20, "cooldown_days": 15},
 }
 
+# B8 (PRE_REGISTRO_WINRATE_RR_SIZING_CAP_20260906.md) §2b: fracción conservadora de
+# Kelly aplicada como techo de crecimiento de risk_per_trade. 1/4 Kelly es el default
+# del ticket ("Kelly/4, parametrizable"). Nunca se usa el Kelly completo: el edge
+# real medido por measure_realized_edge (2a) es chico e incierto hoy.
+DEFAULT_KELLY_FRACTION = 0.25
+
+# Default conservador cuando 2a devuelve "n insuficiente" o el edge medido no es
+# positivo: nos quedamos con el RISK_PER_TRADE de producción ya probado (1.5%),
+# NO con el Kelly optimista de la simulación Monte Carlo (que compondría a un CAGR
+# absurdo). El cap se combina (mínimo) con el max_exposure del régimen.
+
 # Singleton lazy del ConfigRegistry (import adentro de la función para
 # evitar el ciclo de import con config_registry, que importa REGIME_THRESHOLDS).
 _REGISTRY = None
@@ -102,12 +113,25 @@ class AdaptiveRiskManager:
         payoff_ratio: Optional[float] = None,
         fractional_kelly: float = 0.25,
         symbol: Optional[str] = None,
+        measured_win_rate: Optional[float] = None,
+        measured_reward_risk: Optional[float] = None,
     ) -> int:
         if atr <= 0 or price <= 0:
             return 0
         thresholds = self.get_thresholds()
         stop_distance = max(2.0 * atr, price * thresholds["position_stop"])
-        shares_by_risk = (equity * self.RISK_PER_TRADE) / stop_distance
+
+        # B8 §2b: acotar el riesgo por trade con el techo Kelly+régimen del edge
+        # REAL medido en 2a. Si no se pasa edge medido, se queda en RISK_PER_TRADE
+        # (comportamiento original; no se reemplaza nada).
+        risk_per_trade = self.RISK_PER_TRADE
+        if measured_win_rate is not None or measured_reward_risk is not None:
+            risk_per_trade = self.effective_risk_per_trade(
+                measured_win_rate, measured_reward_risk,
+                regime_state=self.state.current_regime,
+                kelly_fraction=fractional_kelly,
+            )
+        shares_by_risk = (equity * risk_per_trade) / stop_distance
         max_shares = (equity * self.MAX_POSITION_PCT) / price
 
         if win_prob is not None and payoff_ratio is not None:
@@ -119,6 +143,69 @@ class AdaptiveRiskManager:
                 return int(min(kelly_shares, shares_by_risk, max_shares))
 
         return int(min(shares_by_risk, max_shares))
+
+    def risk_per_trade_cap(
+        self,
+        win_rate: Optional[float],
+        reward_risk: Optional[float],
+        regime_state: Optional[int] = None,
+        kelly_fraction: float = DEFAULT_KELLY_FRACTION,
+    ) -> float:
+        """Techo de riesgo por trade (fracción de equity) según el edge REAL medido.
+
+        B8 §2b: el cap = min(Kelly fraccionario, max_exposure del régimen). No
+        reemplaza compute_position_size ni el max_exposure del régimen; los ACOTA
+        más cuando el edge medido lo justifica.
+
+        Parámetros:
+          - win_rate / reward_risk: medidos por measure_realized_edge (2a). None
+            significa que 2a dijo "n insuficiente".
+          - regime_state: régimen; si None usa el régimen vigente del manager.
+          - kelly_fraction: fracción conservadora de Kelly (default 1/4, parametrizable).
+
+        Si el edge es insuficiente o no positivo: devuelve el default conservador
+        documentado = min(RISK_PER_TRADE de producción, max_exposure del régimen).
+        NUNCA aplica un Kelly negativo a ciegas.
+        """
+        regime = regime_state if regime_state is not None else self.state.current_regime
+        regime_max_exposure = get_regime_thresholds(regime).get("max_exposure", 1.0)
+
+        # Edge insuficiente / inválido => default conservador (jamás Kelly de simulación).
+        if (
+            win_rate is None
+            or reward_risk is None
+            or reward_risk <= 0
+            or not (0.0 < win_rate < 1.0)
+        ):
+            return min(self.RISK_PER_TRADE, regime_max_exposure)
+
+        kelly_full = max(0.0, win_rate * reward_risk - (1 - win_rate)) / reward_risk
+        # Kelly no positivo => no hay edge que justifique crecer el riesgo: default
+        # conservador (jamás 0 a ciegas, que equivaldría a "no operar nunca").
+        if kelly_full <= 0:
+            return min(self.RISK_PER_TRADE, regime_max_exposure)
+        fractional_kelly = kelly_full * kelly_fraction
+        return min(fractional_kelly, regime_max_exposure)
+
+    def effective_risk_per_trade(
+        self,
+        win_rate: Optional[float],
+        reward_risk: Optional[float],
+        regime_state: Optional[int] = None,
+        kelly_fraction: float = DEFAULT_KELLY_FRACTION,
+    ) -> float:
+        """Riesgo por trade efectivo = min(RISK_PER_TRADE fijo, techo Kelly+régimen).
+
+        B8 §2b: el 1% fijo (RISK_PER_TRADE) solía compondar sin límite superior de
+        crecimiento; ahora queda acotado por el techo. Si el edge medido es fuerte,
+        el techo es alto y rige el fijo; si es débil, el techo baja y acota el
+        crecimiento. Si 2a dijo "n insuficiente", el default conservador ya es el
+        RISK_PER_TRADE de producción.
+        """
+        return min(
+            self.RISK_PER_TRADE,
+            self.risk_per_trade_cap(win_rate, reward_risk, regime_state, kelly_fraction),
+        )
 
     def check_all_stops(
         self,

@@ -3488,3 +3488,31 @@ fix) y commitear/merge de esta consolidación + la A2 de Cline (55606a3,
 obsoleta: su (a) nunca matchea el formato real).
 
 Sin merge a main desde este worktree (regla 48H).
+---
+
+## B8 — edge real del motor + cap de sizing regime-aware (2026-09-06, Cline)
+
+**Ticket**: B8 nuevo, pre-registro `PRE_REGISTRO_WINRATE_RR_SIZING_CAP_20260906.md` (en `main`,
+traído con `git fetch origin` + `git show origin/main:...`). Categoría instrumentation/infra (como
+A2): NO es trial, NO consume slot Bonferroni.
+
+**Hecho**:
+- **2a** `backend/scripts/measure_realized_edge.py`: win-rate / R:R / frecuencia reales sobre
+  `signal_ledger.status='closed'` con IC bootstrap. `n<30` ⇒ `"n insuficiente para estimar, no
+  inventar un número"` y todo `None`. R:R `None` si falta ganadores o perdedores. Firma
+  ASPIRACIONAL 25-40%/4-8:1 reportada pero nunca usada como valor.
+- **2b** `app/core/adaptive_risk.py`: `risk_per_trade_cap()` y `effective_risk_per_trade()` en
+  `AdaptiveRiskManager` — techo fractional-Kelly (`Kelly/4`, parametrizable) combinado (mínimo)
+  con `max_exposure` del régimen. Edge insuficiente/negativo ⇒ default conservador
+  `min(RISK_PER_TRADE, max_exposure)` (jamás Kelly de simulación). Cableado en
+  `compute_position_size` vía params opcionales (sin ellos: comportamiento original).
+- Tests: `tests/test_measure_realized_edge.py` (×8), `tests/test_risk_kelly_cap.py` (×7) →
+  **15 passed** en venv py3.9.6 Desktop; ruff limpio; `test_risk_manager.py` 5/5 sin regresión.
+- ROADMAP.md actualizado (bloque B8, no mergeado a main).
+
+**Estado**: implementado en la rama `bjofrea-ctrl/fundamentales-automatizado`, **sin mergear a
+main** (criterio de cierre del ticket). Pendiente: verificación independiente en `main` (suite
+completa) y merge.
+
+*Fin de Sesión — 2026-09-06 (Cline)*
+

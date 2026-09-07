@@ -126,7 +126,6 @@ Cline como implementadores). Verificar contra `git log --oneline -10`,
 > — el panel sintético no opera en 2023 (`total_trades == 0`), falla aislada del frente
 > predict/motor. NOTA Kilo 06-09: los 3 de predict_cache están en el ticket de Cline
 > (fix de fixtures, ya aprobado en su sesión); test_backtest_2023 sigue 🔴 abierto.
-
 1. **A6.3 — screening PALA/RESTO/POOLED** — 🟢 trial original CERRADO
    (29/08, `COMPLETED`/`NO_CUMPLE`, ver §12 de `PRE_REGISTRO_SCREENING_PALAS.md`).
    **Saneamiento del check APROBADO por Boris (29/08) — 🟢 CERRADO (31/08)**:
