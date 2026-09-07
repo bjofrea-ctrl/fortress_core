@@ -3618,3 +3618,40 @@ Suite post-merge completa: corriendo al cierre de esta entrada (ver
 commit del push). Pendientes: push origin main (tras suite), stash pop
 de trackers, I2/I8 registrados como post-gate en ROADMAP (M6 parcial:
 C1 propagado en el merge e83a47c; los ítems I quedan con línea propia).
+
+## 2026-09-07 (mañana) — Auditoría del trabajo de Cline/OpenCode + segunda delegación (Kilo)
+
+Auditoría de los commits mergeados anoche (como orquestador, contra el
+código real en main, no contra los reportes):
+
+CLINE (M4+M3 → 5901814 en main):
+- M4 ✅ SÓLIDO: _fresh_download_invalid_reason reusa validaciones del
+  harness (hard-flags retornos + huecos NYSE), conserva cache bueno,
+  falla ruidoso sin cache previo, integrado en el call-site real
+  (data_ingestion → reconcile_symbol → repair_full_redownload). Test 3/3.
+- M3 ⚠️ 2 BRECHAS: (1) el guard es CIEGO a fechas futuras — el regex
+  matchea cualquier fecha del texto (hoy agarra '2026-12-01' citada en
+  una línea del propio log) y la edad NEGATIVA (-2032h) pasa el check
+  de 48h → un SESSION_LOG abandonado meses daría OK. (2) El script NO
+  está cableado a launchd/cron — huérfano. → DELEGADO task_765db546e5dd.
+
+OPENCODE (B2+B6+B1 → ac06830/9d70156/663a5d9 en main):
+- B6 ✅ verificado pre-merge (equivalencia dorada 30 tests, slow 7m35s) +
+  consistencia 7/7 en main.
+- B2 ⚠️ BRECHA: plist com.fortresscore.ivcollector commiteado pero NO
+  cargado en launchd — el colector IV NUNCA corrió por cron (solo
+  snapshot manual 20260905). La familia opciones no acumula.
+- B1 ⚠️ BRECHA: implementación correcta (warn 70%/throttle 85%) pero
+  CERO tests propios — el sleep escalonado recursivo y la ventana
+  deslizante nunca se probaron directo. → DELEGADO task_8ed7e4b4c2b0.
+
+Ambos dispatcheados vía orca orchestration (Run run_eda7a453d968) con
+worker_done esperado. task_ffdfdbb761c1 (B6-slow+B1 original) cerrado —
+el worker_done de OpenCode se perdió anoche pero el trabajo estaba
+verificado y mergeado.
+
+Pendientes de la auditoría externa que SIGUEN abiertos:
+- M5 política Mac despierta en horario de mercado — decisión de Boris.
+- M6 parcial: I2/I8 sin registrar como post-gate en ROADMAP.
+- test_backtest_2023 + 3 fixtures predict_cache — aprobados para Cline,
+  aún no iniciados (no bloquean).
