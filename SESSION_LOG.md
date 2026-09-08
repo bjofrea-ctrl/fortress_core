@@ -3930,3 +3930,45 @@ Delegación: task_53589bf75d31 (Cline: TZ-dispatcher + FMP, URGENTE) y
 task_e4e345a8e442 (OpenCode: plist-docs + latido). Ambos notificados en
 sus terminales. El agent_watcher detectará las entregas.
 
+---
+
+## 2026-09-08 — B3 Feature store versionado (I6)
+
+Retomada orquestación directa (Boris). Ticket B3 del PLAN_REMEDIO_BRECHAS_20260903.md
+§B3: `build_factor_panel` debe emitir dataset con hash de versión + manifest; los
+scripts consumen por versión para matar la divergencia silenciosa de utilidades
+copiadas. Alcance acotado a rebanada vertical (B3 completo es 2-3 sesiones).
+
+Pre-registro: `B3_PREREGISTRO.md` escrito ANTES de implementar (Regla 1) con
+criterio de éxito pre-registrado.
+
+Entregado (rama `bjofrea-ctrl/b3-feature-store`, sin merge a main):
+- Nuevo `backend/app/core/feature_store.py`: `write_panel` escribe
+  `data/cache/factor_panel_<sha12>.parquet` + `manifest.json` (índice por versión:
+  columns, universe, date_min/max, commit, meta). `load_panel(version)` /
+  `latest_panel()` / `panel_index()`. Fallback legacy (glob) para no romper
+  consumidores viejos.
+- `build_factor_panel.py`: reemplaza escritura por timestamp con `write_panel`
+  (solo cambia el sumidero; el dataframe es idéntico).
+- `diagnose_ic_by_regime.py`: migrado a `latest_panel()` (consume por versión).
+- `backend/tests/test_feature_store.py`: 7 tests, TODOS PASAN (81s, venv prod
+  Python 3.9.6 / pandas 2.2.0 / pyarrow 15.0.0). Cubre round-trip bit-a-bit,
+  hash determinista + dedupe, load por versión, fallback legacy, refactor de
+  build_factor_panel, y migración de consumidor.
+
+Hallazgo verificado (no bug): los dos "bootstrap" NO son duplicados reales —
+`circular_block_bootstrap_ci` (block-circular sobre array de retornos, preserva
+autocorrelación) vs `_boot_ci` en `measure_realized_edge.py` (bootstrap simple
+sobre pares de trades con `random.Random`). Distinto algoritmo y contrato de
+entrada → NO se unifican ciegamente (el plan lo prevé: "si difiere, se documenta
+la divergencia ANTES de adoptar el core"). Test `test_bootstrap_copies_are_not_interchangeable`
+lo documenta.
+
+Pendiente (sesiones siguientes, fuera de esta rebanada): migrar las otras
+utilidades duplicadas (DSR/deflated_sharpe, load_symbol ×4) y los otros 7
+consumidores; renombrar `data/cache/` → `data/panels/` cuando todos adopten
+`load_panel()`.
+
+Nota operativa: el venv del worktree (`backend/.venv`, Python 3.14.6 sin pandas)
+está roto; los tests corren con el venv de producción
+`/Users/boris/Desktop/fortress_core/backend/.venv`.
