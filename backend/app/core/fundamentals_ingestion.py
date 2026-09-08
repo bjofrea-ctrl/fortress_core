@@ -138,11 +138,16 @@ class FundamentalsIngestion:
         fmp: Optional[FmpClient] = None,
         finnhub=None,  # FinnhubClient (app.core.fundamentals_client) o None
         cache_dir: Optional[str] = None,
+        edgar_dir: Optional[str] = None,
     ):
         self.fmp = fmp if fmp is not None else FmpClient()
         self.finnhub = finnhub  # None si no se instanció (sin key / sin uso)
         self.cache_dir = cache_dir if cache_dir is not None else CACHE_DIR
         os.makedirs(self.cache_dir, exist_ok=True)
+        # Dir de companyfacts XBRL de EDGAR. Si se setea, es FUENTE PRIMARIA de
+        # seeding (sin cuota) y FMP queda como secundaria / cross-check. Por
+        # defecto None => comportamiento legacy (solo FMP), tests intactos.
+        self.edgar_dir = edgar_dir
 
     # ------------------------------ cache helpers ------------------------------
 
@@ -182,6 +187,37 @@ class FundamentalsIngestion:
 
     # ------------------------------- ingest -------------------------------
 
+    def _ingest_edgar(self, symbol: str, now: float, path: str) -> Optional[Dict]:
+        """Intenta sembrar desde companyfacts XBRL de EDGAR (fuente primaria,
+        sin cuota). Devuelve el payload FMP-shaped o None si no hay datos."""
+        if not self.edgar_dir:
+            return None
+        try:
+            # import local: evita ciclos y mantiene a FundamentalsIngestion
+            # importable sin EDGAR presente.
+            from app.core.edgar_fundamentals import (
+                load_edgar_companyfacts,
+                build_fmp_shaped_payload,
+            )
+        except Exception:
+            return None
+        facts = load_edgar_companyfacts(symbol, self.edgar_dir)
+        if facts is None:
+            return None
+        payload = build_fmp_shaped_payload(symbol, facts, limit=FMP_STATEMENT_LIMIT)
+        if payload is None:
+            return None
+        payload["symbol"] = symbol.upper()
+        payload["ingested_at"] = datetime.now(timezone.utc).isoformat()
+        self._write_cache(path, payload)
+        print(
+            f"[fundamentals_ingestion] {symbol} EDGAR primary: "
+            f"{len(payload['income_statement'])} income / "
+            f"{len(payload['balance_sheet'])} balance / "
+            f"{len(payload['cash_flow'])} cash rows"
+        )
+        return payload
+
     def ingest_symbol(self, symbol: str, force: bool = False, now: Optional[float] = None) -> Optional[Dict]:
         """Devuelve el paquete crudo del símbolo (cache fresco o ingesta live), o
         None si no se pudo obtener nada. Con `force` ignora el cache.
@@ -210,7 +246,11 @@ class FundamentalsIngestion:
                     f"age {age:.0f}d <= {TTL_DAYS}d, no refresh needed"
                 )
                 return cached
-            # cache stale → refresh live (si falla, conservar cache previo).
+            # EDGAR es fuente primaria: si hay companyfacts, preferlo al
+            # refresh FMP (sin quemar cuota). Si no, refresh live normal.
+            edgar = self._ingest_edgar(sym, now, path)
+            if edgar is not None:
+                return edgar
             print(
                 f"[fundamentals_ingestion] {sym} cache stale: age "
                 f"{self._cache_age_days(path, now):.0f}d > {TTL_DAYS}d, refreshing"
@@ -223,6 +263,9 @@ class FundamentalsIngestion:
             return cached
         else:
             print(f"[fundamentals_ingestion] {sym} cache{'' if force else ' miss'}: full ingest")
+            edgar = self._ingest_edgar(sym, now, path)
+            if edgar is not None:
+                return edgar
             return self._ingest_live(sym, now, path)
 
     def _ingest_live(self, sym: str, now: float, path: str, preserve: Optional[Dict] = None) -> Optional[Dict]:

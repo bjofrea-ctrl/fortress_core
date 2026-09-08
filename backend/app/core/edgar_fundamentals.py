@@ -9,9 +9,11 @@ Si el panel no existe o no cubre el símbolo/fecha, degrada al sample
 hardcodeado (SAMPLE_FUNDAMENTALS) y lo marca explícitamente en
 _data_source, igual que el flujo Finnhub.
 """
+import json
 import os
 from datetime import date, datetime
-from typing import Dict, Optional
+from pathlib import Path
+from typing import Any, Dict, List, Optional, Tuple
 
 import pandas as pd
 
@@ -181,3 +183,246 @@ def get_fundamentals(
     if data is None:
         return None
     return {**data, "_data_source": "sample_hardcoded_not_live"}
+
+
+# ============================================================================
+# Adaptador XBRL companyfacts -> payload con FORMA FMP (ingesta quota-free)
+# ============================================================================
+# SEC EDGAR companyfacts (data.sec.gov/api/xbrl/companyfacts) NO tiene cuota y
+# expone los estados financieros crudos point-in-time. Lo usamos como FUENTE
+# PRIMARIA para sembrar el cache de FundamentalIngestion (ver
+# fundamentals_ingestion.FundamentalsIngestion._ingest_edgar), desbloqueando el
+# screening del universo 50 sin quemar la cuota 250/dia de FMP (free tier).
+# FMP queda como secundaria / cross-check cuando falta el archivo EDGAR.
+#
+# El payload resultante emula EXACTAMENTE la forma que devuelve
+# FundamentalsIngestion._ingest_live():
+#   {symbol, ingested_at, income_statement:[{...}], balance_sheet:[{...}],
+#    cash_flow:[{...}], profile:{...}, price_target_consensus:None,
+#    _data_source:"edgar_primary"}
+# para que screen_payload() / compute_scores() no noten la diferencia.
+#
+# LIMITACION DOCUMENTADA (honesta, no un bug): EDGAR no trae precio / market
+# cap, asi que los indicadores dependientes de precio (P/E, FCF yield, EV/EBIT,
+# upside, fair value, y el factor D del Altman Z) quedan None hasta enriquecer
+# el profile (yfinance / FMP). Los tribunales de CALIDAD y SALUD (ROIC, ROE,
+# Piotroski, Beneish, margenes) SI se computan integramente desde EDGAR.
+EDGAR_COMPANYFACTS_DIR = os.path.join(
+    os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
+    "data", "cache", "edgar",
+)
+
+
+# Cada campo FMP mapea a: (tags XBRL candidatos, unidad, tipo, statement)
+#   unidad : "USD" o "shares"
+#   tipo   : "flow"  (flujo, duracion -> punto anual 10-K)
+#            "instant" (balance, snapshot a fecha end)
+#   statement: "income" | "balance" | "cash"
+EDGAR_MAP: Dict[str, Tuple[Tuple[str, ...], str, str, str]] = {
+    # ----------------------------- income -----------------------------
+    "revenue": (
+        ("RevenueFromContractWithCustomerExcludingAssessedTax",
+         "RevenueFromContractWithCustomerIncludingAssessedTax",
+         "SalesRevenueNet", "Revenues"), "USD", "flow", "income"),
+    "grossProfit": (("GrossProfit",), "USD", "flow", "income"),
+    "operatingIncome": (("OperatingIncomeLoss",), "USD", "flow", "income"),
+    "incomeBeforeTax": (
+        ("IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterests",
+         "IncomeLossFromContinuingOperationsBeforeIncomeTaxExpense"), "USD", "flow", "income"),
+    "incomeTaxExpense": (("IncomeTaxExpenseBenefit",), "USD", "flow", "income"),
+    "netIncome": (("NetIncomeLoss",), "USD", "flow", "income"),
+    "epsdiluted": (("EarningsPerShareDiluted",), "USD", "flow", "income"),
+    "eps": (("EarningsPerShareBasic",), "USD", "flow", "income"),
+    "weightedAverageShsOutDil": (
+        ("WeightedAverageNumberOfDilutedSharesOutstanding",), "shares", "flow", "income"),
+    "weightedAverageShsOut": (
+        ("WeightedAverageNumberOfSharesOutstandingBasicAndDiluted",
+         "WeightedAverageNumberOfSharesOutstandingBasic"), "shares", "flow", "income"),
+    "sharesOutstanding": (
+        ("EntityCommonStockSharesOutstanding",), "shares", "instant", "income"),
+    "sellingGeneralAndAdministrativeExpense": (
+        ("SellingGeneralAndAdministrativeExpense",
+         "GeneralAndAdministrativeExpense", "OperatingExpenses"), "USD", "flow", "income"),
+
+    # ----------------------------- balance ----------------------------
+    "totalAssets": (("Assets",), "USD", "instant", "balance"),
+    "totalCurrentAssets": (("AssetsCurrent",), "USD", "instant", "balance"),
+    "cashAndCashEquivalents": (
+        ("CashAndCashEquivalentsAtCarryingValue",
+         "CashCashEquivalentsRestrictedCashAndRestrictedCashEquivalents"), "USD", "instant", "balance"),
+    "shortTermInvestments": (("ShortTermInvestments",), "USD", "instant", "balance"),
+    "totalCurrentLiabilities": (("LiabilitiesCurrent",), "USD", "instant", "balance"),
+    "longTermDebt": (("LongTermDebtNoncurrent", "LongTermDebt"), "USD", "instant", "balance"),
+    "longTermDebtCurrent": (
+        ("LongTermDebtCurrent", "CurrentPortionOfLongTermDebt"), "USD", "instant", "balance"),
+    "shortTermBorrowings": (
+        ("ShortTermBorrowings", "CommercialPaper"), "USD", "instant", "balance"),
+    "totalLiabilities": (("Liabilities",), "USD", "instant", "balance"),
+    "totalShareholderEquity": (
+        ("StockholdersEquity",
+         "StockholdersEquityIncludingPortionAttributableToNoncontrollingInterest"),
+        "USD", "instant", "balance"),
+    "retainedEarnings": (
+        ("RetainedEarnings", "RetainedEarningsAccumulatedDeficit"), "USD", "instant", "balance"),
+    "propertyPlantEquipmentNet": (("PropertyPlantAndEquipmentNet",), "USD", "instant", "balance"),
+    "netReceivables": (
+        ("ReceivablesNetCurrent", "AccountsReceivableNetCurrent", "ReceivablesNet"),
+        "USD", "instant", "balance"),
+
+    # ------------------------------ cash ------------------------------
+    "operatingCashFlow": (
+        ("NetCashProvidedByUsedInOperatingActivities",
+         "NetCashProvidedByUsedInOperatingActivitiesContinuingOperations"),
+        "USD", "flow", "cash"),
+    "capitalExpenditure": (
+        ("PaymentsToAcquirePropertyPlantAndEquipment", "PaymentsToAcquireProductiveAssets"),
+        "USD", "flow", "cash"),
+    "freeCashFlow": (("FreeCashFlow",), "USD", "flow", "cash"),
+    "commonStockRepurchased": (("PaymentsForRepurchaseOfCommonStock",), "USD", "flow", "cash"),
+    "dividendsPaid": (
+        ("PaymentsOfDividends", "PaymentsOfDividendsCommonStock"), "USD", "flow", "cash"),
+    "depreciationAndAmortization": (
+        ("DepreciationDepletionAndAmortization", "DepreciationAndAmortization"),
+        "USD", "flow", "cash"),
+}
+
+# Componentes para derivar totalDebt (suma de lo presente).
+_TOTAL_DEBT_PARTS = ("longTermDebt", "longTermDebtCurrent", "shortTermBorrowings")
+
+
+def load_edgar_companyfacts(symbol: str, edgar_dir=None) -> Optional[Dict]:
+    """Lee {SYMBOL}_companyfacts.json desde edgar_dir (default:
+    data/cache/edgar). None si no existe/esta roto."""
+    if edgar_dir is None:
+        edgar_dir = EDGAR_COMPANYFACTS_DIR
+    p = Path(edgar_dir) / f"{symbol.upper()}_companyfacts.json"
+    if not p.exists():
+        return None
+    try:
+        with open(p) as f:
+            return json.load(f)
+    except Exception:
+        return None
+
+
+def _collect_annual_points(tags: Tuple[str, ...], unit: str,
+                           us_gaap: Dict, dei: Dict) -> List[Dict]:
+    """Puntos anuales (form 10-K) de TODOS los tags candidatos, dedup por
+    (start,end) conservando el ultimo `filed` (enmiendas ganan)."""
+    pts: List[Dict] = []
+    for tag in tags:
+        for src in (us_gaap, dei):
+            node = src.get(tag)
+            if not node:
+                continue
+            for u, vals in node.get("units", {}).items():
+                if unit == "USD" and u != "USD":
+                    continue
+                if unit == "shares" and "shares" not in u.lower():
+                    continue
+                pts.extend(vals)
+    annual = [p for p in pts if str(p.get("form", "")).startswith("10-K")]
+    by_period: Dict[Tuple[Any, Any], Dict] = {}
+    for p in annual:
+        # Hechos instantaneos (ej. EntityCommonStockSharesOutstanding) vienen
+        # sin `start` en EDGAR: usamos `end` como ancla de periodo.
+        start = p.get("start") or p.get("end")
+        end = p.get("end") or p.get("start")
+        if start is None or end is None:
+            continue
+        key = (start, end)
+        cur = by_period.get(key)
+        if cur is None or (p.get("filed") or "") > (cur.get("filed") or ""):
+            by_period[key] = p
+    return list(by_period.values())
+
+
+def _fiscal_year(p: Dict) -> Optional[int]:
+    """Ano fiscal: prefiere `frame` (CY2023), luego fp=='FY'/'end'."""
+    frame = (p.get("frame") or "").upper()
+    if frame.startswith("CY"):
+        try:
+            return int(frame[2:])
+        except ValueError:
+            pass
+    end = p.get("end")
+    if end:
+        try:
+            return int(str(end)[:4])
+        except ValueError:
+            pass
+    return None
+
+
+def _annual_by_year(points: List[Dict]) -> Dict[int, float]:
+    """{ano_fiscal: valor} conservando el ultimo filed por ano (desempate)."""
+    best: Dict[int, Tuple[str, float]] = {}
+    for p in points:
+        yr = _fiscal_year(p)
+        if yr is None or p.get("val") is None:
+            continue
+        f = p.get("filed") or ""
+        if yr not in best or f > best[yr][0]:
+            best[yr] = (f, float(p["val"]))
+    return {yr: v for yr, (_, v) in best.items()}
+
+
+def build_fmp_shaped_payload(symbol: str, facts: Dict,
+                            limit: int = 6) -> Optional[Dict]:
+    """Construye el payload estilo FMP desde companyfacts. None si no hay
+    suficientes datos para armar las 3 listas de statements."""
+    us_gaap = facts.get("facts", {}).get("us-gaap", {})
+    dei = facts.get("facts", {}).get("dei", {})
+
+    series: Dict[str, Dict[int, float]] = {}
+    for field, (tags, unit, _kind, _stmt) in EDGAR_MAP.items():
+        pts = _collect_annual_points(tags, unit, us_gaap, dei)
+        by_year = _annual_by_year(pts)
+        if by_year:
+            series[field] = by_year
+
+    if not series:
+        return None
+
+    years = sorted({y for s in series.values() for y in s}, reverse=True)[:limit]
+    if not years:
+        return None
+
+    def make_rows(fields: List[str]) -> List[Dict]:
+        rows: List[Dict] = []
+        for y in years:
+            row: Dict[str, Any] = {"calendarYear": str(y), "period": "FY"}
+            for f in fields:
+                if f in series and y in series[f]:
+                    row[f] = series[f][y]
+            if len(row) > 2:  # calendarYear + period + >=1 campo real
+                rows.append(row)
+        return rows
+
+    income = make_rows([f for f, (_t, _u, _k, s) in EDGAR_MAP.items() if s == "income"])
+    balance = make_rows([f for f, (_t, _u, _k, s) in EDGAR_MAP.items() if s == "balance"])
+    cash = make_rows([f for f, (_t, _u, _k, s) in EDGAR_MAP.items() if s == "cash"])
+
+    # totalDebt derivado (suma de componentes presentes) en cada fila de balance.
+    for row in balance:
+        parts = [row[c] for c in _TOTAL_DEBT_PARTS if row.get(c) is not None]
+        if parts:
+            row["totalDebt"] = sum(parts)
+
+    if not income or not balance or not cash:
+        return None
+
+    profile = {
+        "companyName": facts.get("entityName") or symbol.upper(),
+        "symbol": symbol.upper(),
+    }
+    return {
+        "symbol": symbol.upper(),
+        "ingested_at": None,  # lo setea el llamador (ingest_symbol)
+        "income_statement": income,
+        "balance_sheet": balance,
+        "cash_flow": cash,
+        "profile": profile,
+        "price_target_consensus": None,
+        "_data_source": "edgar_primary",
+    }

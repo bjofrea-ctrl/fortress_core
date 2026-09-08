@@ -234,7 +234,11 @@ def beneish_m_score(
 
     sales_t = _g(income, "revenue")
     sales_t1 = _g(income_prev, "revenue")
-    if sales_t1 <= 0:
+    # Beneish requiere revenue positiva en ambos periodos (DSRI, GMI y SGI la
+    # usan como denominador). Si falta el ultimo o el previo -> None (honesto),
+    # en vez de dividir por cero y abortar el screening entero. EDGAR expuso
+    # este caso real (p.ej. NVDA FY2026 sin revenue mapeado en el ultimo 10-K).
+    if sales_t <= 0 or sales_t1 <= 0:
         return None
 
     # DSRI

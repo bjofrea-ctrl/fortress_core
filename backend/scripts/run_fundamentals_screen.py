@@ -50,6 +50,12 @@ from app.utils.logging import logger  # noqa: E402 (sys.path set above)
 CACHE_DIR = os.path.join(_BACKEND, "data", "cache_fundamentals_screen")
 STATE_PATH = os.path.join(CACHE_DIR, "state.json")
 
+# SEC EDGAR companyfacts (FUENTE PRIMARIA, sin cuota). Sembrado por
+# scripts/fetch_edgar_universe_facts.py. Si el directorio existe y tiene
+# archivos, EDGAR cubre el universo sin tocar la cuota FMP.
+EDGAR_DIR = os.path.join(_BACKEND, "data", "cache", "edgar")
+
+
 # Margen de 10 calls sobre el límite real (250) para no chocar con rate limit.
 DAILY_FMP_BUDGET = int(os.environ.get("FMP_DAILY_BUDGET", "240"))
 
@@ -188,6 +194,20 @@ def main(argv: Optional[List[str]] = None) -> int:
         print("FATAL: universo vacío.")
         return 2
 
+    # EDGAR primario activo: los ETF (SPY/QQQ) no tienen fundamentales en
+    # ninguna fuente, asi que no tienen sentido en el screening y solo
+    # quemarian cuota FMP (fallback). Se excluyen, igual que en
+    # scripts/fetch_edgar_universe_facts.py (ETF_EXCLUDE).
+    edgar_active = os.path.isdir(EDGAR_DIR) and any(
+        f.endswith("_companyfacts.json") for f in os.listdir(EDGAR_DIR)
+    )
+    if edgar_active:
+        ETF_EXCLUDE = {"SPY", "QQQ"}
+        dropped = [s for s in universe if s in ETF_EXCLUDE]
+        if dropped:
+            universe = [s for s in universe if s not in ETF_EXCLUDE]
+            logger.info("fundamentals_screen_etf_excluded", extra={"dropped": dropped})
+
     run_date = args.date or datetime.now(timezone.utc).strftime("%Y-%m-%d")
     state = _read_state()
     if args.resume:
@@ -212,10 +232,15 @@ def main(argv: Optional[List[str]] = None) -> int:
         print(f"WARN: {msg}")
         return 0
 
-    ingester = FundamentalsIngestion()
-    if not ingester.fmp.is_available():
+    ingester = FundamentalsIngestion(edgar_dir=EDGAR_DIR)
+    # EDGAR primario (sin cuota) habilita el job aunque FMP no tenga key.
+    edgar_usable = False
+    if os.path.isdir(EDGAR_DIR):
+        edgar_usable = any(f.endswith("_companyfacts.json")
+                           for f in os.listdir(EDGAR_DIR))
+    if not ingester.fmp.is_available() and not edgar_usable:
         logger.error("fmp_client_unavailable")
-        print("FATAL: FmpClient sin key.")
+        print("FATAL: FmpClient sin key y sin companyfacts EDGAR disponibles.")
         return 2
     # Cablear Finnhub (B0) sólo si hay key: hace que el cross-check de
     # disponibilidad sea REAL en la rama STALE en lugar de reportar siempre
@@ -254,7 +279,10 @@ def main(argv: Optional[List[str]] = None) -> int:
                            "calls_used_before": state["calls_used"]})
 
         for sym in batch:
-            if budget_remaining < 5:
+            # EDGAR primario = sin cuota FMP: si el símbolo tiene companyfacts,
+            # no lo frenamos por presupuesto FMP.
+            edgar_path = os.path.join(EDGAR_DIR, f"{sym.upper()}_companyfacts.json")
+            if budget_remaining < 5 and not os.path.exists(edgar_path):
                 msg = (f"Budget {DAILY_FMP_BUDGET} agotándose "
                        f"({budget_remaining} restantes), parando en {sym}")
                 logger.warning("fundamentals_screen_budget_stopping",
@@ -278,8 +306,11 @@ def main(argv: Optional[List[str]] = None) -> int:
                 eval_ = screen_payload(payload)
                 results[sym] = eval_
                 state["completed_symbols"].append(sym)
-                state["calls_used"] += 5
-                budget_remaining -= 5
+                # EDGAR no consume cuota FMP: sólo contabilizamos las calls
+                # reales de FMP (fuente secundaria / cross-check).
+                if payload.get("_data_source") != "edgar_primary":
+                    state["calls_used"] += 5
+                    budget_remaining -= 5
                 logger.info("fundamentals_screen_symbol_ok",
                             extra={"sym": sym,
                                    "calls_used": state["calls_used"]})

@@ -1,0 +1,753 @@
+{
+ "cik": "0000320193",
+ "entityName": "Apple Inc.",
+ "facts": {
+  "us-gaap": {
+   "RevenueFromContractWithCustomerExcludingAssessedTax": {
+    "units": {
+     "USD": [
+      {
+       "start": "2022-10-01",
+       "end": "2023-09-30",
+       "val": 383285000000,
+       "filed": "2023-11-03",
+       "form": "10-K",
+       "fp": "FY",
+       "frame": "CY2023"
+      },
+      {
+       "start": "2021-10-01",
+       "end": "2022-09-30",
+       "val": 365817000000,
+       "filed": "2022-11-04",
+       "form": "10-K",
+       "fp": "FY",
+       "frame": "CY2022"
+      }
+     ]
+    }
+   },
+   "GrossProfit": {
+    "units": {
+     "USD": [
+      {
+       "start": "2022-10-01",
+       "end": "2023-09-30",
+       "val": 169148000000,
+       "filed": "2023-11-03",
+       "form": "10-K",
+       "fp": "FY",
+       "frame": "CY2023"
+      },
+      {
+       "start": "2021-10-01",
+       "end": "2022-09-30",
+       "val": 161782000000,
+       "filed": "2022-11-04",
+       "form": "10-K",
+       "fp": "FY",
+       "frame": "CY2022"
+      }
+     ]
+    }
+   },
+   "OperatingIncomeLoss": {
+    "units": {
+     "USD": [
+      {
+       "start": "2022-10-01",
+       "end": "2023-09-30",
+       "val": 114301000000,
+       "filed": "2023-11-03",
+       "form": "10-K",
+       "fp": "FY",
+       "frame": "CY2023"
+      },
+      {
+       "start": "2021-10-01",
+       "end": "2022-09-30",
+       "val": 119437000000,
+       "filed": "2022-11-04",
+       "form": "10-K",
+       "fp": "FY",
+       "frame": "CY2022"
+      }
+     ]
+    }
+   },
+   "IncomeLossFromContinuingOperationsBeforeIncomeTaxesExtraordinaryItemsNoncontrollingInterests": {
+    "units": {
+     "USD": [
+      {
+       "start": "2022-10-01",
+       "end": "2023-09-30",
+       "val": 109207000000,
+       "filed": "2023-11-03",
+       "form": "10-K",
+       "fp": "FY",
+       "frame": "CY2023"
+      },
+      {
+       "start": "2021-10-01",
+       "end": "2022-09-30",
+       "val": 119049000000,
+       "filed": "2022-11-04",
+       "form": "10-K",
+       "fp": "FY",
+       "frame": "CY2022"
+      }
+     ]
+    }
+   },
+   "IncomeTaxExpenseBenefit": {
+    "units": {
+     "USD": [
+      {
+       "start": "2022-10-01",
+       "end": "2023-09-30",
+       "val": 16735000000,
+       "filed": "2023-11-03",
+       "form": "10-K",
+       "fp": "FY",
+       "frame": "CY2023"
+      },
+      {
+       "start": "2021-10-01",
+       "end": "2022-09-30",
+       "val": 19265000000,
+       "filed": "2022-11-04",
+       "form": "10-K",
+       "fp": "FY",
+       "frame": "CY2022"
+      }
+     ]
+    }
+   },
+   "NetIncomeLoss": {
+    "units": {
+     "USD": [
+      {
+       "start": "2022-10-01",
+       "end": "2023-09-30",
+       "val": 92483000000,
+       "filed": "2023-11-03",
+       "form": "10-K",
+       "fp": "FY",
+       "frame": "CY2023"
+      },
+      {
+       "start": "2021-10-01",
+       "end": "2022-09-30",
+       "val": 99803000000,
+       "filed": "2022-11-04",
+       "form": "10-K",
+       "fp": "FY",
+       "frame": "CY2022"
+      }
+     ]
+    }
+   },
+   "EarningsPerShareDiluted": {
+    "units": {
+     "USD": [
+      {
+       "start": "2022-10-01",
+       "end": "2023-09-30",
+       "val": 6.13,
+       "filed": "2023-11-03",
+       "form": "10-K",
+       "fp": "FY",
+       "frame": "CY2023"
+      },
+      {
+       "start": "2021-10-01",
+       "end": "2022-09-30",
+       "val": 6.11,
+       "filed": "2022-11-04",
+       "form": "10-K",
+       "fp": "FY",
+       "frame": "CY2022"
+      }
+     ]
+    }
+   },
+   "EarningsPerShareBasic": {
+    "units": {
+     "USD": [
+      {
+       "start": "2022-10-01",
+       "end": "2023-09-30",
+       "val": 6.16,
+       "filed": "2023-11-03",
+       "form": "10-K",
+       "fp": "FY",
+       "frame": "CY2023"
+      },
+      {
+       "start": "2021-10-01",
+       "end": "2022-09-30",
+       "val": 6.15,
+       "filed": "2022-11-04",
+       "form": "10-K",
+       "fp": "FY",
+       "frame": "CY2022"
+      }
+     ]
+    }
+   },
+   "SellingGeneralAndAdministrativeExpense": {
+    "units": {
+     "USD": [
+      {
+       "start": "2022-10-01",
+       "end": "2023-09-30",
+       "val": 24932000000,
+       "filed": "2023-11-03",
+       "form": "10-K",
+       "fp": "FY",
+       "frame": "CY2023"
+      },
+      {
+       "start": "2021-10-01",
+       "end": "2022-09-30",
+       "val": 25094000000,
+       "filed": "2022-11-04",
+       "form": "10-K",
+       "fp": "FY",
+       "frame": "CY2022"
+      }
+     ]
+    }
+   },
+   "WeightedAverageNumberOfDilutedSharesOutstanding": {
+    "units": {
+     "shares": [
+      {
+       "start": "2022-10-01",
+       "end": "2023-09-30",
+       "val": 15500000000,
+       "filed": "2023-11-03",
+       "form": "10-K",
+       "fp": "FY",
+       "frame": "CY2023"
+      },
+      {
+       "start": "2021-10-01",
+       "end": "2022-09-30",
+       "val": 16200000000,
+       "filed": "2022-11-04",
+       "form": "10-K",
+       "fp": "FY",
+       "frame": "CY2022"
+      }
+     ]
+    }
+   },
+   "WeightedAverageNumberOfSharesOutstandingBasicAndDiluted": {
+    "units": {
+     "shares": [
+      {
+       "start": "2022-10-01",
+       "end": "2023-09-30",
+       "val": 15400000000,
+       "filed": "2023-11-03",
+       "form": "10-K",
+       "fp": "FY",
+       "frame": "CY2023"
+      },
+      {
+       "start": "2021-10-01",
+       "end": "2022-09-30",
+       "val": 16100000000,
+       "filed": "2022-11-04",
+       "form": "10-K",
+       "fp": "FY",
+       "frame": "CY2022"
+      }
+     ]
+    }
+   },
+   "EntityCommonStockSharesOutstanding": {
+    "units": {
+     "shares": [
+      {
+       "start": "2022-10-01",
+       "end": "2023-09-30",
+       "val": 15500000000,
+       "filed": "2023-11-03",
+       "form": "10-K",
+       "fp": "FY",
+       "frame": "CY2023"
+      },
+      {
+       "start": "2021-10-01",
+       "end": "2022-09-30",
+       "val": 16000000000,
+       "filed": "2022-11-04",
+       "form": "10-K",
+       "fp": "FY",
+       "frame": "CY2022"
+      }
+     ]
+    }
+   },
+   "Assets": {
+    "units": {
+     "USD": [
+      {
+       "start": "2022-10-01",
+       "end": "2023-09-30",
+       "val": 352583000000,
+       "filed": "2023-11-03",
+       "form": "10-K",
+       "fp": "FY",
+       "frame": "CY2023"
+      },
+      {
+       "start": "2021-10-01",
+       "end": "2022-09-30",
+       "val": 352755000000,
+       "filed": "2022-11-04",
+       "form": "10-K",
+       "fp": "FY",
+       "frame": "CY2022"
+      }
+     ]
+    }
+   },
+   "AssetsCurrent": {
+    "units": {
+     "USD": [
+      {
+       "start": "2022-10-01",
+       "end": "2023-09-30",
+       "val": 143566000000,
+       "filed": "2023-11-03",
+       "form": "10-K",
+       "fp": "FY",
+       "frame": "CY2023"
+      },
+      {
+       "start": "2021-10-01",
+       "end": "2022-09-30",
+       "val": 135405000000,
+       "filed": "2022-11-04",
+       "form": "10-K",
+       "fp": "FY",
+       "frame": "CY2022"
+      }
+     ]
+    }
+   },
+   "CashAndCashEquivalentsAtCarryingValue": {
+    "units": {
+     "USD": [
+      {
+       "start": "2022-10-01",
+       "end": "2023-09-30",
+       "val": 29965000000,
+       "filed": "2023-11-03",
+       "form": "10-K",
+       "fp": "FY",
+       "frame": "CY2023"
+      },
+      {
+       "start": "2021-10-01",
+       "end": "2022-09-30",
+       "val": 23164000000,
+       "filed": "2022-11-04",
+       "form": "10-K",
+       "fp": "FY",
+       "frame": "CY2022"
+      }
+     ]
+    }
+   },
+   "ShortTermInvestments": {
+    "units": {
+     "USD": [
+      {
+       "start": "2022-10-01",
+       "end": "2023-09-30",
+       "val": 31500000000,
+       "filed": "2023-11-03",
+       "form": "10-K",
+       "fp": "FY",
+       "frame": "CY2023"
+      },
+      {
+       "start": "2021-10-01",
+       "end": "2022-09-30",
+       "val": 24500000000,
+       "filed": "2022-11-04",
+       "form": "10-K",
+       "fp": "FY",
+       "frame": "CY2022"
+      }
+     ]
+    }
+   },
+   "LiabilitiesCurrent": {
+    "units": {
+     "USD": [
+      {
+       "start": "2022-10-01",
+       "end": "2023-09-30",
+       "val": 133973000000,
+       "filed": "2023-11-03",
+       "form": "10-K",
+       "fp": "FY",
+       "frame": "CY2023"
+      },
+      {
+       "start": "2021-10-01",
+       "end": "2022-09-30",
+       "val": 122630000000,
+       "filed": "2022-11-04",
+       "form": "10-K",
+       "fp": "FY",
+       "frame": "CY2022"
+      }
+     ]
+    }
+   },
+   "LongTermDebtNoncurrent": {
+    "units": {
+     "USD": [
+      {
+       "start": "2022-10-01",
+       "end": "2023-09-30",
+       "val": 95350000000,
+       "filed": "2023-11-03",
+       "form": "10-K",
+       "fp": "FY",
+       "frame": "CY2023"
+      },
+      {
+       "start": "2021-10-01",
+       "end": "2022-09-30",
+       "val": 98960000000,
+       "filed": "2022-11-04",
+       "form": "10-K",
+       "fp": "FY",
+       "frame": "CY2022"
+      }
+     ]
+    }
+   },
+   "LongTermDebtCurrent": {
+    "units": {
+     "USD": [
+      {
+       "start": "2022-10-01",
+       "end": "2023-09-30",
+       "val": 9987000000,
+       "filed": "2023-11-03",
+       "form": "10-K",
+       "fp": "FY",
+       "frame": "CY2023"
+      },
+      {
+       "start": "2021-10-01",
+       "end": "2022-09-30",
+       "val": 9700000000,
+       "filed": "2022-11-04",
+       "form": "10-K",
+       "fp": "FY",
+       "frame": "CY2022"
+      }
+     ]
+    }
+   },
+   "ShortTermBorrowings": {
+    "units": {
+     "USD": [
+      {
+       "start": "2022-10-01",
+       "end": "2023-09-30",
+       "val": 3000000000,
+       "filed": "2023-11-03",
+       "form": "10-K",
+       "fp": "FY",
+       "frame": "CY2023"
+      },
+      {
+       "start": "2021-10-01",
+       "end": "2022-09-30",
+       "val": 0,
+       "filed": "2022-11-04",
+       "form": "10-K",
+       "fp": "FY",
+       "frame": "CY2022"
+      }
+     ]
+    }
+   },
+   "Liabilities": {
+    "units": {
+     "USD": [
+      {
+       "start": "2022-10-01",
+       "end": "2023-09-30",
+       "val": 290437000000,
+       "filed": "2023-11-03",
+       "form": "10-K",
+       "fp": "FY",
+       "frame": "CY2023"
+      },
+      {
+       "start": "2021-10-01",
+       "end": "2022-09-30",
+       "val": 302083000000,
+       "filed": "2022-11-04",
+       "form": "10-K",
+       "fp": "FY",
+       "frame": "CY2022"
+      }
+     ]
+    }
+   },
+   "StockholdersEquity": {
+    "units": {
+     "USD": [
+      {
+       "start": "2022-10-01",
+       "end": "2023-09-30",
+       "val": 62146000000,
+       "filed": "2023-11-03",
+       "form": "10-K",
+       "fp": "FY",
+       "frame": "CY2023"
+      },
+      {
+       "start": "2021-10-01",
+       "end": "2022-09-30",
+       "val": 50672000000,
+       "filed": "2022-11-04",
+       "form": "10-K",
+       "fp": "FY",
+       "frame": "CY2022"
+      }
+     ]
+    }
+   },
+   "RetainedEarnings": {
+    "units": {
+     "USD": [
+      {
+       "start": "2022-10-01",
+       "end": "2023-09-30",
+       "val": -200000000,
+       "filed": "2023-11-03",
+       "form": "10-K",
+       "fp": "FY",
+       "frame": "CY2023"
+      },
+      {
+       "start": "2021-10-01",
+       "end": "2022-09-30",
+       "val": -300000000,
+       "filed": "2022-11-04",
+       "form": "10-K",
+       "fp": "FY",
+       "frame": "CY2022"
+      }
+     ]
+    }
+   },
+   "PropertyPlantAndEquipmentNet": {
+    "units": {
+     "USD": [
+      {
+       "start": "2022-10-01",
+       "end": "2023-09-30",
+       "val": 43715000000,
+       "filed": "2023-11-03",
+       "form": "10-K",
+       "fp": "FY",
+       "frame": "CY2023"
+      },
+      {
+       "start": "2021-10-01",
+       "end": "2022-09-30",
+       "val": 41313000000,
+       "filed": "2022-11-04",
+       "form": "10-K",
+       "fp": "FY",
+       "frame": "CY2022"
+      }
+     ]
+    }
+   },
+   "ReceivablesNetCurrent": {
+    "units": {
+     "USD": [
+      {
+       "start": "2022-10-01",
+       "end": "2023-09-30",
+       "val": 29508000000,
+       "filed": "2023-11-03",
+       "form": "10-K",
+       "fp": "FY",
+       "frame": "CY2023"
+      },
+      {
+       "start": "2021-10-01",
+       "end": "2022-09-30",
+       "val": 28184000000,
+       "filed": "2022-11-04",
+       "form": "10-K",
+       "fp": "FY",
+       "frame": "CY2022"
+      }
+     ]
+    }
+   },
+   "NetCashProvidedByUsedInOperatingActivities": {
+    "units": {
+     "USD": [
+      {
+       "start": "2022-10-01",
+       "end": "2023-09-30",
+       "val": 110543000000,
+       "filed": "2023-11-03",
+       "form": "10-K",
+       "fp": "FY",
+       "frame": "CY2023"
+      },
+      {
+       "start": "2021-10-01",
+       "end": "2022-09-30",
+       "val": 111443000000,
+       "filed": "2022-11-04",
+       "form": "10-K",
+       "fp": "FY",
+       "frame": "CY2022"
+      }
+     ]
+    }
+   },
+   "PaymentsToAcquirePropertyPlantAndEquipment": {
+    "units": {
+     "USD": [
+      {
+       "start": "2022-10-01",
+       "end": "2023-09-30",
+       "val": -10959000000,
+       "filed": "2023-11-03",
+       "form": "10-K",
+       "fp": "FY",
+       "frame": "CY2023"
+      },
+      {
+       "start": "2021-10-01",
+       "end": "2022-09-30",
+       "val": -10959000000,
+       "filed": "2022-11-04",
+       "form": "10-K",
+       "fp": "FY",
+       "frame": "CY2022"
+      }
+     ]
+    }
+   },
+   "FreeCashFlow": {
+    "units": {
+     "USD": [
+      {
+       "start": "2022-10-01",
+       "end": "2023-09-30",
+       "val": 99584000000,
+       "filed": "2023-11-03",
+       "form": "10-K",
+       "fp": "FY",
+       "frame": "CY2023"
+      },
+      {
+       "start": "2021-10-01",
+       "end": "2022-09-30",
+       "val": 100484000000,
+       "filed": "2022-11-04",
+       "form": "10-K",
+       "fp": "FY",
+       "frame": "CY2022"
+      }
+     ]
+    }
+   },
+   "PaymentsForRepurchaseOfCommonStock": {
+    "units": {
+     "USD": [
+      {
+       "start": "2022-10-01",
+       "end": "2023-09-30",
+       "val": -77550000000,
+       "filed": "2023-11-03",
+       "form": "10-K",
+       "fp": "FY",
+       "frame": "CY2023"
+      },
+      {
+       "start": "2021-10-01",
+       "end": "2022-09-30",
+       "val": -89402000000,
+       "filed": "2022-11-04",
+       "form": "10-K",
+       "fp": "FY",
+       "frame": "CY2022"
+      }
+     ]
+    }
+   },
+   "PaymentsOfDividends": {
+    "units": {
+     "USD": [
+      {
+       "start": "2022-10-01",
+       "end": "2023-09-30",
+       "val": -15069000000,
+       "filed": "2023-11-03",
+       "form": "10-K",
+       "fp": "FY",
+       "frame": "CY2023"
+      },
+      {
+       "start": "2021-10-01",
+       "end": "2022-09-30",
+       "val": -14867000000,
+       "filed": "2022-11-04",
+       "form": "10-K",
+       "fp": "FY",
+       "frame": "CY2022"
+      }
+     ]
+    }
+   },
+   "DepreciationDepletionAndAmortization": {
+    "units": {
+     "USD": [
+      {
+       "start": "2022-10-01",
+       "end": "2023-09-30",
+       "val": 11501000000,
+       "filed": "2023-11-03",
+       "form": "10-K",
+       "fp": "FY",
+       "frame": "CY2023"
+      },
+      {
+       "start": "2021-10-01",
+       "end": "2022-09-30",
+       "val": 11104000000,
+       "filed": "2022-11-04",
+       "form": "10-K",
+       "fp": "FY",
+       "frame": "CY2022"
+      }
+     ]
+    }
+   }
+  },
+  "dei": {}
+ }
+}
