@@ -198,5 +198,27 @@ else
   fi
 fi
 
+# ========== 4) session_log freshness (M3) ==========
+# Integrado en la SALIDA del latido (auditoría 2026-09-07): vigila que
+# SESSION_LOG.md tenga entrada reciente (<48h). check_session_log_freshness.py
+# devuelve 0=OK, 1=desactualizado (WARNING visible). No rompe launchd (exit 0).
+echo "[$(ts)] session_log_freshness: check" >> "$LOG"
+if command -v python3 >/dev/null 2>&1; then
+  if ses_out="$(python3 "$REPO/scripts/check_session_log_freshness.py" 2>&1)"; then
+    ses_rc=0
+  else
+    ses_rc=$?
+  fi
+  if [[ -n "$ses_out" ]]; then
+    echo "[$(ts)] $ses_out" >> "$LOG"
+  fi
+  if [[ "$ses_rc" != "0" ]]; then
+    warnings=$((warnings + 1))
+  fi
+else
+  echo "[$(ts)] [WARN] session_log_freshness skip: python3 no disponible" >> "$LOG"
+  warnings=$((warnings + 1))
+fi
+
 echo "[$(ts)] data_freshness: fin (errores=$errores warnings=$warnings)" >> "$LOG"
 exit 0

@@ -1,4 +1,14 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  TZ-DOC (auditoría 2026-09-07): dispara en hora LOCAL del Mac = ART (America/Argentina/Buenos_Aires, UTC-3, SIN DST).
+  StartCalendarInterval: 23:30 ART, todos los días.
+  Equivalencia ET (America/New_York, con DST de EE.UU.):
+      - 23:30 ART → 21:30 ET (invierno EST) / 22:30 ET (verano EDT)
+  DST: ART no cambia; la equivalencia ET salta ±1h en la transición de EE.UU.
+       (2.º domingo de marzo → 1.º domingo de noviembre). El disparo en pared es
+       estable (Mac en ART); solo cambia el significado respecto a ET/mercado US.
+-->
+
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>

@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  TZ-DOC (auditoría 2026-09-07): servicio KeepAlive (siempre vivo, reinicia si cae).
+  Sin disparo de pared → TZ/DST N/A.
+-->
+
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
