@@ -11,6 +11,7 @@ Cubren:
 - Garantías de aislamiento: no importa predictive_engine ni notifier
 """
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -436,3 +437,123 @@ def test_job_default_batch_size_is_5():
     importlib.reload(job)
     assert job.BATCH_SIZE == 5, f"esperaba 5, encontré {job.BATCH_SIZE}"
     assert job.BATCH_PAUSE_SECONDS >= 0
+
+
+# ---------------------------------------------------------------------------
+# Frente 2 — degradación elegante + cross-check Finnhub (B0) + dashboard STALE
+# ---------------------------------------------------------------------------
+
+def _stub_render(monkeypatch):
+    """Render stub que escribe un HTML mínimo y aplica el banner STALE REAL
+    (cablea stale->banner sin el motor vendorizado pesado)."""
+    import app.core.fundamentals_artifacts as fa
+
+    def fake(results, run_date, outdir, export_name=None, stale=False):
+        os.makedirs(outdir, exist_ok=True)
+        p = os.path.join(outdir, f"dashboard_{run_date}.html")
+        with open(p, "w", encoding="utf-8") as f:
+            f.write("<html><body>ok</body></html>")
+        if stale:
+            fa._inject_stale_banner(p, run_date)
+        return {"html": p}
+
+    monkeypatch.setattr(fa, "render_artifacts", fake)
+
+
+def test_job_marks_stale_and_crosschecks_when_fmp_partially_fails(monkeypatch, tmp_path):
+    """FMP falla para un símbolo del universo: el job debe marcar data_stale,
+    invocar el cross-check Finnhub para ese símbolo, y emitir un dashboard con
+    banner STALE visible (no rc=3)."""
+    monkeypatch.setattr(settings, "FMP_API_KEY", "fake-key")
+    monkeypatch.setattr(job, "STATE_PATH", str(tmp_path / "state.json"))
+    monkeypatch.setattr(job, "CACHE_DIR", str(tmp_path))
+    monkeypatch.setattr(job, "DAILY_FMP_BUDGET", 240)
+    monkeypatch.setattr(job, "BATCH_PAUSE_SECONDS", 0)
+    monkeypatch.setattr(job, "screen_payload", lambda p: {"balde": "Neutral"})
+    _stub_render(monkeypatch)
+
+    calls = {"cross": 0}
+
+    class FakeFmp:
+        is_available = lambda self: True
+
+    class FakeIngester:
+        fmp = FakeFmp()
+
+        def ingest_symbol(self, sym):
+            if sym == "C":
+                return None  # FMP vacío/inválido para C
+            return {"symbol": sym, "income_statement": [], "balance_sheet": [],
+                    "cash_flow": [], "profile": {"symbol": sym, "price": 100},
+                    "price_target_consensus": {}}
+
+        def crosscheck_finnhub_availability(self, sym):
+            calls["cross"] += 1
+            return {"available": True, "source": "finnhub", "field_count": 8}
+
+    monkeypatch.setattr(job, "FundamentalsIngestion", lambda: FakeIngester())
+
+    rc = job.main(["run_fundamentals_screen", "--universe", "A,B,C", "--date", "2026-08-28"])
+    assert rc == 0  # parcial: hay datos para A,B => OK, pero STALE
+    artifact = json.loads((tmp_path / "screen_2026-08-28.json").read_text())
+    assert artifact["data_stale"] is True
+    assert artifact["fmp_failed_symbols"] == ["C"]
+    assert artifact["finnhub_crosscheck_summary"]["fmp_failed"] == 1
+    assert artifact["finnhub_crosscheck_summary"]["finnhub_available"] == 1
+    # El cross-check se invocó SOLO para el símbolo fallado.
+    assert calls["cross"] == 1
+    state = json.loads((tmp_path / "state.json").read_text())
+    failed = [f for f in state["failed_symbols"] if f["symbol"] == "C"][0]
+    assert failed["finnhub_crosscheck"]["available"] is True
+    # Dashboard con banner STALE visible.
+    html = (tmp_path / "dashboard_2026-08-28.html").read_text()
+    assert "DATOS STALE" in html
+
+
+def test_job_returns_rc4_and_stale_placeholder_when_all_fmp_fail(monkeypatch, tmp_path):
+    """FMP caído para TODO el universo: el job NO debe reventar con rc=3 por
+    artefacto vacío. Debe emitir un dashboard placeholder marcado STALE y
+    devolver rc=4 (completó pero datos totalmente STALE)."""
+    monkeypatch.setattr(settings, "FMP_API_KEY", "fake-key")
+    monkeypatch.setattr(job, "STATE_PATH", str(tmp_path / "state.json"))
+    monkeypatch.setattr(job, "CACHE_DIR", str(tmp_path))
+    monkeypatch.setattr(job, "DAILY_FMP_BUDGET", 240)
+    monkeypatch.setattr(job, "BATCH_PAUSE_SECONDS", 0)
+    monkeypatch.setattr(job, "screen_payload", lambda p: {"balde": "Neutral"})
+
+    class FakeFmp:
+        is_available = lambda self: True
+
+    class FakeIngester:
+        fmp = FakeFmp()
+
+        def ingest_symbol(self, sym):
+            return None  # FMP caído para todos
+
+        def crosscheck_finnhub_availability(self, sym):
+            return {"available": True, "source": "finnhub", "field_count": 8}
+
+    monkeypatch.setattr(job, "FundamentalsIngestion", lambda: FakeIngester())
+
+    rc = job.main(["run_fundamentals_screen", "--universe", "A,B,C", "--date", "2026-08-28"])
+    assert rc == 4
+    artifact = json.loads((tmp_path / "screen_2026-08-28.json").read_text())
+    assert artifact["data_stale"] is True
+    assert artifact["fmp_failed_symbols"] == ["A", "B", "C"]
+    # SÍ se emite un dashboard (placeholder) visible, no se pierde el artefacto.
+    html = (tmp_path / "dashboard_2026-08-28.html").read_text()
+    assert "DATOS STALE" in html
+
+
+def test_inject_stale_banner_unit(tmp_path):
+    """El banner STALE se inserta al inicio del <body> sin destruir el contenido."""
+    import app.core.fundamentals_artifacts as fa
+    p = tmp_path / "dashboard_2026-08-28.html"
+    p.write_text("<html><head></head><body><div>contenido real</div></body></html>",
+                 encoding="utf-8")
+    fa._inject_stale_banner(str(p), "2026-08-28")
+    html = p.read_text(encoding="utf-8")
+    assert "DATOS STALE" in html
+    assert "<body" in html
+    assert "contenido real" in html  # el contenido del motor se conserva
+

@@ -16,8 +16,6 @@ Construye UNA vez el panel diario que consumen los diagnósticos de §11:
 Salida: data/cache/factor_panel_<ts>.parquet + resumen por consola.
 Este script NO mide nada: solo materializa el panel para 1a/1b/2.
 """
-import datetime
-import os
 import sys
 
 import numpy as np
@@ -25,6 +23,7 @@ import pandas as pd
 
 from app.core.backtest_engine import CALIBRATION_HORIZON_DAYS
 from app.core.data_ingestion import load_universe
+from app.core.feature_store import write_panel
 from app.core.indicators import calculate_all_indicators
 from app.core.market_sentiment import build_sentiment_frame
 from app.core.predictive_engine import PredictiveEngine
@@ -46,11 +45,6 @@ MACRO_TICKERS = {
 
 
 def main():
-    out_path = os.path.join(
-        "data", "cache", f"factor_panel_{datetime.datetime.now():%Y%m%d_%H%M%S}.parquet"
-    )
-    os.makedirs(os.path.dirname(out_path), exist_ok=True)
-
     print("Cargando precios...", flush=True)
     price_data = load_universe(SYMBOLS, START, END)
     market_data = load_universe(MARKET_TICKERS, "2015-01-01", END)
@@ -162,7 +156,15 @@ def main():
             })
 
     panel = pd.DataFrame(rows)
-    panel.to_parquet(out_path)
+    entry = write_panel(
+        panel,
+        meta={
+            "stride_days": STRIDE_DAYS,
+            "horizon_days": CALIBRATION_HORIZON_DAYS,
+            "n_symbols": len(SYMBOLS),
+            "source": "build_factor_panel",
+        },
+    )
 
     n_total = len(panel)
     n_eligible = int(panel["eligible"].sum())
@@ -172,8 +174,8 @@ def main():
     print(f"  símbolos: {panel['symbol'].nunique()} | fechas: {panel['date'].nunique()}")
     print(f"  régimenes representados: {sorted(panel['regime'].unique())}")
     print(f"  NaN sentiment_v1: {int(panel['sentiment_v1'].isna().sum())} "
-          f"| NaN macro: {int(panel['macro_composite'].isna().sum())}")
-    print(f"\nOut: {out_path}")
+           f"| NaN macro: {int(panel['macro_composite'].isna().sum())}")
+    print(f"\nOut: {entry['parquet']}  version={entry['version']}")
 
 
 if __name__ == "__main__":

@@ -11,12 +11,12 @@ mal calibrados -> candidato a trial de pesos por régimen (gate §11).
 Si no -> el promedio agregado no esconde nada y esto se archiva.
 """
 import datetime
-import glob
 import os
 import sys
 
 import pandas as pd
 
+from app.core.feature_store import latest_panel
 from app.core.probabilistic_engine import SignalQualityMetrics
 
 # Score del motor = priors de factor_weights (sin BMA online, que requiere
@@ -24,15 +24,9 @@ from app.core.probabilistic_engine import SignalQualityMetrics
 MOM_W, RSI_W = 0.6639, 0.3361
 
 
-def latest_panel() -> str:
-    files = sorted(glob.glob(os.path.join("data", "cache", "factor_panel_*.parquet")))
-    if not files:
-        raise SystemExit("No hay factor_panel_*.parquet — corre build_factor_panel.py")
-    return files[-1]
-
-
 def main():
-    path = latest_panel()
+    panel, entry = latest_panel()  # consume por VERSIÓN desde el manifest (B3)
+    path = entry["parquet"]
     out_path = os.path.join("data", "cache", f"ic_by_regime_{datetime.datetime.now():%Y%m%d_%H%M%S}.txt")
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
 
@@ -41,13 +35,12 @@ def main():
         with open(out_path, "a") as f:
             f.write(msg + "\n")
 
-    panel = pd.read_parquet(path)
     df = panel[panel["eligible"] & panel["fwd_return_20d"].notna()].copy()
     df["motor_score"] = MOM_W * df["momentum_score"] + RSI_W * df["rsi_score"]
 
     out("=" * 72)
     out("PLAN §11 Fase 2 — IC condicional por régimen real")
-    out(f"Panel: {os.path.basename(path)}")
+    out(f"Panel: {os.path.basename(path)} (version={entry.get('version')})")
     out("=" * 72)
 
     signals = {

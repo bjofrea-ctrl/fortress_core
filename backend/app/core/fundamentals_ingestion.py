@@ -294,6 +294,34 @@ class FundamentalsIngestion:
             logger.warning("finnhub_cross_failed", extra={"symbol": sym, "error": str(e)})
             return None
 
+    def crosscheck_finnhub_availability(self, sym: str) -> Optional[Dict]:
+        """B0 diferido — cross-check Finnhub como RESPALDO independiente.
+
+        Cuando FMP no entrega datos para un símbolo (key/quota/endpoint caído,
+        causa EXTERNA), consulta Finnhub para determinar si el símbolo TIENE
+        datos disponibles en una fuente independiente. Esto distingue un
+        outage/key/quota de FMP (externo: Finnhub SÍ tiene datos) de un símbolo
+        muerto (ninguna fuente tiene datos).
+
+        NO es un reemplazo del screening: Finnhub provee ratios
+        (pe_ratio/roe/...), no los statements FMP (income/balance/cash_flow
+        listas) que consume `compute_scores()`. Por eso se usa como cross-check
+        de disponibilidad + marcado STALE del dashboard, no como fuente
+        primaria de ratios. Reemplazar FMP por Finnhub en el screening exigiría
+        reescribir Fase 2 (deferido, fuera de alcance de este fix).
+        """
+        d = self._finnhub_cross(sym)
+        if not d:
+            return {"available": False, "source": "finnhub"}
+        fields = [k for k in d.keys() if not k.startswith("_")]
+        return {
+            "available": True,
+            "source": "finnhub",
+            "field_count": len(fields),
+            "fields": fields,
+            "_cross_unverified": True,
+        }
+
     @staticmethod
     def _write_cache(path: str, payload: Dict) -> None:
         """Escritura atómica JSON (mismo contrato que utils.persistence):

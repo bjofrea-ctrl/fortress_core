@@ -19,32 +19,18 @@
     <key>ProgramArguments</key>
     <array>
         <string>/bin/bash</string>
-        <string>/Users/boris/Desktop/fortress_core/scripts/daily_signal_pipeline.sh</string>
+        <string>/Users/boris/Desktop/fortress_core/scripts/tz_dispatcher.sh</string>
     </array>
-    <key>StartCalendarInterval</key>
-    <array>
-        <!-- ~09:35 ET: ENTER (primer hábil del mes) -->
-        <dict>
-            <key>Hour</key>
-            <integer>9</integer>
-            <key>Minute</key>
-            <integer>35</integer>
-        </dict>
-        <!-- ~15:40 ET: EXIT (último hábil del mes) -->
-        <dict>
-            <key>Hour</key>
-            <integer>15</integer>
-            <key>Minute</key>
-            <integer>40</integer>
-        </dict>
-        <!-- ~22:10 ET: DECIDE (último hábil del mes, tras data_updater) -->
-        <dict>
-            <key>Hour</key>
-            <integer>22</integer>
-            <key>Minute</key>
-            <integer>10</integer>
-        </dict>
-    </array>
+    <!--
+      Frente 1 (fix Kilo 07/09): el plist YA NO usa StartCalendarInterval con
+      horas fijas (estaban en hora LOCAL del sistema = ART, UTC-3, y el
+      pipeline espera ventanas en ET => decide/exit/reconciler NUNCA corrían).
+      Ahora corre tz_dispatcher.sh cada 5 min; el dispatcher computa ET en
+      runtime (DST-proof) y dispara daily_signal_pipeline.sh UNA vez por
+      ventana (state anti-doble-disparo).
+    -->
+    <key>StartInterval</key>
+    <integer>300</integer>
     <key>RunAtLoad</key>
     <false/>
     <key>StandardOutPath</key>
