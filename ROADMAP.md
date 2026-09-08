@@ -24,6 +24,7 @@ reconciler diario deployado: cada día hábil con (a) 3 corridas rc=0 + (b) upda
 PRECIOS: ERROR + (c) reconcile unexplained=0 suma 1. Ver
 `backend/scripts/clean_days_counter.py` y PLAN_REMEDIO_BRECHAS_20260903.md §A2.
 
+
 ## PENDIENTE AHORA — chequear primero, antes de leer el resto
 
 Coordinación multi-agente vía Orca (Claude Code como coordinador; Kilo Code, OpenCode,
@@ -113,27 +114,36 @@ Cline como implementadores). Verificar contra `git log --oneline -10`,
 > intradía 7→30 símbolos líquidos). Todo verificado independientemente (no por
 > autoreporte de agente) antes de aceptar cada commit.
 >
-> 🔴 **Falta A2, y es lo único que impide que el gate sea evaluable**: no existe
-> `backend/data/clean_days.json` en NINGÚN repo. Sin ese contador la racha de días
-> limpios **no está corriendo**; el `motor_manifest bump` que declaró el drift de A6
-> ordena "reiniciar el contador a mano" sobre un archivo que todavía no existe. Es
-> el próximo ticket en curso (2026-09-05).
+> ✅ **A2 cerrado (2026-09-05, Cline)**: existe `backend/data/clean_days.json` y el
+> contador lo regenera de forma reproducible. El `motor_manifest bump` de A4 ya tiene
+> qué reiniciar. El contador es módulo puro (`app/core/clean_days.py`) + wrapper CLI
+> (`scripts/clean_days_counter.py`) que parsea 3 condiciones verificables sobre los
+> artefactos que el pipeline ya emite: (a) `pipeline_daily_signal end rc=0` en
+> `scripts/pipeline_diario.log`; (b) ausencia de `PRECIOS: ERROR` en `scripts/data_updater.log`;
+> (c) `reconcile.unexplained == 0` en `data/cache/pipeline_state.json` (o último artefacto
+> decide del día; `UNVERIFIED_C` si el reconciler A1 aún no corrió). Un día limpio cumple
+> (a)+(b)+(c); la racha es la cantidad de hábiles consecutivos limpios desde
+> `GATE_START_DATE` (2026-09-02). 24 tests en `tests/test_clean_days_counter.py`. La racha
+> real arranca en 0 en este worktree porque no hay logs vivos acá — en producción
+> (`~/Desktop/fortress_core`) los logs del cron lo alimentan día a día.
 >
-> ✅ **La cita "Regla 0 del ROADMAP" (bug real, propagado a código y al propio ticket)
-> ya está corregida en todos lados**: código, mensajes de error, tests, y
-> `PLAN_REMEDIO_BRECHAS_20260903.md` líneas 67/68/88 (corregido en el plan por Kilo,
-> commit dac987b, 2026-09-06 — era la **Regla 1 de `ONBOARDING.md`**: "Ningún trial de
-> motor sin criterio pre-registrado").
+> 🔴 **El ticket `PLAN_REMEDIO_BRECHAS_20260903.md` cita una "Regla 0 del ROADMAP" que no
+> existe** (líneas 67, 68 y 88; el ROADMAP no tiene reglas numeradas — la regla real es la
+> **Regla 1 de `ONBOARDING.md`**: "Ningún trial de motor sin criterio pre-registrado").
+> Ya está corregido en código, mensajes de error y tests; el plan queda sin tocar porque
+> es el ticket de Boris, pero hay que arreglarlo ahí también o el próximo agente va a
+> volver a copiar la cita errónea.
 >
-> ✅ **B5 CERRADO (2026-09-05, worktree `fundamentales-automatizado`) — mergeado a main
-> por Kilo 2026-09-06** — el gate de potencia ex-ante ahora vive **en el ledger**, no en
-> un documento. `backend/scripts/mde_power.py` computa el IC mínimo detectable de un
-> diseño (`mde_ic`), el SR diario requerido por la DSR (`sr_requerido_dsr`) y el veredicto
-> del paper de diciembre (`gate_diciembre_2026`: **INEJECUTABLE** — 60 días piden un SR
-> anual ~6.7-8.5 contra un efecto plausible de 0.10; números y sensibilidad en
-> `ANALISIS_MDE_GATE_DICIEMBRE_2026.md`, ahora en main). `trial_registry` lee el campo
-> `diseno_mde` de cada reserva: si `MDE > efecto plausible` (default 0.10) la entrada se
-> guarda como **`INEJECUTABLE` con `n_trials_consumidos=0`** → no quema slot Bonferroni
+> ✅ **B5 CERRADO (2026-09-05, worktree `fundamentales-automatizado`)** — el gate de
+> potencia ex-ante ahora vive **en el ledger**, no en un documento.
+> `backend/scripts/mde_power.py` computa el IC mínimo detectable de un diseño
+> (`mde_ic`), el SR diario requerido por la DSR (`sr_requerido_dsr`) y el veredicto del
+> paper de diciembre (`gate_diciembre_2026`: **INEJECUTABLE** — 60 días piden un SR anual
+> ~6.7-8.5 contra un efecto plausible de 0.10; números y sensibilidad en
+> `ANALISIS_MDE_GATE_DICIEMBRE_2026.md`). `trial_registry` lee el campo `diseno_mde` de
+> cada reserva: si `MDE > efecto plausible` (default 0.10) la entrada se guarda como
+> **`INEJECUTABLE` con `n_trials_consumidos=0`** → no quema slot Bonferroni
+
 > (`consumed_budget` no lo cuenta) y no produce refutación (no tiene veredicto: nunca
 > corrió). En la ruta post-hoc (`register_trial`) el diseño sub-potente se **rechaza**:
 > registrar el "no detectó" de un diseño ciego es justo el teatro que el ticket mata.
@@ -153,7 +163,7 @@ Cline como implementadores). Verificar contra `git log --oneline -10`,
 > Settings real), y `tests/test_config_registry.py::test_backtest_2023_inalterado_por_ajuste_futuro`
 > — el panel sintético no opera en 2023 (`total_trades == 0`), falla aislada del frente
 > predict/motor. NOTA Kilo 06-09: los 3 de predict_cache están en el ticket de Cline
-> (fix de fixtures, ya aprobado en su sesión); test_backtest_2023 sigue 🔴 abierto.> 🔴 **4 fallos PRE-EXISTENTES en la suite de esta rama** (verificados el 2026-09-05:
+> (fix de fixtures, ya aprobado en su sesión); test_backtest_2023 sigue 🔴 abierto.
 > 706 passed / 4 failed, y los 3 primeros reproducidos con los cambios de B5
 > `git stash`-eados, o sea ajenos a B5): `tests/test_predict_cache.py` ×3 —
 > `'types.SimpleNamespace' object has no attribute 'motor'` en `app/api/routes/predict.py:169`

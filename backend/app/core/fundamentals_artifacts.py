@@ -187,6 +187,7 @@ def render_artifacts(
     run_date: str,
     outdir: str,
     export_name: Optional[str] = None,
+    stale: bool = False,
 ) -> Dict[str, str]:
     """Genera los artefactos VISUALES del screening con el motor canónico real.
 
@@ -200,6 +201,10 @@ def render_artifacts(
     conoce calls_used, failed_count, etc.) ANTES de llamar acá. Este módulo
     NO toca el JSON — evita el bug de doble escritura/sobreescritura con
     formatos distintos según el orden de correr.
+
+    `stale=True` (Frente 2): cuando FMP no entregó datos frescos para parte
+    del universo, inyecta un banner STALE visible en el dashboard para que
+    Boris no lo lea como actualizado. No toca el motor vendorizado.
 
     Devuelve un dict con los paths generados {kind: path}. Si `generar_excel`
     o `generar_dashboard` falla, la excepción sube — el job runner convierte
@@ -238,14 +243,49 @@ def render_artifacts(
         cts, funds, exc, tr, analizadas, faltan=faltan_cols,
     )
 
+    # 3) Banner STALE (Frente 2): post-proceso del HTML del motor sin tocar
+    #    el código vendorizado. Sólo si el job reportó data_stale.
+    if stale:
+        _inject_stale_banner(html_path, run_date)
+
     logger.info(
         "fundamentals_artifacts_rendered",
         extra={
             "xlsx": xlsx_path,
             "html": html_path,
+            "stale": stale,
             "deep_dive": cts.get("Deep Dive", 0),
             "watchlist": cts.get("Watchlist", 0),
             "analizadas": analizadas,
         },
     )
     return {"xlsx": xlsx_path, "html": html_path}
+
+
+def _inject_stale_banner(html_path: str, run_date: str) -> None:
+    """Inyecta un banner STALE visible en el dashboard generado por el motor.
+
+    No modifica el motor vendorizado: lee el HTML que éste escribió, inserta un
+    <div> fijo al inicio del <body> y reescribe el archivo. Tolerante a fallos
+    de lectura/escritura (sólo loguea; el dashboard sigue existiendo).
+    """
+    try:
+        with open(html_path, encoding="utf-8") as fh:
+            html = fh.read()
+        banner = (
+            "<div style='position:fixed;top:0;left:0;right:0;z-index:99999;"
+            "background:#b00000;color:#fff;font-weight:bold;padding:12px;"
+            "text-align:center;font-family:sans-serif;box-shadow:0 2px 6px rgba(0,0,0,.4);'>"
+            f"&#9888; DATOS STALE &mdash; {run_date}: FMP no entreg&oacute; datos "
+            "frescos para parte del universo. Tratar el screening como NO "
+            "actualizado.</div>"
+        )
+        if "<body" in html:
+            html = html.replace("<body", banner + "<body", 1)
+        else:
+            html = banner + html
+        with open(html_path, "w", encoding="utf-8") as fh:
+            fh.write(html)
+    except Exception as e:  # pragma: no cover - defensa de robustez de I/O
+        logger.warning("stale_banner_inject_failed",
+                       extra={"path": html_path, "error": str(e)})

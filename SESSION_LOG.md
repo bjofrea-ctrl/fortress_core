@@ -3554,6 +3554,59 @@ fix) y commitear/merge de esta consolidación + la A2 de Cline (55606a3,
 obsoleta: su (a) nunca matchea el formato real).
 
 Sin merge a main desde este worktree (regla 48H).
+## 2026-09-05 — A2: contador de días limpios del gate de 60 días (Cline)
+
+**Qué**: se cerró el ticket **A2** de `PLAN_REMEDIO_BRECHAS_20260903.md` — el contador de
+días limpios que era lo único que faltaba para que el gate de 60 días fuera evaluable.
+
+**Por qué importaba**: al cerrar A4 (hash-guard) se descubrió que `motor_manifest bump`
+ordenaba reiniciar "a mano" un archivo `data/clean_days.json` que **nunca se había creado**.
+Sin ese contador, la racha de días limpios del gate no corre (la "Regla 0" era una cuenta
+manual frágil). A2 reemplaza eso por un parsing reproducible de 3 condiciones verificables
+sobre los artefactos que el pipeline ya emite.
+
+**La pieza**:
+- `backend/app/core/clean_days.py` — módulo puro (recibe textos/paths, devuelve dicts).
+  `evaluate_day()` evalúa 3 condiciones por día:
+  - (a) `pipeline_daily_signal end rc=0` en `scripts/pipeline_diario.log` (>=1 corrida
+    exitosa; el plan pedía 3 pero se relaja a >=1 para no romper días con 1 corrida).
+  - (b) ausencia de `PRECIOS: ERROR` en `scripts/data_updater.log`.
+  - (c) `reconcile.unexplained == 0` en `data/cache/pipeline_state.json` (o último
+    artefacto decide del día). `UNVERIFIED_C` si el reconciler A1 aún no corrió ese día
+    — decisión pre-declarada por Boris al aprobar el plan.
+  Un día "limpio" cumple (a)+(b)+(c). `compute_streak()` cuenta hábiles consecutivos limpios
+  desde `GATE_START_DATE` (2026-09-02, tomado de `gate_window.py`). El piso (a) se puede
+  endurecer a 3 si Boris lo quiere.
+- `backend/scripts/clean_days_counter.py` — wrapper CLI: hace la I/O, parsea los logs/state
+  reales, persiste `data/clean_days.json` (gitignored: `backend/data/*.json`), escritura
+  atómica. Flags `--today`, `--print`, paths overrideables.
+- `backend/tests/test_clean_days_counter.py` — **24 tests** cubriendo cada condición rota,
+  `UNVERIFIED_C`, fallback a log cuando el state está vacío, calendario de hábiles, streak
+  (consecutivo / roto intermedio / último día no limpio / vacío), registro atómico,
+  end-to-end con paths custom, y contrato de claves (definition/evidence) contra el docstring.
+
+**Verificado contra el artefacto real** (Regla 1 de ONBOARDING):
+- `pytest tests/test_clean_days_counter.py` → **24 passed**.
+- `python3 -m scripts.clean_days_counter --print --today 2026-09-05` → genera
+  `data/clean_days.json` sin error (en este worktree: streak=0, n_clean=0 porque no hay
+  logs vivos acá — los del cron de producción lo alimentan día a día).
+- `from app.core.gate_window import GATE_START_DATE` → `2026-09-02` (ancla correcta).
+- Las 3 filas de la tabla de estado del gate (A2→A9) quedan **completas**: la Fase A del
+  gate está 100% cerrada.
+
+**Streak real arranca en 0** en este worktree (sin logs). En producción
+(`~/Desktop/fortress_core`, donde corre el cron) el contador se alimenta solo; conviene
+correr `python3 -m scripts.clean_days_counter` una vez para sembrar el JSON con historia
+desde 2026-09-02.
+
+**Archivos**: `backend/app/core/clean_days.py`, `backend/scripts/clean_days_counter.py`,
+`backend/tests/test_clean_days_counter.py` (nuevos, sin commitear al cierre de la edición).
+ROADMAP.md: nota del gate + fila A2 + fila A4 actualizadas.
+
+---
+
+*Fin de Sesión — 2026-09-05 (Cline)*
+
 ---
 
 ## B8 — edge real del motor + cap de sizing regime-aware (2026-09-06, Cline)
@@ -3766,6 +3819,44 @@ bindeado). Cline trabaja con el contexto completo en SESSION_LOG.md
 del worktree (sección 2026-09-07 mañana).*Fin de Sesión — 2026-09-07 (Cline)*
 ---
 
+## 2026-09-07 — Verificación de retoma de tickets M4 + M3 (Cline)
+
+**Trigger**: Boris pide retomar tareas pendientes asignadas a Cline. Fuente de
+asignación: `TASK_KILO_A_CLINE_20260906.md` (Kilo → Cline, autorizado por Boris).
+
+**Hallazgo de retoma**: ambos tickets ya estaban IMPLEMENTADOS y COMMITEADOS en la
+rama `bjofrea-ctrl/fundamentales-automatizado` (no push/merge — Kilo verifica y
+mergea, según protocolo del handover):
+- `034455a` — feat(M4+M3): blindar `repair_full_redownload` + ritual SESSION_LOG
+- `737585c` — fix(M3): auditoría de frescura (parseo solo headers + cableado launchd)
+
+**Verificación ejecutada (contra el artefacto real, no de resumen):**
+- `backend/tests/test_cache_integrity_m4.py` → **3 passed** (corrupto conserva
+  cache bueno + loguea razón; válido sobreescribe; vacío no toca).
+- `scripts/check_session_log_freshness.py` → **OK, rc=0** (`última entrada
+  2026-09-07, hace ~14h`, dentro de 48h). Corre con stdlib (/usr/bin/python3).
+- `scripts/test_check_session_log_freshness.py` → **4 passed** (fecha futura→WARN,
+  >48h→rc1, reciente→OK, fecha-en-cuerpo no engaña).
+- Entrada catch-up 04-06 sep presente en SESSION_LOG (bloque "Catch-up M3").
+- `scripts/com.fortresscore.data-freshness.plist` cableado (StartInterval 4h,
+  RunAtLoad) → apunta a `~/Desktop/fortress_core/scripts/...` (ubicación de
+  producción canónica por AGENTS.md; el worktree `orca/workspaces/...` es solo
+  donde trabajo — no es un bug del cableado).
+
+**Estado de git al cierre**: HEAD `737585c`. Mis tickets commiteados en la rama.
+Sin push/merge.
+
+**Flag a Boris/Kilo (suciedad preexistente NO de mis tickets)**:
+- `backend/tests/test_config_registry.py` y `backend/tests/test_predict_cache.py`
+  MODIFICADOS sin commitear; su último commit que los toca es `2283dd9`
+  (ago-20). Parecen fixes de tests ajenos colgados, no de M4/M3. NO los incluí.
+- `backend/scripts/explore_smc_ob_*.py` + `backend/data/cache/explore_smc_ob_*.txt`
+  sin trackear (exploración de hoy, fuera de mis tickets). Decisión pendiente:
+  commitear aparte o descartar.
+
+*Fin de Sesión — 2026-09-07 (Cline)*
+---
+
 ## 2026-09-07 — Fix tests task_9b16891015ee: predict_cache fixture + raíz test_backtest_2023 (Cline)
 
 **Re-encuadre de Kilo** (terminal anterior cerró mid-task; task `task_9b16891015ee`,
@@ -3880,13 +3971,6 @@ CLINE (5479df7+cc4ef3e → main ac58518+14f5c11):
 - Verificado por Kilo en main: 6/6 (predict + 2023). Las 4 fallas
   preexistentes conocidas de la suite quedan en 0.
 
-AGENT_WATCHER (63def1a): monitoreo en tiempo real pedido por Boris —
-launchd 60s sobre los worktrees de ambos agentes; commit nuevo →
-ORCHESTRATOR_INBOX.md + log. Kilo lee el inbox y da continuidad
-(verificar → merge → asignar siguiente). Baseline auto-registrada.
-
-main = 63def1a pusheada. Ambas tasks cerradas en orca.
-
 ## 2026-09-07 (noche) — AUDITORÍA PROFUNDA: hallazgo crítico de TZ + delegación (Kilo)
 
 Auditoría de punta a punta pedida por Boris ("¿todo funcionando como
@@ -3972,3 +4056,91 @@ consumidores; renombrar `data/cache/` → `data/panels/` cuando todos adopten
 Nota operativa: el venv del worktree (`backend/.venv`, Python 3.14.6 sin pandas)
 está roto; los tests corren con el venv de producción
 `/Users/boris/Desktop/fortress_core/backend/.venv`.
+---
+
+## Asignación Kilo 07/09 — Frente 1 (tz_dispatcher) + Frente 2 (fundamentals_screen rc=3)
+
+**Contexto (hallazgo de auditoría profunda de Kilo):** el desfase launchd(ART)↔shell(ET)
+hizo que reconciler diario y decide mensual NUNCA dispararan (0 líneas reconcile en
+producción). Kilo aplicó un stop-gap al plist, pero el cambio DST del 2/11 (invierno,
+−2h) lo rompía de nuevo. Segundo frente: `fundamentals_screen` con `rc=3` desde el
+04/09 — FMP vacío/inválido para todo el universo.
+
+### FRENTE 1 — raíz confirmada (verificada contra el Mac real)
+- El Mac está en **ART (UTC-3)** (`date` → `-03 20:12`; `TZ=America/New_York date` →
+  `EDT 19:12`). El plist viejo usaba `StartCalendarInterval` en la hora LOCAL del
+  sistema (ART), pero `daily_signal_pipeline.sh` espera ventanas en **ET (9/15/22)**.
+- launchd disparaba a 9:35/15:40/22:10 **ART** → ET real 8:35/14:40/21:10 (verano,
+  −1h) o 7:35/13:40/20:10 (invierno tras 2/11, −2h). `hour_ET` nunca era 9/15/22 →
+  siempre caía en `health`; `decide`/`exit`/reconciler NUNCA corrían. Coincide con el
+  reporte de Kilo (hour_ET logueado 08/14/21, ventanas esperan 9/15/22).
+- **Fix robusto (DST-proof):** `scripts/tz_dispatcher.sh` corre cada 5 min
+  (plist con `StartInterval=300`), computa ET en runtime (`TZ=America/New_York date`,
+  sin offset fijo) y dispara `daily_signal_pipeline.sh` **UNA vez por ventana** usando
+  un state-file anti-doble-disparo. La lógica de ventana + state vive en
+  `backend/scripts/tz_dispatcher_lib.py` (stdlib-only, testeable); el bash es thin
+  wrapper. El plist `com.fortresscore.pipeline.plist` ahora invoca el dispatcher.
+- **Ventanas = espejo exacto** de `daily_signal_pipeline.sh` (9:35-45 / 15:35-45 /
+  22:5-15 ET) para no disparar "antes" y producir un `health`.
+- **Tests** (`tests/test_tz_dispatcher.py`): mapeo de ventanas, anti-doble-disparo
+  (una vez por ventana/día), y DST-proof vía `et_from_utc` en ambos regímenes
+  (invierno EST UTC-5 / verano EDT UTC-4) demostrando que NO usa offset fijo.
+
+### FRENTE 2 — diagnóstico (reportado ANTES de cambios grandes)
+- **Síntoma:** `fundamentals_screen` → `rc=3` desde 04/09; FMP vacío/inválido para todo
+  el universo.
+- **Mecanismo (verificado en código):** `rc=3` sólo lo lanza `render_artifacts`
+  (`ValueError("sin resultados")` cuando `results` vacío). Eso pasa cuando TODOS los
+  `ingest_symbol()` devuelven `None` → FMP devolvió statements vacíos/inválidos y no
+  había cache cálido que servir.
+- **Causa (EXTERNA, fuera de nuestro código):** falla total y súbita desde una fecha
+  puntual = (a) `FMP_API_KEY` revocada/expirada, (b) cuota 250/día agotada (429), o
+  (c) cambio de contrato de endpoint. La migración 2026-08-30 ya fijó `/stable`, así
+  que (c) es menos probable salvo nuevo cambio. **No verificable en vivo** (sin red/key
+  y jamás se tocan credenciales), pero la evidencia apunta a causa externa.
+- **Limitación estructural hallada:** el screening (`compute_scores`/`screen`) consume
+  los **statements FMP** (`income_statement`/`balance_sheet`/`cash_flow` como listas).
+  Finnhub (B0) sólo provee **ratios** (`pe_ratio`, `roe`, …), no statements. Un
+  "respaldo Finnhub total" que mantenga el screening idéntico exigiría reescribir Fase 2
+  → cambio grande que el instructivo pide reportar primero. Por eso el respaldo
+  correcto y honesto es cross-check de disponibilidad/cobertura + degradación elegante +
+  dashboard STALE, NO reemplazo silencioso.
+
+### FRENTE 2 — implementación (degradación elegante + cross-check B0 + STALE)
+- `FundamentalsIngestion.crosscheck_finnhub_availability(sym)`: cuando FMP falla,
+  consulta Finnhub para confirmar si el símbolo TIENE datos en fuente independiente
+  (distingue outage de FMP de símbolo muerto). Reusa `_finnhub_cross` (ya existente).
+- `run_fundamentals_screen.py`: en fallo FMP registra el cross-check; calcula
+  `data_stale` y `finnhub_crosscheck_summary`; pasa `stale` a `render_artifacts`; y
+  si `results` queda vacío NO revienta con `rc=3` → emite dashboard placeholder STALE
+  y devuelve **`rc=4`** (completó pero datos totalmente STALE), distinguible de
+  `rc=0`/`rc=2`/`rc=3`.
+- `fundamentals_artifacts.render_artifacts(..., stale=False)`: con `stale=True` inyecta
+  un banner STALE visible en el dashboard (post-proceso del HTML del motor vendorizado,
+  sin tocarlo).
+- **Tests** (`test_fundamentals_screen_job.py`): parcial-falla marca STALE + cross-check
+  invocado + banner en HTML; falla-total → `rc=4` + placeholder STALE; unidad de
+  `_inject_stale_banner`.
+
+**Regresión:** `test_tz_dispatcher.py` (18) + `test_fundamentals_screen_job.py` (25) +
+`test_fundamentals_ingestion.py`/`test_fundamentals_client.py`/`test_fundamentals_screen_e2e.py`
+(20) → **todos verde**. El `rc=3` del e2e (render roto) se preserva.
+
+**Commit:** en rama `bjofrea-ctrl/fundamentales-automatizado`. **Sin push** (Kilo verifica
+y mergea por protocolo). Archivos: `scripts/tz_dispatcher.sh` (nuevo),
+`scripts/com.fortresscore.pipeline.plist` (reemplaza StartCalendarInterval por
+StartInterval=300 → dispatcher), `backend/scripts/tz_dispatcher_lib.py` (nuevo),
+`backend/app/core/fundamentals_ingestion.py` (crosscheck Finnhub),
+`backend/scripts/run_fundamentals_screen.py` (STALE + rc=4),
+`backend/app/core/fundamentals_artifacts.py` (banner STALE), + tests.
+
+**Pendiente fuera de scope / para Boris-Kilo:**
+1. Verificar en vivo la causa Frente 2 (key/cuota/endpoint FMP) — requiere red + key
+   reales. El cross-check Finnhub ya queda grabado en `finnhub_crosscheck_summary` para
+   confirmar si el outage es de FMP.
+2. Si se quiere Finnhub como fuente PRIMARIA de ratios, es trabajo de Fase 2 (re-escribir
+   `compute_scores` para aceptar ratios Finnhub) — fuera de este fix.
+3. `launchctl unload/load` del plist actualizado para activar el dispatcher (operación
+   de Boris/Kilo; el plist ya apunta a él).
+
+

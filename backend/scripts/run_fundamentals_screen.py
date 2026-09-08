@@ -43,6 +43,7 @@ if _BACKEND not in sys.path:
 
 from app.config import settings  # noqa: E402 (sys.path set above)
 from app.core.fundamentals_ingestion import FundamentalsIngestion  # noqa: E402 (sys.path set above)
+from app.core.fundamentals_client import FinnhubClient  # noqa: E402 (sys.path set above)
 from app.core.fundamentals_screen import screen_payload  # noqa: E402 (sys.path set above)
 from app.utils.logging import logger  # noqa: E402 (sys.path set above)
 
@@ -110,6 +111,52 @@ def _atomic_write_json(path: str, payload: dict) -> None:
         raise
 
 
+def _finnhub_crosscheck(ingester, sym: str):
+    """Cross-check Finnhub (B0 diferido) como respaldo cuando FMP falla.
+
+    Usa getattr para no romper ingesters de test que no exponen el método;
+    nunca lanza (cualquier excepción => None).
+    """
+    fn = getattr(ingester, "crosscheck_finnhub_availability", None)
+    if fn is None:
+        return None
+    try:
+        return fn(sym)
+    except Exception:
+        return None
+
+
+def _write_stale_placeholder_dashboard(run_date: str, outdir: str, failed) -> None:
+    """Dashboard placeholder marcado STALE cuando FMP no entregó NADA usable.
+
+    Garantiza que Boris tenga un artefacto visible (no un dashboard roto/ausente)
+    y que diga claramente que el screening no pudo ejecutarse por caída de FMP.
+    """
+    os.makedirs(outdir, exist_ok=True)
+    html_path = os.path.join(outdir, f"dashboard_{run_date}.html")
+    failed = failed or []
+    sym_list = ", ".join(failed[:25]) + ("…" if len(failed) > 25 else "")
+    banner = (
+        "⚠ DATOS STALE — FMP no entregó datos para "
+        f"{len(failed)} símbolo(s): {sym_list}. "
+        "El screening NO pudo ejecutarse. Revisar clave/cuota/endpoint FMP "
+        "o el respaldo Finnhub."
+    )
+    html = (
+        "<!doctype html><html lang='es'><head><meta charset='utf-8'>"
+        f"<title>Fortress Screening — STALE {run_date}</title></head>"
+        "<body>"
+        "<div style='background:#b00000;color:#fff;font-weight:bold;"
+        "padding:14px;text-align:center;font-family:sans-serif;'>"
+        f"{banner}</div>"
+        f"<p style='font-family:sans-serif;padding:14px;'>"
+        f"Generado {run_date} — sin datos FMP frescos.</p>"
+        "</body></html>"
+    )
+    with open(html_path, "w", encoding="utf-8") as fh:
+        fh.write(html)
+
+
 def main(argv: Optional[List[str]] = None) -> int:
     parser = argparse.ArgumentParser(description="Screening automatizado de fundamentales")
     parser.add_argument("--universe", help="CSV de tickers (default: SYMBOLS canónicos)")
@@ -170,6 +217,15 @@ def main(argv: Optional[List[str]] = None) -> int:
         logger.error("fmp_client_unavailable")
         print("FATAL: FmpClient sin key.")
         return 2
+    # Cablear Finnhub (B0) sólo si hay key: hace que el cross-check de
+    # disponibilidad sea REAL en la rama STALE en lugar de reportar siempre
+    # "unavailable". Si no hay FINNHUB_API_KEY, ingester.finnhub queda None y el
+    # cross-check lo registra honestamente como no disponible.
+    if settings.FINNHUB_API_KEY:
+        try:
+            ingester.finnhub = FinnhubClient()
+        except Exception:  # pragma: no cover - init local no bloquea
+            logger.warning("finnhub_client_init_failed")
 
     results = {}
     budget_remaining = DAILY_FMP_BUDGET - state["calls_used"]
@@ -207,10 +263,17 @@ def main(argv: Optional[List[str]] = None) -> int:
             try:
                 payload = ingester.ingest_symbol(sym)
                 if payload is None:
+                    # FMP no entregó datos para este símbolo. Cross-check Finnhub
+                    # (B0 diferido) como respaldo independiente: si Finnhub SÍ
+                    # tiene datos, confirma que el problema es de FMP (key/quota/
+                    # endpoint, causa externa) y no del símbolo. Nunca bloquea.
+                    cross = _finnhub_crosscheck(ingester, sym)
                     state["failed_symbols"].append(
-                        {"symbol": sym, "reason": "ingestion_returned_none"})
+                        {"symbol": sym, "reason": "ingestion_returned_none",
+                         "finnhub_crosscheck": cross})
                     logger.warning("fundamentals_screen_symbol_failed",
-                                  extra={"sym": sym})
+                                  extra={"sym": sym, "finnhub_available":
+                                          bool(cross and cross.get("available"))})
                     continue
                 eval_ = screen_payload(payload)
                 results[sym] = eval_
@@ -243,6 +306,15 @@ def main(argv: Optional[List[str]] = None) -> int:
         if batch_num < total_batches and BATCH_PAUSE_SECONDS > 0:
             time.sleep(BATCH_PAUSE_SECONDS)
 
+    # FMP falló para estos símbolos (empty/invalid). Con cache cálido el
+    # ingester devuelve datos viejos y el símbolo queda en completed_symbols,
+    # así que sólo los None (sin cache que servir) cuentan como cobertura rota.
+    fmp_failed_symbols = [
+        f["symbol"] for f in state["failed_symbols"]
+        if f.get("reason") == "ingestion_returned_none"
+    ]
+    data_stale = bool(fmp_failed_symbols)
+
     out_path = os.path.join(CACHE_DIR, f"screen_{run_date}.json")
     artifact = {
         "date": run_date,
@@ -251,6 +323,20 @@ def main(argv: Optional[List[str]] = None) -> int:
         "universe_size": len(universe),
         "completed_count": len(state["completed_symbols"]),
         "failed_count": len(state["failed_symbols"]),
+        # Degradación elegante (Frente 2): si FMP no entregó datos frescos para
+        # parte del universo, el dashboard se marca STALE en vez de reventar con
+        # rc=3 por artefacto vacío. El cross-check Finnhub (si está disponible)
+        # indica cuántos de los fallados TAMBIÉN tienen datos en la fuente
+        # independiente (confirmando que el outage es de FMP, no de los tickers).
+        "data_stale": data_stale,
+        "fmp_failed_symbols": fmp_failed_symbols,
+        "finnhub_crosscheck_summary": {
+            "fmp_failed": len(fmp_failed_symbols),
+            "finnhub_available": sum(
+                1 for f in state["failed_symbols"]
+                if (f.get("finnhub_crosscheck") or {}).get("available")
+            ),
+        },
         "results": results,
     }
     _atomic_write_json(out_path, artifact)
@@ -263,7 +349,23 @@ def main(argv: Optional[List[str]] = None) -> int:
     # "falló sin tocar red" (2). El test end-to-end lo ve en rojo.
     try:
         from app.core.fundamentals_artifacts import render_artifacts
-        render_artifacts(results, run_date, CACHE_DIR)
+        if results:
+            # Dashboard normal; si FMP falló para parte del universo, se marca
+            # STALE con un banner visible (data_stale=True).
+            render_artifacts(results, run_date, CACHE_DIR, stale=data_stale)
+        else:
+            # Sin un solo símbolo con datos FMP frescos (cache también vacío):
+            # NO reventamos con rc=3 por artefacto vacío. Emitimos un dashboard
+            # placeholder marcado STALE para que Boris vea claramente la caída de
+            # FMP y rc=4 (completó pero datos totalmente STALE), distinguible de
+            # rc=0 (OK) y rc=3 (falló el render del motor canónico).
+            _write_stale_placeholder_dashboard(
+                run_date, CACHE_DIR, artifact["fmp_failed_symbols"])
+            print(
+                f"WARN: 0 símbolos con datos FMP frescos ({run_date}). "
+                f"Dashboard marcado STALE (sin datos para screening)."
+            )
+            return 4
     except Exception as e:
         logger.exception(
             "fundamentals_screen_render_failed",
