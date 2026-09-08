@@ -4144,3 +4144,50 @@ StartInterval=300 → dispatcher), `backend/scripts/tz_dispatcher_lib.py` (nuevo
    de Boris/Kilo; el plist ya apunta a él).
 
 
+
+## 2026-09-08 (mediodía) — Verificación y merge de las 6 entregas del inbox (Kilo, autorizado por Boris)
+
+Boris: "verifica y mergea, corre la suite real en cada rama antes de mergear, no
+aceptes el commit message como evidencia. Reporta con números reales."
+
+VERIFICACIÓN CONTRA ARTEFACTOS (no commit messages):
+- Cline e07a05e (tz_dispatcher DST-proof + FMP STALE/cross-check): auditado
+  archivo por archivo — tz_dispatcher.sh/lib ventanas espejo del pipeline
+  (9:35-45/15:35-45/22:05-15), anti-doble-disparo por fecha ET, DST-proof sin
+  offset hardcodeado; STALE/rc=4/placeholder + banner en fundamentals;
+  clean_days_counter add/add resuelto a favor de la CONSOLIDADA b89654c
+  (la rama traía la original 55606a3 pre-consolidación).
+  Suite rama: **781 passed / 1 skipped** (9:00 min). Vecinos re-verificados: 112 passed.
+- OpenCode 66d48ff (TZ-DOC 14 plists + latido SESSION-LOG): contenido estaba
+  en stash del worktree main (el merge automático solo tomó SESSION_LOG);
+  recuperado y commiteado (ec3dba6). PLIST_TZ_AUDIT.md + TZ-DOC en 14 plists.
+- OpenCode 04ee3db (b3 feature store): 7 tests nuevos (round-trip bit-a-bit,
+  hash determinista+dedupe, load por versión, fallback legacy, golden refactor,
+  migración consumidor, bootstrap-no-intercambiable). Suite rama b3 completa:
+  895 tests — **5 fallidos inicialmente**, investigados uno a uno: 100%
+  AMBIENTALES (worktree sin .env → cliente Alpaca no construible → reconciler
+  escribe 'unavailable' no línea; STOP_FILE residual del kill-switch por cache
+  17 ruedas atrás — el worktree no tiene los datos del repo real). Con .env
+  real: los 5 pasan (44/44 en los 3 archivos). Fix de test_config_registry
+  (_FixedRegimeClassifier) PRESERVADO por el merge (verificado en tree).
+- Cline 966ca17 (diagnóstico en vivo FMP): causa RAÍZ confirmada con key real
+  — FMP 429 rate-limit, cuota free 250/día vs 2550 necesarias (510 símbolos ×
+  5 endpoints), deadlock de cold-start del cache TTL 90d. Cableado Finnhub
+  real cuando hay key. verify_fmp_cause_live.py mergeado.
+- OpenCode 4fe09b0+2dd7781 (b6 alineación contrato señal): suite rama
+  **885 passed / 5 skipped / 0 failed** (29:15 min) con .env; golden test
+  bit-a-bit contra fórmula pre-refactor PASA (2/2).
+
+ACCIDENTES DE MERGE CAZADOS Y CORREGIDOS (89d4dba): el merge automático del
+plist del pipeline dejó la versión VIEJA (StopCalendarInterval stop-gap);
+corregido a tz_dispatcher (StartInterval 300, plutil OK). fundamentals_ingestion
+y consumidores feature_store también quedaron fuera del commit automático —
+incluidos. Smoke-test dispatcher mergeado OK (select_window 4/4).
+
+MERGES: 5bca9a4 (66d48ff) → ec3dba6 (stash recovery) → aebae77 (b3 04ee3db) →
+ae59f18 (Cline 966ca17) → 89d4dba (corrección restante).
+
+**SUITE MAIN POST-MERGE: 922 passed / 2 skipped / 0 failed, rc=0 (86:12 min)**.
+Inbox marcado VERIFICADO+MERGEADO. Pendiente: push + espejo EMPRESA + notificar
+watcher baselines. NOTA: los worktrees de agentes siguen avanzando (Cline ya en
+966ca17+, OpenCode en b6); nuevas entregas caerán al inbox.
