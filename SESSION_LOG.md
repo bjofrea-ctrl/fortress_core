@@ -3824,7 +3824,35 @@ M5 sigue ACTIVO en producción: caffeinate -i -s (PID 63704) hasta las
 16:05 ET, intraday de hoy captura la sesión completa sin gaps de
 despertar. main=f3182a7 pusheada.
 
-## 2026-09-07 (tarde) — Cierre de ciclo doble + agent_watcher en producción (Kilo)
+AGENT_WATCHER (63def1a): monitoreo en tiempo real pedido por Boris —
+launchd 60s sobre los worktrees de ambos agentes; commit nuevo →
+ORCHESTRATOR_INBOX.md + log. Kilo lee el inbox y da continuidad
+(verificar → merge → asignar siguiente). Baseline auto-registrada.
+
+main = 63def1a pusheada. Ambas tasks cerradas en orca.
+
+## 2026-09-07 (tarde) — OpenCode: PLIST-TZ-DOC + LATIDO (auditoría menor Kilo, task_e4e345a8e442)
+
+Asignación de Kilo (auditoría profunda 07/09, items menores). Ramas:
+test-opencode-orca / bjofrea-ctrl/test-opencode-orca. Sin push (Kilo mergea).
+
+(1) PLIST-TZ-DOCS: los 14 plists del repo ahora llevan comentario `TZ-DOC`
+(documenta hora ART local, equivalencia ET EST/EDT y salto DST ±1h). Generado
+`PLIST_TZ_AUDIT.md` con los 14 jobs launchd cargados (ART/ET, DST). Hallazgo
+clave: **divergencia pipeline** — repo dice 09:35/15:40/22:10 ART pero el
+plist DESPLEGADO en LaunchAgents dice 10:35/16:40/23:10 ART (+1h). launchd
+ejecuta el desplegado, así que el horario real hoy es 10:35/16:40/23:10.
+Decisión pendiente de Boris/Kilo sobre cuál es el intencional.
+
+(2) LATIDO: verificado que `check_session_log_freshness.py` (M3) NO estaba
+integrado en la salida de `com.fortress.data-freshness` (latido,
+`check_data_freshness.sh`). Confirmado por `launchctl start` + grep SESSION-LOG=0.
+Cableado DENTRO de `check_data_freshness.sh`: ahora corre el check y vuelca su
+salida al mismo `data_freshness.log`. Probado en worktree → línea
+`[SESSION-LOG] OK: última entrada ...` presente. El plist separado
+`com.fortresscore.data-freshness.plist` (4h, no cargado) quedó redundante.
+
+Commit en rama propia; worker_done enviado por orca.
 
 Verificación y merge de las dos entregas de la tarde:
 
@@ -3901,3 +3929,4 @@ agentes limpios.
 Delegación: task_53589bf75d31 (Cline: TZ-dispatcher + FMP, URGENTE) y
 task_e4e345a8e442 (OpenCode: plist-docs + latido). Ambos notificados en
 sus terminales. El agent_watcher detectará las entregas.
+
