@@ -1,0 +1,3 @@
+- **2026-09-07 20:21** — Cline entregó: `fix(frente1+frente2): tz_dispatcher DST-proof + cross-check Finnhub/STALE en fun` (e07a05e681eb5c97b36062f30d76dd09b5b3721e) — PENDIENTE VERIFICAR+MERGEAR
+- **2026-09-07 21:12** — OpenCode entregó: `docs(plist-tz+latido): auditoría TZ-DOC en 14 plists y cableo de session-log en` (66d48fffe6c17ba83d54356247a382c30c7911ba) — PENDIENTE VERIFICAR+MERGEAR
+- **2026-09-08 09:44** — OpenCode entregó: `feat(b3): feature store versionado con hash + manifest (I6)` (04ee3db37a9c34ccc06492c658813f93aa09e358) — PENDIENTE VERIFICAR+MERGEAR
