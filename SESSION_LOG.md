@@ -4278,3 +4278,41 @@ ae59f18 (Cline 966ca17) → 89d4dba (corrección restante).
 Inbox marcado VERIFICADO+MERGEADO. Pendiente: push + espejo EMPRESA + notificar
 watcher baselines. NOTA: los worktrees de agentes siguen avanzando (Cline ya en
 966ca17+, OpenCode en b6); nuevas entregas caerán al inbox.
+
+## 2026-09-09 — Auditoría Boris: deploy tz_dispatcher a launchd + merge EDGAR adapter 9062307 (Kilo)
+
+**Hallazgo 1 — plist VIEJO en producción**: el plist LOADED en
+`~/Library/LaunchAgents/com.fortresscore.pipeline.plist` (mtime 07-09 19:36)
+seguía siendo la versión vieja (StartCalendarInterval 10:35/16:40/23:10 ART,
+llama `daily_signal_pipeline.sh` directo). El fix tz_dispatcher (StartInterval
+300 → `tz_dispatcher.sh`, computa ET en runtime DST-proof) estaba en main
+(`scripts/com.fortresscore.pipeline.plist`) pero NUNCA se desplegó.
+
+**Deploy ejecutado** (Kilo, 09-09 ~11:55 ART):
+1. `launchctl unload ~/Library/LaunchAgents/com.fortresscore.pipeline.plist` (viejo)
+2. `cp scripts/com.fortresscore.pipeline.plist ~/Library/LaunchAgents/` (versión main: StartInterval=300, tz_dispatcher.sh, TZ-DOC preservado)
+3. `launchctl load ~/Library/LaunchAgents/com.fortresscore.pipeline.plist` (rc=0)
+4. Verificado: `launchctl list | grep fortresscore.pipeline` → `- 0 com.fortresscore.pipeline` (cargado). Mecánica OK: `tz_dispatcher.sh` corre rc=0 fuera de ventana, state-dir `backend/data/cache/tz_dispatcher/` creado, lib CLI `window --hour 9 --minute 40` → `enter`, `et-now` → ET correcta DST-proof.
+5. `scripts/tz_dispatcher.log` creado con línea marker de deploy. Primeras líneas reales de ventana esperadas en exit 15:35 ET (16:35 ART) — fuera de ventana el dispatcher sale silencioso por diseño (no spam).
+
+**Hallazgo 2 — EDGAR adapter Cline 9062307**: rama `edgar-fundamentals-adapter`
+(worktree `fundamentales-automatizado`), commit `9062307 feat: adaptador EDGAR
+XBRL companyfacts para screening quota-free (reemplaza FMP)`. 6 archivos,
+1238 insertions / 9 deletions: `edgar_fundamentals.py` (+load_edgar_companyfacts,
++build_fmp_shaped_payload, preserva get_edgar_fundamentals/get_fundamentals),
+`fundamentals_ingestion.py` (+edgar_dir param, +_ingest_edgar como fuente
+primaria sin cuota, FMP fallback), `fundamentals_scores.py` (+fix
+ZeroDivisionError beneish_m_score con revenue 0/None), `run_fundamentals_screen.py`
+(+EDGAR_DIR wiring, excluye ETFs en modo EDGAR-primary), fixture AAPL offline
+(753 líneas, 2 años), `test_edgar_fundamentals.py` (153 líneas, 8 tests).
+End-to-end reportado por Cline: 46/48 símbolos screeneados vía EDGAR con 0
+llamadas FMP (XOM sin 10-K, ACN throttled por SEC).
+
+**Merge a main** (Kilo): e07a05e (tz_dispatcher: sh+lib+tests+plist+FMP
+cross-check, 9 archivos, 696±29) cherry-pickeado como `e80204e` (auto-merge,
+-X theirs para plist); 9062307 cherry-pickeado como `925621c` (auto-merge limpio).
+Main ahora: `925621c` (EDGAR) ← `e80204e` (tz_dispatcher) ← `abd57c9`.
+
+**Verificación con números reales** (venv main, `PYTHONPATH=backend`):
+- `test_tz_dispatcher.py` + `test_edgar_fundamentals.py`: **34/34 passed** (15 dispatcher: ventanas, anti-doble-disparo, DST winter/summer; 8 EDGAR: load, payload shape, scores sin market cap, ingest primary, screen).
+- Suite ampliada fundamentales+pipeline: **86 passed / 2 failed / 1 skipped**. Los 2 failed son PRE-EXISTENTES en `test_pipeline_daily_signal.py` (log-path expectations, archivos no tocados por estos cherry-picks — verificado vía stash: fallan igual en abd57c9 limpio).
