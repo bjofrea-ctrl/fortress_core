@@ -1,4 +1,42 @@
 # Fortress Core — Memoria de Sesiones (Última sesión resumida)
+## 2026-09-09 — Backoff/retry SEC en el fetch EDGAR: ola `ingestion_returned_none` en el screen (Cline)
+
+**Qué**: Boris corrió `run_fundamentals_screen` fresco post-merge EDGAR. AAPL/MSFT/GOOGL/AMZN/NVDA
+OK con 0 llamadas FMP (fix EDGAR confirmado), pero META+ en bloque fallaban con
+`reason=ingestion_returned_none`, y la corrida moría por el timeout de 300s. Se diagnosticó la causa
+real y se endureció el fetcher de SEC.
+
+**Diagnóstico (verificado contra el artefacto, no la hipótesis "SEC throttle en el screen")**: el
+screen **no toca SEC** — `load_edgar_companyfacts` lee disco. El cache `data/cache/edgar/` está
+gitignored, así que en caja fresca solo estaban los 5 tickers que fija el script viejo
+`fetch_edgar_fundamentals.py`. Los otros 43 caían al fallback FMP (`_ingest_live`, 5 endpoints c/u),
+y ese burst (~215 calls) sí rebotaba en rate limit de FMP → `fmp_rate_limited` →
+`ingestion_returned_none`. La raíz de los companyfacts incompletos es el **throttling de SEC en
+ráfagas de 48** (patrón ACN del commit 9062307): el `fetch()` anterior usaba `sleep(0.2)` fijo y ante
+`HTTPError 429/503` hacía `fail++` **sin reintentar** — nunca se escribían esos archivos.
+
+**Fix** (`backend/scripts/fetch_edgar_universe_facts.py`, commit `a5c7415`): `fetch()` reintenta
+429/503/5xx/URLError/timeout con backoff exponencial + jitter (tope `SEC_MAX_BACKOFF`), respeta
+`Retry-After`; escritura **atómica** `.part`+`os.replace` (nunca queda un parcial que el skip por
+tamaño tome como válido); gzip detectado por magic header (el fallback viejo por `UnicodeDecodeError`
+era frágil); `load_cik_map` también reintentable; skip por tamaño 100KB→1KB (no re-baja XOM, legítimo
+~10-80KB); todo ajustable por env (`SEC_PACE_SECONDS/SEC_MAX_RETRIES/SEC_BASE_BACKOFF/SEC_MAX_BACKOFF/
+SEC_EDGAR_CACHE_DIR`) y `main()` devuelve `rc!=1` si algo falló para que el cron lo detecte.
+
+**Verificación (todo local, sin push/merge)**: (1) unit tests offline del backoff +4 (monkeypatch de
+`_http_get`, sin red): reintento-hasta-éxito, agotamiento-sin-parcial, no-reintentar-404, cálculo de
+backoff → **12 passed** en `tests/test_edgar_fundamentals.py` (8 originales intactos). (2) Burst real
+de las 48 empresas operativas en un `SEC_EDGAR_CACHE_DIR` temporal: **48/48 `fail=0`**, ningún archivo
+<1KB. (3) Ingesta "caja fresca" (cache de ingesta vacío, FMP `is_available=False`) leyendo ese EDGAR:
+**47 `edgar_primary` + 0 llamadas FMP**, único `None` = XOM (límite 10-K documentado, no throttling).
+(4) `run_fundamentals_screen` sobre universo 50 (SPY/QQQ excluidos por EDGAR activo): `state.json` →
+**completed=47, failed=1 (XOM), calls_used=0**.
+
+**Pendiente operativo menor**: `.gitignore` comenta que ignora el cache de ingesta pero en los hechos
+no cubre `backend/data/cache_fundamentals_ingestion/` (quedo untracked a mano); candidate a un commit
+`.gitignore` aparte. Fila nueva en la tabla de `ROADMAP.md`.
+
+
 
 ## 2026-09-07 — M5b verificación intradía + cableado keep-awake + registro post-gate D3/I4 (OpenCode)
 
