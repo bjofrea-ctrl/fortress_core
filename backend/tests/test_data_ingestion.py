@@ -304,3 +304,35 @@ def test_empty_cache_treated_as_miss(monkeypatch, tmp_path, capsys):
     assert len(result) == len(dates)
     out = capsys.readouterr().out
     assert "cache empty" in out
+
+
+def test_duplicate_columns_after_lowercase_deduped(monkeypatch, tmp_path):
+    """Regresión 09-09 (bug crítico dashboard 500): parquets con close+Close
+    (contaminación vieja de esquema) lowercaseaban a 2 'close' literales ->
+    df['close'] devolvía DataFrame -> validate_returns rompía (truth value
+    of Series ambiguous) -> 500 en /api/advisor/universe. El fix deduplica
+    quedándose con la columna de más non-null (la real)."""
+    import app.core.data_ingestion as di
+
+    # Parquet contaminado: 5 cols reales en minúscula + 5 vacías en mayúscula.
+    dates = pd.bdate_range("2026-08-10", "2026-08-14")
+    df_bad = pd.DataFrame({
+        "close": [100.0, 101.0, 102.0, 103.0, 104.0],
+        "high": [101.0, 102.0, 103.0, 104.0, 105.0],
+        "low": [99.0, 100.0, 101.0, 102.0, 103.0],
+        "open": [100.0, 101.0, 102.0, 103.0, 104.0],
+        "volume": [1000, 1100, 1200, 1300, 1400],
+        "Close": [None] * 5, "High": [None] * 5, "Low": [None] * 5,
+        "Open": [None] * 5, "Volume": [None] * 5,
+    }, index=dates)
+    df_bad.to_parquet(tmp_path / "SPY.parquet")
+
+    monkeypatch.setattr(di, "CACHE_DIR", str(tmp_path))
+    monkeypatch.setattr(di, "INTEGRITY_CHECK_ON_UPDATE", False)
+    result = di.download_data("SPY", start="2026-08-10", end="2026-08-14")
+
+    assert list(result.columns) == ["close", "high", "low", "open", "volume"]
+    assert isinstance(result["close"], pd.Series)
+    # validate_returns no debe romper
+    from app.core.cache_integrity import validate_returns
+    validate_returns(result, "SPY")

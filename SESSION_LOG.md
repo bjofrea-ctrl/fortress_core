@@ -4316,3 +4316,31 @@ Main ahora: `925621c` (EDGAR) ← `e80204e` (tz_dispatcher) ← `abd57c9`.
 **Verificación con números reales** (venv main, `PYTHONPATH=backend`):
 - `test_tz_dispatcher.py` + `test_edgar_fundamentals.py`: **34/34 passed** (15 dispatcher: ventanas, anti-doble-disparo, DST winter/summer; 8 EDGAR: load, payload shape, scores sin market cap, ingest primary, screen).
 - Suite ampliada fundamentales+pipeline: **86 passed / 2 failed / 1 skipped**. Los 2 failed son PRE-EXISTENTES en `test_pipeline_daily_signal.py` (log-path expectations, archivos no tocados por estos cherry-picks — verificado vía stash: fallan igual en abd57c9 limpio).
+
+## 2026-09-09 — Bug crítico dashboard 500: columnas duplicadas en parquets (Kilo, root-caused por Boris)
+
+**Síntoma**: `/api/advisor/universe` y `/api/advisor/theses` fallaban SIEMPRE
+con 500 `truth value of Series ambiguous` (smoke-test dashboard real por Boris).
+
+**Causa exacta**: `data_ingestion.py` línea 222-223
+(`df.columns = [str(c).lower() for c in df.columns]`) NO deduplicaba, y los
+102 parquets de `backend/data/cache/` YA tenían columnas duplicadas en disco
+(`close+Close, high+High...`) de contaminación vieja de esquema nunca saneada.
+Al lowercasear quedaban 2 columnas `close` literales → `df['close']` devolvía
+DataFrame no Series → rompía `cache_integrity.validate_returns` línea 167
+(`if pd.isna(r)` sobre Series). Reproducido con `pd.read_parquet(SPY.parquet)`
++ `validate_returns()`: 10 cols → DataFrame → ValueError.
+
+**Fix en 2 partes** (Kilo):
+1. `backend/app/core/data_ingestion.py` (líneas 222-231): tras lowercasear, si
+   hay duplicados se queda con la columna de más non-null por nombre (la real:
+   minúsculas 4446 filas vs mayúsculas 1 fila en SPY) y dropea la redundante.
+2. `backend/scripts/repair_duplicate_columns.py` (nuevo, one-shot idempotente):
+   saneó los 111 parquets en disco. Resultado: **170 parquets: 102 deduplicados
+   (10→5 cols), 5 lowercased, 63 ok**. SPY verificado: `['close','high','low',
+   'open','volume']`, `close` es Series, `validate_returns` OK (0 flags).
+
+**Tests**: `test_data_ingestion.py::test_duplicate_columns_after_lowercase_deduped`
+(nuevo, regresión) + suite `test_data_ingestion.py` + `test_cache_integrity.py`:
+**35/35 passed**. Advisor API (`test_advisor_api.py -k "universe or theses"`):
+**5/5 passed**.

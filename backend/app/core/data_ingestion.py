@@ -221,6 +221,18 @@ def download_data(ticker: str, start="2010-01-01", end=None) -> pd.DataFrame:
 
     df = _flatten_columns(df)
     df.columns = [str(c).lower() for c in df.columns]
+    # Fix 09-09 (bug crítico dashboard 500): los parquets en disco tienen
+    # columnas duplicadas por contaminación vieja de esquema (close+Close,
+    # high+High...). Al lowercasear quedan 2 'close' literales -> df['close']
+    # devuelve DataFrame no Series -> rompe validate_returns (truth value
+    # of Series ambiguous). Deduplicar: quedarse con la columna que tenga
+    # más valores no-nulos (la real), dropear la redundante.
+    if len(df.columns) != len(set(df.columns)):
+        keep = {}
+        for i, c in enumerate(df.columns):
+            if c not in keep or df.iloc[:, i].count() > df.iloc[:, keep[c]].count():
+                keep[c] = i
+        df = df.iloc[:, sorted(keep.values())]
 
     # A0: el harness de integridad queda activo en cada actualización de cache.
     df = _integrity_hook(ticker, df, f"{CACHE_DIR}/{ticker}.parquet")
