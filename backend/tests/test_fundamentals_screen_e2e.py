@@ -89,7 +89,7 @@ def test_end_to_end_job_produces_artifacts_que_usa_el_endpoint(monkeypatch, tmp_
                 return None  # ejercicio del path de fallo: no produce artefacto
             return _payload_for(sym)
 
-    monkeypatch.setattr(job, "FundamentalsIngestion", lambda: FakeIngester())
+    monkeypatch.setattr(job, "FundamentalsIngestion", lambda **kwargs: FakeIngester())
 
     rc = job.main(["run_fundamentals_screen",
                    "--universe", "AAPL,MSFT,BAD",
@@ -151,7 +151,7 @@ def _run_job(monkeypatch, tmp_path, universe="AAPL"):
         def ingest_symbol(self, sym):
             return _payload_for(sym)
 
-    monkeypatch.setattr(job, "FundamentalsIngestion", lambda: FakeIngester())
+    monkeypatch.setattr(job, "FundamentalsIngestion", lambda **kwargs: FakeIngester())
     return job.main(["run_fundamentals_screen", "--universe", universe,
                      "--date", "2026-08-28"])
 
@@ -194,7 +194,7 @@ def test_end_to_end_job_rc3_si_render_falla(monkeypatch, tmp_path):
         def ingest_symbol(self, sym):
             return _payload_for(sym)
 
-    monkeypatch.setattr(job, "FundamentalsIngestion", lambda: FakeIngester())
+    monkeypatch.setattr(job, "FundamentalsIngestion", lambda **kwargs: FakeIngester())
 
     # Rompemos el render para verificar que el job detecta el fallo.
     def _boom(results, run_date, outdir):
