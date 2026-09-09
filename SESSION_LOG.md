@@ -4436,3 +4436,11 @@ trackean por convención del repo). Verificado sin credenciales literales
 `9062307`. Dos commits nuevos (seguimiento EDGAR + cierre explore SMC) y entrada
 de SESSION_LOG. **Sin push, sin merge a main** (orden explícita de Boris).
 
+## 2026-09-09 — Housekeeping: 48 EDGAR companyfacts copiados a mano a main (Boris)
+
+Boris copió a mano 48 archivos `backend/data/cache/edgar/*_companyfacts.json`
+desde el worktree de Cline a main (verificado: 48 en disco). Directorio
+gitignored — nada que commitear. NOTA: main y los worktrees pueden
+desincronizarse en ese directorio gitignored; Cline está poblando el universo
+completo ahí. Cuando Cline termine, Kilo verifica+mergea su entrega.
+
