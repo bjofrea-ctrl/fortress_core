@@ -1,0 +1,101 @@
+==============================================================================
+SMC OB SIGNAL — yfinance-cache RECORTADA a ventana Alpaca (2020-07-27 -> 2026-09-04)
+==============================================================================
+  universo      : 50 simbolos
+  ventana       : 2020-07-27 -> 2026-09-04
+  in-sample end : 2025-08-31 | holdout start: 2025-09-01
+
+------------------------------------------------------------------------------
+CAUSALITY CHECK (market_structure_history, AAPL, ventana recortada)
+------------------------------------------------------------------------------
+  AAPL bars=1536; checked t=[768, 1152, 1382, 1516]
+  PASS: state at t identical with future truncated -> NO look-ahead.
+
+------------------------------------------------------------------------------
+BACKTEST (50 simbolos, yfinance-cache recortada)
+------------------------------------------------------------------------------
+  [ 1/50] SPY    trades=4
+  [ 2/50] QQQ    trades=14
+  [ 3/50] AAPL   trades=7
+  [ 4/50] MSFT   trades=7
+  [ 5/50] GOOGL  trades=10
+  [ 6/50] AMZN   trades=10
+  [ 7/50] NVDA   trades=9
+  [ 8/50] META   trades=5
+  [ 9/50] TSLA   trades=6
+  [10/50] AVGO   trades=10
+  [11/50] BRK-B  trades=7
+  [12/50] LLY    trades=6
+  [13/50] JPM    trades=11
+  [14/50] WMT    trades=4
+  [15/50] V      trades=7
+  [16/50] UNH    trades=9
+  [17/50] XOM    trades=4
+  [18/50] MA     trades=9
+  [19/50] ORCL   trades=4
+  [20/50] PG     trades=14
+  [21/50] COST   trades=9
+  [22/50] HD     trades=9
+  [23/50] JNJ    trades=7
+  [24/50] ABBV   trades=2
+  [25/50] BAC    trades=8
+  [26/50] MRK    trades=7
+  [27/50] CRM    trades=6
+  [28/50] KO     trades=6
+  [29/50] ADBE   trades=9
+  [30/50] PEP    trades=13
+  [31/50] AMD    trades=4
+  [32/50] NFLX   trades=8
+  [33/50] TMO    trades=7
+  [34/50] CVX    trades=7
+  [35/50] CSCO   trades=2
+  [36/50] ACN    trades=8
+  [37/50] MCD    trades=9
+  [38/50] IBM    trades=5
+  [39/50] LIN    trades=11
+  [40/50] QCOM   trades=15
+  [41/50] GE     trades=3
+  [42/50] INTU   trades=8
+  [43/50] PM     trades=8
+  [44/50] CMCSA  trades=3
+  [45/50] DIS    trades=9
+  [46/50] TXN    trades=9
+  [47/50] CAT    trades=6
+  [48/50] AMGN   trades=4
+  [49/50] PFE    trades=6
+  [50/50] SPGI   trades=4
+
+Simbolos con datos : 50 / 50
+Total trades       : 369
+
+==============================================================================
+METRICAS - IN-SAMPLE (entry <= 2025-08-31)
+==============================================================================
+  n_trades   : 297
+  win_rate   : 31.65%
+  mean_R     : -0.0753
+
+==============================================================================
+METRICAS - HOLDOUT (entry >= 2025-09-01, SEALED OUT-OF-SAMPLE)
+==============================================================================
+  n_trades   : 72
+  win_rate   : 25.00%
+  mean_R     : -0.2789
+
+==============================================================================
+COMPARACION APPLES-TO-APPLES (misma ventana 2020-07-27 -> 2026-09-04)
+==============================================================================
+                       yfinance-windowed | Alpaca EOD
+  holdout n_trades   :             72 | 83
+  holdout win_rate   :         25.00% | 28.92%
+  holdout mean_R     :        -0.2789 | -0.1683
+  => signo mean_R negativo en AMBOS: SI -> veredicto negativo robusto al vendor (magnitud cercana).
+
+==============================================================================
+LIMITACIONES
+==============================================================================
+  * Exploratorio: NO es veredicto (requiere pre-registro + gate).
+  * Causalidad: PASS (sin look-ahead)
+  * DATA: cache yfinance canonica RECORTADA a la ventana Alpaca free IEX.
+  * Misma senal/metricas que explore_smc_ob_signal.py.
+  * Warmup=120b. Simbolos fallidos: ninguno.

@@ -1,0 +1,109 @@
+==============================================================================
+EXPLORATORY SMC ORDER-BLOCK SIGNAL BACKTEST (no verdict)
+==============================================================================
+Generated : 2026-09-07T09:50:26
+Universe  : 50 canonical symbols
+Window    : 2015-01-01 -> 2026-12-31
+Split     : IN-SAMPLE entry<= 2025-08-31 | HOLDOUT entry>= 2025-09-01
+Warmup    : 120b | Max hold: 20b | Target: 2.0R | ATR14 Wilder
+Data src  : yfinance (Stooq blocked by anti-bot JS)
+Detector  : market_structure_history (CAUSAL)
+
+------------------------------------------------------------------------------
+CAUSALITY CHECK (no look-ahead): full vs truncated-at-t+1
+------------------------------------------------------------------------------
+  AAPL bars=2936; checked t=[734, 1468, 2202, 2642]
+  PASS: state at t identical with future truncated -> NO look-ahead.
+
+------------------------------------------------------------------------------
+BACKTEST (50 symbols)
+------------------------------------------------------------------------------
+  [ 1/50] SPY    trades=8
+  [ 2/50] QQQ    trades=22
+  [ 3/50] AAPL   trades=13
+  [ 4/50] MSFT   trades=16
+  [ 5/50] GOOGL  trades=14
+  [ 6/50] AMZN   trades=21
+  [ 7/50] NVDA   trades=14
+  [ 8/50] META   trades=8
+  [ 9/50] TSLA   trades=11
+  [10/50] AVGO   trades=15
+  [11/50] BRK-B  trades=10
+  [12/50] LLY    trades=12
+  [13/50] JPM    trades=18
+  [14/50] WMT    trades=11
+  [15/50] V      trades=13
+  [16/50] UNH    trades=13
+  [17/50] XOM    trades=10
+  [18/50] MA     trades=20
+  [19/50] ORCL   trades=10
+  [20/50] PG     trades=19
+  [21/50] COST   trades=14
+  [22/50] HD     trades=17
+  [23/50] JNJ    trades=10
+  [24/50] ABBV   trades=15
+  [25/50] BAC    trades=19
+  [26/50] MRK    trades=13
+  [27/50] CRM    trades=14
+  [28/50] KO     trades=11
+  [29/50] ADBE   trades=17
+  [30/50] PEP    trades=19
+  [31/50] AMD    trades=12
+  [32/50] NFLX   trades=15
+  [33/50] TMO    trades=13
+  [34/50] CVX    trades=20
+  [35/50] CSCO   trades=9
+  [36/50] ACN    trades=14
+  [37/50] MCD    trades=15
+  [38/50] IBM    trades=8
+  [39/50] LIN    trades=20
+  [40/50] QCOM   trades=20
+  [41/50] GE     trades=10
+  [42/50] INTU   trades=17
+  [43/50] PM     trades=15
+  [44/50] CMCSA  trades=10
+  [45/50] DIS    trades=17
+  [46/50] TXN    trades=17
+  [47/50] CAT    trades=8
+  [48/50] AMGN   trades=13
+  [49/50] PFE    trades=15
+  [50/50] SPGI   trades=13
+
+Symbols with data : 50 / 50
+Total trades      : 708
+
+==============================================================================
+METRICS - IN-SAMPLE (entry <= 2025-08-31)
+==============================================================================
+  n_trades   : 636
+  win_rate   : 34.43%
+  mean_R     : 0.0033
+  sharpe_eq  : 0.019  (daily equity, ann sqrt(252), 1% risk/trade)
+  max_dd_pct : -0.91%
+
+==============================================================================
+METRICS - HOLDOUT (entry >= 2025-09-01, SEALED OUT-OF-SAMPLE)
+==============================================================================
+  n_trades   : 72
+  win_rate   : 25.00%
+  mean_R     : -0.2789
+  sharpe_eq  : -1.871  (daily equity, ann sqrt(252), 1% risk/trade)
+  max_dd_pct : -0.55%
+
+==============================================================================
+LIMITACIONES
+==============================================================================
+  * Exploratorio: NO es veredicto. Requeriria pre-registro + gate
+    (PBO<0.10, DSR>=0.95, Bonferroni/CSCV, holdout sellado 2025-09-01).
+  * Causalidad (market_structure_history): PASS (sin look-ahead)
+  * Data: yfinance (Stooq CSV bloqueado por challenge anti-bot JS).
+  * yfinance auto_adjust=True (precios ajustados por splits/dividendos).
+  * ATR14 Wilder inline; entry open t+1; stop ob_bottom/Top +/-0.2ATR;
+    target 2R; salida stop/target/max20b; un trade por simbolo.
+  * Entrada LONG close[t]<=ob_top[t]; SHORT close[t]>=ob_bottom[t] (texto
+    pre-stated) -> permite entrar ligeramente fuera de la caja exacta del OB;
+    trades con riesgo<=0 se descartan.
+  * Equity/Sharpe asume 1% riesgo por trade, equal-weight por simbolo, sin
+    tope de apalancamiento cruzado (trades solapados pueden exceder 100% de
+    notional) -- simplificacion para exploracion.
+  * Warmup=120b. Symbols fallidos: ninguno.

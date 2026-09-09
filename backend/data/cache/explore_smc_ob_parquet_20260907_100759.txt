@@ -1,0 +1,97 @@
+==============================================================================
+SMC OB SIGNAL — RE-RUN SOBRE CACHE PARQUET CANONICA (read-only)
+  source: /Users/boris/Desktop/fortress_core/backend/data/cache  (vetada, protegida por cache_integrity)
+==============================================================================
+  simbolos con parquet: 50 / 50
+  fin de rango de datos: min=2026-09-03 max=2026-09-04
+
+------------------------------------------------------------------------------
+CAUSALITY CHECK (market_structure_history, AAPL)
+------------------------------------------------------------------------------
+  AAPL bars=4446; checked t=[2223, 3334, 4001, 4426]
+  PASS: state at t identical with future truncated -> NO look-ahead.
+
+------------------------------------------------------------------------------
+BACKTEST (50 simbolos, parquet canonica)
+------------------------------------------------------------------------------
+  [ 1/50] SPY    trades=14
+  [ 2/50] QQQ    trades=33
+  [ 3/50] AAPL   trades=18
+  [ 4/50] MSFT   trades=18
+  [ 5/50] GOOGL  trades=14
+  [ 6/50] AMZN   trades=28
+  [ 7/50] NVDA   trades=25
+  [ 8/50] META   trades=14
+  [ 9/50] TSLA   trades=23
+  [10/50] AVGO   trades=28
+  [11/50] BRK-B  trades=17
+  [12/50] LLY    trades=18
+  [13/50] JPM    trades=30
+  [14/50] WMT    trades=16
+  [15/50] V      trades=22
+  [16/50] UNH    trades=25
+  [17/50] XOM    trades=14
+  [18/50] MA     trades=26
+  [19/50] ORCL   trades=18
+  [20/50] PG     trades=25
+  [21/50] COST   trades=23
+  [22/50] HD     trades=22
+  [23/50] JNJ    trades=16
+  [24/50] ABBV   trades=18
+  [25/50] BAC    trades=25
+  [26/50] MRK    trades=21
+  [27/50] CRM    trades=21
+  [28/50] KO     trades=19
+  [29/50] ADBE   trades=24
+  [30/50] PEP    trades=21
+  [31/50] AMD    trades=24
+  [32/50] NFLX   trades=23
+  [33/50] TMO    trades=22
+  [34/50] CVX    trades=32
+  [35/50] CSCO   trades=16
+  [36/50] ACN    trades=20
+  [37/50] MCD    trades=22
+  [38/50] IBM    trades=14
+  [39/50] LIN    trades=26
+  [40/50] QCOM   trades=34
+  [41/50] GE     trades=15
+  [42/50] INTU   trades=22
+  [43/50] PM     trades=19
+  [44/50] CMCSA  trades=16
+  [45/50] DIS    trades=25
+  [46/50] TXN    trades=24
+  [47/50] CAT    trades=17
+  [48/50] AMGN   trades=17
+  [49/50] PFE    trades=25
+  [50/50] SPGI   trades=24
+
+Simbolos con datos : 50 / 50
+Total trades       : 1073
+
+==============================================================================
+METRICAS - IN-SAMPLE (entry <= 2025-08-31)
+==============================================================================
+  n_trades   : 1001
+  win_rate   : 32.37%
+  mean_R     : -0.0549
+  sharpe_eq  : -0.311  (daily equity, ann sqrt(252), 1% risk/trade)
+  max_dd_pct : -1.42%
+
+==============================================================================
+METRICAS - HOLDOUT (entry >= 2025-09-01, SEALED OUT-OF-SAMPLE)
+==============================================================================
+  n_trades   : 72
+  win_rate   : 25.00%
+  mean_R     : -0.2789
+  sharpe_eq  : -1.871  (daily equity, ann sqrt(252), 1% risk/trade)
+  max_dd_pct : -0.55%
+
+==============================================================================
+LIMITACIONES
+==============================================================================
+  * Exploratorio: NO es veredicto. Requeriria pre-registro + gate
+    (PBO<0.10, DSR>=0.95, Bonferroni/CSCV, holdout sellado 2025-09-01).
+  * Causalidad (market_structure_history): PASS (sin look-ahead)
+  * DATA: parquet cache canonica del repo real (READ-ONLY, sin yfinance fresco).
+  * Misma senal/metricas que explore_smc_ob_signal.py -> comparacion directa.
+  * Warmup=120b. Simbolos fallidos: ninguno.

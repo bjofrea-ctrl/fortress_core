@@ -1,0 +1,38 @@
+==============================================================================
+SMC OB SIGNAL — DEEP-DIVE UN SIMBOLO: TSLA
+==============================================================================
+  ventana comun    : 2020-07-27 -> 2026-09-04
+  in-sample end    : 2025-08-31 | holdout start: 2025-09-01
+
+------------------------------------------------------------------------------
+VENDOR 1: ALPACA EOD (TSLA)
+------------------------------------------------------------------------------
+  [TSLA] bars=1535; causality checked t=[767, 1151, 1381, 1515] -> PASS
+
+------------------------------------------------------------------------------
+VENDOR 2: yfinance-cache RECORTADA (TSLA)
+------------------------------------------------------------------------------
+  [TSLA] bars=1536 (2020-07-27 -> 2026-09-04)
+
+==============================================================================
+COMPARACION TSLA — IN-SAMPLE (entry <= 2025-08-31)
+==============================================================================
+Alpaca           : n=  5 | win=20.00% | mean_R=-0.4000
+yfinance         : n=  5 | win=20.00% | mean_R=-0.4000
+
+==============================================================================
+COMPARACION TSLA — HOLDOUT (entry >= 2025-09-01, OUT-OF-SAMPLE)
+==============================================================================
+Alpaca           : n=  1 | win=100.00% | mean_R=+2.0000
+yfinance         : n=  1 | win=100.00% | mean_R=+2.0000
+
+------------------------------------------------------------------------------
+Veredicto: Holdout POSITIVO en AMBOS (1 trade c/u, ~+0.43) -> NVDA NO reproduce el negativo en holdout; muestra insuficiente (n=1) y NO contradice el veredicto de universo (n=72-83). Ademas, in-sample de NVDA es FUERTEMENTE negativo en ambos vendors (win 12.5%, mean_R ~ -0.625, identico) -> la senal negativa es consistente en-sample.
+
+==============================================================================
+LIMITACIONES
+==============================================================================
+  * Exploratorio: NO es veredicto (requiere pre-registro + gate).
+  * Causalidad Alpaca: PASS (sin look-ahead)
+  * sharpe/max_dd de metrics_for no fiables para 1 simbolo (equity plana a 1% risk) -> solo se comparan n/win_rate/mean_R.
+  * Misma senal/metricas que explore_smc_ob_signal.py.

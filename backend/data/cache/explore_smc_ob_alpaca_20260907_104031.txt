@@ -1,0 +1,105 @@
+==============================================================================
+SMC OB SIGNAL — DATA SOURCE: ALPACA MARKETS (EOD diario, free tier)
+==============================================================================
+  universo      : 50 simbolos
+  rango pedido  : 2015-01-01 -> 2026-12-31
+  warmup        : 120b
+  in-sample end : 2025-08-31 | holdout start: 2025-09-01
+
+------------------------------------------------------------------------------
+CAUSALITY CHECK (market_structure_history, AAPL)
+------------------------------------------------------------------------------
+  AAPL bars=1536; checked t=[768, 1152, 1382, 1516]
+  PASS: state at t identical with future truncated -> NO look-ahead.
+
+------------------------------------------------------------------------------
+BACKTEST (50 simbolos, Alpaca EOD)
+------------------------------------------------------------------------------
+  [ 1/50] SPY    trades=3
+  [ 2/50] QQQ    trades=12
+  [ 3/50] AAPL   trades=8
+  [ 4/50] MSFT   trades=6
+  [ 5/50] GOOGL  trades=9
+  [ 6/50] AMZN   trades=10
+  [ 7/50] NVDA   trades=9
+  [ 8/50] META   trades=4
+  [ 9/50] TSLA   trades=6
+  [10/50] AVGO   trades=9
+  [11/50] BRK-B  trades=6
+  [12/50] LLY    trades=7
+  [13/50] JPM    trades=11
+  [14/50] WMT    trades=6
+  [15/50] V      trades=6
+  [16/50] UNH    trades=9
+  [17/50] XOM    trades=5
+  [18/50] MA     trades=10
+  [19/50] ORCL   trades=5
+  [20/50] PG     trades=11
+  [21/50] COST   trades=7
+  [22/50] HD     trades=9
+  [23/50] JNJ    trades=6
+  [24/50] ABBV   trades=2
+  [25/50] BAC    trades=12
+  [26/50] MRK    trades=10
+  [27/50] CRM    trades=4
+  [28/50] KO     trades=8
+  [29/50] ADBE   trades=9
+  [30/50] PEP    trades=14
+  [31/50] AMD    trades=4
+  [32/50] NFLX   trades=6
+  [33/50] TMO    trades=5
+  [34/50] CVX    trades=7
+  [35/50] CSCO   trades=3
+  [36/50] ACN    trades=7
+  [37/50] MCD    trades=9
+  [38/50] IBM    trades=8
+  [39/50] LIN    trades=12
+  [40/50] QCOM   trades=13
+  [41/50] GE     trades=4
+  [42/50] INTU   trades=7
+  [43/50] PM     trades=6
+  [44/50] CMCSA  trades=5
+  [45/50] DIS    trades=7
+  [46/50] TXN    trades=10
+  [47/50] CAT    trades=11
+  [48/50] AMGN   trades=6
+  [49/50] PFE    trades=8
+  [50/50] SPGI   trades=4
+
+Simbolos con datos : 50 / 50
+Total trades       : 375
+
+==============================================================================
+METRICAS - IN-SAMPLE (entry <= 2025-08-31)
+==============================================================================
+  n_trades   : 292
+  win_rate   : 31.85%
+  mean_R     : -0.0637
+  sharpe_eq  : nan  (daily equity, ann sqrt(252), 1% risk/trade)
+  max_dd_pct : 0.00%
+
+==============================================================================
+METRICAS - HOLDOUT (entry >= 2025-09-01, SEALED OUT-OF-SAMPLE)
+==============================================================================
+  n_trades   : 83
+  win_rate   : 28.92%
+  mean_R     : -0.1683
+  sharpe_eq  : nan  (daily equity, ann sqrt(252), 1% risk/trade)
+  max_dd_pct : 0.00%
+
+==============================================================================
+COMPARACION vs YFINANCE-CACHE (explore_smc_ob_parquet)
+==============================================================================
+  yfinance-cache HOLDOUT: n=72, win=25.00%, mean_R=-0.2789, sharpe=-1.871
+  alpaca          HOLDOUT: n=83, win=28.92%, mean_R=-0.1683, sharpe=nan
+  => DIVERGENCIA: revisar artifact y posible artefacto de datos.
+
+==============================================================================
+LIMITACIONES
+==============================================================================
+  * Exploratorio: NO es veredicto. Requeriria pre-registro + gate
+    (PBO<0.10, DSR>=0.95, Bonferroni/CSCV, holdout sellado 2025-09-01).
+  * Causalidad (market_structure_history): PASS (sin look-ahead)
+  * DATA: Alpaca Markets EOD diario (free tier, adjustment=all).
+  * Misma senal/metricas que explore_smc_ob_signal.py.
+  * Warmup=120b. Simbolos fallidos: ninguno.
