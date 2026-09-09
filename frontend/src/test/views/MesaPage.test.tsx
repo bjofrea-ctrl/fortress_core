@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
+import { renderWithClient } from "./../renderWithClient";
 import userEvent from "@testing-library/user-event";
 import MesaPage from "../../components/views/MesaPage";
 import { AdvisorTicket } from "../../api/client";
@@ -59,13 +60,13 @@ function route(universe = UNIVERSE, theses: unknown = THESES) {
 describe("MesaPage — contrato universo + tesis", () => {
   it("muestra skeleton mientras carga, sin datos ni error", () => {
     fetchMock.mockReturnValue(new Promise(() => {}));
-    const { container } = render(<MesaPage selectedSymbol={null} onSelectSymbol={() => {}} />);
+    const { container } = renderWithClient(<MesaPage selectedSymbol={null} onSelectSymbol={() => {}} />);
     expect(container.querySelector(".animate-pulse")).toBeInTheDocument();
   });
 
   it("error del backend → mensaje con el error y botón reintentar que vuelve a llamar", async () => {
     fetchMock.mockRejectedValueOnce(new Error("boom backend"));
-    render(<MesaPage selectedSymbol={null} onSelectSymbol={() => {}} />);
+    renderWithClient(<MesaPage selectedSymbol={null} onSelectSymbol={() => {}} />);
     expect(await screen.findByText(/Error al cargar la mesa/)).toHaveTextContent("boom backend");
     const antes = fetchMock.mock.calls.length;
     await userEvent.click(screen.getByText("reintentar"));
@@ -74,7 +75,7 @@ describe("MesaPage — contrato universo + tesis", () => {
 
   it("happy path: filas visibles, contadores por estado y win_prob null → —", async () => {
     route();
-    render(<MesaPage selectedSymbol="AAPL" onSelectSymbol={() => {}} />);
+    renderWithClient(<MesaPage selectedSymbol="AAPL" onSelectSymbol={() => {}} />);
     expect((await screen.findAllByText("AAPL")).length).toBeGreaterThanOrEqual(1);
     expect(screen.getByText("TODOS (3)")).toBeInTheDocument();
     expect(screen.getByText("INVERTIR (1)")).toBeInTheDocument();
@@ -89,7 +90,7 @@ describe("MesaPage — contrato universo + tesis", () => {
     route(
       { ...UNIVERSE, blocked_reason: "Régimen CRISIS: motor bloqueado", staleness: { stale: true, last_cache: "2026-08-14", business_days_behind: 5 } },
     );
-    render(<MesaPage selectedSymbol={null} onSelectSymbol={() => {}} />);
+    renderWithClient(<MesaPage selectedSymbol={null} onSelectSymbol={() => {}} />);
     expect(await screen.findByText(/Régimen CRISIS: motor bloqueado/)).toBeInTheDocument();
     expect(screen.getByText(/Cache de datos desactualizado/)).toHaveTextContent("2026-08-14");
   });
@@ -100,7 +101,7 @@ describe("MesaPage — contrato universo + tesis", () => {
       if (u.includes("/api/advisor/universe")) return Promise.resolve({ ok: true, json: () => Promise.resolve(UNIVERSE) });
       return new Promise(() => {}); // theses cuelga para siempre
     });
-    render(<MesaPage selectedSymbol={null} onSelectSymbol={() => {}} />);
+    renderWithClient(<MesaPage selectedSymbol={null} onSelectSymbol={() => {}} />);
     expect(await screen.findByText(/Cargando tesis/)).toBeInTheDocument();
   });
 
@@ -112,7 +113,7 @@ describe("MesaPage — contrato universo + tesis", () => {
         { ...THESES.theses[0], symbol: "TSLA", status: "TESIS_ROTA", reasons: ["win_prob bajo piso", "perdió EMA50"] },
       ],
     });
-    render(<MesaPage selectedSymbol={null} onSelectSymbol={() => {}} />);
+    renderWithClient(<MesaPage selectedSymbol={null} onSelectSymbol={() => {}} />);
     const rota = await screen.findByText("TESIS ROTA");
     const vigente = screen.getByText("TESIS VIGENTE");
     expect(rota.compareDocumentPosition(vigente) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();

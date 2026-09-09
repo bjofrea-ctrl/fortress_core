@@ -28,6 +28,20 @@ export default function Layout() {
   const [selectedSymbol, setSelectedSymbol] = useState<string | null>(null);
   const { data: universe } = useAdvisorUniverse();
 
+  // Keep-alive acumulativo (pre-registro DASH_TABS_PREREGISTRO.md): cada
+  // página se monta en su PRIMERA visita (el code-splitting lazy sigue
+  // diferido) y NO se desmonta después — se oculta con `hidden`. Cambiar de
+  // tab es instantáneo y el estado local de cada vista sobrevive.
+  const [visited, setVisited] = useState<Record<View, boolean>>({
+    mesa: true,
+    portfolio: false,
+    gobernanza: false,
+    fundamentos: false,
+  });
+  if (!visited[view]) {
+    setVisited((v) => ({ ...v, [view]: true }));
+  }
+
   const openDetail = (symbol: string) => {
     setSelectedSymbol(symbol);
   };
@@ -86,17 +100,36 @@ export default function Layout() {
       <LiveTicker apiUrl={API_URL} onSelectSymbol={openDetail} />
 
       <main className="max-w-[1800px] mx-auto px-4 py-4">
-        <Suspense fallback={<PageLoader />}>
-          {view === "mesa" && !selectedSymbol && (
-            <MesaPage selectedSymbol={selectedSymbol} onSelectSymbol={openDetail} />
-          )}
-          {view === "mesa" && selectedSymbol && (
-            <DetailPage symbol={selectedSymbol} onBack={backToMesa} />
-          )}
-          {view === "portfolio" && <PortfolioPage />}
-          {view === "gobernanza" && <GovernancePage selectedSymbol={selectedSymbol} />}
-          {view === "fundamentos" && <FundamentalsPage />}
-        </Suspense>
+        {(["mesa", "portfolio", "gobernanza", "fundamentos"] as View[]).map((v) => {
+          if (!visited[v]) return null;
+          const visible = v === view;
+          // En mesa, la vista activa es MesaPage o DetailPage según selección.
+          if (v === "mesa") {
+            return (
+              <div key={v} hidden={!visible}>
+                <Suspense fallback={<PageLoader />}>
+                  {!selectedSymbol && (
+                    <MesaPage selectedSymbol={selectedSymbol} onSelectSymbol={openDetail} />
+                  )}
+                  {selectedSymbol && (
+                    <DetailPage symbol={selectedSymbol} onBack={backToMesa} />
+                  )}
+                </Suspense>
+              </div>
+            );
+          }
+          return (
+            <div key={v} hidden={!visible}>
+              <Suspense fallback={<PageLoader />}>
+                {v === "gobernanza" && (
+                  <GovernancePage selectedSymbol={selectedSymbol} />
+                )}
+                {v === "portfolio" && <PortfolioPage />}
+                {v === "fundamentos" && <FundamentalsPage />}
+              </Suspense>
+            </div>
+          );
+        })}
       </main>
 
       <EvidenceFooter />

@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
+import { renderWithClient } from "./renderWithClient";
 import { CostField } from "../components/advisor/CostField";
 
 /**
@@ -43,7 +44,7 @@ afterEach(() => {
 describe("CostField — contrato de costo real medido", () => {
   it("mientras carga muestra el placeholder, sin número", () => {
     fetchMock.mockReturnValue(new Promise(() => {}));
-    render(<CostField />);
+    renderWithClient(<CostField />);
     const chip = screen.getByText(/COSTO REAL/);
     expect(chip).toHaveTextContent("COSTO REAL: …");
     expect(chip.textContent).not.toContain("%");
@@ -55,7 +56,7 @@ describe("CostField — contrato de costo real medido", () => {
       ok: true,
       json: () => Promise.resolve(costsPayload({ medido: false })),
     });
-    render(<CostField />);
+    renderWithClient(<CostField />);
     const chip = await screen.findByText(/SIN MEDICIÓN/);
     expect(chip).toHaveAttribute("title", "Medición PAPER — piso inferior, no costo live final");
     expect(chip.textContent).not.toContain("%");
@@ -63,7 +64,7 @@ describe("CostField — contrato de costo real medido", () => {
 
   it("medido → costo formateado en %, n de órdenes y curva por tamaño", async () => {
     fetchMock.mockResolvedValue({ ok: true, json: () => Promise.resolve(costsPayload()) });
-    render(<CostField />);
+    renderWithClient(<CostField />);
     const chip = await screen.findByText(/COSTO REAL\/LADO/);
     // 0.00018883 * 100 = 0.018883 → toFixed(3) = "0.019"
     expect(chip).toHaveTextContent("0.019%");
@@ -75,7 +76,7 @@ describe("CostField — contrato de costo real medido", () => {
 
   it("tooltip incluye caveat PAPER + p50/p95/n/fecha (contrato de honestidad M4)", async () => {
     fetchMock.mockResolvedValue({ ok: true, json: () => Promise.resolve(costsPayload()) });
-    render(<CostField />);
+    renderWithClient(<CostField />);
     const chip = await screen.findByText(/COSTO REAL\/LADO/);
     const title = chip.getAttribute("title") ?? "";
     expect(title).toContain("PAPER");

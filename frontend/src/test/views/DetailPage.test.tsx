@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
+import { renderWithClient } from "./../renderWithClient";
 import userEvent from "@testing-library/user-event";
 import DetailPage from "../../components/views/DetailPage";
 import { DetailView } from "../../components/advisor/DetailView";
@@ -54,7 +55,7 @@ function routeSymbol(body: unknown = SYMBOL_RESPONSE) {
 describe("DetailPage — lógica de página", () => {
   it("loading → skeleton sin llamar a DetailView", () => {
     fetchMock.mockReturnValue(new Promise(() => {}));
-    const { container } = render(<DetailPage symbol="AAPL" onBack={() => {}} />);
+    const { container } = renderWithClient(<DetailPage symbol="AAPL" onBack={() => {}} />);
     expect(container.querySelector(".animate-pulse")).toBeInTheDocument();
     expect(screen.queryByTestId("detail-view")).not.toBeInTheDocument();
   });
@@ -65,7 +66,7 @@ describe("DetailPage — lógica de página", () => {
         ? Promise.resolve({ ok: false, status: 500, json: () => Promise.resolve({}) })
         : Promise.reject(new Error("inesperada"))
     );
-    render(<DetailPage symbol="AAPL" onBack={() => {}} />);
+    renderWithClient(<DetailPage symbol="AAPL" onBack={() => {}} />);
     expect(await screen.findByText(/Error al cargar AAPL/)).toHaveTextContent("HTTP 500");
     const antes = fetchMock.mock.calls.length;
     await userEvent.click(screen.getByText("reintentar"));
@@ -74,7 +75,7 @@ describe("DetailPage — lógica de página", () => {
 
   it("happy path: pasa al detalle la data y la TESIS DEL SÍMBOLO correcta (no otra)", async () => {
     routeSymbol();
-    render(<DetailPage symbol="AAPL" onBack={() => {}} />);
+    renderWithClient(<DetailPage symbol="AAPL" onBack={() => {}} />);
     await waitFor(() => expect(screen.getByTestId("detail-view")).toBeInTheDocument());
     const props = vi.mocked(DetailView).mock.calls[0][0];
     expect(props.data.state.symbol).toBe("AAPL");
@@ -84,7 +85,7 @@ describe("DetailPage — lógica de página", () => {
 
   it("símbolo sin tesis registrada → thesis=null (degradación graceful)", async () => {
     routeSymbol();
-    render(<DetailPage symbol="TSLA" onBack={() => {}} />);
+    renderWithClient(<DetailPage symbol="TSLA" onBack={() => {}} />);
     await waitFor(() => expect(screen.getByTestId("detail-view")).toBeInTheDocument());
     expect(vi.mocked(DetailView).mock.calls[0][0].thesis).toBeNull();
   });

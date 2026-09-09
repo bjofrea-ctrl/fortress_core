@@ -56,6 +56,16 @@ Root-cause verificado contra el código real, no inferido.
    sobrevive; el componente NO se re-monta — verificado por counter de mounts).
 5. **Suite completa**: `vitest run` verde (tests existentes + nuevos).
 
+## Enmienda 1 (durante implementación — con evidencia)
+
+Los tests de COMPONENTES que consumen los hooks (CostField, EvidenceFooter,
+DetailPage, LiveTicker: 4 archivos, 19 tests) renderizan sin provider y con
+la migración lanzan `No QueryClient set`. Es el costo mecánico esperado de
+introducir un provider de datos: misma edición mecánica que hooks.test.tsx
+(QueryClientProvider con client fresco por test), aserciones intactas.
+Registrado aquí antes de aplicar — criterio precisado con evidencia, no en
+silencio.
+
 ## Criterio de éxito / reversión
 
 - ÉXITO: vitest verde + los 3 tests existentes sin cambios + 2 montajes = 1 fetch.

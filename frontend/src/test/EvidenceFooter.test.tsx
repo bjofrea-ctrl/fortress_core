@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from "vitest";
-import { render, screen, waitFor } from "@testing-library/react";
+import { screen, waitFor } from "@testing-library/react";
+import { renderWithClient } from "./renderWithClient";
 import { EvidenceFooter, veredictoOrEstado } from "../components/advisor/EvidenceFooter";
 import type { EvidenceResponse } from "../api/client";
 
@@ -68,13 +69,13 @@ function mockEvidence(data: EvidenceResponse) {
 describe("EvidenceFooter — entradas sin veredicto", () => {
   it("familia con veredicto → muestra el veredicto", async () => {
     mockEvidence(payload());
-    render(<EvidenceFooter />);
+    renderWithClient(<EvidenceFooter />);
     expect(await screen.findByText(/motor_signal: 13/)).toHaveTextContent("NO_CUMPLE");
   });
 
   it("familia sin veredicto → muestra el ESTADO, nunca 'undefined'", async () => {
     mockEvidence(payload());
-    render(<EvidenceFooter />);
+    renderWithClient(<EvidenceFooter />);
     const chip = await screen.findByText(/signal_diagnosis: 29/);
     expect(chip).toHaveTextContent("RESERVADO");
     expect(document.body.textContent).not.toContain("undefined");
@@ -95,7 +96,7 @@ describe("EvidenceFooter — entradas sin veredicto", () => {
 
   it("contador B5 visible solo cuando hay rechazos por potencia", async () => {
     mockEvidence(payload({ n_inejecutables: 2 }));
-    render(<EvidenceFooter />);
+    renderWithClient(<EvidenceFooter />);
     expect(await screen.findByTestId("b5-inejecutables")).toHaveTextContent(
       "2 rechazados por potencia (B5)",
     );
@@ -103,7 +104,7 @@ describe("EvidenceFooter — entradas sin veredicto", () => {
 
   it("cero rechazos → el contador no aparece (no se ocupa espacio con ruido)", async () => {
     mockEvidence(payload({ n_inejecutables: 0 }));
-    render(<EvidenceFooter />);
+    renderWithClient(<EvidenceFooter />);
     await waitFor(() => expect(screen.getByText(/51 trials en ledger/)).toBeInTheDocument());
     expect(screen.queryByTestId("b5-inejecutables")).not.toBeInTheDocument();
   });
@@ -117,7 +118,7 @@ describe("EvidenceFooter — entradas sin veredicto", () => {
       status: 200,
       json: () => Promise.resolve(viejo),
     } as unknown as Response);
-    render(<EvidenceFooter />);
+    renderWithClient(<EvidenceFooter />);
     const chip = await screen.findByText(/signal_diagnosis: 29/);
     expect(chip).toHaveTextContent("SIN VEREDICTO");
     expect(screen.queryByTestId("b5-inejecutables")).not.toBeInTheDocument();
