@@ -207,6 +207,18 @@ def get_fundamentals(
 # upside, fair value, y el factor D del Altman Z) quedan None hasta enriquecer
 # el profile (yfinance / FMP). Los tribunales de CALIDAD y SALUD (ROIC, ROE,
 # Piotroski, Beneish, margenes) SI se computan integramente desde EDGAR.
+#
+# LIMITACION 10-K (documentada, no un bug): _collect_annual_points() toma SOLO
+# los hechos con form que empieza por "10-K" (el cierre anual "as originally
+# reported"); los 10-Q son parciales de 3/6/9 meses y mezclarlos inflaria o
+# duplicaria flujos anuales, por eso se excluyen a proposito. Consecuencia: un
+# emisor cuyo companyfacts NO expone ninguna serie etiquetada 10-K (p. ej.
+# XOM / Exxon Mobil: su companyfacts trae solo 10-Q, sin 10-K) queda sin series
+# anuales -> build_fmp_shaped_payload() devuelve None -> el simbolo NO se siembra
+# desde EDGAR (en la practica: 47/48 del universo operativo; XOM es la unica
+# empresa operativa sin cobertura EDGAR). Se resuelve enriqueciendo desde FMP
+# como fallback, o leyendo el 10-K filing completo (fuera del alcance del
+# screening quota-free). Referencia: commit 9062307 y SESSION_LOG 2026-09-09.
 EDGAR_COMPANYFACTS_DIR = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
     "data", "cache", "edgar",
@@ -308,7 +320,14 @@ def load_edgar_companyfacts(symbol: str, edgar_dir=None) -> Optional[Dict]:
 def _collect_annual_points(tags: Tuple[str, ...], unit: str,
                            us_gaap: Dict, dei: Dict) -> List[Dict]:
     """Puntos anuales (form 10-K) de TODOS los tags candidatos, dedup por
-    (start,end) conservando el ultimo `filed` (enmiendas ganan)."""
+    (start,end) conservando el ultimo `filed` (enmiendas ganan).
+
+    Filtra a proposito SOLO por form "10-K": los 10-Q son periodos parciales y
+    contaminarian los flujos anuales. Por eso un emisor sin NINGUN hecho 10-K en
+    su companyfacts (caso real: XOM) produce lista vaca aca y, en cascada,
+    build_fmp_shaped_payload() -> None. No es un error de parsing, es un limite
+    del dato (ver LIMITACION 10-K arriba).
+    """
     pts: List[Dict] = []
     for tag in tags:
         for src in (us_gaap, dei):
@@ -370,7 +389,13 @@ def _annual_by_year(points: List[Dict]) -> Dict[int, float]:
 def build_fmp_shaped_payload(symbol: str, facts: Dict,
                             limit: int = 6) -> Optional[Dict]:
     """Construye el payload estilo FMP desde companyfacts. None si no hay
-    suficientes datos para armar las 3 listas de statements."""
+    suficientes datos para armar las 3 listas de statements.
+
+    None es el resultado ESPERADO para emisores cuyo companyfacts solo expone
+    10-Q y ninguna serie anual etiquetada 10-K (caso real: XOM / Exxon Mobil,
+    unica empresa operativa del universo 50 sin cobertura EDGAR). Ver la
+    LIMITACION 10-K documentada arriba y SESSION_LOG 2026-09-09.
+    """
     us_gaap = facts.get("facts", {}).get("us-gaap", {})
     dei = facts.get("facts", {}).get("dei", {})
 

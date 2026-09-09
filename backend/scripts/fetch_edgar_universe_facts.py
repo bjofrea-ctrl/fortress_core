@@ -12,6 +12,16 @@ filing original.
 
 NO consume presupuesto del ledger (es acumulación de datos, no un trial).
 
+Throttling SEC: la API acepta <=10 req/s y responde 429/503 si te pasas. Si un
+ticker queda sin archivo (p. ej. ACN cayo por throttling en el commit 9062307),
+volver a correr este script: el skip por tamano (>100KB) hace que SOLO se
+re-baje lo que falta, con time.sleep(0.2) entre llamadas.
+
+Limite conocido (no un bug): XOM (Exxon Mobil) solo expone 10-Q en companyfacts,
+sin serie anual 10-K; por eso build_fmp_shaped_payload() le devuelve None y NO
+entra al panel EDGAR (47/48 empresas operativas cubiertas; ver LIMITACION 10-K en
+app/core/edgar_fundamentals.py). Se cubre con FMP como fallback.
+
 Uso: python scripts/fetch_edgar_universe_facts.py
 """
 import json
