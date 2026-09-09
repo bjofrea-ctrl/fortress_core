@@ -4344,3 +4344,57 @@ DataFrame no Series → rompía `cache_integrity.validate_returns` línea 167
 (nuevo, regresión) + suite `test_data_ingestion.py` + `test_cache_integrity.py`:
 **35/35 passed**. Advisor API (`test_advisor_api.py -k "universe or theses"`):
 **5/5 passed**.
+
+---
+
+## 2026-09-09 — Seguimiento adaptador EDGAR (9062307): retry ACN + límite XOM documentado + cierre explore SMC (Cline)
+
+**Contexto**: secuela del commit `9062307` (rama `edgar-fundamentals-adapter`, sin
+merge a main). Tres pendientes explícitos de Boris, cerrados acá.
+
+**(1) ACN (Accenture plc) — reintento de descarga por throttling SEC.** El commit
+dejo `ACN_companyfacts.json` sin bajar (SEC devolvió 429/503 por rate-limit). Se
+re-bajó con un fetcher de backoff exponencial (2→64s, reintenta en 429/503/5xx) y
+User-Agent legítimo, leyendo el CIK del `company_tickers.json` oficial (ACN → CIK
+0001467373). Resultado: **4.86 MB, 451 tags us-gaap, 176 puntos anuales 10-K**.
+Luego se corrió la ingesta EDGAR primaria solo para ACN
+(`FundamentalsIngestion(edgar_dir=...).ingest_symbol("ACN", force=True)`) →
+payload `_data_source="edgar_primary"` con 6 income / 6 balance / 6 cash rows →
+`backend/data/cache_fundamentals_ingestion/ACN.json` escrito. **Cobertura del
+universo operativo: 46/48 → 47/48.** El `cache/edgar/ACN_companyfacts.json` queda
+gitignored (regenerable vía `fetch_edgar_universe_facts.py`, cuyo skip por tamaño
++ `sleep(0.2)` ya re-intenta solo lo que falta).
+
+**(2) XOM (Exxon Mobil) — limitación documentada EXPLÍCITAMENTE (docstring).**
+No es un bug: `_collect_annual_points()` toma SOLO hechos con `form` que empieza
+por `10-K` (mezclar 10-Q inflaría flujos anuales). El companyfacts de XOM
+(77 KB) expone **solo 10-Q, sin ninguna serie 10-K** → lista anual vacía →
+`build_fmp_shaped_payload()` devuelve `None` → XOM NO se siembra desde EDGAR. Es
+la **única empresa operativa sin cobertura EDGAR (47/48)**. Documentado en tres
+puntos del código: bloque `LIMITACION 10-K` del módulo
+`app/core/edgar_fundamentals.py`, docstring de `build_fmp_shaped_payload()` y de
+`_collect_annual_points()`, y docstring de `scripts/fetch_edgar_universe_facts.py`
+(con la nota de throttling/reintento de ACN). Se cubre con FMP como fallback.
+
+**(3) `explore_smc_ob_*` (decisión: COMMIT, no borrar).** Eran 5 scripts + 9
+`.txt` de evidencia sin trackear desde 2026-09-07, marcados como "decisión
+pendiente" en el cierre anterior. Son exploración **autocontenida y concluida**:
+la señal SMC (Order Blocks + BOS/CHoCH sobre `market_structure_history` causal)
+mostraba edge NEGATIVO robusto al vendor — holdout yfinance-cache mean_R=-0.2789
+(win 25%, sharpe -1.871) y Alpaca mean_R=-0.1683 (win 28.9%); el run *windowed*
+confirma mismo signo en ambos. **Aporte**: registro verificable de "probado y
+desechado" (doctrina: lo que no se prueba no existe), evita re-explorar. Se
+commitean scripts + evidencia `.txt` (los `.txt` de `backend/data/cache/` SÍ se
+trackean por convención del repo). Verificado sin credenciales literales
+(`load_creds` lee de `.env` gitignored / `os.environ`, nunca imprime valores).
+
+**Verificación contra el artefacto real** (Regla 1 ONBOARDING):
+- `pytest backend/tests/test_edgar_fundamentals.py` → **8 passed** (tras los edits
+  de docstring; imports de ambos módulos OK).
+- `ls backend/data/cache_fundamentals_ingestion/*.json | wc -l` → **47** (ACN
+  presente). `data/cache/edgar/ACN_companyfacts.json` → 4.86 MB con 10-K.
+
+**Estado de git al cierre**: rama `edgar-fundamentals-adapter`, HEAD sobre
+`9062307`. Dos commits nuevos (seguimiento EDGAR + cierre explore SMC) y entrada
+de SESSION_LOG. **Sin push, sin merge a main** (orden explícita de Boris).
+
