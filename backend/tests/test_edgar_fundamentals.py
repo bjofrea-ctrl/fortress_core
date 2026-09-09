@@ -151,3 +151,97 @@ def test_screen_payload_runs_on_edgar_payload():
     # Dependientes de precio: None por diseno (documentado, no bug).
     assert result["altman_z_score"] is None
     assert result["ev_to_ebit"] is None
+
+
+# ---------------------------------------------------------------------------
+# Backoff/retry del fetcher de SEC (fetch_edgar_universe_facts.py). Offline:
+# se monkeypincha _http_get, nunca toca red. Regresion del bug 2026-09-09: el
+# loop anterior tragaba HTTPError 429/503 como `fail` SIN reintentar (caso ACN),
+# dejando el cache EDGAR incompleto y obligando al screen a caer a FMP.
+# ---------------------------------------------------------------------------
+import importlib.util
+import urllib.error
+from http.client import HTTPMessage
+from pathlib import Path
+
+_SPEC = importlib.util.spec_from_file_location(
+    "fetch_edgar_universe_facts",
+    os.path.join(os.path.dirname(__file__), "..", "scripts", "fetch_edgar_universe_facts.py"),
+)
+fef = importlib.util.module_from_spec(_SPEC)
+_SPEC.loader.exec_module(fef)
+
+
+def _http_error(code, retry_after=None):
+    err = urllib.error.HTTPError("http://x", code, "throttled", HTTPMessage(), None)
+    err.headers = {"Retry-After": retry_after} if retry_after else {}
+    return err
+
+
+def _load(monkeypatch):
+    def fake(url):
+        raise AssertionError("no debe tocar red en tests")
+    monkeypatch.setattr(fef, "_http_get", fake)
+    # acelerar cualquier sleep
+    monkeypatch.setattr(fef, "_backoff_seconds", lambda a, r=None: 0.0)
+    return fef
+
+
+def test_fetch_reintenta_429_503_hasta_exito(tmp_path, monkeypatch):
+    _load(monkeypatch)
+    import gzip as _gz
+    seq = [_http_error(429), _http_error(503),
+           _gz.compress(b'{"cik": 1, "us-gaap": {}}')]
+    calls = {"n": 0}
+    def flaky(url):
+        i = min(calls["n"], len(seq) - 1)
+        calls["n"] += 1
+        r = seq[i]
+        if isinstance(r, Exception):
+            raise r
+        return r
+    monkeypatch.setattr(fef, "_http_get", flaky)
+    out = tmp_path / "ACME_companyfacts.json"
+    assert fef.fetch("0000000001", out) is True
+    assert calls["n"] == 3               # 2 throttleos + 1 exito
+    assert out.exists() and not os.path.exists(str(out) + ".part"), "no debe quedar parcial"
+    assert json.loads(out.read_text())["cik"] == 1
+
+
+def test_fetch_agota_reintentos_sin_dejar_archivo(tmp_path, monkeypatch):
+    _load(monkeypatch)
+    monkeypatch.setattr(fef, "SEC_MAX_RETRIES", 4)
+    calls = {"n": 0}
+    def always429(url):
+        calls["n"] += 1
+        raise _http_error(429)
+    monkeypatch.setattr(fef, "_http_get", always429)
+    out = tmp_path / "ACME_companyfacts.json"
+    assert fef.fetch("1", out) is False
+    assert calls["n"] == 5               # 4 reintentos + intento inicial
+    assert not out.exists()              # nunca se escribe un parcial
+
+
+def test_fetch_no_reintenta_404(tmp_path, monkeypatch):
+    _load(monkeypatch)
+    calls = {"n": 0}
+    def only404(url):
+        calls["n"] += 1
+        raise _http_error(404)
+    monkeypatch.setattr(fef, "_http_get", only404)
+    assert fef.fetch("1", tmp_path / "ACME_companyfacts.json") is False
+    assert calls["n"] == 1               # 4xx no transitorio: falla ya
+
+
+def test_backoff_respeta_retry_after_y_tope(monkeypatch):
+    monkeypatch.setattr(fef, "SEC_BASE_BACKOFF", 1.0)
+    monkeypatch.setattr(fef, "SEC_MAX_BACKOFF", 30.0)
+    # jitter determinista (=1.0) => valores predecibles sin depender del azar
+    monkeypatch.setattr(fef, "random", type("R", (), {"uniform": staticmethod(lambda a, b: 1.0)})())
+    assert fef._backoff_seconds(0, "12") == 13.0         # Retry-After 12 + jitter 1.0
+    assert fef._backoff_seconds(0, "999") == 30.0        # Retry-After topa en MAX
+    assert fef._backoff_seconds(10) == 30.0              # crece pero topa en MAX
+    assert fef._backoff_seconds(1) == 2.0                # base * 2**attempt * 1.0
+
+
+
