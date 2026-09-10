@@ -327,9 +327,19 @@ Cline como implementadores). Verificar contra `git log --oneline -10`,
       cae a FMP); verificado SIN regresión sobre el cache real (98 payloads
       domésticos byte-idénticos, único None restante XOM, que solo expone 10-Q
       y ningún anual). Suite offline ampliada a **21 passed** (+9 parametrizados
-      10-K/20-F aceptados vs 10-Q/6-K/8-K rechazados). TODO en la rama
-      `edgar-fundamentals-adapter`, **sin merge a `main`**: para que sea LIVE
-      falta integrar parser + cron al box desplegado (decisión de Boris).
+      10-K/20-F aceptados vs 10-Q/6-K/8-K rechazados). **MERGEADO a `main`
+      (`bd4c99c`) y aplicado al box desplegado**: el cron diario ya invoca el
+      fetch (paso 2a en `scripts/fundamentals_screen_daily.sh`) y el parser
+      20-F está en disco (`edgar_fundamentals.py`). **Cómo se re-corre el fetch
+      full-universe a mano** (idempotente y **sin TTL**: skip si el companyfacts
+      ya existe >1KB → solo re-baja los que faltan; con el cache en 100/100 es
+      effectively un no-op de 1 llamada al mapa de tickers):
+      `cd backend && .venv/bin/python -m scripts.fetch_edgar_universe_facts`
+      (documentado también en el docstring del script, "Uso:"). **No hace falta
+      correrlo hoy** — el cron lo invoca cada 22:30 y se auto-cura el día que
+      `SYMBOLS` crezca; el comando manual existe para acelerar la primera
+      cobertura tras agregar tickers o tras un cache roto. XOM sigue fuera (gap
+      de datos: solo expone 10-Q, ningún anual), ver LIMITACION.
 
 
 3. **Bug data_ingestion.py umbral >7 días** — 🟢 CERRADO (OpenCode, commit
