@@ -233,6 +233,13 @@ def download_data(ticker: str, start="2010-01-01", end=None) -> pd.DataFrame:
             if c not in keep or df.iloc[:, i].count() > df.iloc[:, keep[c]].count():
                 keep[c] = i
         df = df.iloc[:, sorted(keep.values())]
+        # Bug 09-09 (recontaminación, hallado por Boris en vivo): el dedup de
+        # arriba limpiaba SOLO el df en memoria y lo devolvía así — nunca
+        # reescribía el parquet. Cualquier lectura fresca posterior (otro
+        # proceso, o reconcile_symbol leyendo su propia copia de disco) volvía
+        # a encontrar el archivo contaminado y rompía validate_returns de
+        # nuevo. Persistir el dedup es obligatorio, no solo devolverlo.
+        df.to_parquet(cache_path)
 
     # A0: el harness de integridad queda activo en cada actualización de cache.
     df = _integrity_hook(ticker, df, f"{CACHE_DIR}/{ticker}.parquet")

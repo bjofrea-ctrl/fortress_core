@@ -336,3 +336,12 @@ def test_duplicate_columns_after_lowercase_deduped(monkeypatch, tmp_path):
     # validate_returns no debe romper
     from app.core.cache_integrity import validate_returns
     validate_returns(result, "SPY")
+
+    # Regresión 09-09 (recontaminación en vivo, hallada por Boris): el dedup
+    # de arriba solo limpiaba el df en memoria, nunca reescribía el parquet.
+    # Cualquier lectura fresca posterior del archivo (otro proceso, u otra
+    # función que hace su propio pd.read_parquet) volvía a encontrar la
+    # contaminación y rompía de nuevo. El fix debe persistir el dedup.
+    on_disk = pd.read_parquet(tmp_path / "SPY.parquet")
+    assert list(on_disk.columns) == ["close", "high", "low", "open", "volume"]
+    assert isinstance(on_disk["close"], pd.Series)
