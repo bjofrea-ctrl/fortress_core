@@ -34,6 +34,12 @@ class _FakeBarSession:
         self.headers = {}
         self.calls = []
 
+    def request(self, method, url, params=None, timeout=None, **kwargs):
+        # Fix auditoría 2026-09-09: get_bars() ahora enruta por _request
+        # (self._session.request) para pasar por el throttle, en vez de
+        # self._session.get directo. El fake acepta ambos.
+        return self.get(url, params=params, timeout=timeout)
+
     def get(self, url, params=None, timeout=None):
         self.calls.append((url, params))
         # Simular 2 páginas: primera con 2 barras + token, segunda con 1 barra sin token
