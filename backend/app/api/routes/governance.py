@@ -4,6 +4,7 @@ Flujo: Tríada (BULL, BEAR, CONTRARIAN) → CONTROLADOR → discusión con PROFE
 → Si no hay consenso → JUEZ decide. PROFESOR educa usando RAG/OKF.
 """
 import hmac
+import math
 
 from fastapi import APIRouter, Depends, Header, HTTPException, Query
 from starlette.concurrency import run_in_threadpool
@@ -11,6 +12,7 @@ from starlette.concurrency import run_in_threadpool
 from app.api.rate_limit import RateLimitDependency
 from app.api.routes.predict import _load_macro_data, get_fundamentals_api
 from app.config import settings
+from app.utils.logging import logger
 from app.core.advanced_agents import (
     AGENT_PROMPTS,
     CONTROLLER_PROMPT,
@@ -29,6 +31,28 @@ from app.core.predictive_engine import PredictiveEngine
 router = APIRouter(prefix="/api/governance", tags=["governance"])
 
 CACHE_DIR = "data/cache"
+
+
+def _json_safe(obj):
+    """Sanea no-finitos para que JSONResponse (allow_nan=False) no reviente el render.
+
+    Starlette serializa la respuesta con json.dumps(..., allow_nan=False): un solo
+    float NaN/±Inf en el payload lanza ValueError DURANTE EL RENDER, o sea fuera del
+    try/except del handler → 500 ASGI crudo, sin detail (causa raíz del 500 de
+    /analyze/SPY: la cache corrupta de SPY produce métricas no-finitas). Un métrico
+    no-finito es una señal de calidad de datos, no un motivo para tirar 500: lo
+    llevamos a None de forma recursiva y el resto del payload sale igual.
+
+    Nota de cobertura: np.float64 es subclase de float, así que `isinstance(obj, float)`
+    lo toma y math.isfinite lo evalúa bien. Se conserva int/bool/str (bool no es float).
+    """
+    if isinstance(obj, float):
+        return obj if math.isfinite(obj) else None
+    if isinstance(obj, dict):
+        return {k: _json_safe(v) for k, v in obj.items()}
+    if isinstance(obj, (list, tuple)):
+        return [_json_safe(v) for v in obj]
+    return obj
 
 # Endpoint LLM sin auth: protege la cuota de NVIDIA NIM (no hay datos sensibles).
 llm_rate_limit = RateLimitDependency()
@@ -170,7 +194,7 @@ async def analyze_with_governance(symbol: str, regime_state: int = Query(0, ge=0
                 )
             governance_result["governance_mode"] = governance_mode
 
-        return {
+        return _json_safe({
             "symbol": symbol.upper(),
             "flow": "TRIAD → CONTROLLER ↔ PROFESSOR → JUDGE",
             "governance_mode": governance_mode,
@@ -185,11 +209,16 @@ async def analyze_with_governance(symbol: str, regime_state: int = Query(0, ge=0
                 "prob_up_long": result.prob_up_long,
             },
             "governance": governance_result,
-        }
+        })
 
     except HTTPException:
         raise
     except Exception as e:
+        # El traceback completo va al log ("fortress" → api_server.log). Antes solo
+        # se propagaba str(e), que ocultaba la causa raíz en el 500.
+        logger.exception(
+            "governance/analyze %s: error interno no esperado", symbol.upper()
+        )
         raise HTTPException(status_code=500, detail=f"Error: {str(e)}")
 
 
