@@ -1,10 +1,18 @@
 import os
+import time
+from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 
 import pandas as pd
 import yfinance as yf
 
 CACHE_DIR = "data/cache"
+
+# TASK_WARMUP_PARALELO_20260909 (Frente 2): workers para load_universe
+# paralelo. I/O-bound (yfinance/parquet) → threads, no procesos. 10 =
+# punto medio del rango 8-12 del ticket. max_workers=1 restaura secuencial
+# (reversión sin deploy).
+LOAD_UNIVERSE_MAX_WORKERS = 10
 
 # A0 (PLAN_REMEDIO_BRECHAS_20260903): el harness de integridad corre en CADA
 # actualización de cache, no como pasada única. La reconciliación fresca
@@ -227,10 +235,44 @@ def download_data(ticker: str, start="2010-01-01", end=None) -> pd.DataFrame:
     return df
 
 
-def load_universe(tickers: list, start: str, end: str) -> dict:
+def _safe_download(ticker: str, start: str, end: str):
+    """download_data que nunca raisea: devuelve None y loguea el fallo.
+
+    El lote paralelo no muere por un ticker (criterio d del pre-registro).
+    """
+    try:
+        return download_data(ticker, start, end)
+    except Exception as e:  # noqa: BLE001 — fallo aislado por ticker
+        print(f"[load_universe] {ticker} ERROR aislado: {e}")
+        return None
+
+
+def load_universe(tickers: list, start: str, end: str,
+                  max_workers: int = LOAD_UNIVERSE_MAX_WORKERS) -> dict:
+    """Descarga el universo en paralelo (ThreadPoolExecutor, I/O-bound).
+
+    Misma API de salida que la versión secuencial: dict {ticker: df} solo
+    con len(df) > 200, en el MISMO orden de `tickers` (executor.map
+    preserva orden). `_integrity_hook` corre dentro de `download_data` en
+    cada worker; cada worker escribe su propio parquet (sin colisión, un
+    archivo por ticker). El orden de escrituras a disco NO es determinístico
+    (decisión pre-registrada). Fallo de un ticker → None → se excluye, el
+    lote sigue. Logs por lote (inicio/fin + duración + fallos), no por ticker.
+    max_workers=1 == secuencial (reversión).
+    """
+    tickers = list(tickers)
+    print(f"[load_universe] lote inicio: {len(tickers)} tickers, workers={max_workers}")
+    t0 = time.monotonic()
+    with ThreadPoolExecutor(max_workers=max_workers) as ex:
+        results = list(ex.map(lambda t: _safe_download(t, start, end), tickers))
     data = {}
-    for t in tickers:
-        df = download_data(t, start, end)
-        if len(df) > 200:
+    fails = 0
+    for t, df in zip(tickers, results):
+        if df is not None and len(df) > 200:
             data[t] = df
+        else:
+            fails += 1
+    dt_s = time.monotonic() - t0
+    print(f"[load_universe] lote fin: {len(data)}/{len(tickers)} OK, "
+          f"{fails} fallos, {dt_s:.1f}s")
     return data

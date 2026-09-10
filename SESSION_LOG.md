@@ -3422,3 +3422,28 @@ fix) y commitear/merge de esta consolidación + la A2 de Cline (55606a3,
 obsoleta: su (a) nunca matchea el formato real).
 
 Sin merge a main desde este worktree (regla 48H).
+
+## 2026-09-10 — TASK_WARMUP_PARALELO: warmup advisor + load_universe paralelo (Kilo, worktree test-kilo-orca)
+
+Pre-registro `PRE_REGISTRO_WARMUP.md` commiteado ANTES del código (criterios
+1-5). Sin merge a main (orden Boris).
+
+**Frente 1** (`advisor.py` + `main.py`): `warmup_advisor_once()` calienta
+contexto + tickets (el costo frío real está en el loop de tickets, no solo
+contexto) con log `advisor_warmup_complete` (duración, n_tickers, n_tickets,
+cache_date); `warmup_advisor_loop(interval 280s < TTL 300s, max_cycles para
+tests)`; `startup()` async + `create_task` (no bloquea). Fallo de ciclo no
+mata el loop.
+
+**Frente 2** (`data_ingestion.py`): `load_universe` paralelizado con
+ThreadPoolExecutor(10); `executor.map` preserva orden del dict; `_safe_download`
+aísla fallos por ticker; logs por lote (inicio/fin/duración/fallos);
+`max_workers=1` == secuencial (reversión).
+
+**Números reales** (worktree, cache 21 días stale → refresh yfinance real):
+- Frío: `process_time_ms=531680` (8.9 min; lote 72/102 OK, 30 fallos red
+  aislados correctamente, 291.8s de descarga) — confirma el 5-10min de Boris.
+- Caliente: `process_time_ms=278` (0.1% del frío, **1913x**).
+- Tests: warmup 4/4, cleandays 25/25, execution_costs 24/24, nyse 18/18,
+  iv 14/14+1skip. Nota: TestClient roto en venv (starlette/httpx mismatch);
+  criterio 1 verificado vía startup()+health() directos.
