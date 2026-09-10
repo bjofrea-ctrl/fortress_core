@@ -109,6 +109,22 @@ def test_parse_pipeline_runs_ignora_corrida_fuera_de_ventana():
     assert cc.parse_pipeline_runs(text) == {}
 
 
+def test_parse_pipeline_runs_end_con_timestamp_opcional():
+    """Fix auditoría 2026-09-09: el END acepta prefijo de timestamp opcional
+    (espacio o ISO-T). El canónico sin timestamp sigue matcheando."""
+    base = _run_block("2026-09-04", "09:35:00", 9, 0)
+    # variante 1: canónica (sin timestamp) — control
+    assert cc.parse_pipeline_runs("\n".join(base)) == {"2026-09-04": {9: 0}}
+    # variante 2: END con timestamp "YYYY-MM-DD HH:MM:SS"
+    ts_space = [ln if not ln.startswith("pipeline_daily_signal end")
+                else f"2026-09-04 09:40:11 {ln}" for ln in base]
+    assert cc.parse_pipeline_runs("\n".join(ts_space)) == {"2026-09-04": {9: 0}}
+    # variante 3: END con timestamp ISO-T
+    ts_iso = [ln if not ln.startswith("pipeline_daily_signal end")
+              else f"2026-09-04T09:40:11 {ln}" for ln in base]
+    assert cc.parse_pipeline_runs("\n".join(ts_iso)) == {"2026-09-04": {9: 0}}
+
+
 def test_parse_updater_days_detecta_error_de_precios():
     text = "\n".join(_corrida_block("2026-09-05", ok=False, n_fail=84))
     days = cc.parse_updater_days(text)
