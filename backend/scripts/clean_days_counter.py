@@ -71,7 +71,14 @@ SCHEDULED_WINDOWS = {9, 15, 22}
 _RE_PIPELINE_START = re.compile(
     r"^pipeline_daily_signal (\d{4}-\d{2}-\d{2}) (\d{2}):(\d{2}):(\d{2}) start \(hour_ET=(\d+)\)"
 )
-_RE_PIPELINE_END = re.compile(r"^pipeline_daily_signal end rc=(\d+)")
+# Fix auditoría 2026-09-09: el END acepta un prefijo de timestamp OPCIONAL
+# (`YYYY-MM-DD HH:MM:SS ` o ISO `YYYY-MM-DDT... `). El formato canónico de
+# daily_signal_pipeline.sh no lleva timestamp (`pipeline_daily_signal end
+# rc=0`), pero si un wrapper/launchd/logger alguna vez lo prefija, el
+# contador no debe ignorarlo en silencio (condición (a) falsa → racha rota).
+_RE_PIPELINE_END = re.compile(
+    r"^(?:\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}:\d{2} )?pipeline_daily_signal end rc=(\d+)"
+)
 _RE_RECONCILE = re.compile(
     r"^(\d{4}-\d{2}-\d{2})T\d{2}:\d{2}:\d{2} \[pipeline\] reconcile "
     r"orphan_closed=(\d+) unexplained=(\d+)"

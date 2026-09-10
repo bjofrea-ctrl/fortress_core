@@ -5,7 +5,8 @@ acumulada NO EXISTE la familia opciones (VRP, GEX, PEAD-vía-options) — con
 ella acumulando desde hoy, el primer trial post-gate tiene historial propio
 en vez de empezar de cero. El caño antes de que pase el agua.
 
-Snapshot POST-CIERRE (22:35, tras fundamentals_screen) de las cadenas de
+Snapshot POST-CIERRE (22:35 ART = 20:35 ET invierno / 21:35 ET verano,
+tras fundamentals_screen de las 22:30 ART) de las cadenas de
 opciones yfinance por símbolo: strikes, expiry, last, IV, OI, volume, spot
 → un parquet DIARIO en data/cache/iv_surface/iv_snapshot_<YYYYMMDD>.parquet
 (con columna symbol — un archivo por día, append solo si el día está
@@ -38,7 +39,11 @@ Uso:
   # subset/manual: --symbols SPY,QQQ --max-expiries 6 --sleep-s 1.5
 
 Cron:
-  launchd 22:35 diario (scripts/com.fortresscore.ivcollector.plist).
+  launchd 22:35 ART diario (scripts/com.fortresscore.ivcollector.plist —
+  hora LOCAL del Mac; 20:35 ET invierno / 21:35 ET verano). NO es 22:35 ET
+  (eso sería 23:35 ART: rompería la secuencia tras fundamentals_screen
+  22:30 ART y caería en horario de sleep del laptop). Decisión auditoría
+  2026-09-09: se fija el horario, se corrige el docstring.
 """
 import argparse
 import sys

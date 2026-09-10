@@ -271,7 +271,12 @@ class AlpacaPaperClient:
         while True:
             if page_token:
                 params["page_token"] = page_token
-            resp = self._session.get(
+            # Fix auditoría 2026-09-09: usar self._request (con rate-limit
+            # check) en vez de self._session.get directo — get_bars pagina
+            # y cada página cuenta contra el límite de 200 req/min igual que
+            # last_trade_price/get_account/get_positions.
+            resp = self._request(
+                "GET",
                 f"{self.market_data_base_url}/v2/stocks/{self._alpaca_symbol(symbol)}/bars",
                 params=params,
                 timeout=DEFAULT_TIMEOUT_SECONDS,

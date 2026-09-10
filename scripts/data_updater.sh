@@ -33,6 +33,14 @@ echo "[$(date '+%Y-%m-%d %H:%M:%S')] data_updater: inicio" >> "$LOG"
 if ! cd "$REPO/backend"; then
   echo "[$(date '+%Y-%m-%d %H:%M:%S')] PRECIOS: ERROR - cd $REPO/backend falló" >> "$LOG"
   RC_PRECIOS=1
+elif "$VENV" -m scripts.nyse_holidays --today-quiet >> "$LOG" 2>&1; then
+  # Fix auditoría 2026-09-09: feriado NYSE → mercado cerrado, NO es error.
+  # Sin este chequeo yfinance devuelve vacío para los 102 símbolos y el log
+  # queda con "PRECIOS: ERROR - 84/102" falso (caso Labor Day 2026-09-07),
+  # rompiendo la condición (b) del gate. SKIP no contiene "ERROR" a propósito.
+  echo "[$(date '+%Y-%m-%d %H:%M:%S')] PRECIOS: SKIP - feriado NYSE, mercado cerrado (no es error)" >> "$LOG"
+  echo "precios: SKIP feriado NYSE 0/0" >> "$LOG"
+  RC_PRECIOS=0
 else
   "$VENV" -c "
 from scripts.fetch_universe_data import NEW_UNIVERSE

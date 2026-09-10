@@ -73,11 +73,13 @@ class _FakeSession:
             order["status"] = "filled"
         return order
 
-    def get(self, url, timeout=None):
+    def get(self, url, timeout=None, params=None):
         self.get_calls.append(url)
         if "/v2/orders/" in url:  # polling del estado de una orden enviada
             oid = url.rstrip("/").split("/")[-1]
             return _FakeResp(self._order_state(oid))
+        if "/bars" in url:  # endpoint de barras: 1 página vacía (suficiente para throttle tests)
+            return _FakeResp({"bars": [], "next_page_token": None})
         # endpoint de datos: /v2/stocks/<SYM>/trades/latest
         sym = url.split("/stocks/")[1].split("/")[0]
         return _FakeResp({"trade": {"p": self.prices[sym]}})
@@ -556,3 +558,41 @@ def test_rate_monitor_usa_stacklevel_correcto(monkeypatch):
         assert len(w) == 1
         # stacklevel=4 apunta al llamador de _rate_limit_check -> _request -> last_trade_price -> TEST
         assert "test_execution_costs.py" in w[0].filename
+
+
+def test_get_bars_pasa_por_rate_limit_check():
+    """Fix auditoría 2026-09-09: get_bars() usaba self._session.get directo,
+    esquivando el throttle que sí tiene last_trade_price. Ahora debe enrutar
+    por self._request (rate-limit check) — cada página de bars cuenta."""
+    from app.core.execution_costs import AlpacaPaperClient
+
+    sess = _FakeSession(prices={"SPY": 500.0})
+    c = AlpacaPaperClient(api_key="k", secret_key="s", base_url=BASE_URL, session=sess)
+    assert len(c._request_timestamps) == 0
+    bars = c.get_bars("SPY", start="2026-09-08T00:00:00Z", end="2026-09-09T00:00:00Z")
+    assert bars == []
+    # 1 request registrada en la ventana deslizante (no bypass)
+    assert len(c._request_timestamps) == 1
+
+
+def test_get_bars_throttle_al_85_porciento(monkeypatch):
+    """get_bars también dispara throttle al 85% (170 req/min), igual que
+    last_trade_price — el colector intradía pagina y puede saturar."""
+    make_client = _make_rate_test_client(monkeypatch, base_time=3_000_000.0, max_calls=175)
+
+    prices = {"SPY": 500.0}
+    c, sleep_calls = make_client(prices)
+
+    # 169 requests vía get_bars -> sin throttle
+    for _ in range(169):
+        with warnings.catch_warnings(record=True) as w:
+            warnings.simplefilter("always")
+            c.get_bars("SPY")
+            assert not any("RATE THROTTLE" in str(x.message) for x in w)
+
+    # Request 170 -> THROTTLE
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+        c.get_bars("SPY")
+        assert any("RATE THROTTLE" in str(x.message) for x in w), "get_bars no throttlea al 85%"
+        assert len(sleep_calls) == 1
