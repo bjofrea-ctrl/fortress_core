@@ -53,6 +53,7 @@ from app.config import settings
 from app.core import trial_registry
 from app.core.edgar_fundamentals import get_edgar_fundamentals
 from app.core.indicators import calculate_all_indicators, ema
+from app.utils.logging import logger
 
 router = APIRouter(prefix="/api/advisor", tags=["advisor"])
 
@@ -220,6 +221,72 @@ async def _get_tickets(price_data, today, regime_state, signal_engine, calibrato
         _tickets_cache_time = time.monotonic()
         _tickets_cache_ctx_time = ctx_gen
         return _tickets_cache
+
+
+# --------------------------------------------------------------------------- #
+# Warmup (TASK_WARMUP_PARALELO_20260909, Frente 1): el primer render no espera.
+# --------------------------------------------------------------------------- #
+# Sin warmup, la primera request tras arrancar (o tras 300s sin tráfico) paga
+# el build frío completo (contexto + loop de ~102 tickets ≈ minutos). El loop
+# de re-warmup reconstruye ambos ANTES de que expire el TTL, así ningún
+# request real alcanza un contexto expirado. Calienta contexto + tickets
+# (no solo contexto: el costo frío real está en el loop de tickets).
+WARMUP_INTERVAL_SECONDS = 280.0  # < TTL 300s: re-warmup preventivo
+
+
+async def warmup_advisor_once() -> Dict:
+    """Un ciclo de warmup: construye contexto + tickets y loguea la duración.
+
+    Reusa `_get_context`/`_get_tickets` (mismo código que el endpoint, mismos
+    locks anti-manada). Idempotente: si el cache está fresco, los getters
+    retornan sin recomputar (warmup barato).
+    """
+    t0 = time.monotonic()
+    (price_data, today, regime, regime_state, signal_engine, calibrator,
+     conformal) = await _get_context()
+    ctx_gen = _context_cache_time
+    tickets = await _get_tickets(
+        price_data, today, regime_state, signal_engine, calibrator,
+        conformal, ctx_gen,
+    )
+    dt_s = time.monotonic() - t0
+    cache_date = _cache_date()
+    logger.info(
+        "advisor_warmup_complete",
+        extra={
+            "duration_s": round(dt_s, 1),
+            "n_tickers": len(price_data),
+            "n_tickets": len(tickets),
+            "cache_date": cache_date.date().isoformat() if cache_date is not None else None,
+        },
+    )
+    return {
+        "duration_s": round(dt_s, 1),
+        "n_tickers": len(price_data),
+        "n_tickets": len(tickets),
+    }
+
+
+async def warmup_advisor_loop(
+    interval_s: float = WARMUP_INTERVAL_SECONDS,
+    max_cycles: Optional[int] = None,
+) -> None:
+    """Loop de re-warmup en background (no bloquear startup: create_task).
+
+    `interval_s` < TTL garantiza que el rebuild arranca con cache aún válido.
+    Un ciclo fallido se loguea y NO mata el loop (siguiente ciclo reintenta).
+    `max_cycles` solo para tests deterministas (None = infinito en prod).
+    """
+    cycles = 0
+    while True:
+        try:
+            await warmup_advisor_once()
+        except Exception as e:  # noqa: BLE001 — el loop nunca muere
+            logger.error("advisor_warmup_failed", extra={"error": str(e)})
+        cycles += 1
+        if max_cycles is not None and cycles >= max_cycles:
+            return
+        await asyncio.sleep(interval_s)
 
 
 def _build_tickets_sync(price_data, today, regime_state, signal_engine, calibrator, conformal):
