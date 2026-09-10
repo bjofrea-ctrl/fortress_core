@@ -208,21 +208,38 @@ def get_fundamentals(
 # el profile (yfinance / FMP). Los tribunales de CALIDAD y SALUD (ROIC, ROE,
 # Piotroski, Beneish, margenes) SI se computan integramente desde EDGAR.
 #
-# LIMITACION 10-K (documentada, no un bug): _collect_annual_points() toma SOLO
-# los hechos con form que empieza por "10-K" (el cierre anual "as originally
-# reported"); los 10-Q son parciales de 3/6/9 meses y mezclarlos inflaria o
-# duplicaria flujos anuales, por eso se excluyen a proposito. Consecuencia: un
-# emisor cuyo companyfacts NO expone ninguna serie etiquetada 10-K (p. ej.
-# XOM / Exxon Mobil: su companyfacts trae solo 10-Q, sin 10-K) queda sin series
+# LIMITACION DE FORMULARIO ANUAL (documentada, no un bug):
+# _collect_annual_points() toma SOLO los hechos con form que empieza por un
+# prefijo anual (ver ANNUAL_FORM_PREFIXES = "10-K" domestico o "20-F" de foreign
+# private issuer, ambos con sus enmiendas /A); los 10-Q (domestico) y 6-K
+# (extranjero) son parciales de 3/6/9 meses y mezclarlos inflaria o duplicaria
+# flujos anuales, por eso se excluyen a proposito. Consecuencia: un emisor cuyo
+# companyfacts NO expone NINGUNA serie anual (ni 10-K ni 20-F) queda sin series
 # anuales -> build_fmp_shaped_payload() devuelve None -> el simbolo NO se siembra
-# desde EDGAR (en la practica: 47/48 del universo operativo; XOM es la unica
-# empresa operativa sin cobertura EDGAR). Se resuelve enriqueciendo desde FMP
-# como fallback, o leyendo el 10-K filing completo (fuera del alcance del
-# screening quota-free). Referencia: commit 9062307 y SESSION_LOG 2026-09-09.
+# desde EDGAR. Caso real verificado sobre el cache: XOM / Exxon Mobil, cuyo
+# companyfacts trae SOLO 10-Q (n<=4 puntos, sin cierre anual): ningun parser de
+# anuales puede cubrirlo, se resuelve enriqueciendo desde FMP como fallback o
+# leyendo el filing completo (fuera del alcance del screening quota-free).
+# Referencia: commits 9062307 y el soporte 20-F (CHKP) agregado 2026-09-09;
+# SESSION_LOG 2026-09-09.
 EDGAR_COMPANYFACTS_DIR = os.path.join(
     os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))),
     "data", "cache", "edgar",
 )
+
+
+# Formulaciones ANUALES aceptadas para el corte "as originally reported" en
+# _collect_annual_points(). startswith() cubre tambien las enmiendas (/A):
+#   "10-K" -> anual domestico (10-K, 10-K/A)
+#   "20-F" -> anual de foreign private issuer (20-F, 20-F/A): Check Point (CHKP),
+#             emisor extranjero que NUNCA filed 10-K pero si expone sus cierres
+#             anuales FY en 20-F con los mismos tags us-gaap.
+# Se excluyen a proposito los parciales "10-Q" (domestico trimestral) y "6-K"
+# (el equivalente extranjero del 10-Q): mezclarlos inflaria/duplicaria flujos
+# anuales. Invariante de dominio: un emisor usa UN solo regimen (10-K o 20-F,
+# nunca ambos), por eso anadir "20-F" no altera a los domesticos ya cubiertos
+# -> riesgo de regresion cero sobre los simbolos que hoy funcionan con 10-K.
+ANNUAL_FORM_PREFIXES: Tuple[str, ...] = ("10-K", "20-F")
 
 
 # Cada campo FMP mapea a: (tags XBRL candidatos, unidad, tipo, statement)
@@ -319,14 +336,16 @@ def load_edgar_companyfacts(symbol: str, edgar_dir=None) -> Optional[Dict]:
 
 def _collect_annual_points(tags: Tuple[str, ...], unit: str,
                            us_gaap: Dict, dei: Dict) -> List[Dict]:
-    """Puntos anuales (form 10-K) de TODOS los tags candidatos, dedup por
-    (start,end) conservando el ultimo `filed` (enmiendas ganan).
+    """Puntos anuales (form 10-K domestico o 20-F extranjero) de TODOS los tags
+    candidatos, dedup por (start,end) conservando el ultimo `filed` (enmiendas
+    ganan).
 
-    Filtra a proposito SOLO por form "10-K": los 10-Q son periodos parciales y
-    contaminarian los flujos anuales. Por eso un emisor sin NINGUN hecho 10-K en
-    su companyfacts (caso real: XOM) produce lista vaca aca y, en cascada,
-    build_fmp_shaped_payload() -> None. No es un error de parsing, es un limite
-    del dato (ver LIMITACION 10-K arriba).
+    Filtra a proposito SOLO por los prefijos anuales ANNUAL_FORM_PREFIXES
+    ("10-K", "20-F"): los 10-Q y los 6-K son periodos parciales y contaminarian
+    los flujos anuales. Por eso un emisor sin NINGUN hecho anual en su
+    companyfacts (caso real: XOM, que solo expone 10-Q) produce lista vacia aca
+    y, en cascada, build_fmp_shaped_payload() -> None. No es un error de parsing,
+    es un limite del dato (ver LIMITACION DE FORMULARIO ANUAL arriba).
     """
     pts: List[Dict] = []
     for tag in tags:
@@ -340,7 +359,7 @@ def _collect_annual_points(tags: Tuple[str, ...], unit: str,
                 if unit == "shares" and "shares" not in u.lower():
                     continue
                 pts.extend(vals)
-    annual = [p for p in pts if str(p.get("form", "")).startswith("10-K")]
+    annual = [p for p in pts if str(p.get("form", "")).startswith(ANNUAL_FORM_PREFIXES)]
     by_period: Dict[Tuple[Any, Any], Dict] = {}
     for p in annual:
         # Hechos instantaneos (ej. EntityCommonStockSharesOutstanding) vienen
@@ -391,10 +410,10 @@ def build_fmp_shaped_payload(symbol: str, facts: Dict,
     """Construye el payload estilo FMP desde companyfacts. None si no hay
     suficientes datos para armar las 3 listas de statements.
 
-    None es el resultado ESPERADO para emisores cuyo companyfacts solo expone
-    10-Q y ninguna serie anual etiquetada 10-K (caso real: XOM / Exxon Mobil,
-    unica empresa operativa del universo 50 sin cobertura EDGAR). Ver la
-    LIMITACION 10-K documentada arriba y SESSION_LOG 2026-09-09.
+    None es el resultado ESPERADO para emisores cuyo companyfacts no expone
+    NINGUNA serie anual (ni 10-K domestico ni 20-F extranjero), solo parciales
+    10-Q/6-K (caso real verificado: XOM / Exxon Mobil). Ver la LIMITACION DE
+    FORMULARIO ANUAL documentada arriba y SESSION_LOG 2026-09-09.
     """
     us_gaap = facts.get("facts", {}).get("us-gaap", {})
     dei = facts.get("facts", {}).get("dei", {})

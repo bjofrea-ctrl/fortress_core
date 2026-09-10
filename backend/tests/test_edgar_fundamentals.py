@@ -95,6 +95,74 @@ def test_build_returns_none_when_no_tags(tmp_path):
 
 
 # ---------------------------------------------------------------------------
+# Formulario ANUAL aceptado: 10-K (domestico) y 20-F (foreign private issuer).
+# El filtro vive en _collect_annual_points via ANNUAL_FORM_PREFIXES. Se prueban
+# ambos por parametrizacion sobre un companyfacts sintetico con un cierre FY
+# completo (income+balance+cash), sin tocar red.
+# ---------------------------------------------------------------------------
+def _annual_facts(form):
+    """Companyfacts sintetico con un unico cierre anual (FY2023) bajo `form`.
+
+    Suficiente para que build_fmp_shaped_payload() arme las 3 listas SI el form
+    es anual; debe devolver None si el form es un parcial (10-Q/6-K)."""
+    def node(val, start=None):
+        e = {"val": val, "end": "2023-12-31", "form": form, "fp": "FY", "fy": 2023,
+             "filed": "2024-02-15"}
+        if start:
+            e["start"] = start
+        return e
+    return {
+        "entityName": "Foreign Issuer Inc",
+        "facts": {
+            "us-gaap": {
+                "RevenueFromContractWithCustomerExcludingAssessedTax":
+                    {"units": {"USD": [node(500.0, "2023-01-01")]}},
+                "NetIncomeLoss": {"units": {"USD": [node(111.0, "2023-01-01")]}},
+                "Assets": {"units": {"USD": [node(1000.0)]}},
+                "Liabilities": {"units": {"USD": [node(400.0)]}},
+                "StockholdersEquity": {"units": {"USD": [node(600.0)]}},
+                "NetCashProvidedByUsedInOperatingActivities":
+                    {"units": {"USD": [node(222.0, "2023-01-01")]}},
+            },
+            "dei": {},
+        },
+    }
+
+
+@pytest.mark.parametrize("form", ["10-K", "10-K/A", "20-F", "20-F/A"])
+def test_annual_forms_are_collected(form):
+    payload = ef.build_fmp_shaped_payload("FI", _annual_facts(form))
+    assert payload is not None, f"{form} debe tratarse como cierre anual"
+    assert payload["_data_source"] == "edgar_primary"
+    inc, bal, cf = (payload["income_statement"], payload["balance_sheet"],
+                    payload["cash_flow"])
+    assert inc and bal and cf, "las 3 listas de statements deben armarse"
+    assert inc[0]["revenue"] == 500.0
+    assert inc[0]["netIncome"] == 111.0
+    assert bal[0]["totalAssets"] == 1000.0
+    assert bal[0]["totalShareholderEquity"] == 600.0
+    assert cf[0]["operatingCashFlow"] == 222.0
+
+
+@pytest.mark.parametrize("form", ["10-Q", "10-Q1", "6-K", "8-K"])
+def test_partial_forms_are_rejected(form):
+    # Un parcial (10-Q domestico / 6-K extranjero / 8-K corriente) NO constituye
+    # serie anual -> build devuelve None. Protege el filtro ANNUAL_FORM_PREFIXES
+    # contra regresiones (p. ej. aceptar 6-K contaminaria flujos anuales).
+    assert ef.build_fmp_shaped_payload("FI", _annual_facts(form)) is None
+
+
+def test_foreign_issuer_20f_no_longer_requires_fmp():
+    # Regresion especifica del universo: CHKP (Check Point) archiva 20-F y JAMAS
+    # 10-K; antes del soporte 20-F caia a FMP (ingestion_returned_none bajo
+    # rate-limit). Verifica que un 20-F con los tags us-gaap de CHKP produce
+    # payload EDGAR sin necesidad de red.
+    payload = ef.build_fmp_shaped_payload("CHKP", _annual_facts("20-F"))
+    assert payload is not None
+    assert payload["balance_sheet"][0]["totalLiabilities"] == 400.0
+
+
+# ---------------------------------------------------------------------------
 # compute_scores sobre el payload EDGAR
 # ---------------------------------------------------------------------------
 def test_compute_scores_edgar_no_market_cap():

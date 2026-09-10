@@ -310,6 +310,28 @@ Cline como implementadores). Verificar contra `git log --oneline -10`,
    Sigue necesitando `FMP_API_KEY`/`FINNHUB_API_KEY` reales para probar
    contra la red de verdad (hasta ahora todo probado con mocks, declarado
    así explícitamente, no ocultado).
+    - **Addendum 2026-09-09 (Cline) — universo completo + dos fixes durables.**
+      El screening opera sobre `opportunities_universe.SYMBOLS` (≈102, ~100
+      operativos tras excluir ETFs), no sobre los 50 históricos. **(a) Fetch
+      full-universe verificado:** correr el fetcher endurecido contra el cache
+      del box real dejó `ok=48 skip=52 fail=0` → **100/100 companyfacts**; un
+      `run_fundamentals_screen` fresco pasó de **53 fallos → 2 con 0 llamadas
+      FMP** (la ola `ingestion_returned_none` era el fetcher que nadie había
+      re-corrido al crecer el universo, no un bug de código). **(b) Fetcher
+      enhebrado al cron diario** (`scripts/fundamentals_screen_daily.sh`, paso
+      2a best-effort ANTES del screen): elimina la recurrencia de la deriva;
+      si el fetch falla no aborta, el screen corre con cache + fallback, y
+      `--resume` re-intenta al día siguiente. **(c) Soporte 20-F** en el parser
+      anual (`edgar_fundamentals.ANNUAL_FORM_PREFIXES = ("10-K", "20-F")`): la
+      cobertura EDGAR sube 98 → **99/100** (CHKP, foreign private issuer, ya no
+      cae a FMP); verificado SIN regresión sobre el cache real (98 payloads
+      domésticos byte-idénticos, único None restante XOM, que solo expone 10-Q
+      y ningún anual). Suite offline ampliada a **21 passed** (+9 parametrizados
+      10-K/20-F aceptados vs 10-Q/6-K/8-K rechazados). TODO en la rama
+      `edgar-fundamentals-adapter`, **sin merge a `main`**: para que sea LIVE
+      falta integrar parser + cron al box desplegado (decisión de Boris).
+
+
 3. **Bug data_ingestion.py umbral >7 días** — 🟢 CERRADO (OpenCode, commit
    `b4a6797`).
 4. **Launchd pipeline diario (com.fortresscore.pipeline)** — 🟢 verificado

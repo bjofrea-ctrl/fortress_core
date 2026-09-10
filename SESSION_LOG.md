@@ -1,4 +1,57 @@
 # Fortress Core — Memoria de Sesiones (Última sesión resumida)
+## 2026-09-09 — Fetch EDGAR full-universe + soporte 20-F + fetcher en el cron (Cline)
+
+**Objetivo**: cerrar el pendiente real — correr el fetcher endurecido contra el universo
+de screening COMPLETO y verificar el screen; luego atacar las dos causas de raíz.
+
+**(1) Fetch full-universe verificado sobre el box desplegado** (sin pisar tracked files):
+runner temporal con `SEC_EDGAR_CACHE_DIR` → cache real y backend desplegado en `sys.path`
+para que `SYMBOLS` resuelva el universo vivo (≈102, ~100 operativos). Resultado:
+`ok=48 skip=52 fail=0` → **100/100 companyfacts**. Se limpió `state.json` + cache de
+ingesta y se corrió `run_fundamentals_screen` real (detached, `start_new_session`):
+**completed=98, failed=2 (XOM, CHKP), calls_used=0**, artefactos render (html/xlsx/json).
+**La ola de 53 `ingestion_returned_none` quedó en 2.** Causa raíz reconfirmada: no era
+código viejo (el fetcher duro ya estaba en `main`, commit `8383949`), era que **nadie lo
+había re-corrido al crecer `NEW_UNIVERSE` 43→95**; el cache gitignored quedó con 48.
+
+**(2) Los 2 residuales son de TIPO DE FORMULARIO, verificado contra el dato:**
+- **CHKP** archiva **20-F** (foreign private issuer), jamás 10-K: los tags clave
+  (Revenue/NetIncomeLoss/Assets/Liabilities/Equity/OpCashFlow) existen bajo `20-F/FY`.
+- **XOM** solo expone **10-Q** en companyfacts (n≤4, sin cierre anual): ningún parser de
+  anuales lo cubre → queda a fallback FMP. Documentado, no es bug.
+
+**(3) Fix durable A — soporte 20-F en el parser anual**
+(`backend/app/core/edgar_fundamentals.py`): nueva constante `ANNUAL_FORM_PREFIXES =
+("10-K", "20-F")` y el filtro de `_collect_annual_points` pasa de `startswith("10-K")` a
+`startswith(ANNUAL_FORM_PREFIXES)`. `startswith` con tupla cubre además enmiendas `/A`.
+**Invariante de dominio**: un emisor usa UN solo régimen (10-K o 20-F, nunca ambos) →
+agregar 20-F **no altera a los domésticos**. **Prueba de no-regresión sobre el cache real
+(100 archivos, OLD vs NEW)**: cobertura **98 → 99**, GANANCIA `[CHKP]`, **REGRESIONES []**,
+**PAYLOADS ALTERADOS []**, único None = `[XOM]`. Payload CHKP resultante es anual real y
+coherente (6/6/6 filas; FY2025 revenue $2.73B, NI $1.06B, assets $7.81B).
+
+**(4) Fix durable B — fetcher enhebrado al cron diario**
+(`scripts/fundamentals_screen_daily.sh`): nuevo paso 2a `"$VENV" -m
+scripts.fetch_edgar_universe_facts` ANTES del screen, **best-effort** (captura
+`FETCH_RC`, loguea, NO aborta si falla). Idempotente (skip >1KB + rename atómico, lee
+`SYMBOLS` dinámico) → solo re-baja símbolos nuevos. Elimina la recurrencia de la deriva.
+`bash -n` OK.
+
+**Tests** (`backend/tests/test_edgar_fundamentals.py`): +9 casos parametrizados offline
+(sin red) con companyfacts sintético de un solo cierre FY — **10-K / 10-K/A / 20-F /
+20-F/A aceptados**, **10-Q / 10-Q1 / 6-K / 8-K rechazados** → suite **21 passed** (12
+originales intactos).
+
+**Estado**: todo en la rama `edgar-fundamentals-adapter`, **sin push ni merge**. Para que
+sea LIVE hay que integrar parser + cron al box desplegado (`main`) y dejar correr el cron
+o el fetch manualmente — **decisión de Boris** (regla ONBOARDING: no mergear sin pedido
+explícito). El cache desplegado ya quedó con 100/100 companyfacts.
+
+**Goteo operativo**: procesos largos (parse de 100 companyfacts / fetch / screen) petan
+el timeout de 30s del tool → lanzarlos detached (`subprocess.Popen(start_new_session=True)`,
+`nohup` mata el árbol) y pollear en tramos <30s.
+
+
 ## 2026-09-09 — Backoff/retry SEC en el fetch EDGAR: ola `ingestion_returned_none` en el screen (Cline)
 
 **Qué**: Boris corrió `run_fundamentals_screen` fresco post-merge EDGAR. AAPL/MSFT/GOOGL/AMZN/NVDA

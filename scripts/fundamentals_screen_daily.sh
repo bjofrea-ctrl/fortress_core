@@ -24,8 +24,12 @@
 #   - Ver: scripts/run_fundamentals_screen.py para los detalles del loop.
 #
 # Orden del orquestador (cron decide; este script sólo invoca):
-#   1. dataupdater (22:00) — refresca precios del universo 50
-#   2. fundamentals_screen (22:30) — ingesta FMP + screening + render
+#   1. dataupdater (22:00) — refresca precios del universo
+#   2. fundamentals_screen (22:30):
+#        2a. fetch_edgar_universe_facts (best-effort) — companyfacts EDGAR de TODO
+#            el universo operativo (idempotente, sólo re-baja lo que falta).
+#        2b. run_fundamentals_screen --resume — ingesta EDGAR primario (+ fallback
+#            FMP) + screening + render.
 #      El gap de 30min deja que yfinance termine primero y no compitan
 #      por CPU/red.
 #
@@ -48,6 +52,20 @@ echo "[$(date '+%Y-%m-%d %H:%M:%S')] fundamentals_screen_daily: inicio" >> "$LOG
 # relativos y CACHE_DIR resuelven contra backend/. Sin este cd, launchd
 # (cwd fuera del repo) rompe el import con ModuleNotFoundError.
 cd "$REPO/backend" || { echo "FATAL: no se pudo cd a $REPO/backend" >> "$LOG"; exit 1; }
+
+# Paso previo (best-effort): asegurar companyfacts EDGAR para TODO el universo
+# operativo ANTES del screen. El fetcher (scripts/fetch_edgar_universe_facts.py)
+# es idempotente (skip por tamano >1KB + rename atomico) y lee el universo
+# DINAMICAMENTE desde opportunities_universe.SYMBOLS, asi que solo re-baja los
+# simbolos NUEVOS y es barato en dias normales. Cierra la deriva observada el
+# 2026-09-09: NEW_UNIVERSE crecio 43->95 y nadie re-corrio el fetch -> 53 simbolos
+# sin companyfacts cayeron a FMP (ingestion_returned_none con throttling de cuota).
+# politica: si el fetch falla (throttle SEC / red), NO abortamos el job. El screen
+# igual corre con lo cacheado + fallback FMP, y --resume + este paso re-intentan
+# al dia siguiente. Por eso no se sale con el rc del fetch.
+"$VENV" -m scripts.fetch_edgar_universe_facts >> "$LAUNCHD_LOG" 2>&1
+FETCH_RC=$?
+echo "[$(date '+%Y-%m-%d %H:%M:%S')] fetch_edgar_universe_facts rc=$FETCH_RC (best-effort, no aborta)" >> "$LOG"
 
 # Lanzar el job. --resume permite retomar al día siguiente si el anterior
 # quedó a mitad. Sin --resume, el primer job del día arranca limpio
