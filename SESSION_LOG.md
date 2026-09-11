@@ -4596,3 +4596,26 @@ el par viejo completo, nunca mezcla; camino normal intacto con is_stale
 False. Hallazgo al medir: `_cache_date()` cuesta ~1s real (scan de ~110
 parquets) — por eso el camino SWR computa staleness desde el tuple en
 memoria en vez de disco.
+
+## 2026-09-11 — Re-verificación independiente del SWR (Kilo, worktree test-kilo-orca)
+
+Hallazgo al arrancar: el trabajo SWR (pre-registro 6756638 + implementación
+686d728, ambos ya pusheados a origin/bjofrea-ctrl/test-kilo-orca) estaba
+REVERTIDO en el worktree sin commitear (7 archivos vueltos a d752464;
+mtimes 19:40:13, autor del revert desconocido — no hay registro de por qué).
+En vez de reescribirlo, lo restauré verbatim (`git checkout HEAD -- .`) y
+lo verifiqué de forma independiente:
+
+- Diseño revisado línea por línea: snapshot `_last_complete_pair` en tupla
+  única (sin mezcla de generaciones por construcción); `is_stale` por edad
+  ≥ TTL en ambos caminos (honesto); cold start (par None) cae al camino
+  bloqueante; `_get_context`/`_get_tickets`/TTL/cadencia intactos;
+  `/symbol`, `/theses`, warmup sin cambios. Sin objeciones.
+- Tests propios del trabajo: 33 passed (swr 4/4 + warmup + api).
+- Falsación: con la rama SWR neutralizada (`if False and ...`), 2/4 tests
+  SWR fallan (los del camino no-bloqueante); restaurado, 4/4. Los tests
+  muerden lo que dicen morder.
+- Ruff limpio en los 5 archivos tocados.
+- TTL 300 y piso 60s intactos (verificado en diff).
+
+SIN merge a main (orden Boris). OpenCode re-verifica independiente.
