@@ -3447,3 +3447,55 @@ aísla fallos por ticker; logs por lote (inicio/fin/duración/fallos);
 - Tests: warmup 4/4, cleandays 25/25, execution_costs 24/24, nyse 18/18,
   iv 14/14+1skip. Nota: TestClient roto en venv (starlette/httpx mismatch);
   criterio 1 verificado vía startup()+health() directos.
+
+## 2026-09-10 — FIX criterio 2 warmup (fix-forward de 6f0c123, hallazgo OpenCode)
+
+Contexto: `6f0c123` (warmup advisor + load_universe paralelo) ya mergeado a
+main. OpenCode re-verificó y encontró el bug del criterio 2. Fix-forward en
+este worktree SIN merge — OpenCode re-verifica al terminar (orden Boris).
+
+**Bug 1 (criterio 2)**: `warmup_advisor_loop` dormía `interval_s` desde el FIN
+del ciclo. Con rebuild real 531s > TTL 300s, el re-warmup caía 3.6min DESPUÉS
+del vencimiento → ventana fría para todo request. El test no lo veía porque
+stubbeaba ciclos instantáneos. **Fix**: el loop ancla cada ciclo al
+VENCIMIENTO del cache (`_context_cache_time + TTL - now`), con
+`WARMUP_INTERVAL_SECONDS=60` de piso anti-spin (patología rebuild>TTL
+pre-declarada fuera de alcance en el pre-registro). Nota de diseño: apuntar a
+gen+280 sería un hit inútil — `_get_context` respeta el TTL y un ciclo con
+cache fresco no refresca nada; el piso de 60s con cache fresco cuesta ~ms.
+
+**Bug 2 (menor)**: `cache_date` null en `advisor_warmup_complete`:
+`_cache_date()` pedía `columns=["Close"]` pero el cache vivo del repo usa
+lowercase (`close`) → `ArrowInvalid` tragado por el `except` → None. Fix:
+`columns=[]` (solo índice, no lee datos — más barato). Verificado contra
+parquets reales del worktree: SPY/AAPL → 2026-09-09.
+
+**Tests**: +2 warmup con FakeClock (ciclo LENTO de 2s y TTL 4s: rebuild N+1
+arranca exactamente en gen+TTL, asserts numéricos contra delays [4.0, 4.0];
+piso anti-spin con ciclo 3s > TTL 2s: delay nunca 0, siempre ≥ intervalo)
++1 `_cache_date` lowercase en test_advisor_api.py. El test viejo de criterio
+2 queda como regression guard (ciclos instantáneos) con docstring que explica
+por qué él solo no detecta el bug.
+
+**Cierre de la jornada (post-suite)**: suite completa 852 tests (excluido
+`test_a6_n_trials_ledger.py`, untracked huérfano de otro frente que importa
+`_resolve_n_trials` inexistente en este worktree): 830 passed, 5 skipped,
+16 FAILED **preexistentes** — verificados con stash (fallan igual sin el
+fix): paper_trading 10, predict_cache 3, intraday_collector 2,
+config_registry 1 (venv: TestClient starlette/httpx roto + AttributeError
+alpaca; documentados desde el commit warmup original). 0 failures
+atribuibles al fix.
+
+**Falsación del fix** (sistema): revertí el loop a la versión post-ciclo
+vieja → `test_rewarmup_ciclo_lento_sin_ventana_fria` FALLA; restauré fix →
+pasa. Revertí `_cache_date` a `columns=["Close"]` →
+`test_cache_date_lee_indice_con_columnas_lowercase` FALLA; restauré → pasa.
+
+**Flake hallado y corregido en mi propio test**: el regression guard
+`test_rewarmup_evita_contexto_expirado` falló 1 vez en la suite completa
+(máquina a full: TTL=2s real + gap del scan `_cache_date()` de ~110 parquets
+> TTL). Reescrito determinista con FakeClock — ya no depende del load de la
+máquina. 3 corridas 29/29 después del cambio.
+
+SIN merge, SIN commit (regla git.no_commit_push_sin_indicacion_directa).
+Pendiente: OpenCode re-verifica el fix; Boris ordena commit/merge.

@@ -380,3 +380,14 @@ def test_cache_date_ignora_artefactos(tmp_path, monkeypatch):
 
     assert llamadas_yahoo == [], f"no debe golpear Yahoo, llamó con {llamadas_yahoo}"
     assert resultado == pd.Timestamp("2026-08-14")  # solo el universo cuenta
+
+
+def test_cache_date_lee_indice_con_columnas_lowercase(tmp_path, monkeypatch):
+    """El cache vivo usa columnas lowercase; la fecha no debe quedar null."""
+    monkeypatch.setattr(advisor, "_cache_dir", lambda: str(tmp_path))
+    idx = pd.bdate_range("2026-09-08", periods=2)
+    pd.DataFrame({"close": [100.0, 101.0]}, index=idx).to_parquet(
+        tmp_path / "AAPL.parquet"
+    )
+
+    assert advisor._cache_date() == pd.Timestamp("2026-09-09")

@@ -110,7 +110,7 @@ def _cache_date() -> Optional[pd.Timestamp]:
         if not os.path.exists(path):
             continue
         try:
-            idx = pd.read_parquet(path, columns=["Close"]).index
+            idx = pd.read_parquet(path, columns=[]).index
             if len(idx) == 0:
                 continue
             ts = pd.Timestamp(idx.max())
@@ -231,7 +231,17 @@ async def _get_tickets(price_data, today, regime_state, signal_engine, calibrato
 # de re-warmup reconstruye ambos ANTES de que expire el TTL, así ningún
 # request real alcanza un contexto expirado. Calienta contexto + tickets
 # (no solo contexto: el costo frío real está en el loop de tickets).
-WARMUP_INTERVAL_SECONDS = 280.0  # < TTL 300s: re-warmup preventivo
+#
+# FIX criterio 2 (OpenCode, 2026-09-10): el sleep original contaba desde el FIN
+# del ciclo. Con un rebuild de 531s (> TTL 300s) el próximo re-warmup caía a
+# gen+531+280: el contexto expiraba ~3.6min antes y todo request de esa
+# franja pagaba frío. Además, un ciclo que despierta con cache AÚN FRESCO es
+# un hit que NO refresca nada (_get_context respeta el TTL) — apuntar el
+# próximo ciclo a gen+280 solo produciría un hit inútil + spin de delay 0.
+# El anclaje correcto es el VENCIMIENTO (gen+TTL): el warmup despierta
+# exactamente cuando el cache expira y toma el rebuild antes que el primer
+# request (ventana fría ~0).
+WARMUP_INTERVAL_SECONDS = 60.0  # piso de reintento, NO el período (ver loop)
 
 
 async def warmup_advisor_once() -> Dict:
@@ -273,7 +283,15 @@ async def warmup_advisor_loop(
 ) -> None:
     """Loop de re-warmup en background (no bloquear startup: create_task).
 
-    `interval_s` < TTL garantiza que el rebuild arranca con cache aún válido.
+    Ancla cada ciclo al VENCIMIENTO del cache actual (gen + TTL), no a
+    "intervalo desde el fin del ciclo": `_get_context` respeta el TTL, así
+    que un ciclo que despierta con cache fresco es un hit que no refresca
+    nada. Despertar en el vencimiento hace que el warmup tome el rebuild
+    ANTES que el primer request real (ventana fría ~0).
+
+    `interval_s` es el piso de reintento (patología pre-declarada fuera de
+    alcance: rebuild > TTL — el cache expira mientras se reconstruye; sin
+    este piso dos hits encadenados despiertan cada 0s en spin).
     Un ciclo fallido se loguea y NO mata el loop (siguiente ciclo reintenta).
     `max_cycles` solo para tests deterministas (None = infinito en prod).
     """
@@ -281,12 +299,16 @@ async def warmup_advisor_loop(
     while True:
         try:
             await warmup_advisor_once()
+            # Anclar al vencimiento del contexto recién generado/tomado:
+            # despertar antes de gen+TTL es un hit inútil; después es frío.
+            delay = (_context_cache_time + _CONTEXT_CACHE_TTL_SECONDS) - time.monotonic()
         except Exception as e:  # noqa: BLE001 — el loop nunca muere
             logger.error("advisor_warmup_failed", extra={"error": str(e)})
+            delay = interval_s
         cycles += 1
         if max_cycles is not None and cycles >= max_cycles:
             return
-        await asyncio.sleep(interval_s)
+        await asyncio.sleep(max(delay, interval_s))
 
 
 def _build_tickets_sync(price_data, today, regime_state, signal_engine, calibrator, conformal):

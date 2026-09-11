@@ -89,8 +89,9 @@ async def startup():
     logger.info("Fortress Core backend started", extra={"environment": settings.ENVIRONMENT})
     # TASK_WARMUP_PARALELO_20260909 (Frente 1): calentar contexto + tickets
     # en background SIN bloquear el arranque — el server levanta igual y el
-    # primer visitante no paga el build frío (~minutos). Re-warmup cada 280s
-    # (< TTL 300s) para que ningún request alcance un contexto expirado.
+    # primer visitante no paga el build frío (~minutos). El loop ancla cada
+    # re-warmup al vencimiento del cache (gen+TTL, piso 60s) para que ningún
+    # request alcance un contexto expirado (fix criterio 2, 2026-09-10).
     asyncio.create_task(advisor.warmup_advisor_loop())
 
 
