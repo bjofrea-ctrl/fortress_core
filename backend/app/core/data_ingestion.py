@@ -1,3 +1,4 @@
+import glob
 import os
 import time
 from concurrent.futures import ThreadPoolExecutor
@@ -24,6 +25,38 @@ LOAD_UNIVERSE_MAX_WORKERS = 10
 # módulo sigue existiendo para la pasada full cuando se quiera.
 INTEGRITY_CHECK_ON_UPDATE = True
 
+# --------------------------------------------------------------------------
+# PERF (PRE_REG_REBUILD_531S_MEMOIZE_20260910): tres cortes al costo del hook.
+#
+# (1) MEMOIZE por (mtime, size) del parquet. La reconciliación es idempotente
+#     en RESULTADO (reconciliar bytes idénticos no muta nada — medido: 0
+#     re-descargas en 2ª pasada) pero NO en COSTO: sin memo, cada rebuild
+#     intradía (TTL 300s ⇒ hasta 12×/hora) repaga el reconcile CPU-bound
+#     completo. Invalidación natural: cualquier write real (updater nocturno,
+#     repair, re-descarga) cambia mtime/size ⇒ memo caído ⇒ el hook completo
+#     corre otra vez. La verificación NO se elimina: corre la primera vez del
+#     día y tras cada parquet tocado. Mismo espíritu que _CONTEXT_CACHE_TTL:
+#     verificar sí, bloquear no.
+_INTEGRITY_MEMO: "dict[str, tuple[float, int, pd.DataFrame]]" = {}
+
+# (2) VENTANA móvil (ruedas) que dispara el reconcile por hard-flag. Un
+#     hard-flag HISTÓRICO (split REGN 2018, volatilidad ^VIX, earnings ISRG)
+#     es legítimo y ya fue confirmado; no paga re-descarga 2015->hoy en cada
+#     rebuild. Solo un hard-flag en las últimas N ruedas (la ventana del
+#     updater diario) se trata como sospecha NUEVA y dispara la verificación
+#     contra descarga fresca. El doc midió 106/109 símbolos con hard-flags
+#     históricos legítimos pagando reconcile en cada rebuild.
+INTEGRITY_HARDFLAG_WINDOW_ROUNDS = 10
+
+# (3) CACHE perezoso de known_trading_days (fechas presentes en ≥1 símbolo del
+#     cache): auto-exclusión de cierres no programables (duelos presidenciales
+#     2018-12-05/2025-01-09, Sandy 2012-10-29/30) que el calendario NYSE no
+#     modela. find_intermediate_gaps(known_trading_days=...) ya los excluye; el
+#     hook los pasaba como None ⇒ 25 símbolos re-intentando una reparación que
+#     nunca prospera (440 intentos, 0 exitosos). El conjunto cambia a lo sumo
+#     1×/día ⇒ se re-computa una vez por día por cache_dir.
+_KNOWN_DAYS_CACHE: "dict[tuple[str, str], set]" = {}
+
 
 def _flatten_columns(df: pd.DataFrame) -> pd.DataFrame:
     """Flatten MultiIndex or tuple columns from yfinance 1.x."""
@@ -34,20 +67,88 @@ def _flatten_columns(df: pd.DataFrame) -> pd.DataFrame:
     return df
 
 
+def _known_trading_days_for(cache_dir: str) -> set:
+    """Fechas de mercado presentes en AL MENOS UN parquet del cache.
+
+    Alimenta find_intermediate_gaps(known_trading_days=...) para que un cierre
+    que ningún símbolo tiene (duelo presidencial, Sandy) NO se reporte como
+    hueco y dispare una reparación eterna. Se cachea por (cache_dir, fecha de
+    hoy): el conjunto cambia a lo sumo 1x/dia (append nocturno) y el hook ya
+    esta memoizado por mtime, asi que leer los parquets 1x/dia es despreciable.
+    """
+    if not cache_dir or not os.path.isdir(cache_dir):
+        return set()
+    key = (cache_dir, datetime.now().date().isoformat())
+    cached = _KNOWN_DAYS_CACHE.get(key)
+    if cached is not None:
+        return cached
+    try:
+        from app.core.cache_integrity import _market_days_present_in_cache
+    except ImportError:  # pragma: no cover - modulo propio, siempre presente
+        return set()
+    syms = [
+        os.path.basename(p)[: -len(".parquet")]
+        for p in glob.glob(os.path.join(cache_dir, "*.parquet"))
+    ]
+    present = _market_days_present_in_cache(cache_dir, syms)
+    _KNOWN_DAYS_CACHE.clear()          # una sola fecha valida por proceso
+    _KNOWN_DAYS_CACHE[key] = present
+    return present
+
+
 def _integrity_hook(ticker: str, df: pd.DataFrame, cache_path: str) -> pd.DataFrame:
-    """A0: sanidad + huecos sobre el cache recién actualizado (cero red).
+    """Memoize del veredicto de integridad por (mtime, size) del parquet.
 
-    Corre al final de download_data cuando el cache existe y tiene filas.
-    La parte con red (reconcile vs fresco) la dispara el validador cuando
-    un símbolo tiene hard-flag: un |retorno| >20% en large-cap es la firma
-    de la contaminación documentada (COMPARACION §3) y paga la descarga de
-    verificación. Todo falla blando: el hook jamás rompe la actualización
-    de precios — un error de integridad se loguea y se sigue.
-
-    Devuelve el DataFrame a devolver (el saneado si hubo reparación).
+    Corte del 531s (PRE_REG_REBUILD_531S_MEMOIZE_20260910): reconciliar bytes
+    identicos produce un veredicto identico (cero mutaciones), asi que una 2a
+    lectura del MISMO parquet saldea sin red ni CPU de reconcile. Cualquier write
+    real cambia mtime/size -> memo caido -> corre el hook completo
+    (_integrity_hook_full). La verificacion no se elimina: corre la primera vez
+    del dia y tras cada write.
     """
     if not INTEGRITY_CHECK_ON_UPDATE or df is None or len(df) == 0:
         return df
+    try:
+        st = os.stat(cache_path)
+        key_stat = (st.st_mtime, st.st_size)
+    except OSError:
+        key_stat = None
+    if key_stat is not None:
+        memo = _INTEGRITY_MEMO.get(cache_path)
+        if memo is not None and memo[0] == key_stat[0] and memo[1] == key_stat[1]:
+            # Mismos bytes que la ultima vez que este parquet se valido: veredicto
+            # identico. Copiamos para que el caller no contamine el memo al mutar
+            # el DataFrame en caliente.
+            return memo[2].copy()
+    out = _integrity_hook_full(ticker, df, cache_path)
+    if key_stat is not None:
+        # Re-stat: si el hook modifico el parquet (repair/re-descarga) el stat
+        # cambio y memoizamos el ESTADO NUEVO (coherente con `out`); si no lo
+        # toco, el stat es identico y la proxima lectura del mismo bytes saltea.
+        try:
+            st2 = os.stat(cache_path)
+            _INTEGRITY_MEMO[cache_path] = (st2.st_mtime, st2.st_size, out)
+        except OSError:
+            _INTEGRITY_MEMO.pop(cache_path, None)
+    return out
+
+
+def _integrity_hook_full(ticker: str, df: pd.DataFrame, cache_path: str) -> pd.DataFrame:
+    """A0: sanidad + huecos sobre el cache recién actualizado (cero red en el path limpio).
+
+    Corre al final de download_data cuando el cache existe y tiene filas (siempre
+    vía el wrapper memoizado _integrity_hook). La parte con red (reconcile vs
+    fresco) la dispara el validador SOLO cuando un símbolo tiene hard-flag en la
+    VENTANA móvil (últimas N ruedas): un |retorno| >20% reciente es la firma de la
+    contaminación documentada (COMPARACION §3) y paga la descarga de verificación.
+    Los hard-flags históricos legítimos (splits REGN/LRCX, earnings ISRG,
+    volatilidad ^VIX) se loguean pero NO re-descargan en cada rebuild (fix 2). Los
+    huecos se buscan con known_trading_days (fix 3) para no intentar reparar
+    cierres que ningún símbolo tiene. Todo falla blando: el hook jamás rompe la
+    actualización de precios — un error de integridad se loguea y se sigue.
+
+    Devuelve el DataFrame a devolver (el saneado si hubo reparación).
+    """
     try:
         from app.core.cache_integrity import (
             find_intermediate_gaps,
@@ -57,34 +158,51 @@ def _integrity_hook(ticker: str, df: pd.DataFrame, cache_path: str) -> pd.DataFr
     except ImportError:  # pragma: no cover — módulo propio, siempre presente en backend
         return df
 
+    cache_dir = os.path.dirname(cache_path)
+    known = _known_trading_days_for(cache_dir)
+
     flags = validate_returns(df, ticker)
     hard = [f for f in flags if f["level"] == "hard"]
     if hard:
+        # Fix 2 (H2): acotar el disparador a la ventana móvil del updater.
+        window = max(1, INTEGRITY_HARDFLAG_WINDOW_ROUNDS)
+        recent = {str(pd.Timestamp(d).date()) for d in df.index[-window:]}
+        recent_hard = [f for f in hard if f["date"] in recent]
         for f in hard:
-            print(
-                f"[cache_integrity] {ticker} SANIDAD: retorno {f['return']*100:+.1f}% "
-                f"el {f['date']} supera {f['threshold']*100:.0f}% ({f['level']}) — "
-                "verificar contra descarga fresca"
+            en_ventana = f["date"] in recent
+            accion = (
+                " — verificar contra descarga fresca"
+                if en_ventana
+                else " — hard-flag histórico ya confirmado, no re-descarga"
             )
-        # hard-flag: paga la reconciliación con descarga fresca de HOY para
-        # este símbolo (contaminación -> re-descarga completa; mosaico/hueco
-        # -> reparación dirigida). yf.download directo — el mismo canal del
-        # updater, misma base de reajuste del día.
-        reconcile_symbol(
-            ticker,
-            os.path.dirname(cache_path),
-            downloader=yf.download,
-            start="2015-01-01",
-        )
-        # el parquet pudo cambiar (re-descarga): releer para devolver lo sano
-        if os.path.exists(cache_path):
-            repaired = pd.read_parquet(cache_path)
-            if len(repaired):
-                repaired = _flatten_columns(repaired)
-                repaired.columns = [str(c).lower() for c in repaired.columns]
-                return repaired
-        return df
-    gaps = find_intermediate_gaps(df)
+            print(
+                f"[cache_integrity] {ticker} SANIDAD"
+                f"{'[ventana]' if en_ventana else '[hist]'}: retorno {f['return']*100:+.1f}% "
+                f"el {f['date']} supera {f['threshold']*100:.0f}% ({f['level']}){accion}"
+            )
+        if recent_hard:
+            # hard-flag EN ventana: paga la reconciliación con descarga fresca de
+            # HOY para este símbolo (contaminación -> re-descarga completa;
+            # mosaico/hueco -> reparación dirigida). yf.download directo — el mismo
+            # canal del updater, misma base de reajuste del día.
+            reconcile_symbol(
+                ticker,
+                cache_dir,
+                downloader=yf.download,
+                start="2015-01-01",
+                known_trading_days=known,
+            )
+            # el parquet pudo cambiar (re-descarga): releer para devolver lo sano
+            if os.path.exists(cache_path):
+                repaired = pd.read_parquet(cache_path)
+                if len(repaired):
+                    repaired = _flatten_columns(repaired)
+                    repaired.columns = [str(c).lower() for c in repaired.columns]
+                    return repaired
+            return df
+        # Solo hard-flags históricos confirmados: no se re-descarga (fix 2). Caemos
+        # a la revisión de huecos por debajo (barata, cero red).
+    gaps = find_intermediate_gaps(df, known)
     if gaps:
         print(
             f"[cache_integrity] {ticker} HUECOS: {len(gaps)} fechas de mercado "
@@ -93,9 +211,10 @@ def _integrity_hook(ticker: str, df: pd.DataFrame, cache_path: str) -> pd.DataFr
         )
         reconcile_symbol(
             ticker,
-            os.path.dirname(cache_path),
+            cache_dir,
             downloader=yf.download,
             start="2015-01-01",
+            known_trading_days=known,
         )
         if os.path.exists(cache_path):
             repaired = pd.read_parquet(cache_path)

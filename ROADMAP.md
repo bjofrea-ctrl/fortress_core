@@ -873,6 +873,30 @@ gantt
 
 ---
 
+## 🟡 ABIERTO (2026-09-10, Cline) — rama `perf/rebuild-integrity-memoize`, pendiente de merge
+
+Corte del rebuild de 531 s del advisor. Causa raíz medida por OpenCode
+(`test-opencode-orca/ANALISIS_REBUILD_531S.md`): el `_integrity_hook` de
+`data_ingestion.py` NO es idempotente en COSTO — reconcilia bytes idénticos en cada rebuild
+(2ª pasada = 1201 s ≈ 1ª). Tres fixes (ver `PRE_REG_REBUILD_531S_MEMOIZE_20260910.md`):
+(1) memoize por `(mtime,size)` del parquet, (2) el reconcile se dispara solo por hard-flags en
+la ventana móvil (últimas 10 ruedas), no por hard-flags históricos legítimos (splits/VIX), y
+(3) `find_intermediate_gaps`/`reconcile_symbol` reciben `known_trading_days` (elimina los 2–4
+cierres fantasma por duelo/Sandy que 25 símbolos re-intentaban reparar eternamente). Solo se
+toca `data_ingestion.py` (+ test nuevo) y un test de `test_cache_integrity` adaptado a la
+semántica multi-símbolo de `known_trading_days`. `cache_integrity.py` intacto.
+
+- **Medido (15 símbolos reales, zero-net, serial)**: 1ª pasada del hook 85.8 s → 1.5 s; 2ª
+  pasada 83.1 s → 0.2 s; reconciles/pasada 15 → 0; writes/pasada 15 → 0. Regresión
+  **57 passed** (`data_ingestion`+`cache_integrity`+M4+`advisor_warmup`+`feature_store`+7 nuevos).
+- **NO mergeado a main** — espera revisión de Boris. Para deployar: mergear `main` + reiniciar
+  el server (el memo y `known_days` viven en memoria del proceso; un restart re-valida una vez
+  y saldea después). Revertir = merge revert, o `INTEGRITY_CHECK_ON_UPDATE=False` (ya existe).
+- **Tickets aparte**: vectorizar `detect_cross_contamination` (abarata la 1ª pasada del día);
+  re-auditar cola SPY/QQQ (governance Capa 2).
+
+---
+
 ## Por qué existe este documento
 
 El patrón que se repitió en esta sesión: cada vez que una herramienta (OpenCode, Cline) entregaba

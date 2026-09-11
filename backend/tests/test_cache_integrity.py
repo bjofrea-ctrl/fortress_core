@@ -475,14 +475,27 @@ def test_download_data_hook_detecta_contaminacion_y_redisdescarga(monkeypatch, t
 
 
 def test_download_data_hook_repara_hueco_intermedio(monkeypatch, tmp_path, capsys):
-    """El hueco intermedio se repara vía download_data — no solo el extremo."""
+    """El hueco intermedio se repara vía download_data — no solo el extremo.
+
+    Fix 3 (PRE_REG_REBUILD_531S_MEMOIZE_20260910): el hook ahora busca huecos
+    con known_trading_days = fechas presentes en AL MENOS UN símbolo del cache
+    (auto-exclusión de cierres por duelo/Sandy que NINGÚN símbolo tiene). Para
+    que un hueco real de AKAM sea detectable, al menos un PAR del cache debe
+    tener esa fecha — como ocurre en producción (109 símbolos), no como un
+    cache mono-símbolo. Se seedea un parquet "PEER" completo para modelarlo.
+    """
     import app.core.data_ingestion as di
 
     monkeypatch.setattr(di, "CACHE_DIR", str(tmp_path))
+    monkeypatch.setattr(di, "_INTEGRITY_MEMO", {})
+    monkeypatch.setattr(di, "_KNOWN_DAYS_CACHE", {})
     days = _market_days(pd.Timestamp("2026-08-10").date(), pd.Timestamp("2026-08-31").date())
     full = _ohlcv(days, base=80.0)
     holed = full.drop(index=pd.Timestamp("2026-08-28"))
     holed.to_parquet(tmp_path / "AKAM.parquet")
+    # PEER tiene TODAS las ruedas (incl. 2026-08-28): sin par, known_excluiría
+    # la fecha como cierre y el hueco no sería reparable (semántica de fix 3).
+    full.to_parquet(tmp_path / "PEER.parquet")
 
     # el refresh normal pide desde last_date (31-ago): devuelve el 31-ago
     def fake_dl(ticker, start=None, end=None, progress=False):
