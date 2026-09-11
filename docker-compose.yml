@@ -1,33 +1,20 @@
 version: "3.9"
 
-services:
-  db:
-    image: postgres:15
-    environment:
-      POSTGRES_DB: fortress_db
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-    ports:
-      - "5432:5432"
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    deploy:
-      resources:
-        limits:
-          memory: 2G
+# Nota (2026-09-11, deploy VPS): el servicio "db" (Postgres) del compose
+# original nunca existió en la app real — el backend usa SQLite local
+# (backend/fortress.db, ver app/core/signal_ledger.py) desde el día uno.
+# Se saca acá: no aporta nada y reservaba 2G de RAM sin uso.
 
+services:
   backend:
     build: ./backend
     ports:
       - "8000:8000"
-    depends_on:
-      - db
     env_file:
       - .env
-    environment:
-      DATABASE_URL: postgresql://user:password@db:5432/fortress_db
     volumes:
       - ./backend/data:/app/data
+      - ./backend/fortress.db:/app/fortress.db
     deploy:
       resources:
         limits:
@@ -43,6 +30,3 @@ services:
       resources:
         limits:
           memory: 1G
-
-volumes:
-  pgdata:
