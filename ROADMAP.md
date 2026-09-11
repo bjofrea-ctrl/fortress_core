@@ -915,6 +915,21 @@ Nota: `data/cache_fundamentals_ingestion/` local quedó backfilleada (real, .git
 
 ---
 
+## 🟡 ABIERTO (2026-09-10, Cline) — rama `audit/dashboard-utilidad` (documento, sin código)
+
+Auditoría completa de utilidad del dashboard: `AUDITORIA_DASHBOARD_UTILIDAD_20260911.md`. Veredicto
+global: **dashboard fiel al propósito** (Mesa/Detalle = instrumento M2 real con gates, tesis, ledger,
+costos medidos; Fundamentos = motor canónico Greenblatt/Piotroski/Altman/Beneish real). Hallazgos de
+CONTEXTO (no de fuente; sincronía backend↔frontend verificada campo por campo, cero huérfanos):
+- G1 · Portfolio muestra el BASELINE de 6 large-cap (`backtest_results.json`) sin vintage/caveat.
+- G1 · `factors` del ticket sin lector vivo (UniverseTable/DecisionPanel muertos).
+- G2 · Widget TV externo + MarketOverview/LiveTicker solapados + 3 componentes muertos.
+- G3 · 16 indicadores calculados no visualizados; `final_decision` gobernanza no alimenta tickets (A9 por diseño).
+Casos verificados: Gobernanza lee el flag A9 exacto (100% sinc.); screening con backfill 47/47 coherente.
+Para implementar SOLO con decisión explícita (son recomendaciones, no fixes).
+
+---
+
 ## Por qué existe este documento
 
 El patrón que se repitió en esta sesión: cada vez que una herramienta (OpenCode, Cline) entregaba
