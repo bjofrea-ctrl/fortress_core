@@ -162,16 +162,17 @@ def test_job_no_retry_on_symbol_failure(monkeypatch, tmp_path):
     assert any(f["symbol"] == "BAD" for f in state["failed_symbols"])
 
 
-@pytest.mark.xfail(
-    reason="Misma raiz que test_job_aborts_when_fmp_client_unavailable: la "
-    "semantica de DAILY_FMP_BUDGET asumia FMP como unica fuente; con EDGAR "
-    "primario el budget de FMP ya no frena el loop igual. Decision de "
-    "diseno pendiente (Cline): redefinir que significa 'budget agotado' "
-    "cuando EDGAR cubre la mayoria del universo sin tocar FMP.",
-    strict=True,
-)
+# Semántica definida en PRE_REG_PROFILE_EDGAR_BACKFILL_20260910.md: "budget
+# agotado" = no quedan calls FMP para el MÍNIMO del siguiente símbolo (2 si
+# tiene companyfacts → backfill de foto; 5 si no → ingest live). Ya no es
+# XFAIL: el fix 2026-09-10 dio la contabilidad real de cuota con EDGAR
+# (last_fmp_calls) y el guard reserva ese mínimo.
 def test_job_budget_stops_loop(monkeypatch, tmp_path):
-    """Si el budget se agota, el job para de iterar y guarda el state."""
+    """Si el budget se agota, el job para de iterar y guarda el state.
+
+    Los símbolos con companyfacts cuestan 2 calls (backfill de foto); sin
+    companyfacts, 5 (ingest live). Ambos frenan igual en el guard.
+    """
     monkeypatch.setattr(settings, "FMP_API_KEY", "fake-key")
     monkeypatch.setattr(job, "STATE_PATH", str(Path(tmp_path) / "state.json"))
     monkeypatch.setattr(job, "CACHE_DIR", str(tmp_path))
@@ -573,4 +574,75 @@ def test_inject_stale_banner_unit(tmp_path):
     assert "DATOS STALE" in html
     assert "<body" in html
     assert "contenido real" in html  # el contenido del motor se conserva
+
+
+# ---------------------------------------------------------------------------
+# Bug 2026-09-10: EDGAR path + backfill de photo de mercado. La contabilidad de
+# cuota usa last_fmp_calls reales (0 cache/EDGAR puro | 2 EDGAR+backfill | 5
+# live). Pre-registro: PRE_REG_PROFILE_EDGAR_BACKFILL_20260910.md (A2/A7).
+# ---------------------------------------------------------------------------
+
+
+def test_job_counts_edgar_backfill_calls(monkeypatch, tmp_path):
+    """Un símbolo EDGAR con backfill suma 2 calls a calls_used (no 0, no 5)."""
+    monkeypatch.setattr(settings, "FMP_API_KEY", "fake-key")
+    monkeypatch.setattr(job, "STATE_PATH", str(Path(tmp_path) / "state.json"))
+    monkeypatch.setattr(job, "CACHE_DIR", str(tmp_path))
+    monkeypatch.setattr(job, "DAILY_FMP_BUDGET", 240)
+
+    def fake_screen_payload(payload):
+        return {"balde": "Neutral"}
+
+    class FakeFmp:
+        is_available = lambda self: True
+
+    class FakeIngester:
+        fmp = FakeFmp()
+        last_fmp_calls = 2  # el ingester real reporta el backfill EDGAR
+
+        def ingest_symbol(self, sym):
+            return {"symbol": sym, "income_statement": [], "balance_sheet": [],
+                    "cash_flow": [], "profile": {"symbol": sym, "price": 100},
+                    "price_target_consensus": {}, "_data_source": "edgar_primary"}
+
+    monkeypatch.setattr(job, "FundamentalsIngestion", lambda **kwargs: FakeIngester())
+    monkeypatch.setattr(job, "screen_payload", fake_screen_payload)
+
+    rc = job.main(["run_fundamentals_screen", "--universe", "AAPL",
+                   "--date", "2026-08-27"])
+    assert rc == 0
+    state = json.loads(Path(tmp_path, "state.json").read_text())
+    assert state["calls_used"] == 2, "EDGAR+backfill suma las 2 calls reales"
+
+
+def test_job_budget_guard_reserves_backfill_calls(monkeypatch, tmp_path):
+    """Con menos calls del mínimo del primer símbolo, el guard frena ANTES de
+    tocar red: completed vacío y calls_used sin cambios (A2 del pre-registro).
+    Robusto a la existencia local de companyfacts (min 2 o 5, siempre > 1)."""
+    monkeypatch.setattr(settings, "FMP_API_KEY", "fake-key")
+    monkeypatch.setattr(job, "STATE_PATH", str(Path(tmp_path) / "state.json"))
+    monkeypatch.setattr(job, "CACHE_DIR", str(tmp_path))
+    monkeypatch.setattr(job, "DAILY_FMP_BUDGET", 1)
+
+    def fake_screen_payload(payload):
+        return {"balde": "Neutral"}
+
+    class FakeFmp:
+        is_available = lambda self: True
+
+    class FakeIngester:
+        fmp = FakeFmp()
+
+        def ingest_symbol(self, sym):
+            raise AssertionError("no debe llegar a ingestar: budget < mínimo")
+
+    monkeypatch.setattr(job, "FundamentalsIngestion", lambda **kwargs: FakeIngester())
+    monkeypatch.setattr(job, "screen_payload", fake_screen_payload)
+
+    rc = job.main(["run_fundamentals_screen", "--universe", "AAPL,MSFT",
+                   "--date", "2026-08-27"])
+    state = json.loads(Path(tmp_path, "state.json").read_text())
+    assert state["completed_symbols"] == [], "nada se procesó con budget insuficiente"
+    assert state["calls_used"] == 0, "no se quemó cuota FMP"
+    assert rc in (0, 4), f"termina limpio (stale placeholder si 0 datos), rc={rc}"
 

@@ -33,6 +33,16 @@ def _facts():
         return json.load(f)
 
 
+class _InertFmp:
+    """FMP sin key: is_available False — sin red real en los tests de ingest."""
+
+    api_key = None
+    base_url = ""
+
+    def is_available(self):
+        return False
+
+
 # ---------------------------------------------------------------------------
 # load_edgar_companyfacts
 # ---------------------------------------------------------------------------
@@ -185,10 +195,15 @@ def test_ingest_symbol_edgar_primary(tmp_path):
     cache_dir = tmp_path / "cache"
     edgar_dir.mkdir()
     shutil.copy(FIXT, edgar_dir / "AAPL_companyfacts.json")
-    ing = FundamentalsIngestion(edgar_dir=str(edgar_dir), cache_dir=str(cache_dir))
+    ing = FundamentalsIngestion(fmp=_InertFmp(), edgar_dir=str(edgar_dir), cache_dir=str(cache_dir))
     payload = ing.ingest_symbol("AAPL")
     assert payload is not None
     assert payload["_data_source"] == "edgar_primary"
+    assert payload["income_statement"] and payload["balance_sheet"] and payload["cash_flow"]
+    # Sin FMP (key/key apagada): el backfill de foto no corre y el payload EDGAR
+    # conserva su stub; el símbolo NO se descarta por eso (criterio A3).
+    assert (payload.get("profile") or {}).get("price") is None
+    assert ing.last_fmp_calls == 0
     # cache escrito en disco
     assert (cache_dir / "AAPL.json").exists()
 
@@ -197,7 +212,7 @@ def test_ingest_symbol_missing_edgar_falls_through(tmp_path):
     # Sin archivo EDGAR y sin FMP (sin key): el adaptador no debe inventar nada.
     cache_dir = tmp_path / "cache"
     cache_dir.mkdir()
-    ing = FundamentalsIngestion(edgar_dir=str(tmp_path), cache_dir=str(cache_dir))
+    ing = FundamentalsIngestion(fmp=_InertFmp(), edgar_dir=str(tmp_path), cache_dir=str(cache_dir))
     # Sin fixture y sin FMP key real => ingest_symbol debe devolver None
     # (comportamiento legacy preservado: EDGAR ausente => fallback FMP).
     assert ing.ingest_symbol("ZZZZ") is None

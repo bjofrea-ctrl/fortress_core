@@ -282,19 +282,31 @@ def main(argv: Optional[List[str]] = None) -> int:
             # EDGAR primario = sin cuota FMP: si el símbolo tiene companyfacts,
             # no lo frenamos por presupuesto FMP.
             edgar_path = os.path.join(EDGAR_DIR, f"{sym.upper()}_companyfacts.json")
-            if budget_remaining < 5 and not os.path.exists(edgar_path):
+            # El símbolo con companyfacts cuesta 2 calls FMP (backfill de photo
+            # de mercado); sin companyfacts el ingest live cuesta 5.
+            min_need = 5 if not os.path.exists(edgar_path) else 2
+            if budget_remaining < min_need:
                 msg = (f"Budget {DAILY_FMP_BUDGET} agotándose "
-                       f"({budget_remaining} restantes), parando en {sym}")
+                       f"({budget_remaining} restantes, faltan ≥{min_need} para {sym}), "
+                       f"parando en {sym}")
                 logger.warning("fundamentals_screen_budget_stopping",
                               extra={"sym": sym, "reason": msg})
                 break
             try:
                 payload = ingester.ingest_symbol(sym)
                 if payload is None:
-                    # FMP no entregó datos para este símbolo. Cross-check Finnhub
-                    # (B0 diferido) como respaldo independiente: si Finnhub SÍ
-                    # tiene datos, confirma que el problema es de FMP (key/quota/
-                    # endpoint, causa externa) y no del símbolo. Nunca bloquea.
+                    # FMP no entregó datos para este símbolo. Contabilizamos lo
+                    # que el ingester SÍ consumió (el intento live es real, la
+                    # cuota se quemó aunque el resultado fuera None).
+                    calls = getattr(ingester, "last_fmp_calls", None)
+                    if calls is None:
+                        calls = 5  # ingester de test: asume intento live
+                    state["calls_used"] += calls
+                    budget_remaining -= calls
+                    # Cross-check Finnhub (B0 diferido) como respaldo
+                    # independiente: si Finnhub SÍ tiene datos, confirma que el
+                    # problema es de FMP (key/quota/endpoint, causa externa) y
+                    # no del símbolo. Nunca bloquea.
                     cross = _finnhub_crosscheck(ingester, sym)
                     state["failed_symbols"].append(
                         {"symbol": sym, "reason": "ingestion_returned_none",
@@ -306,11 +318,15 @@ def main(argv: Optional[List[str]] = None) -> int:
                 eval_ = screen_payload(payload)
                 results[sym] = eval_
                 state["completed_symbols"].append(sym)
-                # EDGAR no consume cuota FMP: sólo contabilizamos las calls
-                # reales de FMP (fuente secundaria / cross-check).
-                if payload.get("_data_source") != "edgar_primary":
-                    state["calls_used"] += 5
-                    budget_remaining -= 5
+                # Contabilidad REAL de cuota FMP por símbolo: last_fmp_calls del
+                # ingester (0 cache/EDGAR puro, 2 EDGAR+backfill, 5 live). Los
+                # ingesters que no exponen el atributo (tests/fakes) caen al modo
+                # previo: 5 si no es edgar_primary, 0 si lo es.
+                calls = getattr(ingester, "last_fmp_calls", None)
+                if calls is None:
+                    calls = 0 if payload.get("_data_source") == "edgar_primary" else 5
+                state["calls_used"] += calls
+                budget_remaining -= calls
                 logger.info("fundamentals_screen_symbol_ok",
                             extra={"sym": sym,
                                    "calls_used": state["calls_used"]})

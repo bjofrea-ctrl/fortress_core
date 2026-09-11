@@ -897,6 +897,24 @@ semántica multi-símbolo de `known_trading_days`. `cache_integrity.py` intacto.
 
 ---
 
+## 🟡 ABIERTO (2026-09-10, Cline) — rama `fix/fundamentals-profile-backfill`, pendiente de merge
+
+Bug confirmado con datos reales (VPS Oracle 09-09): con EDGAR cubriendo los estados, el path EDGAR de
+`fundamentals_ingestion.ingest_symbol` devolvía SIN pasar por `_ingest_live` — el único que pedía
+`fmp.profile` — dejando `profile` con el stub de `build_fmp_shaped_payload` (solo companyName/symbol,
+sin price/marketCap/beta). Sin price no hay scoring de valuación: dashboard 09-09 = 98 analizadas,
+0 Deep Dive, 0 Watchlist, 83 Descartadas. Fix en `fundamentals_ingestion.py` (backfill liviano de
+profile+price_target = 2 calls FMP, no bloqueante, cache/TTL respetados) + contabilidad real de cuota
+en `run_fundamentals_screen.py` (`last_fmp_calls`: 0 cache puro / 2 EDGAR+backfill / 5 live; guard de
+budget mínimo por símbolo). `cache_integrity.py` intacto. Medido real (47 símbolos):
+**price/market_cap 0/47 → 47/47**; calls reales 94 ≤ 240; regresión offline 123 passed, 1 skipped
+(+1 deselected por xfail pre-existente lento en test_fundamentals_screen_job).
+Pre-registro: `PRE_REG_PROFILE_EDGAR_BACKFILL_20260910.md`. NO mergeado a main (push pendiente:
+token gh expirado en este entorno — requiere `gh auth login` o push desde otra máquina).
+Nota: `data/cache_fundamentals_ingestion/` local quedó backfilleada (real, .gitignored).
+
+---
+
 ## Por qué existe este documento
 
 El patrón que se repitió en esta sesión: cada vez que una herramienta (OpenCode, Cline) entregaba

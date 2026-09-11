@@ -32,7 +32,7 @@ import os
 import tempfile
 import time
 from datetime import datetime, timezone
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Tuple
 
 import requests  # única dependencia externa; el resto es stdlib.
 
@@ -148,6 +148,10 @@ class FundamentalsIngestion:
         # seeding (sin cuota) y FMP queda como secundaria / cross-check. Por
         # defecto None => comportamiento legacy (solo FMP), tests intactos.
         self.edgar_dir = edgar_dir
+        # Calls FMP reales que consumió el último ingest_symbol (0 backfill/cache,
+        # 2 backfill EDGAR, 5 live). Lo lee run_fundamentals_screen para la
+        # contabilidad de cuota REAL (criterio A2 del pre-registro).
+        self.last_fmp_calls = 0
 
     # ------------------------------ cache helpers ------------------------------
 
@@ -231,6 +235,9 @@ class FundamentalsIngestion:
         """
         sym = symbol.upper()
         now = now if now is not None else time.time()
+        # Contabilidad de cuota por llamada: cada ingest_symbol arranca en 0 y
+        # las rutas con red lo actualizan (2 backfill EDGAR / 5 live).
+        self.last_fmp_calls = 0
         path = self._cache_path(sym)
 
         if not force and os.path.exists(path):
@@ -241,15 +248,29 @@ class FundamentalsIngestion:
                 return self._ingest_live(sym, now, path)
             if not self.needs_refresh(sym, now=now):
                 age = self._cache_age_days(path, now)
+                if self._has_market_profile(cached):
+                    print(
+                        f"[fundamentals_ingestion] {sym} cache hit: fresh, "
+                        f"age {age:.0f}d <= {TTL_DAYS}d, no refresh needed"
+                    )
+                    return cached
+                # Cache fresco pero SIN foto de mercado (EDGAR stub anterior al
+                # backfill): adjuntar profile+price_target UNA vez (2 endpoints
+                # FMP, livianos). Si FMP no responde, quedan los null de hoy —
+                # el símbolo NO se descarta por esto (criterio A3).
                 print(
-                    f"[fundamentals_ingestion] {sym} cache hit: fresh, "
-                    f"age {age:.0f}d <= {TTL_DAYS}d, no refresh needed"
+                    f"[fundamentals_ingestion] {sym} cache hit: fresh, sin foto "
+                    "de mercado -> backfill FMP liviano"
                 )
-                return cached
+                merged = dict(cached)
+                self._attach_or_fetch_profile(merged, cached, sym, path)
+                return merged
             # EDGAR es fuente primaria: si hay companyfacts, preferlo al
-            # refresh FMP (sin quemar cuota). Si no, refresh live normal.
+            # refresh FMP de statements (sin quemar cuota). Igual se adjunta
+            # la foto de mercado, que EDGAR no aporta (bug 2026-09-10).
             edgar = self._ingest_edgar(sym, now, path)
             if edgar is not None:
+                self._attach_or_fetch_profile(edgar, cached, sym, path)
                 return edgar
             print(
                 f"[fundamentals_ingestion] {sym} cache stale: age "
@@ -265,6 +286,7 @@ class FundamentalsIngestion:
             print(f"[fundamentals_ingestion] {sym} cache{'' if force else ' miss'}: full ingest")
             edgar = self._ingest_edgar(sym, now, path)
             if edgar is not None:
+                self._attach_or_fetch_profile(edgar, None, sym, path)
                 return edgar
             return self._ingest_live(sym, now, path)
 
@@ -274,9 +296,11 @@ class FundamentalsIngestion:
         ingesta falla avisa y devuelve None para que el llamador conserve previo.
         """
         if not self.fmp.is_available() or not self.fmp.api_key:
+            self.last_fmp_calls = 0
             logger.info("fundamentals_refresh_no_fmp_key", extra={"symbol": sym, "preserve": preserve is not None})
             return None
 
+        self.last_fmp_calls = 5
         income = self.fmp.income_statement(sym)
         bal = self.fmp.balance_sheet(sym)
         cash = self.fmp.cash_flow(sym)
@@ -323,6 +347,89 @@ class FundamentalsIngestion:
         if isinstance(data, list) and data:
             return data[0]
         return data
+
+    @staticmethod
+    def _has_market_profile(payload: Optional[Dict]) -> bool:
+        """True si el profile trae FOTO de mercado (price/marketCap/mktCap > 0).
+
+        El profile EDGAR es un stub (solo companyName/symbol) y NO cuenta como
+        foto: sin esta distinción el path fresco re-pediría profile en cada
+        corrida aunque ya esté backfilleado (definición de "fresco", A4).
+        """
+        if not payload:
+            return False
+        prof = payload.get("profile") or {}
+        if not isinstance(prof, dict):
+            return False
+        price = prof.get("price")
+        cap = prof.get("marketCap") or prof.get("mktCap")
+        return (
+            isinstance(price, (int, float)) and price > 0
+        ) or (
+            isinstance(cap, (int, float)) and cap > 0
+        )
+
+    def _fetch_profile_light(self, sym: str) -> Tuple[Optional[Dict], Optional[Dict]]:
+        """profile + price_target_consensus solos (2 endpoints FMP, livianos).
+
+        Ruta EDGAR: los statements vienen de companyfacts (sin cuota); FMP solo
+        aporta la foto de mercado (precio, market_cap, beta) y el consenso de
+        analistas. NUNCA bloquea ni puede abortar el ingest: si FMP falla
+        devuelve (None, None) y los campos de mercado quedan null como hoy
+        (el símbolo no se descarta por eso). Actualiza `last_fmp_calls`.
+        """
+        prof = None
+        pt = None
+        calls = 0
+        if self.fmp.is_available() and self.fmp.api_key:
+            prof = self._first(self.fmp.profile(sym)) or None
+            calls += 1
+            pt = self._first(self.fmp.price_target_consensus(sym)) or None
+            calls += 1
+        self.last_fmp_calls = calls
+        if calls == 0:
+            logger.info("fmp_profile_light_unavailable", extra={"symbol": sym})
+        return prof, pt
+
+    def _attach_or_fetch_profile(self, payload: Dict, cached: Optional[Dict], sym: str, path: str) -> None:
+        """Asegura la foto de mercado sobre un payload cuyos statements NO vienen
+        de FMP (EDGAR), respetando cache y TTL (criterios A3/A4):
+
+        - payload ya con foto -> no hace nada (0 calls).
+        - FMP disponible -> backfill liviano (2 calls) con foto fresca.
+        - FMP caído pero cache previo con foto -> conserva esa foto (degradación
+          elegante: foto vieja > null; no re-pide lo que ya hay).
+        - FMP caído y sin foto previa -> quedan los null de hoy; el símbolo NO
+          se descarta.
+
+        Si el payload cambió, re-escribe el cache para persistir el backfill.
+        """
+        if self._has_market_profile(payload):
+            return
+        prof, pt = self._fetch_profile_light(sym)
+        if prof is None and cached is not None and self._has_market_profile(cached):
+            payload["profile"] = cached.get("profile")
+            payload["price_target_consensus"] = cached.get("price_target_consensus")
+            print(
+                f"[fundamentals_ingestion] {sym} EDGAR: FMP sin foto, conservado "
+                "profile del cache previo"
+            )
+            return
+        changed = False
+        if prof is not None:
+            payload["profile"] = prof
+            changed = True
+        if pt is not None:
+            payload["price_target_consensus"] = pt
+            changed = True
+        if changed:
+            self._write_cache(path, payload)
+            print(f"[fundamentals_ingestion] {sym} EDGAR: profile backfill OK (2 calls FMP)")
+        else:
+            print(
+                f"[fundamentals_ingestion] {sym} EDGAR: profile backfill sin datos "
+                "FMP (fields null; símbolo NO descartado)"
+            )
 
     def _finnhub_cross(self, sym: str) -> Optional[Dict]:
         """Cruce opcional con Finnhub, nunca bloqueante y siempre no-verificado."""

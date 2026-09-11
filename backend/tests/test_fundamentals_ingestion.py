@@ -277,3 +277,110 @@ def test_excel_fixture_covers_motor_core_columns():
     headers = _load_excel_headers(REAL_EXCEL)
     for col in COLS_ESENCIALES + COLS_NUCLEO:
         assert col in headers, f"columna núcleo ausente en export real: {col}"
+# ---------------------------------------------------------------------------
+# Bug 2026-09-10: EDGAR cubre los statements pero NO la foto de mercado
+# (profile stub sin price/marketCap => 0 Deep Dive en el screen). El fix
+# adjunta profile + price_target_consensus vía FMP liviana (2 endpoints) sin
+# bloquear ni descartar el símbolo. Pre-registro:
+# PRE_REG_PROFILE_EDGAR_BACKFILL_20260910.md (criterios A3/A4/A6).
+# ---------------------------------------------------------------------------
+
+
+def _make_edgar(tmp_path, fake=None):
+    """FundamentalsIngestion con edgar_dir que cubre AAPL (fixture XBRL real)."""
+    import shutil
+    edgar_dir = tmp_path / "edgar"
+    edgar_dir.mkdir()
+    shutil.copy(
+        os.path.join(os.path.dirname(__file__), "fixtures", "edgar",
+                     "edgar_companyfacts_aapl.json"),
+        edgar_dir / "AAPL_companyfacts.json",
+    )
+    fake = fake if fake is not None else FakeFmp()
+    ing = FundamentalsIngestion(fmp=fake, cache_dir=str(tmp_path / "cache"),
+                                edgar_dir=str(edgar_dir))
+    return ing, fake
+
+
+def test_edgar_path_backfills_market_profile(tmp_path):
+    """EDGAR cubre los statements; el fix adjunta profile+pt (2 calls FMP)."""
+    ing, fake = _make_edgar(tmp_path)
+    payload = ing.ingest_symbol("AAPL")
+    assert payload is not None
+    assert payload["_data_source"] == "edgar_primary"
+    assert payload["income_statement"] and payload["balance_sheet"] and payload["cash_flow"]
+    prof = payload["profile"] or {}
+    assert prof.get("price") and prof.get("marketCap"), "backfill adjuntó la foto de mercado"
+    assert prof.get("beta") is not None
+    assert (payload.get("price_target_consensus") or {}).get("targetConsensus") is not None
+    assert ing.last_fmp_calls == 2, "backfill liviano = 2 endpoints FMP"
+    assert fake.calls.count("profile") == 1
+    assert fake.calls.count("price-target-consensus") == 1
+    # Persistido en cache (el backfill no se pierde en la corrida siguiente).
+    cache = json.load(open(ing._cache_path("AAPL")))
+    assert (cache.get("profile") or {}).get("price") == 175.32
+
+
+def test_edgar_backfill_failure_keeps_payload_no_abort(tmp_path):
+    """FMP sin foto: el símbolo NO se descarta; quedan los null de hoy (A3)."""
+    fake = FakeFmp(empty=("profile", "price-target-consensus"))
+    ing, _ = _make_edgar(tmp_path, fake)
+    payload = ing.ingest_symbol("AAPL")
+    assert payload is not None, "FMP caído no aborta el ingest EDGAR"
+    assert payload["_data_source"] == "edgar_primary"
+    assert payload["income_statement"], "statements EDGAR siguen presentes"
+    assert ing.last_fmp_calls == 2, "los 2 endpoints se intentaron (cuota real)"
+    # [] de FMP se normaliza a None: el profile conserva el stub EDGAR (dict),
+    # nunca se escribe una lista vacía que rompería la forma del payload.
+    prof = payload.get("profile")
+    assert isinstance(prof, dict), "profile sigue siendo dict (stub EDGAR), no []"
+    assert not (prof.get("price") or prof.get("marketCap")), "sin foto: campos nulos como antes"
+
+
+def test_edgar_backfill_fresh_second_pass_zero_calls(tmp_path):
+    """A4: backfill hecho, segunda corrida = cache hit con foto, 0 calls."""
+    ing, fake = _make_edgar(tmp_path)
+    ing.ingest_symbol("AAPL")
+    fake.calls.clear()
+    ing.last_fmp_calls = 99  # debe resetearse: cache hit no consume cuota
+    payload = ing.ingest_symbol("AAPL")
+    assert (payload.get("profile") or {}).get("price") is not None
+    assert fake.calls == [], "segunda pasada con foto: 0 llamadas FMP"
+    assert ing.last_fmp_calls == 0, "cache hit reporta 0 calls"
+
+
+def test_edgar_stale_conserves_previous_profile_when_fmp_down(tmp_path):
+    """Degradación elegante: FMP cae en refresh stale; se conserva la foto previa."""
+    ing, fake = _make_edgar(tmp_path)
+    ing.ingest_symbol("AAPL")  # backfill inicial OK (foto de mercado)
+    path = ing._cache_path("AAPL")
+    old = time.time() - (TTL_DAYS + 1) * 86400
+    os.utime(path, (old, old))  # cache stale -> re-siembra EDGAR
+    fake.empty = {"profile", "price-target-consensus"}  # y FMP "cae"
+    payload = ing.ingest_symbol("AAPL")
+    assert payload["_data_source"] == "edgar_primary"
+    assert (payload.get("profile") or {}).get("price") == 175.32, \
+        "foto previa conservada (mejor que null)"
+
+
+def test_edgar_live_positions_present(tmp_path):
+    """AAPL con EDGAR y FMP OK: price_target y en _ingest_live sigue intacto."""
+    ing, _ = _make_edgar(tmp_path)
+    payload = ing.ingest_symbol("AAPL", force=False)
+    assert payload is not None and payload["_data_source"] == "edgar_primary"
+    # el path live (5 calls) sigue existiendo y cuenta 5
+    ing2, fake2 = _make(tmp_path)
+    ing2.ingest_symbol("AAPL")
+    assert fake2.calls.count("income-statement") == 1
+    assert ing2.last_fmp_calls == 5
+
+
+def test_screen_payload_sees_price_after_backfill(tmp_path):
+    """A6: screen_payload sobre EDGAR+backfill ve price/market_cap > 0."""
+    from app.core.fundamentals_screen import screen_payload
+    ing, _ = _make_edgar(tmp_path)
+    payload = ing.ingest_symbol("AAPL")
+    result = screen_payload(payload)
+    assert (result.get("price") or 0) > 0, "screen ve el precio tras el backfill"
+    assert (result.get("market_cap") or 0) > 0, "screen ve el market_cap tras el backfill"
+    assert (result.get("beta") or 0) > 0, "screen ve la beta tras el backfill"
