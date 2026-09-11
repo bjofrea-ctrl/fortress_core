@@ -451,3 +451,14 @@ def test_evidence_ledger_vacio_sigue_vivo(monkeypatch, tmp_path):
     assert body["total_trials"] == 0
     assert body["families"] == [] and body["recent"] == []
     assert body["n_inejecutables"] == 0
+
+
+def test_cache_date_lee_indice_con_columnas_lowercase(tmp_path, monkeypatch):
+    """El cache vivo usa columnas lowercase; la fecha no debe quedar null."""
+    monkeypatch.setattr(advisor, "_cache_dir", lambda: str(tmp_path))
+    idx = pd.bdate_range("2026-09-08", periods=2)
+    pd.DataFrame({"close": [100.0, 101.0]}, index=idx).to_parquet(
+        tmp_path / "AAPL.parquet"
+    )
+
+    assert advisor._cache_date() == pd.Timestamp("2026-09-09")
