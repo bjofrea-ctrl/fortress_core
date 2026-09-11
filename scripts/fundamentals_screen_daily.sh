@@ -40,7 +40,10 @@
 #     captura stdout/stderr en fundamentals_screen_launchd.log.
 #   - El auto-backup git (otro job launchd) captura el state.json a los 10min.
 set -u
-REPO="/Users/boris/Desktop/fortress_core"
+# REPO se deriva de la ubicación real del script (portable entre el Mac
+# vía launchd y cualquier otro host vía cron, ej. VPS de despliegue),
+# en vez de un path absoluto hardcodeado.
+REPO="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 VENV="$REPO/backend/.venv/bin/python"
 LOG="$REPO/scripts/fundamentals_screen_daily.log"
 LAUNCHD_LOG="$REPO/scripts/fundamentals_screen_launchd.log"
