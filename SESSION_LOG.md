@@ -4573,3 +4573,26 @@ máquina. 3 corridas 29/29 después del cambio.
 
 SIN merge, SIN commit (regla git.no_commit_push_sin_indicacion_directa).
 Pendiente: OpenCode re-verifica el fix; Boris ordena commit/merge.
+
+## 2026-09-11 — TASK_SWR_ADVISOR: stale-while-revalidate en /api/advisor/universe (Kilo, worktree test-kilo-orca, SIN merge)
+
+Contexto (verificado por Claude Code con curl en la VPS Oracle): el warmup
+funciona en caliente (0.49s), pero un request que cae DURANTE un rebuild
+(cada ~5-7min, 100-135s en la VPS) espera el rebuild completo — dashboard
+lento/no funcional.
+
+Pre-registro `PRE_REGISTRO_SWR_ADVISOR_20260911.md` commiteado ANTES del
+código (criterios 1-5). Diseño: un único global `_last_complete_pair`
+(ctx_tuple, tickets, gen) escrito solo por `warmup_advisor_once()` al
+completar un ciclo coherente; `advisor_universe()` lo sirve SIN bloquear si
+alguno de los dos locks está tomado (flag `is_stale` por edad ≥ TTL);
+cold start (par None) sigue bloqueando como antes. TTL 300 y cadencia
+intactos. Nunca mezcla de generaciones: el par viejo solo se sirve completo.
+
+Tests (FakeClock + locks reales): SWR sirve par viejo en <1s con is_stale
+True y sin tocar disco (`_cache_date` parcheado a reventar); cold start
+bloquea y devuelve fresco; fase-tickets (ctx nuevo + tickets viejos) sirve
+el par viejo completo, nunca mezcla; camino normal intacto con is_stale
+False. Hallazgo al medir: `_cache_date()` cuesta ~1s real (scan de ~110
+parquets) — por eso el camino SWR computa staleness desde el tuple en
+memoria en vez de disco.

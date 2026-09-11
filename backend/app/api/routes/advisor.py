@@ -175,6 +175,12 @@ _tickets_lock = asyncio.Lock()
 _tickets_cache: Optional[list] = None
 _tickets_cache_time: float = 0.0
 _tickets_cache_ctx_time: float = 0.0
+# TASK_SWR_ADVISOR_20260911: último par COMPLETO (contexto + tickets de la
+# MISMA generación) publicado por un warmup exitoso. UN SOLO global (tupla)
+# para que el snapshot sea atómico: un lector ve el par viejo o el nuevo,
+# nunca una mezcla. Solo lo escribe warmup_advisor_once; solo lo lee
+# advisor_universe cuando hay un rebuild en curso (locks tomados).
+_last_complete_pair: Optional[tuple] = None  # (ctx_tuple, tickets, gen)
 
 
 async def _get_context():
@@ -260,6 +266,17 @@ async def warmup_advisor_once() -> Dict:
         conformal, ctx_gen,
     )
     dt_s = time.monotonic() - t0
+    # TASK_SWR_ADVISOR_20260911: publicar el par completo para que
+    # /universe pueda servirlo sin bloquear durante el próximo rebuild.
+    # Solo si las generaciones siguen coherentes: si un rebuild concurrente
+    # se metió entre nuestros dos getters, no publicamos mezcla.
+    global _last_complete_pair
+    if _context_cache_time == ctx_gen and _tickets_cache_ctx_time == ctx_gen:
+        _last_complete_pair = (
+            (price_data, today, regime, regime_state, signal_engine,
+             calibrator, conformal),
+            tickets, ctx_gen,
+        )
     cache_date = _cache_date()
     logger.info(
         "advisor_warmup_complete",
@@ -349,7 +366,6 @@ def _build_tickets_sync(price_data, today, regime_state, signal_engine, calibrat
         tickets.append(t)
     return tickets
 
-
 @router.get("/universe")
 async def advisor_universe():
     """Mesa consolidada: ticket por activo + etiqueta proyectada + transición,
@@ -358,8 +374,26 @@ async def advisor_universe():
     A diferencia de /api/decision/universe (que persiste estados en cada llamada,
     efecto colateral), este endpoint es SOLO LECTURA: no escribe decision_states.
     La persistencia sigue en decision.py donde siempre estuvo.
+
+    Stale-while-revalidate (TASK_SWR_ADVISOR_20260911): si hay un rebuild en
+    curso (alguno de los dos locks tomado) y existe un par completo previo,
+    sirve ese par SIN bloquear y lo marca con is_stale=True. Solo bloquea
+    cuando no hay nada que servir (cold start real, par None).
     """
     try:
+        # Camino SWR: no adquirir locks, solo lecturas (una tupla global).
+        if _context_lock.locked() or _tickets_lock.locked():
+            pair = _last_complete_pair
+            if pair is not None:
+                (p_price, p_today, p_regime, p_state, _se, _cal, _conf), p_tickets, p_gen = pair
+                now = time.monotonic()
+                return _universe_response(
+                    p_price, p_today, p_regime, p_state, p_tickets,
+                    is_stale=(now - p_gen) >= _CONTEXT_CACHE_TTL_SECONDS,
+                    last_cache=_last_cache_from_price_data(p_price),
+                )
+        # Camino bloqueante (idéntico a antes): si nadie está rebuildando,
+        # el request toma los locks y rebuilda él mismo si hace falta.
         price_data, today, regime, regime_state, signal_engine, calibrator, conformal = await _get_context()
         ctx_gen = _context_cache_time  # generación del contexto que obtuvimos
 
@@ -368,51 +402,88 @@ async def advisor_universe():
         # función pura. En cache caliente la segunda llamada pasa de 200s → ~0.1s.
         # La copia superficial evita que sort+transition contamine el cache compartido.
         tickets = [dict(t) for t in await _get_tickets(
-            price_data, today, regime_state, signal_engine, calibrator, conformal, ctx_gen,
+            price_data, today, regime_state, signal_engine, calibrator,
+            conformal, ctx_gen,
         )]
 
-        prior = _latest_prior_states(_load_states_history(), today)
-        for t in tickets:
-            t["transition"] = _transition(t["symbol"], t["state"], prior)
-
-        tickets.sort(
-            key=lambda t: (_STATE_RANK.get(t["state"], 0),
-                           t["win_prob"] if t["win_prob"] is not None else -1.0),
-            reverse=True,
+        return _universe_response(
+            price_data, today, regime, regime_state, tickets,
+            is_stale=(time.monotonic() - ctx_gen) >= _CONTEXT_CACHE_TTL_SECONDS,
+            last_cache=_cache_date(),
         )
-
-        blocked_reason = None
-        if regime_state == 3:
-            blocked_reason = (
-                "Régimen de mercado DEFLATION (estado 3): el motor bloquea entradas "
-                "nuevas por diseño — todos los tickets quedan en NO_INVERTIR."
-            )
-
-        return {
-            "as_of": today.date().isoformat(),
-            "regime": {
-                "state": regime_state,
-                "name": regime["state_name"],
-                "confidence": round(float(regime.get("confidence", 0.0)), 4),
-            },
-            "blocked_reason": blocked_reason,
-            "staleness": _staleness(today, _cache_date()),
-            "honesty_badge": (
-                "Apoyo a decisión — sin señal comercial validada. "
-                "Las etiquetas proyectadas se basan en la selectividad medida del win_prob "
-                "(muestra n=8-19 en la cola alta), no son predicciones."
-            ),
-            "risk_params": {
-                "absolute_ceiling": settings.ABSOLUTE_CEILING,
-                "risk_per_trade": settings.RISK_PER_TRADE,
-                "max_position_pct": settings.MAX_POSITION_PCT,
-            },
-            "states": tickets,
-        }
     except HTTPException:
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error generando universo advisor: {str(e)}")
+
+
+def _last_cache_from_price_data(price_data) -> Optional[pd.Timestamp]:
+    """Fecha de la rueda más nueva en el dict YA cargado (sin tocar disco).
+
+    Equivalente en memoria a _cache_date() para el camino SWR: describe
+    exactamente los datos servidos. _cache_date() escanea ~110 parquets
+    (~1s medido) y rompería el presupuesto <1s del SWR.
+    """
+    best = None
+    for df in price_data.values():
+        try:
+            if len(df) == 0:
+                continue
+            ts = pd.Timestamp(df.index.max())
+        except Exception:
+            continue
+        best = ts if best is None else max(best, ts)
+    return best
+
+
+def _universe_response(price_data, today, regime, regime_state, tickets_raw,
+                       is_stale: bool, last_cache) -> Dict:
+    """Cola compartida de /universe: transitions + sort + payload final.
+
+    La usan el camino bloqueante y el SWR con los mismos campos (contrato
+    intacto + flag is_stale). tickets_raw se copia: sort+transition mutan
+    dicts y el cache compartido (o el par SWR) no se toca.
+    """
+    tickets = [dict(t) for t in tickets_raw]
+    prior = _latest_prior_states(_load_states_history(), today)
+    for t in tickets:
+        t["transition"] = _transition(t["symbol"], t["state"], prior)
+
+    tickets.sort(
+        key=lambda t: (_STATE_RANK.get(t["state"], 0),
+                       t["win_prob"] if t["win_prob"] is not None else -1.0),
+        reverse=True,
+    )
+
+    blocked_reason = None
+    if regime_state == 3:
+        blocked_reason = (
+            "Régimen de mercado DEFLATION (estado 3): el motor bloquea entradas "
+            "nuevas por diseño — todos los tickets quedan en NO_INVERTIR."
+        )
+
+    return {
+        "as_of": today.date().isoformat(),
+        "is_stale": is_stale,
+        "regime": {
+            "state": regime_state,
+            "name": regime["state_name"],
+            "confidence": round(float(regime.get("confidence", 0.0)), 4),
+        },
+        "blocked_reason": blocked_reason,
+        "staleness": _staleness(today, last_cache),
+        "honesty_badge": (
+            "Apoyo a decisión — sin señal comercial validada. "
+            "Las etiquetas proyectadas se basan en la selectividad medida del win_prob "
+            "(muestra n=8-19 en la cola alta), no son predicciones."
+        ),
+        "risk_params": {
+            "absolute_ceiling": settings.ABSOLUTE_CEILING,
+            "risk_per_trade": settings.RISK_PER_TRADE,
+            "max_position_pct": settings.MAX_POSITION_PCT,
+        },
+        "states": tickets,
+    }
 
 
 @router.get("/theses")

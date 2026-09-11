@@ -106,6 +106,7 @@ def ctx(monkeypatch, tmp_path):
     monkeypatch.setattr(advisor, "_tickets_cache", None)
     monkeypatch.setattr(advisor, "_tickets_cache_time", 0.0)
     monkeypatch.setattr(advisor, "_tickets_cache_ctx_time", 0.0)
+    monkeypatch.setattr(advisor, "_last_complete_pair", None)
     monkeypatch.setattr(advisor, "_cache_date", lambda: pd.Timestamp("2026-08-14"))
     monkeypatch.setattr(advisor, "DECISION_STATES_PATH", str(tmp_path / "decision_states.json"))
     monkeypatch.setattr(advisor, "_theses_path", lambda: str(tmp_path / "decision_theses.json"))

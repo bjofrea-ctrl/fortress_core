@@ -41,12 +41,14 @@ def _reset_caches():
     advisor._tickets_cache = None
     advisor._tickets_cache_time = 0.0
     advisor._tickets_cache_ctx_time = 0.0
+    advisor._last_complete_pair = None
     yield
     advisor._context_cache = None
     advisor._context_cache_time = 0.0
     advisor._tickets_cache = None
     advisor._tickets_cache_time = 0.0
     advisor._tickets_cache_ctx_time = 0.0
+    advisor._last_complete_pair = None
 
 
 # ------------------------------------------------- (a) startup no bloquea
