@@ -3,30 +3,27 @@
 Fecha: 2026-09-11 (noche) · De: Kilo (orquestador) · Para: OpenCode (análisis de la estrategia de inversiones).
 Verificación/merge: Kilo orquesta; Boris aprueba merges a main.
 
-## Estado de tu cola (verificado por Kilo, 2026-09-11)
+## Estado de tu cola (verificado por Kilo, 2026-09-12 17:20 — ACTUALIZACIÓN FINAL)
 
-1. **B6** (`4fe09b0` validación_oos al contrato de señal única) — **VERIFICADO por
-   Kilo sobre main actual** (rama temporal desde origin/main + cherry-pick
-   --no-commit): 2/2 tests propios + 76 regression (signal_contract golden,
-   advisor warmup/api, memo integridad, cache_integrity) todos verdes, sin
-   conflictos. El inbox lo marcaba "MERGEADO" pero NUNCA llegó a main — es tu
-   entrega más vieja pendiente (09-08). **Kilo lo mergea en el próximo lote**
-   (aviso a Boris antes). No requiere acción tuya.
-2. **B1** (throttle monitor de rate Alpaca: WARNING >70%, sleep escalonado >85%,
-   TASK_KILO_A_OPENCODE_20260906.md) — sigue PENDIENTE de implementar. Es
-   infraestructura del paper trading, no análisis — pero es tuyo por continuidad
-   del ticket original.
-3. **Termómetro de sentimiento** (thermometer.py + endpoint /api/advisor/thermometer,
-   trabajo sin commitear en tu worktree) — Kilo lo preservó en stash
-   `kilo-orch: thermometer WIP opencode`. Recupéralo con `git stash pop`.
-   **Antes de continuar: commitea lo que tenés** (aunque sea WIP) con entrada
-   SESSION_LOG — tu última entrada es del 09-07 y hay trabajo del 09-10/09-11
-   (termómetro + ANALISIS_REBUILD_531S.md) completamente invisible para la
-   historia del repo. ANALISIS_REBUILD_531S.md alimentó el fix c1fc2e3 que ya
-   está en main — ese análisis merece estar commiteado.
-4. Tu rama `b6-signal-contract-align` está **behind 34 de origin/main**. Antes de
-   seguir trabajando: `git fetch && git rebase origin/main` o rama nueva desde
-   main. Trabajar 34 commits atrás es cómo nacen los conflictos.
+1. **Tu WIP de 3 capas fue RESCATADO, commiteado por capas y MERGEADO a main**
+   (01dde7c): 3be74cd (RegimeNowcaster 30 tests + endpoint /api/advisor/regime)
+   y d8e589f (institutional_fingerprint Phase 2 COT/AAII/FRED 20 tests,
+   termómetro absorbido). Rebase sobre main resuelto por Kilo (tu advisor.py
+   base era pre-SWR — conflicto de imports trivial). Suite post-merge 95/95.
+   Tu rama verify/opencode-wip está absorbida en main — **para tu próxima
+   tarea: rama nueva desde main actual.**
+2. **DEUDA DE PRE-REGISTRO (tu primera tarea)**: lo rescatado llegó a main sin
+   los documentos de pre-registro que la casa exige (TTLs de cache del
+   endpoint /regime, fuentes externas y comportamiento de falla blanda).
+   Escribí PRE_REG post-hoc HONESTO (marcado como tal) cubriendo: TTL del
+   cache de régimen, qué pasa si COT/AAII/FRED falla cada uno, límite de
+   historia 180d. Los tests ya existen — el documento es lo que falta.
+3. **B1 throttle** (ticket TASK_KILO_A_OPENCODE_20260906.md): WARNING >70%,
+   sleep escalonado >85% — sigue pendiente, es corto.
+4. **Hipótesis ciclo institucional → trial formal** vía
+   PLAN_MEJORA_MATEMATICA.md + ledger si querés llevarla a veredicto.
+5. NOTA de infra: volumen EMPRESA se desmontó — espejo git pendiente de
+   sincronizar cuando se remonte (Kilo tiene el bundle).
 
 ## Prioridad estratégica (tu dominio: análisis de la estrategia de inversiones)
 
