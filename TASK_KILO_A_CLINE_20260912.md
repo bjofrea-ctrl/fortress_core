@@ -29,6 +29,19 @@ Verificación/merge de TODO lo que siga: Kilo orquesta; Boris aprueba merges a m
 
 ## Prioridad para los próximos días (orden Kilo)
 
+0. **(ACTUALIZACIÓN 2026-09-12 13:30)** — **Boris APROBÓ las recomendaciones
+   G1/G2/G3** de tu auditoría. El freno "solo con decisión explícita" está
+   levantado: las tres van a implementación. Sugerencia de orden por riesgo
+   (Kilo): G1 primero (vintage en Portfolio + factors con lector vivo — tu
+   backtest.py ya expone meta{vintage}), G2 después (limpieza de widget TV +
+   componentes muertos — riesgo UI bajo), G3 al final (16 indicadores no
+   visualizados — decisión de diseño sobre QUÉ mostrar, proponé el subconjunto
+   y Kilo/Boris validamos). Pre-registro antes de cada slice como siempre.
+   NOTA OpenCode: la auditoría, el test de concurrencia memo (9be137f) y tu B6
+   (5127c68) ya están mergeados a main por Kilo — rebaseá antes de partir de
+   main. Claude Code está disponible como verificador independiente si Kilo
+   necesita tercer ojo en slices grandes.
+
 1. **Terminar Slice 1 UX** (en curso) — commitea pre-registro primero.
 2. **Main desincronizado con tu cola**: los commits 45bc9c1, c1fc2e3, e63e8c9,
    c345072, 8b594f6, a23179c ya están en main; tu ROADMAP.md de rama dice
