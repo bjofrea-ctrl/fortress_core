@@ -1,0 +1,224 @@
+{
+  "symbol": "SLB",
+  "ingested_at": "2026-09-10T01:52:13.972772+00:00",
+  "income_statement": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "revenue": 35708000000.0,
+      "incomeTaxExpense": 840000000.0,
+      "netIncome": 3374000000.0,
+      "weightedAverageShsOutDil": 1437000000.0,
+      "weightedAverageShsOut": 1421000000.0,
+      "sharesOutstanding": 1495331485.0,
+      "sellingGeneralAndAdministrativeExpense": 340000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "revenue": 36289000000.0,
+      "incomeTaxExpense": 1093000000.0,
+      "netIncome": 4461000000.0,
+      "weightedAverageShsOutDil": 1436000000.0,
+      "weightedAverageShsOut": 1421000000.0,
+      "sharesOutstanding": 1400850420.0,
+      "sellingGeneralAndAdministrativeExpense": 385000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "revenue": 33135000000.0,
+      "operatingIncome": 6523000000.0,
+      "incomeTaxExpense": 1007000000.0,
+      "netIncome": 4203000000.0,
+      "weightedAverageShsOutDil": 1443000000.0,
+      "weightedAverageShsOut": 1425000000.0,
+      "sharesOutstanding": 1427394843.0,
+      "sellingGeneralAndAdministrativeExpense": 364000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "revenue": 28091000000.0,
+      "operatingIncome": 5011000000.0,
+      "incomeTaxExpense": 779000000.0,
+      "netIncome": 3441000000.0,
+      "weightedAverageShsOutDil": 1437000000.0,
+      "weightedAverageShsOut": 1416000000.0,
+      "sharesOutstanding": 1420188492.0,
+      "sellingGeneralAndAdministrativeExpense": 376000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "revenue": 22929000000.0,
+      "operatingIncome": 3365000000.0,
+      "incomeTaxExpense": 446000000.0,
+      "netIncome": 1881000000.0,
+      "weightedAverageShsOutDil": 1427000000.0,
+      "weightedAverageShsOut": 1400000000.0,
+      "sharesOutstanding": 1403381685.0,
+      "sellingGeneralAndAdministrativeExpense": 339000000.0
+    },
+    {
+      "calendarYear": "2020",
+      "period": "FY",
+      "revenue": 23601000000.0,
+      "operatingIncome": 2401000000.0,
+      "incomeTaxExpense": -812000000.0,
+      "netIncome": -10518000000.0,
+      "weightedAverageShsOutDil": 1390000000.0,
+      "weightedAverageShsOut": 1390000000.0,
+      "sharesOutstanding": 1392325960.0,
+      "sellingGeneralAndAdministrativeExpense": 365000000.0
+    }
+  ],
+  "balance_sheet": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "totalAssets": 54868000000.0,
+      "totalCurrentAssets": 19513000000.0,
+      "shortTermInvestments": 1176000000.0,
+      "totalCurrentLiabilities": 14721000000.0,
+      "longTermDebt": 9742000000.0,
+      "totalLiabilities": 27577000000.0,
+      "totalShareholderEquity": 26109000000.0,
+      "retainedEarnings": 18067000000.0,
+      "propertyPlantEquipmentNet": 7894000000.0,
+      "netReceivables": 8689000000.0,
+      "totalDebt": 9742000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "totalAssets": 48935000000.0,
+      "totalCurrentAssets": 18570000000.0,
+      "shortTermInvestments": 1125000000.0,
+      "totalCurrentLiabilities": 12811000000.0,
+      "longTermDebt": 11023000000.0,
+      "totalLiabilities": 26585000000.0,
+      "totalShareholderEquity": 21130000000.0,
+      "retainedEarnings": 16395000000.0,
+      "propertyPlantEquipmentNet": 7359000000.0,
+      "netReceivables": 8011000000.0,
+      "totalDebt": 11023000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "totalAssets": 47957000000.0,
+      "totalCurrentAssets": 17718000000.0,
+      "shortTermInvestments": 1089000000.0,
+      "totalCurrentLiabilities": 13395000000.0,
+      "longTermDebt": 10842000000.0,
+      "totalLiabilities": 26598000000.0,
+      "totalShareholderEquity": 21359000000.0,
+      "retainedEarnings": 13497000000.0,
+      "propertyPlantEquipmentNet": 7240000000.0,
+      "netReceivables": 7812000000.0,
+      "totalDebt": 10842000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "totalAssets": 43135000000.0,
+      "totalCurrentAssets": 15003000000.0,
+      "shortTermInvestments": 1239000000.0,
+      "totalCurrentLiabilities": 12018000000.0,
+      "longTermDebt": 10594000000.0,
+      "totalLiabilities": 25146000000.0,
+      "totalShareholderEquity": 17989000000.0,
+      "retainedEarnings": 10719000000.0,
+      "propertyPlantEquipmentNet": 6607000000.0,
+      "netReceivables": 6766000000.0,
+      "totalDebt": 10594000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "totalAssets": 41511000000.0,
+      "totalCurrentAssets": 12654000000.0,
+      "shortTermInvestments": 1382000000.0,
+      "totalCurrentLiabilities": 10359000000.0,
+      "longTermDebt": 13286000000.0,
+      "totalLiabilities": 26225000000.0,
+      "totalShareholderEquity": 15286000000.0,
+      "retainedEarnings": 8199000000.0,
+      "propertyPlantEquipmentNet": 6429000000.0,
+      "netReceivables": 5315000000.0,
+      "totalDebt": 13286000000.0
+    },
+    {
+      "calendarYear": "2020",
+      "period": "FY",
+      "totalAssets": 42434000000.0,
+      "totalCurrentAssets": 12919000000.0,
+      "shortTermInvestments": 2162000000.0,
+      "totalCurrentLiabilities": 10491000000.0,
+      "longTermDebt": 16036000000.0,
+      "totalLiabilities": 29945000000.0,
+      "totalShareholderEquity": 12489000000.0,
+      "retainedEarnings": 7018000000.0,
+      "propertyPlantEquipmentNet": 6826000000.0,
+      "netReceivables": 5247000000.0,
+      "totalDebt": 16036000000.0
+    }
+  ],
+  "cash_flow": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "operatingCashFlow": 6489000000.0,
+      "capitalExpenditure": 1694000000.0,
+      "dividendsPaid": 1602000000.0,
+      "depreciationAndAmortization": 2643000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "operatingCashFlow": 6602000000.0,
+      "capitalExpenditure": 1931000000.0,
+      "dividendsPaid": 1533000000.0,
+      "depreciationAndAmortization": 2519000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "operatingCashFlow": 6637000000.0,
+      "capitalExpenditure": 1939000000.0,
+      "dividendsPaid": 1317000000.0,
+      "depreciationAndAmortization": 2312000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "operatingCashFlow": 3720000000.0,
+      "capitalExpenditure": 1618000000.0,
+      "dividendsPaid": 848000000.0,
+      "depreciationAndAmortization": 2147000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "operatingCashFlow": 4651000000.0,
+      "capitalExpenditure": 1141000000.0,
+      "dividendsPaid": 699000000.0,
+      "depreciationAndAmortization": 2120000000.0
+    },
+    {
+      "calendarYear": "2020",
+      "period": "FY",
+      "operatingCashFlow": 2944000000.0,
+      "capitalExpenditure": 1116000000.0,
+      "dividendsPaid": 1734000000.0,
+      "depreciationAndAmortization": 2566000000.0
+    }
+  ],
+  "profile": {
+    "companyName": "SLB LIMITED/NV",
+    "symbol": "SLB"
+  },
+  "price_target_consensus": null,
+  "_data_source": "edgar_primary"
+}

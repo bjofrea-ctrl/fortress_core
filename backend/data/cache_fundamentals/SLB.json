@@ -1,0 +1,15 @@
+{
+  "pe_ratio": 27.5244,
+  "pb_ratio": 2.1961,
+  "ev_ebitda": 19.8519,
+  "roe": 11.93,
+  "roa": 5.64,
+  "debt_equity": 0.4457,
+  "div_yield": 1.9859,
+  "eps_growth": -29.35,
+  "gross_margin": 17.07,
+  "current_ratio": 1.3255,
+  "asset_turnover": 0.6611,
+  "book_value_growth": 15.02,
+  "_data_source": "finnhub_live"
+}

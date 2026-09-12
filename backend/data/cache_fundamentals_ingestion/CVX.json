@@ -1,0 +1,197 @@
+{
+  "symbol": "CVX",
+  "ingested_at": "2026-09-10T01:51:07.962611+00:00",
+  "income_statement": [
+    {
+      "calendarYear": "2026",
+      "period": "FY",
+      "sharesOutstanding": 1995385539.0
+    },
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "revenue": 184432000000.0,
+      "incomeTaxExpense": 7258000000.0,
+      "netIncome": 12299000000.0,
+      "weightedAverageShsOutDil": 1856000000.0,
+      "weightedAverageShsOut": 1849000000.0,
+      "sharesOutstanding": 1760598537.0,
+      "sellingGeneralAndAdministrativeExpense": 5126000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "revenue": 193414000000.0,
+      "incomeTaxExpense": 9757000000.0,
+      "netIncome": 17661000000.0,
+      "weightedAverageShsOutDil": 1817000000.0,
+      "weightedAverageShsOut": 1810000000.0,
+      "sharesOutstanding": 1857269160.0,
+      "sellingGeneralAndAdministrativeExpense": 4834000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "revenue": 196913000000.0,
+      "incomeTaxExpense": 8173000000.0,
+      "netIncome": 21369000000.0,
+      "weightedAverageShsOutDil": 1880000000.0,
+      "weightedAverageShsOut": 1873000000.0,
+      "sharesOutstanding": 1906674044.0,
+      "sellingGeneralAndAdministrativeExpense": 4141000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "revenue": 235717000000.0,
+      "incomeTaxExpense": 14066000000.0,
+      "netIncome": 35465000000.0,
+      "weightedAverageShsOutDil": 1940000000.0,
+      "weightedAverageShsOut": 1931000000.0,
+      "sharesOutstanding": 1947553346.0,
+      "sellingGeneralAndAdministrativeExpense": 4312000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "revenue": 155606000000.0,
+      "incomeTaxExpense": 5950000000.0,
+      "netIncome": 15625000000.0,
+      "weightedAverageShsOutDil": 1920000000.0,
+      "weightedAverageShsOut": 1916000000.0,
+      "sharesOutstanding": 1926376764.0,
+      "sellingGeneralAndAdministrativeExpense": 4014000000.0
+    }
+  ],
+  "balance_sheet": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "totalAssets": 324012000000.0,
+      "totalCurrentAssets": 38552000000.0,
+      "cashAndCashEquivalents": 7285000000.0,
+      "totalCurrentLiabilities": 33387000000.0,
+      "longTermDebtCurrent": 2345000000.0,
+      "shortTermBorrowings": 977000000.0,
+      "totalLiabilities": 131836000000.0,
+      "totalShareholderEquity": 186450000000.0,
+      "retainedEarnings": 205365000000.0,
+      "netReceivables": 15986000000.0,
+      "totalDebt": 3322000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "totalAssets": 256938000000.0,
+      "totalCurrentAssets": 40911000000.0,
+      "cashAndCashEquivalents": 8262000000.0,
+      "totalCurrentLiabilities": 38558000000.0,
+      "longTermDebtCurrent": 4012000000.0,
+      "shortTermBorrowings": 4406000000.0,
+      "totalLiabilities": 103781000000.0,
+      "totalShareholderEquity": 152318000000.0,
+      "retainedEarnings": 205852000000.0,
+      "netReceivables": 18338000000.0,
+      "totalDebt": 8418000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "totalAssets": 261632000000.0,
+      "totalCurrentAssets": 41128000000.0,
+      "cashAndCashEquivalents": 9275000000.0,
+      "totalCurrentLiabilities": 32258000000.0,
+      "longTermDebtCurrent": 1650000000.0,
+      "shortTermBorrowings": 529000000.0,
+      "totalLiabilities": 99703000000.0,
+      "totalShareholderEquity": 161929000000.0,
+      "retainedEarnings": 200025000000.0,
+      "netReceivables": 17640000000.0,
+      "totalDebt": 2179000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "totalAssets": 257709000000.0,
+      "totalCurrentAssets": 50343000000.0,
+      "cashAndCashEquivalents": 19121000000.0,
+      "totalCurrentLiabilities": 34208000000.0,
+      "longTermDebtCurrent": 2694000000.0,
+      "shortTermBorrowings": 1964000000.0,
+      "totalLiabilities": 97467000000.0,
+      "totalShareholderEquity": 160242000000.0,
+      "retainedEarnings": 190024000000.0,
+      "netReceivables": 18200000000.0,
+      "totalDebt": 4658000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "totalAssets": 239535000000.0,
+      "totalCurrentAssets": 33738000000.0,
+      "cashAndCashEquivalents": 6795000000.0,
+      "totalCurrentLiabilities": 26791000000.0,
+      "longTermDebt": 25676000000.0,
+      "longTermDebtCurrent": 4946000000.0,
+      "shortTermBorrowings": 256000000.0,
+      "totalLiabilities": 99595000000.0,
+      "totalShareholderEquity": 139940000000.0,
+      "retainedEarnings": 165546000000.0,
+      "netReceivables": 16400000000.0,
+      "totalDebt": 30878000000.0
+    }
+  ],
+  "cash_flow": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "operatingCashFlow": 33939000000.0,
+      "capitalExpenditure": 17347000000.0,
+      "commonStockRepurchased": 12079000000.0,
+      "dividendsPaid": 12751000000.0,
+      "depreciationAndAmortization": 20132000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "operatingCashFlow": 31492000000.0,
+      "capitalExpenditure": 16448000000.0,
+      "commonStockRepurchased": 15229000000.0,
+      "dividendsPaid": 11801000000.0,
+      "depreciationAndAmortization": 17282000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "operatingCashFlow": 35609000000.0,
+      "capitalExpenditure": 15829000000.0,
+      "commonStockRepurchased": 14939000000.0,
+      "dividendsPaid": 11336000000.0,
+      "depreciationAndAmortization": 17326000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "operatingCashFlow": 49602000000.0,
+      "capitalExpenditure": 11974000000.0,
+      "commonStockRepurchased": 11255000000.0,
+      "dividendsPaid": 10968000000.0,
+      "depreciationAndAmortization": 16319000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "operatingCashFlow": 29187000000.0,
+      "capitalExpenditure": 8056000000.0,
+      "commonStockRepurchased": 1383000000.0,
+      "dividendsPaid": 10179000000.0,
+      "depreciationAndAmortization": 17925000000.0
+    }
+  ],
+  "profile": {
+    "companyName": "Chevron Corp",
+    "symbol": "CVX"
+  },
+  "price_target_consensus": null,
+  "_data_source": "edgar_primary"
+}

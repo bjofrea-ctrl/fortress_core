@@ -1,0 +1,176 @@
+{
+  "symbol": "PLD",
+  "ingested_at": "2026-09-10T01:52:20.049608+00:00",
+  "income_statement": [
+    {
+      "calendarYear": "2026",
+      "period": "FY",
+      "sharesOutstanding": 929559000.0
+    },
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "revenue": 2139665000.0,
+      "operatingIncome": 878413000.0,
+      "incomeTaxExpense": 204017000.0,
+      "netIncome": 3328231000.0,
+      "weightedAverageShsOutDil": 956832000.0,
+      "weightedAverageShsOut": 928473000.0,
+      "sharesOutstanding": 926860000.0,
+      "sellingGeneralAndAdministrativeExpense": 469114000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "revenue": 1956621000.0,
+      "operatingIncome": 720355000.0,
+      "incomeTaxExpense": 166943000.0,
+      "netIncome": 3731635000.0,
+      "weightedAverageShsOutDil": 953590000.0,
+      "weightedAverageShsOut": 926172000.0,
+      "sharesOutstanding": 924881000.0,
+      "sellingGeneralAndAdministrativeExpense": 418765000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "revenue": 8023469000.0,
+      "operatingIncome": 3707792000.0,
+      "incomeTaxExpense": 211038000.0,
+      "netIncome": 3059214000.0,
+      "weightedAverageShsOutDil": 951791000.0,
+      "weightedAverageShsOut": 924351000.0,
+      "sharesOutstanding": 923429000.0,
+      "sellingGeneralAndAdministrativeExpense": 390406000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "revenue": 5973692000.0,
+      "operatingIncome": 3467538000.0,
+      "incomeTaxExpense": 135412000.0,
+      "netIncome": 3364856000.0,
+      "weightedAverageShsOutDil": 811608000.0,
+      "weightedAverageShsOut": 785675000.0,
+      "sharesOutstanding": 740000000.0,
+      "sellingGeneralAndAdministrativeExpense": 331083000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "revenue": 4759440000.0,
+      "operatingIncome": 3206996000.0,
+      "incomeTaxExpense": 174258000.0,
+      "netIncome": 2939723000.0,
+      "weightedAverageShsOutDil": 764762000.0,
+      "weightedAverageShsOut": 739363000.0,
+      "sharesOutstanding": 739500000.0,
+      "sellingGeneralAndAdministrativeExpense": 293167000.0
+    }
+  ],
+  "balance_sheet": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "totalAssets": 98724256000.0,
+      "cashAndCashEquivalents": 1145647000.0,
+      "longTermDebt": 35037073000.0,
+      "totalLiabilities": 40970248000.0,
+      "totalShareholderEquity": 53193178000.0,
+      "retainedEarnings": -902427000.0,
+      "propertyPlantEquipmentNet": 221704000.0,
+      "totalDebt": 35037073000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "totalAssets": 95328909000.0,
+      "cashAndCashEquivalents": 1318591000.0,
+      "longTermDebt": 30879263000.0,
+      "totalLiabilities": 36712139000.0,
+      "totalShareholderEquity": 53951138000.0,
+      "retainedEarnings": -465913000.0,
+      "propertyPlantEquipmentNet": 212318000.0,
+      "totalDebt": 30879263000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "totalAssets": 93020840000.0,
+      "cashAndCashEquivalents": 530000000.0,
+      "longTermDebt": 29000501000.0,
+      "totalLiabilities": 35197120000.0,
+      "totalShareholderEquity": 57823720000.0,
+      "retainedEarnings": -627068000.0,
+      "propertyPlantEquipmentNet": 208030000.0,
+      "totalDebt": 29000501000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "totalAssets": 87897448000.0,
+      "cashAndCashEquivalents": 278000000.0,
+      "longTermDebt": 23875961000.0,
+      "totalLiabilities": 30034355000.0,
+      "totalShareholderEquity": 57863093000.0,
+      "retainedEarnings": -457695000.0,
+      "propertyPlantEquipmentNet": 119897000.0,
+      "totalDebt": 23875961000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "totalAssets": 58486220000.0,
+      "cashAndCashEquivalents": 556000000.0,
+      "longTermDebt": 215300000.0,
+      "totalLiabilities": 20744010000.0,
+      "totalShareholderEquity": 37742210000.0,
+      "retainedEarnings": -1327828000.0,
+      "propertyPlantEquipmentNet": 118044000.0,
+      "totalDebt": 215300000.0
+    }
+  ],
+  "cash_flow": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "operatingCashFlow": 5008434000.0,
+      "dividendsPaid": 3764745000.0,
+      "depreciationAndAmortization": 2626028000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "operatingCashFlow": 4912209000.0,
+      "dividendsPaid": 3570480000.0,
+      "depreciationAndAmortization": 2580519000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "operatingCashFlow": 5373058000.0,
+      "dividendsPaid": 3228589000.0,
+      "depreciationAndAmortization": 2484891000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "operatingCashFlow": 4126430000.0,
+      "dividendsPaid": 2494723000.0,
+      "depreciationAndAmortization": 1812777000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "operatingCashFlow": 2996042000.0,
+      "dividendsPaid": 1872861000.0,
+      "depreciationAndAmortization": 1577942000.0
+    }
+  ],
+  "profile": {
+    "companyName": "Prologis, Inc.",
+    "symbol": "PLD"
+  },
+  "price_target_consensus": null,
+  "_data_source": "edgar_primary"
+}

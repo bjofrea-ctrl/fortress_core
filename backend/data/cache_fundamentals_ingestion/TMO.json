@@ -1,0 +1,192 @@
+{
+  "symbol": "TMO",
+  "ingested_at": "2026-09-10T01:51:07.732028+00:00",
+  "income_statement": [
+    {
+      "calendarYear": "2026",
+      "period": "FY",
+      "sharesOutstanding": 371484244.0
+    },
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "revenue": 44556000000.0,
+      "operatingIncome": 7746000000.0,
+      "incomeTaxExpense": 547000000.0,
+      "netIncome": 6704000000.0,
+      "weightedAverageShsOutDil": 378000000.0,
+      "weightedAverageShsOut": 377000000.0,
+      "sharesOutstanding": 377261182.0,
+      "sellingGeneralAndAdministrativeExpense": 8732000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "revenue": 42879000000.0,
+      "operatingIncome": 7337000000.0,
+      "incomeTaxExpense": 657000000.0,
+      "netIncome": 6335000000.0,
+      "weightedAverageShsOutDil": 383000000.0,
+      "weightedAverageShsOut": 382000000.0,
+      "sharesOutstanding": 381312268.0,
+      "sellingGeneralAndAdministrativeExpense": 8595000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "revenue": 42857000000.0,
+      "operatingIncome": 6859000000.0,
+      "incomeTaxExpense": 284000000.0,
+      "netIncome": 5995000000.0,
+      "weightedAverageShsOutDil": 388000000.0,
+      "weightedAverageShsOut": 386000000.0,
+      "sharesOutstanding": 385430077.0,
+      "sellingGeneralAndAdministrativeExpense": 8445000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "revenue": 44915000000.0,
+      "operatingIncome": 8393000000.0,
+      "incomeTaxExpense": 703000000.0,
+      "weightedAverageShsOutDil": 394000000.0,
+      "weightedAverageShsOut": 392000000.0,
+      "sharesOutstanding": 391191770.0,
+      "sellingGeneralAndAdministrativeExpense": 8993000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "revenue": 39211000000.0,
+      "operatingIncome": 10028000000.0,
+      "incomeTaxExpense": 1109000000.0,
+      "weightedAverageShsOutDil": 397000000.0,
+      "weightedAverageShsOut": 394000000.0,
+      "sharesOutstanding": 393793362.0,
+      "sellingGeneralAndAdministrativeExpense": 8007000000.0
+    }
+  ],
+  "balance_sheet": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "totalAssets": 110343000000.0,
+      "totalCurrentAssets": 28707000000.0,
+      "cashAndCashEquivalents": 9852000000.0,
+      "shortTermInvestments": 253000000.0,
+      "totalCurrentLiabilities": 15189000000.0,
+      "longTermDebt": 39172000000.0,
+      "totalShareholderEquity": 53407000000.0,
+      "retainedEarnings": 59156000000.0,
+      "propertyPlantEquipmentNet": 10565000000.0,
+      "netReceivables": 8900000000.0,
+      "totalDebt": 39172000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "totalAssets": 97321000000.0,
+      "totalCurrentAssets": 22137000000.0,
+      "cashAndCashEquivalents": 4009000000.0,
+      "shortTermInvestments": 1561000000.0,
+      "totalCurrentLiabilities": 13332000000.0,
+      "longTermDebt": 31072000000.0,
+      "totalShareholderEquity": 49584000000.0,
+      "retainedEarnings": 53102000000.0,
+      "propertyPlantEquipmentNet": 9306000000.0,
+      "netReceivables": 8191000000.0,
+      "totalDebt": 31072000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "totalAssets": 98726000000.0,
+      "totalCurrentAssets": 24589000000.0,
+      "cashAndCashEquivalents": 8097000000.0,
+      "shortTermInvestments": 3000000.0,
+      "totalCurrentLiabilities": 14012000000.0,
+      "longTermDebt": 34727000000.0,
+      "totalShareholderEquity": 46724000000.0,
+      "retainedEarnings": 47364000000.0,
+      "propertyPlantEquipmentNet": 9448000000.0,
+      "netReceivables": 8221000000.0,
+      "totalDebt": 34727000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "totalAssets": 97154000000.0,
+      "totalCurrentAssets": 25229000000.0,
+      "cashAndCashEquivalents": 8537000000.0,
+      "totalCurrentLiabilities": 17010000000.0,
+      "longTermDebt": 34278000000.0,
+      "totalShareholderEquity": 44032000000.0,
+      "retainedEarnings": 41910000000.0,
+      "propertyPlantEquipmentNet": 9280000000.0,
+      "netReceivables": 8115000000.0,
+      "totalDebt": 34278000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "totalAssets": 95123000000.0,
+      "totalCurrentAssets": 20113000000.0,
+      "cashAndCashEquivalents": 4491000000.0,
+      "totalCurrentLiabilities": 13436000000.0,
+      "longTermDebt": 34670000000.0,
+      "totalShareholderEquity": 40855000000.0,
+      "retainedEarnings": 35431000000.0,
+      "propertyPlantEquipmentNet": 8333000000.0,
+      "netReceivables": 7977000000.0,
+      "totalDebt": 34670000000.0
+    }
+  ],
+  "cash_flow": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "operatingCashFlow": 7818000000.0,
+      "capitalExpenditure": 1525000000.0,
+      "commonStockRepurchased": 3000000000.0,
+      "dividendsPaid": 636000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "operatingCashFlow": 8667000000.0,
+      "capitalExpenditure": 1400000000.0,
+      "commonStockRepurchased": 4000000000.0,
+      "dividendsPaid": 583000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "operatingCashFlow": 8406000000.0,
+      "capitalExpenditure": 1479000000.0,
+      "commonStockRepurchased": 3000000000.0,
+      "dividendsPaid": 523000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "operatingCashFlow": 9154000000.0,
+      "capitalExpenditure": 2243000000.0,
+      "commonStockRepurchased": 3000000000.0,
+      "dividendsPaid": 455000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "operatingCashFlow": 9312000000.0,
+      "capitalExpenditure": 2523000000.0,
+      "commonStockRepurchased": 2000000000.0,
+      "dividendsPaid": 395000000.0
+    }
+  ],
+  "profile": {
+    "companyName": "THERMO FISHER SCIENTIFIC INC.",
+    "symbol": "TMO"
+  },
+  "price_target_consensus": null,
+  "_data_source": "edgar_primary"
+}

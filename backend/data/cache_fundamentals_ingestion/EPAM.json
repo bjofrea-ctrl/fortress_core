@@ -1,0 +1,191 @@
+{
+  "symbol": "EPAM",
+  "ingested_at": "2026-09-10T01:51:33.012014+00:00",
+  "income_statement": [
+    {
+      "calendarYear": "2026",
+      "period": "FY",
+      "sharesOutstanding": 54139969.0
+    },
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "revenue": 5457056000.0,
+      "operatingIncome": 520003000.0,
+      "incomeTaxExpense": 127946000.0,
+      "netIncome": 377678000.0,
+      "weightedAverageShsOutDil": 56233000.0,
+      "weightedAverageShsOut": 55893000.0,
+      "sharesOutstanding": 56888128.0,
+      "sellingGeneralAndAdministrativeExpense": 928707000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "revenue": 4727940000.0,
+      "operatingIncome": 544584000.0,
+      "incomeTaxExpense": 129879000.0,
+      "netIncome": 454533000.0,
+      "weightedAverageShsOutDil": 57983000.0,
+      "weightedAverageShsOut": 57288000.0,
+      "sharesOutstanding": 57827498.0,
+      "sellingGeneralAndAdministrativeExpense": 816300000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "revenue": 4690540000.0,
+      "operatingIncome": 501239000.0,
+      "incomeTaxExpense": 119502000.0,
+      "netIncome": 417083000.0,
+      "weightedAverageShsOutDil": 59085000.0,
+      "weightedAverageShsOut": 57829000.0,
+      "sharesOutstanding": 57677992.0,
+      "sellingGeneralAndAdministrativeExpense": 815065000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "revenue": 4824698000.0,
+      "operatingIncome": 572966000.0,
+      "incomeTaxExpense": 87842000.0,
+      "netIncome": 419416000.0,
+      "weightedAverageShsOutDil": 59169000.0,
+      "weightedAverageShsOut": 57291000.0,
+      "sharesOutstanding": 56878539.0,
+      "sellingGeneralAndAdministrativeExpense": 872777000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "revenue": 3758144000.0,
+      "operatingIncome": 542316000.0,
+      "incomeTaxExpense": 51740000.0,
+      "netIncome": 481652000.0,
+      "weightedAverageShsOutDil": 59064000.0,
+      "weightedAverageShsOut": 56511000.0,
+      "sharesOutstanding": 56179461.0,
+      "sellingGeneralAndAdministrativeExpense": 648736000.0
+    }
+  ],
+  "balance_sheet": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "totalAssets": 4902136000.0,
+      "totalCurrentAssets": 2533888000.0,
+      "cashAndCashEquivalents": 1296077000.0,
+      "totalCurrentLiabilities": 976942000.0,
+      "longTermDebt": 25034000.0,
+      "totalLiabilities": 1224328000.0,
+      "totalShareholderEquity": 3677226000.0,
+      "propertyPlantEquipmentNet": 202387000.0,
+      "totalDebt": 25034000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "totalAssets": 4750473000.0,
+      "totalCurrentAssets": 2426248000.0,
+      "cashAndCashEquivalents": 1286267000.0,
+      "shortTermInvestments": 1690000.0,
+      "totalCurrentLiabilities": 821039000.0,
+      "longTermDebt": 25194000.0,
+      "totalLiabilities": 1119322000.0,
+      "totalShareholderEquity": 3629211000.0,
+      "propertyPlantEquipmentNet": 207667000.0,
+      "totalDebt": 25194000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "totalAssets": 4352365000.0,
+      "totalCurrentAssets": 3091361000.0,
+      "cashAndCashEquivalents": 2036235000.0,
+      "shortTermInvestments": 60739000.0,
+      "totalCurrentLiabilities": 644932000.0,
+      "longTermDebt": 26126000.0,
+      "totalLiabilities": 880895000.0,
+      "totalShareholderEquity": 3471470000.0,
+      "propertyPlantEquipmentNet": 235053000.0,
+      "totalDebt": 26126000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "totalAssets": 4009151000.0,
+      "totalCurrentAssets": 2759625000.0,
+      "cashAndCashEquivalents": 1683636000.0,
+      "shortTermInvestments": 60336000.0,
+      "totalCurrentLiabilities": 747483000.0,
+      "longTermDebt": 27693000.0,
+      "shortTermBorrowings": 2861000.0,
+      "totalLiabilities": 1006141000.0,
+      "totalShareholderEquity": 3003010000.0,
+      "propertyPlantEquipmentNet": 273348000.0,
+      "totalDebt": 30554000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "totalAssets": 3523227000.0,
+      "totalCurrentAssets": 2269480000.0,
+      "cashAndCashEquivalents": 1449347000.0,
+      "totalCurrentLiabilities": 763420000.0,
+      "longTermDebt": 30234000.0,
+      "shortTermBorrowings": 16018000.0,
+      "totalLiabilities": 1027390000.0,
+      "totalShareholderEquity": 2495837000.0,
+      "propertyPlantEquipmentNet": 236214000.0,
+      "totalDebt": 46252000.0
+    }
+  ],
+  "cash_flow": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "operatingCashFlow": 654934000.0,
+      "capitalExpenditure": 42243000.0,
+      "commonStockRepurchased": 662159000.0,
+      "depreciationAndAmortization": 124811000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "operatingCashFlow": 559168000.0,
+      "capitalExpenditure": 32146000.0,
+      "commonStockRepurchased": 398028000.0,
+      "depreciationAndAmortization": 89559000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "operatingCashFlow": 562634000.0,
+      "capitalExpenditure": 28415000.0,
+      "commonStockRepurchased": 164924000.0,
+      "depreciationAndAmortization": 91800000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "operatingCashFlow": 464104000.0,
+      "capitalExpenditure": 81629000.0,
+      "commonStockRepurchased": 0.0,
+      "depreciationAndAmortization": 92272000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "operatingCashFlow": 572327000.0,
+      "capitalExpenditure": 111501000.0,
+      "commonStockRepurchased": 0.0,
+      "depreciationAndAmortization": 83395000.0
+    }
+  ],
+  "profile": {
+    "companyName": "EPAM SYSTEMS, INC.",
+    "symbol": "EPAM"
+  },
+  "price_target_consensus": null,
+  "_data_source": "edgar_primary"
+}

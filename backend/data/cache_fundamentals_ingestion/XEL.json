@@ -1,0 +1,178 @@
+{
+  "symbol": "XEL",
+  "ingested_at": "2026-09-10T01:52:26.010582+00:00",
+  "income_statement": [
+    {
+      "calendarYear": "2026",
+      "period": "FY",
+      "sharesOutstanding": 623876813.0
+    },
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "operatingIncome": 2583000000.0,
+      "incomeTaxExpense": -245000000.0,
+      "netIncome": 2018000000.0,
+      "weightedAverageShsOutDil": 589000000.0,
+      "weightedAverageShsOut": 587000000.0,
+      "sharesOutstanding": 574552694.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "operatingIncome": 2386000000.0,
+      "incomeTaxExpense": -402000000.0,
+      "netIncome": 1936000000.0,
+      "weightedAverageShsOutDil": 563000000.0,
+      "weightedAverageShsOut": 563000000.0,
+      "sharesOutstanding": 555155770.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "operatingIncome": 2481000000.0,
+      "incomeTaxExpense": -146000000.0,
+      "netIncome": 1771000000.0,
+      "weightedAverageShsOutDil": 552000000.0,
+      "weightedAverageShsOut": 552000000.0,
+      "sharesOutstanding": 549847034.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "operatingIncome": 2428000000.0,
+      "incomeTaxExpense": -135000000.0,
+      "netIncome": 1736000000.0,
+      "weightedAverageShsOutDil": 547000000.0,
+      "weightedAverageShsOut": 547000000.0,
+      "sharesOutstanding": 544213730.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "operatingIncome": 2203000000.0,
+      "incomeTaxExpense": -70000000.0,
+      "netIncome": 1597000000.0,
+      "weightedAverageShsOutDil": 540000000.0,
+      "weightedAverageShsOut": 539000000.0,
+      "sharesOutstanding": 537648833.0
+    }
+  ],
+  "balance_sheet": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "totalAssets": 81371000000.0,
+      "totalCurrentAssets": 5014000000.0,
+      "cashAndCashEquivalents": 274000000.0,
+      "totalCurrentLiabilities": 7089000000.0,
+      "longTermDebt": 31832000000.0,
+      "shortTermBorrowings": 1550000000.0,
+      "totalShareholderEquity": 23609000000.0,
+      "retainedEarnings": 9207000000.0,
+      "propertyPlantEquipmentNet": 65639000000.0,
+      "netReceivables": 1330000000.0,
+      "totalDebt": 33382000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "totalAssets": 70035000000.0,
+      "totalCurrentAssets": 4325000000.0,
+      "cashAndCashEquivalents": 179000000.0,
+      "totalCurrentLiabilities": 6459000000.0,
+      "longTermDebt": 27316000000.0,
+      "shortTermBorrowings": 695000000.0,
+      "totalShareholderEquity": 19522000000.0,
+      "retainedEarnings": 8553000000.0,
+      "propertyPlantEquipmentNet": 57198000000.0,
+      "netReceivables": 1249000000.0,
+      "totalDebt": 28011000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "totalAssets": 64079000000.0,
+      "totalCurrentAssets": 4069000000.0,
+      "cashAndCashEquivalents": 129000000.0,
+      "totalCurrentLiabilities": 5652000000.0,
+      "shortTermBorrowings": 785000000.0,
+      "totalShareholderEquity": 17616000000.0,
+      "retainedEarnings": 7858000000.0,
+      "propertyPlantEquipmentNet": 51642000000.0,
+      "netReceivables": 1315000000.0,
+      "totalDebt": 785000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "totalAssets": 61188000000.0,
+      "totalCurrentAssets": 5144000000.0,
+      "cashAndCashEquivalents": 111000000.0,
+      "totalCurrentLiabilities": 6078000000.0,
+      "shortTermBorrowings": 813000000.0,
+      "totalShareholderEquity": 16675000000.0,
+      "retainedEarnings": 7239000000.0,
+      "propertyPlantEquipmentNet": 48253000000.0,
+      "netReceivables": 1373000000.0,
+      "totalDebt": 813000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "totalAssets": 57851000000.0,
+      "totalCurrentAssets": 4239000000.0,
+      "cashAndCashEquivalents": 166000000.0,
+      "totalCurrentLiabilities": 5046000000.0,
+      "shortTermBorrowings": 1005000000.0,
+      "totalShareholderEquity": 15612000000.0,
+      "retainedEarnings": 6572000000.0,
+      "propertyPlantEquipmentNet": 45457000000.0,
+      "netReceivables": 1018000000.0,
+      "totalDebt": 1005000000.0
+    }
+  ],
+  "cash_flow": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "operatingCashFlow": 4083000000.0,
+      "capitalExpenditure": 10908000000.0,
+      "dividendsPaid": 1282000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "operatingCashFlow": 4641000000.0,
+      "capitalExpenditure": 7364000000.0,
+      "dividendsPaid": 1175000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "operatingCashFlow": 5327000000.0,
+      "capitalExpenditure": 5854000000.0,
+      "dividendsPaid": 1092000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "operatingCashFlow": 3932000000.0,
+      "capitalExpenditure": 4638000000.0,
+      "dividendsPaid": 1012000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "operatingCashFlow": 2189000000.0,
+      "capitalExpenditure": 4244000000.0,
+      "dividendsPaid": 935000000.0
+    }
+  ],
+  "profile": {
+    "companyName": "Xcel Energy Inc.",
+    "symbol": "XEL"
+  },
+  "price_target_consensus": null,
+  "_data_source": "edgar_primary"
+}

@@ -1,0 +1,6 @@
+Pipeline EXIT — venta mecanica de posiciones OPEN del pipeline
+==============================================================
+Fuente de verdad EXIT: estado propio | OPEN estado=0
+
+Resultados (REAL):
+(sin posiciones: fase no-op — normal fuera de ciclo mensual)

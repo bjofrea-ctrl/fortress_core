@@ -1,0 +1,194 @@
+{
+  "symbol": "UNP",
+  "ingested_at": "2026-09-10T01:52:02.248319+00:00",
+  "income_statement": [
+    {
+      "calendarYear": "2026",
+      "period": "FY",
+      "sharesOutstanding": 593391460.0
+    },
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "revenue": 24510000000.0,
+      "operatingIncome": 9846000000.0,
+      "incomeTaxExpense": 2028000000.0,
+      "netIncome": 7138000000.0,
+      "weightedAverageShsOutDil": 595900000.0,
+      "weightedAverageShsOut": 595000000.0,
+      "sharesOutstanding": 604286378.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "revenue": 24250000000.0,
+      "operatingIncome": 9713000000.0,
+      "incomeTaxExpense": 2047000000.0,
+      "netIncome": 6747000000.0,
+      "weightedAverageShsOutDil": 608600000.0,
+      "weightedAverageShsOut": 607600000.0,
+      "sharesOutstanding": 609777914.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "revenue": 24119000000.0,
+      "operatingIncome": 9082000000.0,
+      "incomeTaxExpense": 1854000000.0,
+      "netIncome": 6379000000.0,
+      "weightedAverageShsOutDil": 610200000.0,
+      "weightedAverageShsOut": 609200000.0,
+      "sharesOutstanding": 611872981.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "revenue": 24875000000.0,
+      "operatingIncome": 9917000000.0,
+      "incomeTaxExpense": 2074000000.0,
+      "netIncome": 6998000000.0,
+      "weightedAverageShsOutDil": 624000000.0,
+      "weightedAverageShsOut": 622700000.0,
+      "sharesOutstanding": 636898957.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "revenue": 21804000000.0,
+      "operatingIncome": 9338000000.0,
+      "incomeTaxExpense": 1955000000.0,
+      "netIncome": 6523000000.0,
+      "weightedAverageShsOutDil": 655400000.0,
+      "weightedAverageShsOut": 653800000.0,
+      "sharesOutstanding": 669829363.0
+    }
+  ],
+  "balance_sheet": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "totalAssets": 69698000000.0,
+      "totalCurrentAssets": 4555000000.0,
+      "cashAndCashEquivalents": 1266000000.0,
+      "totalCurrentLiabilities": 5014000000.0,
+      "longTermDebt": 31814000000.0,
+      "shortTermBorrowings": 0.0,
+      "totalLiabilities": 51231000000.0,
+      "totalShareholderEquity": 18467000000.0,
+      "retainedEarnings": 69529000000.0,
+      "netReceivables": 1860000000.0,
+      "totalDebt": 31814000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "totalAssets": 67715000000.0,
+      "totalCurrentAssets": 4021000000.0,
+      "cashAndCashEquivalents": 1016000000.0,
+      "totalCurrentLiabilities": 5254000000.0,
+      "longTermDebt": 31192000000.0,
+      "shortTermBorrowings": 0.0,
+      "totalLiabilities": 50825000000.0,
+      "totalShareholderEquity": 16890000000.0,
+      "retainedEarnings": 65628000000.0,
+      "netReceivables": 1894000000.0,
+      "totalDebt": 31192000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "totalAssets": 67132000000.0,
+      "totalCurrentAssets": 4148000000.0,
+      "cashAndCashEquivalents": 1055000000.0,
+      "totalCurrentLiabilities": 5106000000.0,
+      "longTermDebt": 32579000000.0,
+      "shortTermBorrowings": 0.0,
+      "totalLiabilities": 52344000000.0,
+      "totalShareholderEquity": 14788000000.0,
+      "retainedEarnings": 62093000000.0,
+      "propertyPlantEquipmentNet": 57398000000.0,
+      "netReceivables": 2073000000.0,
+      "totalDebt": 32579000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "totalAssets": 65449000000.0,
+      "totalCurrentAssets": 3952000000.0,
+      "cashAndCashEquivalents": 987000000.0,
+      "totalCurrentLiabilities": 5520000000.0,
+      "longTermDebt": 33326000000.0,
+      "shortTermBorrowings": 200000000.0,
+      "totalLiabilities": 53286000000.0,
+      "totalShareholderEquity": 12163000000.0,
+      "retainedEarnings": 58887000000.0,
+      "propertyPlantEquipmentNet": 56038000000.0,
+      "netReceivables": 1891000000.0,
+      "totalDebt": 33526000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "totalAssets": 63525000000.0,
+      "totalCurrentAssets": 3551000000.0,
+      "cashAndCashEquivalents": 983000000.0,
+      "totalCurrentLiabilities": 5744000000.0,
+      "longTermDebt": 29729000000.0,
+      "shortTermBorrowings": 400000000.0,
+      "totalLiabilities": 49364000000.0,
+      "totalShareholderEquity": 14161000000.0,
+      "retainedEarnings": 55049000000.0,
+      "propertyPlantEquipmentNet": 54871000000.0,
+      "netReceivables": 1722000000.0,
+      "totalDebt": 30129000000.0
+    }
+  ],
+  "cash_flow": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "operatingCashFlow": 9290000000.0,
+      "capitalExpenditure": 3791000000.0,
+      "commonStockRepurchased": 2679000000.0,
+      "dividendsPaid": 3236000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "operatingCashFlow": 9346000000.0,
+      "capitalExpenditure": 3452000000.0,
+      "commonStockRepurchased": 1505000000.0,
+      "dividendsPaid": 3213000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "operatingCashFlow": 8379000000.0,
+      "capitalExpenditure": 3606000000.0,
+      "commonStockRepurchased": 705000000.0,
+      "dividendsPaid": 3173000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "operatingCashFlow": 9362000000.0,
+      "capitalExpenditure": 3620000000.0,
+      "commonStockRepurchased": 6282000000.0,
+      "dividendsPaid": 3159000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "operatingCashFlow": 9032000000.0,
+      "capitalExpenditure": 2936000000.0,
+      "commonStockRepurchased": 7291000000.0,
+      "dividendsPaid": 2800000000.0
+    }
+  ],
+  "profile": {
+    "companyName": "UNION PACIFIC CORP",
+    "symbol": "UNP"
+  },
+  "price_target_consensus": null,
+  "_data_source": "edgar_primary"
+}

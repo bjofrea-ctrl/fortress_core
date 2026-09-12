@@ -1,0 +1,214 @@
+{
+  "symbol": "CHKP",
+  "ingested_at": "2026-09-10T01:51:38.067287+00:00",
+  "income_statement": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "revenue": 2725400000.0,
+      "operatingIncome": 831100000.0,
+      "incomeTaxExpense": -111800000.0,
+      "netIncome": 1056900000.0,
+      "weightedAverageShsOutDil": 109913789.0,
+      "weightedAverageShsOut": 107264069.0,
+      "sharesOutstanding": 105596035.0,
+      "sellingGeneralAndAdministrativeExpense": 128800000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "revenue": 2565000000.0,
+      "operatingIncome": 876000000.0,
+      "incomeTaxExpense": 126400000.0,
+      "netIncome": 845700000.0,
+      "weightedAverageShsOutDil": 113406896.0,
+      "weightedAverageShsOut": 110617625.0,
+      "sharesOutstanding": 108368523.0,
+      "sellingGeneralAndAdministrativeExpense": 111900000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "revenue": 2414700000.0,
+      "operatingIncome": 899100000.0,
+      "incomeTaxExpense": 135300000.0,
+      "netIncome": 840300000.0,
+      "weightedAverageShsOutDil": 118347749.0,
+      "weightedAverageShsOut": 116913913.0,
+      "sharesOutstanding": 112906427.0,
+      "sellingGeneralAndAdministrativeExpense": 117000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "revenue": 2329900000.0,
+      "operatingIncome": 884300000.0,
+      "incomeTaxExpense": 131400000.0,
+      "netIncome": 796900000.0,
+      "weightedAverageShsOutDil": 126338989.0,
+      "weightedAverageShsOut": 125205504.0,
+      "sharesOutstanding": 120761971.0,
+      "sellingGeneralAndAdministrativeExpense": 116100000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "revenue": 2166800000.0,
+      "operatingIncome": 907500000.0,
+      "incomeTaxExpense": 134000000.0,
+      "netIncome": 815600000.0,
+      "weightedAverageShsOutDil": 134110048.0,
+      "weightedAverageShsOut": 133121763.0,
+      "sharesOutstanding": 129065690.0,
+      "sellingGeneralAndAdministrativeExpense": 110700000.0
+    },
+    {
+      "calendarYear": "2020",
+      "period": "FY",
+      "revenue": 2064900000.0,
+      "operatingIncome": 904200000.0,
+      "incomeTaxExpense": 124200000.0,
+      "netIncome": 846600000.0,
+      "weightedAverageShsOutDil": 141977992.0,
+      "weightedAverageShsOut": 140495886.0,
+      "sharesOutstanding": 137151930.0,
+      "sellingGeneralAndAdministrativeExpense": 111500000.0
+    }
+  ],
+  "balance_sheet": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "totalAssets": 7806400000.0,
+      "totalCurrentAssets": 3964000000.0,
+      "cashAndCashEquivalents": 1800000000.0,
+      "totalCurrentLiabilities": 1936700000.0,
+      "totalLiabilities": 4924300000.0,
+      "totalShareholderEquity": 2882100000.0,
+      "retainedEarnings": 15070700000.0,
+      "propertyPlantEquipmentNet": 82900000.0,
+      "netReceivables": 769100000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "totalAssets": 5754500000.0,
+      "totalCurrentAssets": 2193400000.0,
+      "cashAndCashEquivalents": 506200000.0,
+      "totalCurrentLiabilities": 1944200000.0,
+      "totalLiabilities": 2965100000.0,
+      "totalShareholderEquity": 2789400000.0,
+      "retainedEarnings": 14013800000.0,
+      "propertyPlantEquipmentNet": 80800000.0,
+      "netReceivables": 728800000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "totalAssets": 5695500000.0,
+      "totalCurrentAssets": 2257700000.0,
+      "cashAndCashEquivalents": 537700000.0,
+      "totalCurrentLiabilities": 1916100000.0,
+      "totalLiabilities": 2874500000.0,
+      "totalShareholderEquity": 2821000000.0,
+      "retainedEarnings": 13168100000.0,
+      "propertyPlantEquipmentNet": 80400000.0,
+      "netReceivables": 657700000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "totalAssets": 5724800000.0,
+      "totalCurrentAssets": 2331800000.0,
+      "cashAndCashEquivalents": 196000000.0,
+      "totalCurrentLiabilities": 1839200000.0,
+      "totalLiabilities": 2795500000.0,
+      "totalShareholderEquity": 2929300000.0,
+      "retainedEarnings": 12327800000.0,
+      "propertyPlantEquipmentNet": 82800000.0,
+      "netReceivables": 644200000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "totalAssets": 5900200000.0,
+      "totalCurrentAssets": 2337900000.0,
+      "cashAndCashEquivalents": 271900000.0,
+      "totalCurrentLiabilities": 1712100000.0,
+      "totalLiabilities": 2643100000.0,
+      "totalShareholderEquity": 3257100000.0,
+      "retainedEarnings": 11530900000.0,
+      "propertyPlantEquipmentNet": 83400000.0,
+      "netReceivables": 597800000.0
+    },
+    {
+      "calendarYear": "2020",
+      "period": "FY",
+      "totalAssets": 5839200000.0,
+      "totalCurrentAssets": 2278600000.0,
+      "cashAndCashEquivalents": 255700000.0,
+      "totalCurrentLiabilities": 1543800000.0,
+      "totalLiabilities": 2373000000.0,
+      "totalShareholderEquity": 3466200000.0,
+      "retainedEarnings": 10715300000.0,
+      "propertyPlantEquipmentNet": 88100000.0,
+      "netReceivables": 540800000.0
+    }
+  ],
+  "cash_flow": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "operatingCashFlow": 1199400000.0,
+      "capitalExpenditure": 26600000.0,
+      "commonStockRepurchased": 1400000000.0,
+      "depreciationAndAmortization": 24800000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "operatingCashFlow": 1052400000.0,
+      "capitalExpenditure": 24200000.0,
+      "commonStockRepurchased": 1299900000.0,
+      "depreciationAndAmortization": 24000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "operatingCashFlow": 1037900000.0,
+      "capitalExpenditure": 18600000.0,
+      "commonStockRepurchased": 1287600000.0,
+      "depreciationAndAmortization": 23100000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "operatingCashFlow": 1098500000.0,
+      "capitalExpenditure": 22100000.0,
+      "commonStockRepurchased": 1299900000.0,
+      "depreciationAndAmortization": 22700000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "operatingCashFlow": 1203900000.0,
+      "capitalExpenditure": 15900000.0,
+      "commonStockRepurchased": 1299500000.0,
+      "depreciationAndAmortization": 20600000.0
+    },
+    {
+      "calendarYear": "2020",
+      "period": "FY",
+      "operatingCashFlow": 1161000000.0,
+      "capitalExpenditure": 19300000.0,
+      "commonStockRepurchased": 1297700000.0,
+      "depreciationAndAmortization": 18900000.0
+    }
+  ],
+  "profile": {
+    "companyName": "CHECK POINT SOFTWARE TECHNOLOGIES LTD.",
+    "symbol": "CHKP"
+  },
+  "price_target_consensus": null,
+  "_data_source": "edgar_primary"
+}

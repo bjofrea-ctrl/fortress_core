@@ -1,0 +1,181 @@
+{
+  "symbol": "AXP",
+  "ingested_at": "2026-09-10T01:51:56.790034+00:00",
+  "income_statement": [
+    {
+      "calendarYear": "2026",
+      "period": "FY",
+      "sharesOutstanding": 686614005.0
+    },
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "revenue": 41304000000.0,
+      "incomeTaxExpense": 2962000000.0,
+      "netIncome": 10833000000.0,
+      "weightedAverageShsOutDil": 696000000.0,
+      "weightedAverageShsOut": 695000000.0,
+      "sharesOutstanding": 702532111.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "revenue": 38825000000.0,
+      "incomeTaxExpense": 2766000000.0,
+      "netIncome": 10129000000.0,
+      "weightedAverageShsOutDil": 713000000.0,
+      "weightedAverageShsOut": 712000000.0,
+      "sharesOutstanding": 723869787.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "revenue": 37218000000.0,
+      "incomeTaxExpense": 2139000000.0,
+      "netIncome": 8374000000.0,
+      "weightedAverageShsOutDil": 736000000.0,
+      "weightedAverageShsOut": 735000000.0,
+      "sharesOutstanding": 744192702.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "revenue": 34219000000.0,
+      "incomeTaxExpense": 2071000000.0,
+      "netIncome": 7514000000.0,
+      "weightedAverageShsOutDil": 752000000.0,
+      "weightedAverageShsOut": 751000000.0,
+      "sharesOutstanding": 759354994.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "revenue": 27716000000.0,
+      "incomeTaxExpense": 2629000000.0,
+      "netIncome": 8060000000.0,
+      "weightedAverageShsOutDil": 790000000.0,
+      "weightedAverageShsOut": 789000000.0,
+      "sharesOutstanding": 805588980.0
+    }
+  ],
+  "balance_sheet": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "totalAssets": 300052000000.0,
+      "cashAndCashEquivalents": 47792000000.0,
+      "shortTermInvestments": 742000000.0,
+      "longTermDebt": 56387000000.0,
+      "shortTermBorrowings": 1371000000.0,
+      "totalLiabilities": 266578000000.0,
+      "totalShareholderEquity": 33474000000.0,
+      "retainedEarnings": 25487000000.0,
+      "propertyPlantEquipmentNet": 6118000000.0,
+      "totalDebt": 57758000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "totalAssets": 271461000000.0,
+      "cashAndCashEquivalents": 40640000000.0,
+      "shortTermInvestments": 221000000.0,
+      "longTermDebt": 49715000000.0,
+      "shortTermBorrowings": 1374000000.0,
+      "totalLiabilities": 241197000000.0,
+      "totalShareholderEquity": 30264000000.0,
+      "retainedEarnings": 22148000000.0,
+      "propertyPlantEquipmentNet": 5371000000.0,
+      "totalDebt": 51089000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "totalAssets": 261108000000.0,
+      "cashAndCashEquivalents": 46596000000.0,
+      "shortTermInvestments": 166000000.0,
+      "longTermDebt": 47866000000.0,
+      "shortTermBorrowings": 1293000000.0,
+      "totalLiabilities": 233051000000.0,
+      "totalShareholderEquity": 28057000000.0,
+      "retainedEarnings": 19612000000.0,
+      "propertyPlantEquipmentNet": 5138000000.0,
+      "totalDebt": 49159000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "totalAssets": 228354000000.0,
+      "cashAndCashEquivalents": 33914000000.0,
+      "shortTermInvestments": 307000000.0,
+      "longTermDebt": 42573000000.0,
+      "shortTermBorrowings": 1348000000.0,
+      "totalLiabilities": 203643000000.0,
+      "totalShareholderEquity": 24711000000.0,
+      "retainedEarnings": 16279000000.0,
+      "propertyPlantEquipmentNet": 5215000000.0,
+      "totalDebt": 43921000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "totalAssets": 189000000000.0,
+      "cashAndCashEquivalents": 22028000000.0,
+      "shortTermInvestments": 188000000.0,
+      "longTermDebt": 38675000000.0,
+      "shortTermBorrowings": 2243000000.0,
+      "totalLiabilities": 166371000000.0,
+      "totalShareholderEquity": 22177000000.0,
+      "retainedEarnings": 13474000000.0,
+      "propertyPlantEquipmentNet": 4988000000.0,
+      "totalDebt": 40918000000.0
+    }
+  ],
+  "cash_flow": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "operatingCashFlow": 18428000000.0,
+      "capitalExpenditure": 2425000000.0,
+      "commonStockRepurchased": 5814000000.0,
+      "dividendsPaid": 2271000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "operatingCashFlow": 14050000000.0,
+      "capitalExpenditure": 1911000000.0,
+      "commonStockRepurchased": 6020000000.0,
+      "dividendsPaid": 1999000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "operatingCashFlow": 18559000000.0,
+      "capitalExpenditure": 1563000000.0,
+      "commonStockRepurchased": 3650000000.0,
+      "dividendsPaid": 1780000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "operatingCashFlow": 21079000000.0,
+      "capitalExpenditure": 1855000000.0,
+      "commonStockRepurchased": 3502000000.0,
+      "dividendsPaid": 1565000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "operatingCashFlow": 14645000000.0,
+      "capitalExpenditure": 1550000000.0,
+      "commonStockRepurchased": 7652000000.0,
+      "dividendsPaid": 1448000000.0
+    }
+  ],
+  "profile": {
+    "companyName": "AMERICAN EXPRESS CO",
+    "symbol": "AXP"
+  },
+  "price_target_consensus": null,
+  "_data_source": "edgar_primary"
+}

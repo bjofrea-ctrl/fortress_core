@@ -1,0 +1,202 @@
+{
+  "symbol": "EQIX",
+  "ingested_at": "2026-09-10T01:52:20.301832+00:00",
+  "income_statement": [
+    {
+      "calendarYear": "2026",
+      "period": "FY",
+      "sharesOutstanding": 98254928.0
+    },
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "revenue": 9217000000.0,
+      "operatingIncome": 1848000000.0,
+      "incomeTaxExpense": 160000000.0,
+      "netIncome": 1350000000.0,
+      "weightedAverageShsOutDil": 98123000.0,
+      "weightedAverageShsOut": 97883000.0,
+      "sharesOutstanding": 97332005.0,
+      "sellingGeneralAndAdministrativeExpense": 1840000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "revenue": 8748000000.0,
+      "operatingIncome": 1328000000.0,
+      "incomeTaxExpense": 161000000.0,
+      "netIncome": 815000000.0,
+      "weightedAverageShsOutDil": 95827000.0,
+      "weightedAverageShsOut": 95457000.0,
+      "sharesOutstanding": 94621449.0,
+      "sellingGeneralAndAdministrativeExpense": 1766000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "revenue": 8188000000.0,
+      "operatingIncome": 1443000000.0,
+      "incomeTaxExpense": 155000000.0,
+      "netIncome": 969000000.0,
+      "weightedAverageShsOutDil": 94009000.0,
+      "weightedAverageShsOut": 93615000.0,
+      "sharesOutstanding": 92784198.0,
+      "sellingGeneralAndAdministrativeExpense": 1654000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "revenue": 7263000000.0,
+      "operatingIncome": 1200000000.0,
+      "incomeTaxExpense": 124000000.0,
+      "netIncome": 705000000.0,
+      "weightedAverageShsOutDil": 91828000.0,
+      "weightedAverageShsOut": 91569000.0,
+      "sharesOutstanding": 90721039.0,
+      "sellingGeneralAndAdministrativeExpense": 1499000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "revenue": 6635537000.0,
+      "operatingIncome": 1108162000.0,
+      "incomeTaxExpense": 109224000.0,
+      "netIncome": 500191000.0,
+      "weightedAverageShsOutDil": 90409000.0,
+      "weightedAverageShsOut": 89772000.0,
+      "sharesOutstanding": 89287863.0,
+      "sellingGeneralAndAdministrativeExpense": 1301797000.0
+    }
+  ],
+  "balance_sheet": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "totalAssets": 40141000000.0,
+      "totalCurrentAssets": 5125000000.0,
+      "cashAndCashEquivalents": 1727000000.0,
+      "shortTermInvestments": 1500000000.0,
+      "totalCurrentLiabilities": 3893000000.0,
+      "longTermDebtCurrent": 1299000000.0,
+      "totalLiabilities": 25963000000.0,
+      "totalShareholderEquity": 14156000000.0,
+      "retainedEarnings": 6099000000.0,
+      "propertyPlantEquipmentNet": 23584000000.0,
+      "netReceivables": 1001000000.0,
+      "totalDebt": 1299000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "totalAssets": 35085000000.0,
+      "totalCurrentAssets": 5447000000.0,
+      "cashAndCashEquivalents": 3081000000.0,
+      "shortTermInvestments": 527000000.0,
+      "totalCurrentLiabilities": 3349000000.0,
+      "longTermDebt": 15334000000.0,
+      "longTermDebtCurrent": 1199000000.0,
+      "totalLiabilities": 21533000000.0,
+      "totalShareholderEquity": 13528000000.0,
+      "retainedEarnings": 4749000000.0,
+      "propertyPlantEquipmentNet": 19249000000.0,
+      "netReceivables": 949000000.0,
+      "totalDebt": 16533000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "totalAssets": 32651000000.0,
+      "totalCurrentAssets": 3568000000.0,
+      "cashAndCashEquivalents": 2096000000.0,
+      "shortTermInvestments": 0.0,
+      "totalCurrentLiabilities": 3162000000.0,
+      "longTermDebt": 13840646000.0,
+      "longTermDebtCurrent": 998000000.0,
+      "totalLiabilities": 20137000000.0,
+      "totalShareholderEquity": 12489000000.0,
+      "retainedEarnings": 3934000000.0,
+      "propertyPlantEquipmentNet": 18601000000.0,
+      "netReceivables": 1004000000.0,
+      "totalDebt": 14838646000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "totalAssets": 30310742000.0,
+      "totalCurrentAssets": 3305255000.0,
+      "cashAndCashEquivalents": 1908000000.0,
+      "totalCurrentLiabilities": 1838298000.0,
+      "longTermDebt": 12880507000.0,
+      "totalLiabilities": 18804910000.0,
+      "totalShareholderEquity": 11506000000.0,
+      "retainedEarnings": 2964838000.0,
+      "propertyPlantEquipmentNet": 16649534000.0,
+      "netReceivables": 855000000.0,
+      "totalDebt": 12880507000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "totalAssets": 27918698000.0,
+      "totalCurrentAssets": 2957101000.0,
+      "cashAndCashEquivalents": 1549000000.0,
+      "shortTermInvestments": 0.0,
+      "totalCurrentLiabilities": 1605954000.0,
+      "longTermDebt": 11722148000.0,
+      "totalLiabilities": 17036934000.0,
+      "totalShareholderEquity": 10883000000.0,
+      "retainedEarnings": 2260493000.0,
+      "propertyPlantEquipmentNet": 15445775000.0,
+      "netReceivables": 681809000.0,
+      "totalDebt": 11722148000.0
+    }
+  ],
+  "cash_flow": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "operatingCashFlow": 3911000000.0,
+      "capitalExpenditure": 4311000000.0,
+      "dividendsPaid": 1856000000.0,
+      "depreciationAndAmortization": 2050000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "operatingCashFlow": 3249000000.0,
+      "capitalExpenditure": 3066000000.0,
+      "dividendsPaid": 1643000000.0,
+      "depreciationAndAmortization": 2009000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "operatingCashFlow": 3217000000.0,
+      "capitalExpenditure": 2781000000.0,
+      "dividendsPaid": 1375000000.0,
+      "depreciationAndAmortization": 1845000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "operatingCashFlow": 2963000000.0,
+      "capitalExpenditure": 2278000000.0,
+      "dividendsPaid": 1152000000.0,
+      "depreciationAndAmortization": 1737000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "operatingCashFlow": 2547206000.0,
+      "capitalExpenditure": 2751512000.0,
+      "dividendsPaid": 1042909000.0,
+      "depreciationAndAmortization": 1656290000.0
+    }
+  ],
+  "profile": {
+    "companyName": "EQUINIX, INC.",
+    "symbol": "EQIX"
+  },
+  "price_target_consensus": null,
+  "_data_source": "edgar_primary"
+}

@@ -1,0 +1,161 @@
+{
+  "symbol": "STAG",
+  "ingested_at": "2026-09-10T01:51:56.541540+00:00",
+  "income_statement": [
+    {
+      "calendarYear": "2026",
+      "period": "FY",
+      "sharesOutstanding": 191036305.0
+    },
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "revenue": 845184000.0,
+      "netIncome": 273519000.0,
+      "weightedAverageShsOutDil": 187174000.0,
+      "weightedAverageShsOut": 186844000.0,
+      "sharesOutstanding": 186564770.0,
+      "sellingGeneralAndAdministrativeExpense": 51933000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "revenue": 767384000.0,
+      "netIncome": 189220000.0,
+      "weightedAverageShsOutDil": 182404000.0,
+      "weightedAverageShsOut": 182160000.0,
+      "sharesOutstanding": 181783304.0,
+      "sellingGeneralAndAdministrativeExpense": 49202000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "revenue": 707835000.0,
+      "netIncome": 192845000.0,
+      "weightedAverageShsOutDil": 180555000.0,
+      "weightedAverageShsOut": 180221000.0,
+      "sharesOutstanding": 179329037.0,
+      "sellingGeneralAndAdministrativeExpense": 47491000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "revenue": 657345000.0,
+      "netIncome": 178326000.0,
+      "weightedAverageShsOutDil": 178940000.0,
+      "weightedAverageShsOut": 178753000.0,
+      "sharesOutstanding": 177952678.0,
+      "sellingGeneralAndAdministrativeExpense": 46958000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "revenue": 562159000.0,
+      "netIncome": 192334000.0,
+      "weightedAverageShsOutDil": 164090000.0,
+      "weightedAverageShsOut": 163442000.0,
+      "sharesOutstanding": 158399472.0,
+      "sellingGeneralAndAdministrativeExpense": 48629000.0
+    }
+  ],
+  "balance_sheet": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "totalAssets": 7208069000.0,
+      "cashAndCashEquivalents": 14910000.0,
+      "longTermDebt": 3254315000.0,
+      "totalLiabilities": 3537040000.0,
+      "totalShareholderEquity": 3595697000.0,
+      "retainedEarnings": -1034954000.0,
+      "totalDebt": 3254315000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "totalAssets": 6833335000.0,
+      "cashAndCashEquivalents": 36284000.0,
+      "longTermDebt": 3029135000.0,
+      "totalLiabilities": 3304227000.0,
+      "totalShareholderEquity": 3457651000.0,
+      "retainedEarnings": -1029757000.0,
+      "totalDebt": 3029135000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "totalAssets": 6283458000.0,
+      "cashAndCashEquivalents": 20741000.0,
+      "longTermDebt": 2624046000.0,
+      "totalLiabilities": 2837647000.0,
+      "totalShareholderEquity": 3445811000.0,
+      "retainedEarnings": -948720000.0,
+      "totalDebt": 2624046000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "totalAssets": 6184988000.0,
+      "cashAndCashEquivalents": 25884000.0,
+      "longTermDebt": 2498780000.0,
+      "totalLiabilities": 2726807000.0,
+      "totalShareholderEquity": 3458181000.0,
+      "retainedEarnings": -876145000.0,
+      "totalDebt": 2498780000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "totalAssets": 5833249000.0,
+      "cashAndCashEquivalents": 18981000.0,
+      "longTermDebt": 2218262000.0,
+      "totalLiabilities": 2439662000.0,
+      "totalShareholderEquity": 3393587000.0,
+      "retainedEarnings": -792332000.0,
+      "totalDebt": 2218262000.0
+    }
+  ],
+  "cash_flow": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "operatingCashFlow": 463388000.0,
+      "dividendsPaid": 283971000.0,
+      "depreciationAndAmortization": 301797000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "operatingCashFlow": 460292000.0,
+      "dividendsPaid": 274920000.0,
+      "depreciationAndAmortization": 293077000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "operatingCashFlow": 391092000.0,
+      "dividendsPaid": 267567000.0,
+      "depreciationAndAmortization": 278447000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "operatingCashFlow": 387931000.0,
+      "dividendsPaid": 266817000.0,
+      "depreciationAndAmortization": 275040000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "operatingCashFlow": 336154000.0,
+      "dividendsPaid": 245722000.0,
+      "depreciationAndAmortization": 238699000.0
+    }
+  ],
+  "profile": {
+    "companyName": "STAG Industrial,\u00a0Inc.",
+    "symbol": "STAG"
+  },
+  "price_target_consensus": null,
+  "_data_source": "edgar_primary"
+}

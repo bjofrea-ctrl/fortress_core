@@ -1,0 +1,193 @@
+{
+  "symbol": "MRK",
+  "ingested_at": "2026-09-10T01:50:55.976075+00:00",
+  "income_statement": [
+    {
+      "calendarYear": "2026",
+      "period": "FY",
+      "sharesOutstanding": 2472392003.0
+    },
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "revenue": 65011000000.0,
+      "incomeTaxExpense": 2804000000.0,
+      "netIncome": 18254000000.0,
+      "weightedAverageShsOutDil": 2507000000.0,
+      "weightedAverageShsOut": 2502000000.0,
+      "sharesOutstanding": 2526036240.0,
+      "sellingGeneralAndAdministrativeExpense": 10733000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "revenue": 64168000000.0,
+      "incomeTaxExpense": 2803000000.0,
+      "netIncome": 17117000000.0,
+      "weightedAverageShsOutDil": 2541000000.0,
+      "weightedAverageShsOut": 2532000000.0,
+      "sharesOutstanding": 2532643872.0,
+      "sellingGeneralAndAdministrativeExpense": 10816000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "revenue": 60115000000.0,
+      "incomeTaxExpense": 1512000000.0,
+      "netIncome": 365000000.0,
+      "weightedAverageShsOutDil": 2547000000.0,
+      "weightedAverageShsOut": 2537000000.0,
+      "sharesOutstanding": 2538592467.0,
+      "sellingGeneralAndAdministrativeExpense": 10504000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "revenue": 59283000000.0,
+      "incomeTaxExpense": 1918000000.0,
+      "netIncome": 14519000000.0,
+      "weightedAverageShsOutDil": 2542000000.0,
+      "weightedAverageShsOut": 2532000000.0,
+      "sharesOutstanding": 2527733606.0,
+      "sellingGeneralAndAdministrativeExpense": 10042000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "revenue": 48704000000.0,
+      "incomeTaxExpense": 1521000000.0,
+      "netIncome": 13049000000.0,
+      "weightedAverageShsOutDil": 2538000000.0,
+      "weightedAverageShsOut": 2530000000.0,
+      "sharesOutstanding": 2530315668.0,
+      "sellingGeneralAndAdministrativeExpense": 9634000000.0
+    }
+  ],
+  "balance_sheet": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "totalAssets": 136866000000.0,
+      "totalCurrentAssets": 43516000000.0,
+      "cashAndCashEquivalents": 14565000000.0,
+      "totalCurrentLiabilities": 28327000000.0,
+      "longTermDebt": 46750000000.0,
+      "longTermDebtCurrent": 2300000000.0,
+      "totalShareholderEquity": 52606000000.0,
+      "retainedEarnings": 73075000000.0,
+      "propertyPlantEquipmentNet": 25316000000.0,
+      "netReceivables": 11775000000.0,
+      "totalDebt": 49050000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "totalAssets": 117106000000.0,
+      "totalCurrentAssets": 38782000000.0,
+      "cashAndCashEquivalents": 13242000000.0,
+      "totalCurrentLiabilities": 28420000000.0,
+      "longTermDebt": 34462000000.0,
+      "longTermDebtCurrent": 2500000000.0,
+      "totalShareholderEquity": 46313000000.0,
+      "retainedEarnings": 63069000000.0,
+      "propertyPlantEquipmentNet": 23779000000.0,
+      "netReceivables": 10278000000.0,
+      "totalDebt": 36962000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "totalAssets": 106675000000.0,
+      "totalCurrentAssets": 32168000000.0,
+      "cashAndCashEquivalents": 6909000000.0,
+      "totalCurrentLiabilities": 25694000000.0,
+      "longTermDebt": 33683000000.0,
+      "longTermDebtCurrent": 1300000000.0,
+      "totalShareholderEquity": 37635000000.0,
+      "retainedEarnings": 53895000000.0,
+      "propertyPlantEquipmentNet": 23051000000.0,
+      "netReceivables": 10349000000.0,
+      "totalDebt": 34983000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "totalAssets": 109160000000.0,
+      "totalCurrentAssets": 35722000000.0,
+      "cashAndCashEquivalents": 12773000000.0,
+      "shortTermInvestments": 498000000.0,
+      "totalCurrentLiabilities": 24239000000.0,
+      "longTermDebt": 28745000000.0,
+      "longTermDebtCurrent": 1700000000.0,
+      "totalShareholderEquity": 46058000000.0,
+      "retainedEarnings": 61081000000.0,
+      "propertyPlantEquipmentNet": 21422000000.0,
+      "netReceivables": 9450000000.0,
+      "totalDebt": 30445000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "totalAssets": 105694000000.0,
+      "totalCurrentAssets": 30266000000.0,
+      "cashAndCashEquivalents": 8167000000.0,
+      "shortTermInvestments": 0.0,
+      "totalCurrentLiabilities": 23872000000.0,
+      "longTermDebt": 30690000000.0,
+      "longTermDebtCurrent": 2300000000.0,
+      "totalShareholderEquity": 38257000000.0,
+      "retainedEarnings": 53696000000.0,
+      "propertyPlantEquipmentNet": 19279000000.0,
+      "netReceivables": 9230000000.0,
+      "totalDebt": 32990000000.0
+    }
+  ],
+  "cash_flow": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "operatingCashFlow": 16472000000.0,
+      "capitalExpenditure": 4112000000.0,
+      "commonStockRepurchased": 5084000000.0,
+      "dividendsPaid": 8176000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "operatingCashFlow": 21468000000.0,
+      "capitalExpenditure": 3372000000.0,
+      "commonStockRepurchased": 1306000000.0,
+      "dividendsPaid": 7840000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "operatingCashFlow": 13006000000.0,
+      "capitalExpenditure": 3863000000.0,
+      "commonStockRepurchased": 1346000000.0,
+      "dividendsPaid": 7445000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "operatingCashFlow": 19095000000.0,
+      "capitalExpenditure": 4388000000.0,
+      "commonStockRepurchased": 0.0,
+      "dividendsPaid": 7012000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "operatingCashFlow": 13122000000.0,
+      "capitalExpenditure": 4448000000.0,
+      "commonStockRepurchased": 840000000.0,
+      "dividendsPaid": 6610000000.0
+    }
+  ],
+  "profile": {
+    "companyName": "Merck\u00a0& Co., Inc.",
+    "symbol": "MRK"
+  },
+  "price_target_consensus": null,
+  "_data_source": "edgar_primary"
+}

@@ -1,0 +1,186 @@
+{
+  "symbol": "ISRG",
+  "ingested_at": "2026-09-10T01:51:49.938199+00:00",
+  "income_statement": [
+    {
+      "calendarYear": "2026",
+      "period": "FY",
+      "sharesOutstanding": 355130237.0
+    },
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "revenue": 10064700000.0,
+      "grossProfit": 6642300000.0,
+      "operatingIncome": 2945500000.0,
+      "incomeTaxExpense": 434800000.0,
+      "netIncome": 2856000000.0,
+      "weightedAverageShsOutDil": 362700000.0,
+      "weightedAverageShsOut": 356900000.0,
+      "sharesOutstanding": 356656964.0,
+      "sellingGeneralAndAdministrativeExpense": 2385000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "revenue": 8352100000.0,
+      "grossProfit": 5634200000.0,
+      "operatingIncome": 2348900000.0,
+      "incomeTaxExpense": 336300000.0,
+      "netIncome": 2322600000.0,
+      "weightedAverageShsOutDil": 362000000.0,
+      "weightedAverageShsOut": 355200000.0,
+      "sharesOutstanding": 352325863.0,
+      "sellingGeneralAndAdministrativeExpense": 2140000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "revenue": 7124100000.0,
+      "grossProfit": 4729500000.0,
+      "operatingIncome": 1766800000.0,
+      "incomeTaxExpense": 141600000.0,
+      "netIncome": 1798000000.0,
+      "weightedAverageShsOutDil": 357400000.0,
+      "weightedAverageShsOut": 351200000.0,
+      "sharesOutstanding": 350389679.0,
+      "sellingGeneralAndAdministrativeExpense": 1963900000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "revenue": 6222200000.0,
+      "grossProfit": 4196000000.0,
+      "operatingIncome": 1577100000.0,
+      "incomeTaxExpense": 262400000.0,
+      "netIncome": 1322300000.0,
+      "weightedAverageShsOutDil": 362000000.0,
+      "weightedAverageShsOut": 355700000.0,
+      "sharesOutstanding": 357744031.0,
+      "sellingGeneralAndAdministrativeExpense": 1739900000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "revenue": 5710100000.0,
+      "grossProfit": 3958500000.0,
+      "operatingIncome": 1821000000.0,
+      "incomeTaxExpense": 162200000.0,
+      "netIncome": 1704600000.0,
+      "weightedAverageShsOutDil": 365800000.0,
+      "weightedAverageShsOut": 356100000.0,
+      "sharesOutstanding": 117718298.0,
+      "sellingGeneralAndAdministrativeExpense": 1466500000.0
+    }
+  ],
+  "balance_sheet": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "totalAssets": 20458700000.0,
+      "totalCurrentAssets": 9779500000.0,
+      "cashAndCashEquivalents": 3368000000.0,
+      "totalCurrentLiabilities": 2006200000.0,
+      "totalLiabilities": 2517000000.0,
+      "totalShareholderEquity": 17824000000.0,
+      "retainedEarnings": 7011800000.0,
+      "propertyPlantEquipmentNet": 5342400000.0,
+      "netReceivables": 1527300000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "totalAssets": 18743200000.0,
+      "totalCurrentAssets": 7111000000.0,
+      "cashAndCashEquivalents": 2027400000.0,
+      "totalCurrentLiabilities": 1745300000.0,
+      "totalLiabilities": 2213600000.0,
+      "totalShareholderEquity": 16433700000.0,
+      "retainedEarnings": 6803300000.0,
+      "propertyPlantEquipmentNet": 4646600000.0,
+      "netReceivables": 1225400000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "totalAssets": 15441500000.0,
+      "totalCurrentAssets": 7888000000.0,
+      "cashAndCashEquivalents": 2770100000.0,
+      "totalCurrentLiabilities": 1658700000.0,
+      "totalLiabilities": 2044200000.0,
+      "totalShareholderEquity": 13397300000.0,
+      "retainedEarnings": 4743000000.0,
+      "propertyPlantEquipmentNet": 3537600000.0,
+      "netReceivables": 1130200000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "totalAssets": 12974000000.0,
+      "totalCurrentAssets": 6253000000.0,
+      "cashAndCashEquivalents": 1600700000.0,
+      "totalCurrentLiabilities": 1422100000.0,
+      "totalLiabilities": 1861400000.0,
+      "totalShareholderEquity": 11112600000.0,
+      "retainedEarnings": 3500100000.0,
+      "propertyPlantEquipmentNet": 2374200000.0,
+      "netReceivables": 942100000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "totalAssets": 13555000000.0,
+      "totalCurrentAssets": 5844900000.0,
+      "cashAndCashEquivalents": 1306000000.0,
+      "totalCurrentLiabilities": 1149800000.0,
+      "totalLiabilities": 1603500000.0,
+      "totalShareholderEquity": 11951500000.0,
+      "retainedEarnings": 4760900000.0,
+      "propertyPlantEquipmentNet": 1876400000.0,
+      "netReceivables": 782700000.0
+    }
+  ],
+  "cash_flow": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "operatingCashFlow": 3030500000.0,
+      "capitalExpenditure": 539800000.0,
+      "commonStockRepurchased": 2295300000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "operatingCashFlow": 2415000000.0,
+      "capitalExpenditure": 1111200000.0,
+      "commonStockRepurchased": 0.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "operatingCashFlow": 1813800000.0,
+      "capitalExpenditure": 1064200000.0,
+      "commonStockRepurchased": 416300000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "operatingCashFlow": 1490800000.0,
+      "capitalExpenditure": 532400000.0,
+      "commonStockRepurchased": 2607400000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "operatingCashFlow": 2089400000.0,
+      "capitalExpenditure": 339500000.0,
+      "commonStockRepurchased": 0.0
+    }
+  ],
+  "profile": {
+    "companyName": "Intuitive Surgical, Inc.",
+    "symbol": "ISRG"
+  },
+  "price_target_consensus": null,
+  "_data_source": "edgar_primary"
+}

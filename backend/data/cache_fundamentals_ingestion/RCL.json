@@ -1,0 +1,192 @@
+{
+  "symbol": "RCL",
+  "ingested_at": "2026-09-10T01:52:13.472788+00:00",
+  "income_statement": [
+    {
+      "calendarYear": "2026",
+      "period": "FY",
+      "sharesOutstanding": 270528303.0
+    },
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "revenue": 17935000000.0,
+      "operatingIncome": 4910000000.0,
+      "incomeTaxExpense": 82000000.0,
+      "netIncome": 4268000000.0,
+      "weightedAverageShsOutDil": 274000000.0,
+      "weightedAverageShsOut": 271000000.0,
+      "sharesOutstanding": 269128754.0,
+      "sellingGeneralAndAdministrativeExpense": 2223000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "revenue": 16484000000.0,
+      "operatingIncome": 4106000000.0,
+      "incomeTaxExpense": 46000000.0,
+      "netIncome": 2877000000.0,
+      "weightedAverageShsOutDil": 279000000.0,
+      "weightedAverageShsOut": 261000000.0,
+      "sharesOutstanding": 256650147.0,
+      "sellingGeneralAndAdministrativeExpense": 2125000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "revenue": 13900000000.0,
+      "operatingIncome": 2878000000.0,
+      "incomeTaxExpense": 6000000.0,
+      "netIncome": 1697000000.0,
+      "weightedAverageShsOutDil": 283000000.0,
+      "weightedAverageShsOut": 256000000.0,
+      "sharesOutstanding": 255350697.0,
+      "sellingGeneralAndAdministrativeExpense": 1792000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "revenue": 8840000000.0,
+      "operatingIncome": -766000000.0,
+      "incomeTaxExpense": 4000000.0,
+      "netIncome": -2156000000.0,
+      "weightedAverageShsOutDil": 255000000.0,
+      "weightedAverageShsOut": 255000000.0,
+      "sharesOutstanding": 255002771.0,
+      "sellingGeneralAndAdministrativeExpense": 1583000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "revenue": 1532000000.0,
+      "operatingIncome": -3870000000.0,
+      "incomeTaxExpense": -45000000.0,
+      "netIncome": -5260000000.0,
+      "weightedAverageShsOutDil": 252000000.0,
+      "weightedAverageShsOut": 252000000.0,
+      "sharesOutstanding": 237535138.0,
+      "sellingGeneralAndAdministrativeExpense": 1370000000.0
+    }
+  ],
+  "balance_sheet": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "totalAssets": 41619000000.0,
+      "totalCurrentAssets": 2211000000.0,
+      "cashAndCashEquivalents": 825000000.0,
+      "totalCurrentLiabilities": 12055000000.0,
+      "totalLiabilities": 31374000000.0,
+      "totalShareholderEquity": 10037000000.0,
+      "retainedEarnings": 5925000000.0,
+      "propertyPlantEquipmentNet": 35696000000.0,
+      "netReceivables": 317000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "totalAssets": 37070000000.0,
+      "totalCurrentAssets": 1705000000.0,
+      "cashAndCashEquivalents": 388000000.0,
+      "totalCurrentLiabilities": 9817000000.0,
+      "totalLiabilities": 29335000000.0,
+      "totalShareholderEquity": 7563000000.0,
+      "retainedEarnings": 2612000000.0,
+      "propertyPlantEquipmentNet": 31831000000.0,
+      "netReceivables": 371000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "totalAssets": 35131000000.0,
+      "totalCurrentAssets": 1792000000.0,
+      "cashAndCashEquivalents": 497000000.0,
+      "totalCurrentLiabilities": 9401000000.0,
+      "totalLiabilities": 30232000000.0,
+      "totalShareholderEquity": 4899000000.0,
+      "retainedEarnings": -10000000.0,
+      "propertyPlantEquipmentNet": 30114000000.0,
+      "netReceivables": 405000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "totalAssets": 33776000000.0,
+      "totalCurrentAssets": 3205000000.0,
+      "cashAndCashEquivalents": 1935000000.0,
+      "totalCurrentLiabilities": 8573000000.0,
+      "totalLiabilities": 30907000000.0,
+      "totalShareholderEquity": 2869000000.0,
+      "retainedEarnings": -1707000000.0,
+      "propertyPlantEquipmentNet": 27546000000.0,
+      "netReceivables": 531000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "totalAssets": 32258355000.0,
+      "totalCurrentAssets": 3600271000.0,
+      "cashAndCashEquivalents": 2702000000.0,
+      "totalCurrentLiabilities": 7285683000.0,
+      "shortTermBorrowings": 0.0,
+      "totalLiabilities": 27172799000.0,
+      "totalShareholderEquity": 5087000000.0,
+      "retainedEarnings": 302276000.0,
+      "propertyPlantEquipmentNet": 25907949000.0,
+      "netReceivables": 408067000.0,
+      "totalDebt": 0.0
+    }
+  ],
+  "cash_flow": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "operatingCashFlow": 6465000000.0,
+      "capitalExpenditure": 5229000000.0,
+      "commonStockRepurchased": 1159000000.0,
+      "dividendsPaid": 824000000.0,
+      "depreciationAndAmortization": 1718000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "operatingCashFlow": 5265000000.0,
+      "capitalExpenditure": 3268000000.0,
+      "commonStockRepurchased": 0.0,
+      "dividendsPaid": 107000000.0,
+      "depreciationAndAmortization": 1600000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "operatingCashFlow": 4477000000.0,
+      "capitalExpenditure": 3897000000.0,
+      "commonStockRepurchased": 0.0,
+      "dividendsPaid": 0.0,
+      "depreciationAndAmortization": 1455000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "operatingCashFlow": 481000000.0,
+      "capitalExpenditure": 2710000000.0,
+      "dividendsPaid": 0.0,
+      "depreciationAndAmortization": 1407000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "operatingCashFlow": -1878000000.0,
+      "capitalExpenditure": 2230000000.0,
+      "commonStockRepurchased": 0.0,
+      "dividendsPaid": 0.0,
+      "depreciationAndAmortization": 1293000000.0
+    }
+  ],
+  "profile": {
+    "companyName": "ROYAL CARIBBEAN CRUISES LTD",
+    "symbol": "RCL"
+  },
+  "price_target_consensus": null,
+  "_data_source": "edgar_primary"
+}

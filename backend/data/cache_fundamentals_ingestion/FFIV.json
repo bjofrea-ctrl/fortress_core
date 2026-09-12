@@ -1,0 +1,231 @@
+{
+  "symbol": "FFIV",
+  "ingested_at": "2026-09-10T01:51:32.874417+00:00",
+  "income_statement": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "revenue": 3088072000.0,
+      "grossProfit": 2514094000.0,
+      "operatingIncome": 765949000.0,
+      "incomeTaxExpense": 115956000.0,
+      "netIncome": 692380000.0,
+      "weightedAverageShsOutDil": 58684000.0,
+      "weightedAverageShsOut": 57904000.0,
+      "sharesOutstanding": 58089614.0,
+      "sellingGeneralAndAdministrativeExpense": 322340000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "revenue": 2816120000.0,
+      "grossProfit": 2258473000.0,
+      "operatingIncome": 658591000.0,
+      "incomeTaxExpense": 128687000.0,
+      "netIncome": 566778000.0,
+      "weightedAverageShsOutDil": 59359000.0,
+      "weightedAverageShsOut": 58720000.0,
+      "sharesOutstanding": 58614865.0,
+      "sellingGeneralAndAdministrativeExpense": 268828000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "revenue": 2813169000.0,
+      "grossProfit": 2219861000.0,
+      "operatingIncome": 472568000.0,
+      "incomeTaxExpense": 91040000.0,
+      "netIncome": 394948000.0,
+      "weightedAverageShsOutDil": 60270000.0,
+      "weightedAverageShsOut": 59909000.0,
+      "sharesOutstanding": 59707211.0,
+      "sellingGeneralAndAdministrativeExpense": 263405000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "revenue": 2695845000.0,
+      "grossProfit": 2156218000.0,
+      "operatingIncome": 403792000.0,
+      "incomeTaxExpense": 63233000.0,
+      "netIncome": 322160000.0,
+      "weightedAverageShsOutDil": 61097000.0,
+      "weightedAverageShsOut": 60274000.0,
+      "sharesOutstanding": 60368610.0,
+      "sellingGeneralAndAdministrativeExpense": 274558000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "revenue": 2603416000.0,
+      "grossProfit": 2110270000.0,
+      "operatingIncome": 394025000.0,
+      "incomeTaxExpense": 55696000.0,
+      "netIncome": 331241000.0,
+      "weightedAverageShsOutDil": 62057000.0,
+      "weightedAverageShsOut": 60707000.0,
+      "sharesOutstanding": 61229388.0,
+      "sellingGeneralAndAdministrativeExpense": 273635000.0
+    },
+    {
+      "calendarYear": "2020",
+      "period": "FY",
+      "revenue": 2350822000.0,
+      "grossProfit": 1942935000.0,
+      "operatingIncome": 392267000.0,
+      "incomeTaxExpense": 88956000.0,
+      "netIncome": 307441000.0,
+      "weightedAverageShsOutDil": 61378000.0,
+      "weightedAverageShsOut": 60911000.0,
+      "sharesOutstanding": 61603102.0,
+      "sellingGeneralAndAdministrativeExpense": 258366000.0
+    }
+  ],
+  "balance_sheet": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "totalAssets": 6319492000.0,
+      "totalCurrentAssets": 2518701000.0,
+      "cashAndCashEquivalents": 1344273000.0,
+      "shortTermInvestments": 0.0,
+      "totalCurrentLiabilities": 1612581000.0,
+      "totalShareholderEquity": 3591999000.0,
+      "retainedEarnings": 3568300000.0,
+      "propertyPlantEquipmentNet": 156947000.0,
+      "netReceivables": 414433000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "totalAssets": 5613004000.0,
+      "totalCurrentAssets": 2109471000.0,
+      "cashAndCashEquivalents": 1074602000.0,
+      "shortTermInvestments": 0.0,
+      "totalCurrentLiabilities": 1489653000.0,
+      "totalShareholderEquity": 3129378000.0,
+      "retainedEarnings": 3144401000.0,
+      "propertyPlantEquipmentNet": 150943000.0,
+      "netReceivables": 389024000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "totalAssets": 5248333000.0,
+      "totalCurrentAssets": 1848773000.0,
+      "cashAndCashEquivalents": 800835000.0,
+      "shortTermInvestments": 6160000.0,
+      "totalCurrentLiabilities": 1472781000.0,
+      "longTermDebtCurrent": 0.0,
+      "totalShareholderEquity": 2800232000.0,
+      "retainedEarnings": 2799054000.0,
+      "propertyPlantEquipmentNet": 170422000.0,
+      "netReceivables": 454832000.0,
+      "totalDebt": 0.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "totalAssets": 5276194000.0,
+      "totalCurrentAssets": 1912224000.0,
+      "cashAndCashEquivalents": 762207000.0,
+      "shortTermInvestments": 126554000.0,
+      "totalCurrentLiabilities": 1839951000.0,
+      "longTermDebt": 0.0,
+      "longTermDebtCurrent": 349772000.0,
+      "totalShareholderEquity": 2468978000.0,
+      "retainedEarnings": 2404106000.0,
+      "propertyPlantEquipmentNet": 168182000.0,
+      "netReceivables": 469979000.0,
+      "totalDebt": 349772000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "totalAssets": 4997280000.0,
+      "totalCurrentAssets": 1611100000.0,
+      "cashAndCashEquivalents": 584333000.0,
+      "shortTermInvestments": 329630000.0,
+      "totalCurrentLiabilities": 1391527000.0,
+      "longTermDebt": 349772000.0,
+      "longTermDebtCurrent": 19275000.0,
+      "totalShareholderEquity": 2360213000.0,
+      "retainedEarnings": 2187828000.0,
+      "propertyPlantEquipmentNet": 191164000.0,
+      "netReceivables": 340536000.0,
+      "totalDebt": 369047000.0
+    },
+    {
+      "calendarYear": "2020",
+      "period": "FY",
+      "totalAssets": 4677920000.0,
+      "totalCurrentAssets": 1793476000.0,
+      "cashAndCashEquivalents": 852826000.0,
+      "shortTermInvestments": 360333000.0,
+      "totalCurrentLiabilities": 1288279000.0,
+      "longTermDebt": 369047000.0,
+      "longTermDebtCurrent": 19275000.0,
+      "totalShareholderEquity": 2232268000.0,
+      "retainedEarnings": 1945531000.0,
+      "propertyPlantEquipmentNet": 229239000.0,
+      "netReceivables": 296183000.0,
+      "totalDebt": 388322000.0
+    }
+  ],
+  "cash_flow": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "operatingCashFlow": 949666000.0,
+      "capitalExpenditure": 43260000.0,
+      "commonStockRepurchased": 502085000.0,
+      "depreciationAndAmortization": 92399000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "operatingCashFlow": 792419000.0,
+      "capitalExpenditure": 30412000.0,
+      "commonStockRepurchased": 500558000.0,
+      "depreciationAndAmortization": 106991000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "operatingCashFlow": 653409000.0,
+      "capitalExpenditure": 54184000.0,
+      "commonStockRepurchased": 350049000.0,
+      "depreciationAndAmortization": 112702000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "operatingCashFlow": 442631000.0,
+      "capitalExpenditure": 33624000.0,
+      "commonStockRepurchased": 500023000.0,
+      "depreciationAndAmortization": 115609000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "operatingCashFlow": 645196000.0,
+      "capitalExpenditure": 30651000.0,
+      "commonStockRepurchased": 500000000.0,
+      "depreciationAndAmortization": 115424000.0
+    },
+    {
+      "calendarYear": "2020",
+      "period": "FY",
+      "operatingCashFlow": 660898000.0,
+      "capitalExpenditure": 59940000.0,
+      "commonStockRepurchased": 100016000.0,
+      "depreciationAndAmortization": 95857000.0
+    }
+  ],
+  "profile": {
+    "companyName": "F5, INC.",
+    "symbol": "FFIV"
+  },
+  "price_target_consensus": null,
+  "_data_source": "edgar_primary"
+}

@@ -1,0 +1,163 @@
+{
+  "symbol": "CAT",
+  "ingested_at": "2026-09-10T01:51:21.299886+00:00",
+  "income_statement": [
+    {
+      "calendarYear": "2026",
+      "period": "FY",
+      "sharesOutstanding": 2697032375.0
+    },
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "revenue": 182447000000.0,
+      "incomeTaxExpense": 15547000000.0,
+      "netIncome": 57048000000.0,
+      "weightedAverageShsOutDil": 2781500000.0,
+      "weightedAverageShsOut": 2776500000.0,
+      "sharesOutstanding": 2796106099.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "revenue": 177556000000.0,
+      "incomeTaxExpense": 16610000000.0,
+      "netIncome": 58471000000.0,
+      "weightedAverageShsOutDil": 2879000000.0,
+      "weightedAverageShsOut": 2873900000.0,
+      "sharesOutstanding": 2880371498.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "revenue": 158104000000.0,
+      "incomeTaxExpense": 12060000000.0,
+      "netIncome": 49552000000.0,
+      "weightedAverageShsOutDil": 2943100000.0,
+      "weightedAverageShsOut": 2938600000.0,
+      "sharesOutstanding": 2943355459.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "revenue": 128695000000.0,
+      "incomeTaxExpense": 8490000000.0,
+      "netIncome": 37676000000.0,
+      "weightedAverageShsOutDil": 2970000000.0,
+      "weightedAverageShsOut": 2965800000.0,
+      "sharesOutstanding": 2952808970.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "revenue": 121649000000.0,
+      "incomeTaxExpense": 11228000000.0,
+      "netIncome": 48334000000.0,
+      "weightedAverageShsOutDil": 3026600000.0,
+      "weightedAverageShsOut": 3021500000.0,
+      "sharesOutstanding": 3051506436.0
+    }
+  ],
+  "balance_sheet": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "totalAssets": 4424900000000.0,
+      "cashAndCashEquivalents": 343338000000.0,
+      "shortTermBorrowings": 64776000000.0,
+      "totalLiabilities": 4062462000000.0,
+      "totalShareholderEquity": 362438000000.0,
+      "retainedEarnings": 416055000000.0,
+      "totalDebt": 64776000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "totalAssets": 4002814000000.0,
+      "cashAndCashEquivalents": 469317000000.0,
+      "shortTermBorrowings": 52893000000.0,
+      "totalLiabilities": 3658056000000.0,
+      "totalShareholderEquity": 344758000000.0,
+      "retainedEarnings": 376166000000.0,
+      "totalDebt": 52893000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "totalAssets": 3875393000000.0,
+      "cashAndCashEquivalents": 624151000000.0,
+      "shortTermBorrowings": 44712000000.0,
+      "totalLiabilities": 3547515000000.0,
+      "totalShareholderEquity": 327878000000.0,
+      "retainedEarnings": 332901000000.0,
+      "totalDebt": 44712000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "totalAssets": 3665743000000.0,
+      "cashAndCashEquivalents": 567234000000.0,
+      "shortTermBorrowings": 44027000000.0,
+      "totalLiabilities": 3373411000000.0,
+      "totalShareholderEquity": 292332000000.0,
+      "retainedEarnings": 296456000000.0,
+      "propertyPlantEquipmentNet": 27734000000.0,
+      "totalDebt": 44027000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "totalAssets": 3743567000000.0,
+      "cashAndCashEquivalents": 740834000000.0,
+      "shortTermBorrowings": 53594000000.0,
+      "totalLiabilities": 3449440000000.0,
+      "totalShareholderEquity": 294127000000.0,
+      "retainedEarnings": 272268000000.0,
+      "propertyPlantEquipmentNet": 27070000000.0,
+      "totalDebt": 53594000000.0
+    }
+  ],
+  "cash_flow": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "operatingCashFlow": -147782000000.0,
+      "commonStockRepurchased": 31591000000.0,
+      "dividendsPaid": 16625000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "operatingCashFlow": -42012000000.0,
+      "commonStockRepurchased": 18830000000.0,
+      "dividendsPaid": 14783000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "operatingCashFlow": 12974000000.0,
+      "commonStockRepurchased": 9824000000.0,
+      "dividendsPaid": 13463000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "operatingCashFlow": 107119000000.0,
+      "commonStockRepurchased": 3162000000.0,
+      "dividendsPaid": 13562000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "operatingCashFlow": 78084000000.0,
+      "commonStockRepurchased": 18408000000.0,
+      "dividendsPaid": 12858000000.0
+    }
+  ],
+  "profile": {
+    "companyName": "JPMORGAN CHASE & CO",
+    "symbol": "CAT"
+  },
+  "price_target_consensus": null,
+  "_data_source": "edgar_primary"
+}

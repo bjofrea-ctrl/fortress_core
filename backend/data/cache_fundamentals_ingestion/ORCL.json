@@ -1,0 +1,195 @@
+{
+  "symbol": "ORCL",
+  "ingested_at": "2026-09-10T01:50:49.156978+00:00",
+  "income_statement": [
+    {
+      "calendarYear": "2026",
+      "period": "FY",
+      "sharesOutstanding": 2880471000.0
+    },
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "revenue": 67357000000.0,
+      "operatingIncome": 20606000000.0,
+      "incomeTaxExpense": 2467000000.0,
+      "netIncome": 17087000000.0,
+      "weightedAverageShsOutDil": 2914000000.0,
+      "weightedAverageShsOut": 2860000000.0,
+      "sharesOutstanding": 2808833000.0,
+      "sellingGeneralAndAdministrativeExpense": 1618000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "revenue": 57399000000.0,
+      "operatingIncome": 17678000000.0,
+      "incomeTaxExpense": 1717000000.0,
+      "netIncome": 12443000000.0,
+      "weightedAverageShsOutDil": 2866000000.0,
+      "weightedAverageShsOut": 2789000000.0,
+      "sharesOutstanding": 2755860000.0,
+      "sellingGeneralAndAdministrativeExpense": 1602000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "revenue": 52961000000.0,
+      "operatingIncome": 15353000000.0,
+      "incomeTaxExpense": 1274000000.0,
+      "netIncome": 10467000000.0,
+      "weightedAverageShsOutDil": 2823000000.0,
+      "weightedAverageShsOut": 2744000000.0,
+      "sharesOutstanding": 2714259000.0,
+      "sellingGeneralAndAdministrativeExpense": 1548000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "revenue": 49954000000.0,
+      "operatingIncome": 13093000000.0,
+      "incomeTaxExpense": 623000000.0,
+      "netIncome": 8503000000.0,
+      "weightedAverageShsOutDil": 2766000000.0,
+      "weightedAverageShsOut": 2696000000.0,
+      "sharesOutstanding": 2664926000.0,
+      "sellingGeneralAndAdministrativeExpense": 1579000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "revenue": 42440000000.0,
+      "operatingIncome": 10926000000.0,
+      "incomeTaxExpense": 932000000.0,
+      "netIncome": 6717000000.0,
+      "weightedAverageShsOutDil": 2786000000.0,
+      "weightedAverageShsOut": 2700000000.0,
+      "sharesOutstanding": 2792000000.0,
+      "sellingGeneralAndAdministrativeExpense": 1317000000.0
+    }
+  ],
+  "balance_sheet": [
+    {
+      "calendarYear": "2026",
+      "period": "FY",
+      "totalAssets": 261759000000.0,
+      "totalCurrentAssets": 46567000000.0,
+      "cashAndCashEquivalents": 31289000000.0,
+      "totalCurrentLiabilities": 41764000000.0,
+      "totalShareholderEquity": 42508000000.0,
+      "retainedEarnings": -4309000000.0,
+      "propertyPlantEquipmentNet": 99957000000.0,
+      "netReceivables": 10385000000.0
+    },
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "totalAssets": 168361000000.0,
+      "totalCurrentAssets": 24579000000.0,
+      "cashAndCashEquivalents": 10786000000.0,
+      "totalCurrentLiabilities": 32643000000.0,
+      "totalShareholderEquity": 20451000000.0,
+      "retainedEarnings": -15481000000.0,
+      "propertyPlantEquipmentNet": 43522000000.0,
+      "netReceivables": 8558000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "totalAssets": 140976000000.0,
+      "totalCurrentAssets": 22554000000.0,
+      "cashAndCashEquivalents": 10454000000.0,
+      "totalCurrentLiabilities": 31544000000.0,
+      "totalShareholderEquity": 9239000000.0,
+      "retainedEarnings": -22628000000.0,
+      "propertyPlantEquipmentNet": 21536000000.0,
+      "netReceivables": 7874000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "totalAssets": 134384000000.0,
+      "totalCurrentAssets": 21004000000.0,
+      "cashAndCashEquivalents": 9765000000.0,
+      "totalCurrentLiabilities": 23090000000.0,
+      "totalShareholderEquity": 1556000000.0,
+      "retainedEarnings": -27620000000.0,
+      "propertyPlantEquipmentNet": 17069000000.0,
+      "netReceivables": 6915000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "totalAssets": 109297000000.0,
+      "totalCurrentAssets": 31633000000.0,
+      "cashAndCashEquivalents": 21383000000.0,
+      "totalCurrentLiabilities": 19511000000.0,
+      "longTermDebt": 0.0,
+      "totalShareholderEquity": -5768000000.0,
+      "retainedEarnings": -31336000000.0,
+      "propertyPlantEquipmentNet": 9716000000.0,
+      "netReceivables": 5953000000.0,
+      "totalDebt": 0.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "totalAssets": 131107000000.0,
+      "totalCurrentAssets": 55567000000.0,
+      "cashAndCashEquivalents": 30098000000.0,
+      "totalCurrentLiabilities": 24164000000.0,
+      "totalShareholderEquity": 5952000000.0,
+      "retainedEarnings": -20120000000.0,
+      "propertyPlantEquipmentNet": 7049000000.0,
+      "netReceivables": 5409000000.0
+    }
+  ],
+  "cash_flow": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "operatingCashFlow": 31977000000.0,
+      "capitalExpenditure": 55663000000.0,
+      "commonStockRepurchased": 95000000.0,
+      "dividendsPaid": 5787000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "operatingCashFlow": 20821000000.0,
+      "capitalExpenditure": 21215000000.0,
+      "commonStockRepurchased": 600000000.0,
+      "dividendsPaid": 4743000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "operatingCashFlow": 18673000000.0,
+      "capitalExpenditure": 6866000000.0,
+      "commonStockRepurchased": 1202000000.0,
+      "dividendsPaid": 4391000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "operatingCashFlow": 17165000000.0,
+      "capitalExpenditure": 8695000000.0,
+      "commonStockRepurchased": 1300000000.0,
+      "dividendsPaid": 3668000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "operatingCashFlow": 9539000000.0,
+      "capitalExpenditure": 4511000000.0,
+      "commonStockRepurchased": 16248000000.0,
+      "dividendsPaid": 3457000000.0
+    }
+  ],
+  "profile": {
+    "companyName": "Oracle Corporation",
+    "symbol": "ORCL"
+  },
+  "price_target_consensus": null,
+  "_data_source": "edgar_primary"
+}

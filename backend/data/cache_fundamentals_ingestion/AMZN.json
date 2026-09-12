@@ -1,0 +1,195 @@
+{
+  "symbol": "AMZN",
+  "ingested_at": "2026-09-10T01:50:27.589730+00:00",
+  "income_statement": [
+    {
+      "calendarYear": "2026",
+      "period": "FY",
+      "sharesOutstanding": 10734920870.0
+    },
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "revenue": 716924000000.0,
+      "operatingIncome": 79975000000.0,
+      "incomeTaxExpense": 19087000000.0,
+      "netIncome": 77670000000.0,
+      "weightedAverageShsOutDil": 10827000000.0,
+      "weightedAverageShsOut": 10656000000.0,
+      "sharesOutstanding": 10597729352.0,
+      "sellingGeneralAndAdministrativeExpense": 11172000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "revenue": 637959000000.0,
+      "operatingIncome": 68593000000.0,
+      "incomeTaxExpense": 9265000000.0,
+      "netIncome": 59248000000.0,
+      "weightedAverageShsOutDil": 10721000000.0,
+      "weightedAverageShsOut": 10473000000.0,
+      "sharesOutstanding": 10387381291.0,
+      "sellingGeneralAndAdministrativeExpense": 11359000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "revenue": 574785000000.0,
+      "operatingIncome": 36852000000.0,
+      "incomeTaxExpense": 7120000000.0,
+      "netIncome": 30425000000.0,
+      "weightedAverageShsOutDil": 10492000000.0,
+      "weightedAverageShsOut": 10304000000.0,
+      "sharesOutstanding": 10247259757.0,
+      "sellingGeneralAndAdministrativeExpense": 11816000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "revenue": 513983000000.0,
+      "operatingIncome": 12248000000.0,
+      "incomeTaxExpense": -3217000000.0,
+      "netIncome": -2722000000.0,
+      "weightedAverageShsOutDil": 10189000000.0,
+      "weightedAverageShsOut": 10189000000.0,
+      "sharesOutstanding": 508844410.0,
+      "sellingGeneralAndAdministrativeExpense": 11891000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "revenue": 469822000000.0,
+      "operatingIncome": 24879000000.0,
+      "incomeTaxExpense": 4791000000.0,
+      "netIncome": 33364000000.0,
+      "weightedAverageShsOutDil": 10296000000.0,
+      "weightedAverageShsOut": 10117000000.0,
+      "sharesOutstanding": 503564743.0,
+      "sellingGeneralAndAdministrativeExpense": 8823000000.0
+    }
+  ],
+  "balance_sheet": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "totalAssets": 818042000000.0,
+      "totalCurrentAssets": 229083000000.0,
+      "cashAndCashEquivalents": 86810000000.0,
+      "totalCurrentLiabilities": 218005000000.0,
+      "longTermDebt": 65648000000.0,
+      "longTermDebtCurrent": 2748000000.0,
+      "shortTermBorrowings": 455000000.0,
+      "totalShareholderEquity": 411065000000.0,
+      "retainedEarnings": 250536000000.0,
+      "propertyPlantEquipmentNet": 357025000000.0,
+      "netReceivables": 67729000000.0,
+      "totalDebt": 68851000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "totalAssets": 624894000000.0,
+      "totalCurrentAssets": 190867000000.0,
+      "cashAndCashEquivalents": 78779000000.0,
+      "totalCurrentLiabilities": 179431000000.0,
+      "longTermDebt": 52623000000.0,
+      "longTermDebtCurrent": 5017000000.0,
+      "shortTermBorrowings": 151000000.0,
+      "totalShareholderEquity": 285970000000.0,
+      "retainedEarnings": 172866000000.0,
+      "propertyPlantEquipmentNet": 252665000000.0,
+      "netReceivables": 55451000000.0,
+      "totalDebt": 57791000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "totalAssets": 527854000000.0,
+      "totalCurrentAssets": 172351000000.0,
+      "cashAndCashEquivalents": 73890000000.0,
+      "totalCurrentLiabilities": 164917000000.0,
+      "longTermDebt": 58314000000.0,
+      "longTermDebtCurrent": 8494000000.0,
+      "shortTermBorrowings": 147000000.0,
+      "totalShareholderEquity": 201875000000.0,
+      "retainedEarnings": 113618000000.0,
+      "netReceivables": 52253000000.0,
+      "totalDebt": 66955000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "totalAssets": 462675000000.0,
+      "totalCurrentAssets": 146791000000.0,
+      "cashAndCashEquivalents": 54253000000.0,
+      "totalCurrentLiabilities": 155393000000.0,
+      "longTermDebt": 67150000000.0,
+      "longTermDebtCurrent": 2999000000.0,
+      "totalShareholderEquity": 146043000000.0,
+      "retainedEarnings": 83193000000.0,
+      "netReceivables": 42360000000.0,
+      "totalDebt": 70149000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "totalAssets": 420549000000.0,
+      "totalCurrentAssets": 161580000000.0,
+      "cashAndCashEquivalents": 36477000000.0,
+      "totalCurrentLiabilities": 142266000000.0,
+      "longTermDebt": 48744000000.0,
+      "longTermDebtCurrent": 1491000000.0,
+      "totalShareholderEquity": 138245000000.0,
+      "retainedEarnings": 85915000000.0,
+      "netReceivables": 32891000000.0,
+      "totalDebt": 50235000000.0
+    }
+  ],
+  "cash_flow": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "operatingCashFlow": 139514000000.0,
+      "capitalExpenditure": 131819000000.0,
+      "depreciationAndAmortization": 65756000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "operatingCashFlow": 115877000000.0,
+      "capitalExpenditure": 82999000000.0,
+      "commonStockRepurchased": 0.0,
+      "depreciationAndAmortization": 52795000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "operatingCashFlow": 84946000000.0,
+      "capitalExpenditure": 52729000000.0,
+      "commonStockRepurchased": 0.0,
+      "depreciationAndAmortization": 48663000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "operatingCashFlow": 46752000000.0,
+      "capitalExpenditure": 63645000000.0,
+      "commonStockRepurchased": 6000000000.0,
+      "depreciationAndAmortization": 41921000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "operatingCashFlow": 46327000000.0,
+      "capitalExpenditure": 61053000000.0,
+      "commonStockRepurchased": 0.0,
+      "depreciationAndAmortization": 34433000000.0
+    }
+  ],
+  "profile": {
+    "companyName": "AMAZON COM INC",
+    "symbol": "AMZN"
+  },
+  "price_target_consensus": null,
+  "_data_source": "edgar_primary"
+}

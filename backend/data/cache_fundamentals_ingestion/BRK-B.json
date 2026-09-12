@@ -1,0 +1,158 @@
+{
+  "symbol": "BRK-B",
+  "ingested_at": "2026-09-10T01:50:33.431335+00:00",
+  "income_statement": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "revenue": 247244000000.0,
+      "incomeTaxExpense": 15199000000.0,
+      "netIncome": 66968000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "revenue": 249714000000.0,
+      "incomeTaxExpense": 20815000000.0,
+      "netIncome": 88995000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "revenue": 254906000000.0,
+      "incomeTaxExpense": 23019000000.0,
+      "netIncome": 96223000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "revenue": 207771000000.0,
+      "incomeTaxExpense": -8502000000.0,
+      "netIncome": -22759000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "revenue": 191252000000.0,
+      "incomeTaxExpense": 20912000000.0,
+      "netIncome": 89937000000.0
+    },
+    {
+      "calendarYear": "2020",
+      "period": "FY",
+      "revenue": 166733000000.0,
+      "incomeTaxExpense": 12440000000.0,
+      "netIncome": 42521000000.0
+    }
+  ],
+  "balance_sheet": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "totalAssets": 1222176000000.0,
+      "cashAndCashEquivalents": 52569000000.0,
+      "totalLiabilities": 502473000000.0,
+      "totalShareholderEquity": 717419000000.0,
+      "retainedEarnings": 763186000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "totalAssets": 1153881000000.0,
+      "cashAndCashEquivalents": 48376000000.0,
+      "totalLiabilities": 502226000000.0,
+      "totalShareholderEquity": 649368000000.0,
+      "retainedEarnings": 696218000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "totalAssets": 1069978000000.0,
+      "cashAndCashEquivalents": 38643000000.0,
+      "totalLiabilities": 499208000000.0,
+      "totalShareholderEquity": 567509000000.0,
+      "retainedEarnings": 607350000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "totalAssets": 948465000000.0,
+      "cashAndCashEquivalents": 36399000000.0,
+      "totalLiabilities": 466784000000.0,
+      "totalShareholderEquity": 481681000000.0,
+      "retainedEarnings": 511127000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "totalAssets": 959388000000.0,
+      "cashAndCashEquivalents": 88706000000.0,
+      "totalShareholderEquity": 510299000000.0,
+      "retainedEarnings": 443949000000.0
+    },
+    {
+      "calendarYear": "2020",
+      "period": "FY",
+      "totalAssets": 873729000000.0,
+      "cashAndCashEquivalents": 48396000000.0,
+      "totalLiabilities": 422393000000.0,
+      "totalShareholderEquity": 444908000000.0,
+      "retainedEarnings": 444626000000.0
+    }
+  ],
+  "cash_flow": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "operatingCashFlow": 45969000000.0,
+      "capitalExpenditure": 20927000000.0,
+      "depreciationAndAmortization": 13476000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "operatingCashFlow": 30592000000.0,
+      "capitalExpenditure": 18976000000.0,
+      "commonStockRepurchased": 2918000000.0,
+      "depreciationAndAmortization": 12855000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "operatingCashFlow": 49196000000.0,
+      "capitalExpenditure": 19409000000.0,
+      "commonStockRepurchased": 9171000000.0,
+      "depreciationAndAmortization": 12486000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "operatingCashFlow": 37350000000.0,
+      "capitalExpenditure": 15464000000.0,
+      "commonStockRepurchased": 7854000000.0,
+      "depreciationAndAmortization": 10899000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "operatingCashFlow": 39427000000.0,
+      "capitalExpenditure": 13276000000.0,
+      "commonStockRepurchased": 27061000000.0,
+      "depreciationAndAmortization": 10718000000.0
+    },
+    {
+      "calendarYear": "2020",
+      "period": "FY",
+      "operatingCashFlow": 39773000000.0,
+      "capitalExpenditure": 13012000000.0,
+      "commonStockRepurchased": 24706000000.0,
+      "depreciationAndAmortization": 10596000000.0
+    }
+  ],
+  "profile": {
+    "companyName": "BERKSHIRE HATHAWAY INC",
+    "symbol": "BRK-B"
+  },
+  "price_target_consensus": null,
+  "_data_source": "edgar_primary"
+}

@@ -1,0 +1,193 @@
+{
+  "symbol": "IBM",
+  "ingested_at": "2026-09-10T01:51:14.161675+00:00",
+  "income_statement": [
+    {
+      "calendarYear": "2026",
+      "period": "FY",
+      "sharesOutstanding": 938034404.0
+    },
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "revenue": 67535000000.0,
+      "grossProfit": 39297000000.0,
+      "incomeTaxExpense": -242000000.0,
+      "netIncome": 10593000000.0,
+      "weightedAverageShsOutDil": 948675228.0,
+      "weightedAverageShsOut": 932293927.0,
+      "sharesOutstanding": 927264332.0,
+      "sellingGeneralAndAdministrativeExpense": 20123000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "revenue": 62753000000.0,
+      "grossProfit": 35551000000.0,
+      "incomeTaxExpense": -218000000.0,
+      "netIncome": 6023000000.0,
+      "weightedAverageShsOutDil": 937161224.0,
+      "weightedAverageShsOut": 921767834.0,
+      "sharesOutstanding": 916744848.0,
+      "sellingGeneralAndAdministrativeExpense": 19688000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "revenue": 61860000000.0,
+      "grossProfit": 34300000000.0,
+      "incomeTaxExpense": 1176000000.0,
+      "netIncome": 7502000000.0,
+      "weightedAverageShsOutDil": 922073828.0,
+      "weightedAverageShsOut": 911210319.0,
+      "sharesOutstanding": 907105611.0,
+      "sellingGeneralAndAdministrativeExpense": 19003000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "revenue": 60530000000.0,
+      "grossProfit": 32687000000.0,
+      "incomeTaxExpense": -626000000.0,
+      "netIncome": 1639000000.0,
+      "weightedAverageShsOutDil": 912269062.0,
+      "weightedAverageShsOut": 902664190.0,
+      "sharesOutstanding": 899309986.0,
+      "sellingGeneralAndAdministrativeExpense": 18609000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "revenue": 57350000000.0,
+      "grossProfit": 31486000000.0,
+      "incomeTaxExpense": 124000000.0,
+      "netIncome": 5743000000.0,
+      "weightedAverageShsOutDil": 904641001.0,
+      "weightedAverageShsOut": 895990771.0,
+      "sharesOutstanding": 893594090.0,
+      "sellingGeneralAndAdministrativeExpense": 18745000000.0
+    }
+  ],
+  "balance_sheet": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "totalAssets": 151880000000.0,
+      "totalCurrentAssets": 36944000000.0,
+      "cashAndCashEquivalents": 13587000000.0,
+      "totalCurrentLiabilities": 38658000000.0,
+      "longTermDebt": 54836000000.0,
+      "shortTermBorrowings": 6424000000.0,
+      "totalLiabilities": 119139000000.0,
+      "totalShareholderEquity": 32648000000.0,
+      "retainedEarnings": 155648000000.0,
+      "netReceivables": 8112000000.0,
+      "totalDebt": 61260000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "totalAssets": 137175000000.0,
+      "totalCurrentAssets": 34482000000.0,
+      "cashAndCashEquivalents": 13947000000.0,
+      "totalCurrentLiabilities": 33142000000.0,
+      "longTermDebt": 49884000000.0,
+      "shortTermBorrowings": 5089000000.0,
+      "totalLiabilities": 109783000000.0,
+      "totalShareholderEquity": 27307000000.0,
+      "retainedEarnings": 151163000000.0,
+      "netReceivables": 6804000000.0,
+      "totalDebt": 54973000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "totalAssets": 135241000000.0,
+      "totalCurrentAssets": 32908000000.0,
+      "cashAndCashEquivalents": 13089000000.0,
+      "totalCurrentLiabilities": 34122000000.0,
+      "longTermDebt": 50121000000.0,
+      "shortTermBorrowings": 6426000000.0,
+      "totalLiabilities": 112628000000.0,
+      "totalShareholderEquity": 22613000000.0,
+      "retainedEarnings": 151276000000.0,
+      "netReceivables": 7214000000.0,
+      "totalDebt": 56547000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "totalAssets": 127243000000.0,
+      "totalCurrentAssets": 29118000000.0,
+      "cashAndCashEquivalents": 7988000000.0,
+      "totalCurrentLiabilities": 31505000000.0,
+      "longTermDebt": 46189000000.0,
+      "shortTermBorrowings": 4760000000.0,
+      "totalLiabilities": 105222000000.0,
+      "totalShareholderEquity": 22021000000.0,
+      "retainedEarnings": 149825000000.0,
+      "propertyPlantEquipmentNet": 5334000000.0,
+      "netReceivables": 6541000000.0,
+      "totalDebt": 50949000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "totalAssets": 132001000000.0,
+      "totalCurrentAssets": 29539000000.0,
+      "cashAndCashEquivalents": 6957000000.0,
+      "totalCurrentLiabilities": 33619000000.0,
+      "longTermDebt": 44917000000.0,
+      "shortTermBorrowings": 6787000000.0,
+      "totalLiabilities": 113005000000.0,
+      "totalShareholderEquity": 18996000000.0,
+      "retainedEarnings": 154209000000.0,
+      "propertyPlantEquipmentNet": 5694000000.0,
+      "netReceivables": 6754000000.0,
+      "totalDebt": 51704000000.0
+    }
+  ],
+  "cash_flow": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "operatingCashFlow": 13193000000.0,
+      "capitalExpenditure": 1091000000.0,
+      "dividendsPaid": 6255000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "operatingCashFlow": 13445000000.0,
+      "capitalExpenditure": 1048000000.0,
+      "dividendsPaid": 6147000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "operatingCashFlow": 13931000000.0,
+      "capitalExpenditure": 1245000000.0,
+      "dividendsPaid": 6040000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "operatingCashFlow": 10435000000.0,
+      "capitalExpenditure": 1346000000.0,
+      "dividendsPaid": 5948000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "operatingCashFlow": 12796000000.0,
+      "capitalExpenditure": 2062000000.0,
+      "dividendsPaid": 5869000000.0
+    }
+  ],
+  "profile": {
+    "companyName": "INTERNATIONAL BUSINESS MACHINES CORP",
+    "symbol": "IBM"
+  },
+  "price_target_consensus": null,
+  "_data_source": "edgar_primary"
+}

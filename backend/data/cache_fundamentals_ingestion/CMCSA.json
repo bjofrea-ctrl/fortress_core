@@ -1,0 +1,208 @@
+{
+  "symbol": "CMCSA",
+  "ingested_at": "2026-09-10T01:51:20.592763+00:00",
+  "income_statement": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "revenue": 123707000000.0,
+      "operatingIncome": 20672000000.0,
+      "incomeTaxExpense": 6106000000.0,
+      "netIncome": 19998000000.0,
+      "weightedAverageShsOutDil": 3709000000.0,
+      "weightedAverageShsOut": 3699000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "revenue": 123731000000.0,
+      "operatingIncome": 23297000000.0,
+      "incomeTaxExpense": 2796000000.0,
+      "netIncome": 16192000000.0,
+      "weightedAverageShsOutDil": 3908000000.0,
+      "weightedAverageShsOut": 3885000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "revenue": 121572000000.0,
+      "operatingIncome": 23314000000.0,
+      "incomeTaxExpense": 5371000000.0,
+      "netIncome": 15388000000.0,
+      "weightedAverageShsOutDil": 4148000000.0,
+      "weightedAverageShsOut": 4122000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "revenue": 121427000000.0,
+      "operatingIncome": 14041000000.0,
+      "incomeTaxExpense": 4359000000.0,
+      "netIncome": 5370000000.0,
+      "weightedAverageShsOutDil": 4430000000.0,
+      "weightedAverageShsOut": 4406000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "revenue": 116385000000.0,
+      "operatingIncome": 20817000000.0,
+      "incomeTaxExpense": 5259000000.0,
+      "netIncome": 14159000000.0,
+      "weightedAverageShsOutDil": 4654000000.0,
+      "weightedAverageShsOut": 4584000000.0
+    },
+    {
+      "calendarYear": "2020",
+      "period": "FY",
+      "revenue": 103564000000.0,
+      "operatingIncome": 17493000000.0,
+      "incomeTaxExpense": 3364000000.0,
+      "netIncome": 10534000000.0,
+      "weightedAverageShsOutDil": 4624000000.0,
+      "weightedAverageShsOut": 4574000000.0
+    }
+  ],
+  "balance_sheet": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "totalAssets": 272631000000.0,
+      "totalCurrentAssets": 29567000000.0,
+      "cashAndCashEquivalents": 9481000000.0,
+      "shortTermInvestments": 14000000.0,
+      "totalCurrentLiabilities": 33524000000.0,
+      "totalShareholderEquity": 96903000000.0,
+      "retainedEarnings": 66675000000.0,
+      "propertyPlantEquipmentNet": 65680000000.0,
+      "netReceivables": 13869000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "totalAssets": 266211000000.0,
+      "totalCurrentAssets": 26801000000.0,
+      "cashAndCashEquivalents": 7322000000.0,
+      "shortTermInvestments": 21000000.0,
+      "totalCurrentLiabilities": 39581000000.0,
+      "totalShareholderEquity": 85560000000.0,
+      "retainedEarnings": 56972000000.0,
+      "propertyPlantEquipmentNet": 62548000000.0,
+      "netReceivables": 13661000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "totalAssets": 264811000000.0,
+      "totalCurrentAssets": 23987000000.0,
+      "cashAndCashEquivalents": 6282000000.0,
+      "shortTermInvestments": 310000000.0,
+      "totalCurrentLiabilities": 40198000000.0,
+      "totalShareholderEquity": 83226000000.0,
+      "retainedEarnings": 52892000000.0,
+      "propertyPlantEquipmentNet": 59686000000.0,
+      "netReceivables": 13813000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "totalAssets": 257275000000.0,
+      "totalCurrentAssets": 21826000000.0,
+      "cashAndCashEquivalents": 4782000000.0,
+      "shortTermInvestments": 402000000.0,
+      "totalCurrentLiabilities": 27887000000.0,
+      "totalShareholderEquity": 81627000000.0,
+      "retainedEarnings": 51609000000.0,
+      "propertyPlantEquipmentNet": 55485000000.0,
+      "netReceivables": 12672000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "totalAssets": 275905000000.0,
+      "totalCurrentAssets": 24807000000.0,
+      "cashAndCashEquivalents": 8778000000.0,
+      "shortTermInvestments": 368000000.0,
+      "totalCurrentLiabilities": 29348000000.0,
+      "totalShareholderEquity": 97490000000.0,
+      "retainedEarnings": 61902000000.0,
+      "propertyPlantEquipmentNet": 54047000000.0,
+      "netReceivables": 12008000000.0
+    },
+    {
+      "calendarYear": "2020",
+      "period": "FY",
+      "totalAssets": 273869000000.0,
+      "totalCurrentAssets": 26741000000.0,
+      "cashAndCashEquivalents": 11768000000.0,
+      "shortTermInvestments": 292000000.0,
+      "totalCurrentLiabilities": 28796000000.0,
+      "totalShareholderEquity": 91738000000.0,
+      "retainedEarnings": 56438000000.0,
+      "propertyPlantEquipmentNet": 51995000000.0,
+      "netReceivables": 11466000000.0
+    }
+  ],
+  "cash_flow": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "operatingCashFlow": 33643000000.0,
+      "capitalExpenditure": 11750000000.0,
+      "commonStockRepurchased": 7155000000.0,
+      "dividendsPaid": 4894000000.0,
+      "depreciationAndAmortization": 16210000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "operatingCashFlow": 27673000000.0,
+      "capitalExpenditure": 12181000000.0,
+      "commonStockRepurchased": 9103000000.0,
+      "dividendsPaid": 4814000000.0,
+      "depreciationAndAmortization": 14802000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "operatingCashFlow": 28501000000.0,
+      "capitalExpenditure": 12242000000.0,
+      "commonStockRepurchased": 11291000000.0,
+      "dividendsPaid": 4766000000.0,
+      "depreciationAndAmortization": 14336000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "operatingCashFlow": 26413000000.0,
+      "capitalExpenditure": 10626000000.0,
+      "commonStockRepurchased": 13328000000.0,
+      "dividendsPaid": 4741000000.0,
+      "depreciationAndAmortization": 13821000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "operatingCashFlow": 29146000000.0,
+      "capitalExpenditure": 9174000000.0,
+      "commonStockRepurchased": 4672000000.0,
+      "dividendsPaid": 4532000000.0,
+      "depreciationAndAmortization": 13804000000.0
+    },
+    {
+      "calendarYear": "2020",
+      "period": "FY",
+      "operatingCashFlow": 24737000000.0,
+      "capitalExpenditure": 9179000000.0,
+      "commonStockRepurchased": 534000000.0,
+      "dividendsPaid": 4140000000.0,
+      "depreciationAndAmortization": 13100000000.0
+    }
+  ],
+  "profile": {
+    "companyName": "COMCAST\u00a0CORPORATION",
+    "symbol": "CMCSA"
+  },
+  "price_target_consensus": null,
+  "_data_source": "edgar_primary"
+}

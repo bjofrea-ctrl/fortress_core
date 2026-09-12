@@ -1,0 +1,161 @@
+{
+  "symbol": "DLR",
+  "ingested_at": "2026-09-10T01:52:20.512445+00:00",
+  "income_statement": [
+    {
+      "calendarYear": "2026",
+      "period": "FY",
+      "sharesOutstanding": 343615444.0
+    },
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "revenue": 6112692000.0,
+      "operatingIncome": 658492000.0,
+      "incomeTaxExpense": 32040000.0,
+      "netIncome": 1308589000.0,
+      "weightedAverageShsOutDil": 347810000.0,
+      "weightedAverageShsOut": 339807000.0,
+      "sharesOutstanding": 336644245.0,
+      "sellingGeneralAndAdministrativeExpense": 565482000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "revenue": 5554968000.0,
+      "operatingIncome": 471864000.0,
+      "incomeTaxExpense": 54760000.0,
+      "netIncome": 602490000.0,
+      "weightedAverageShsOutDil": 331547000.0,
+      "weightedAverageShsOut": 323336000.0,
+      "sharesOutstanding": 312293563.0,
+      "sellingGeneralAndAdministrativeExpense": 480023000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "revenue": 5477061000.0,
+      "operatingIncome": 524461000.0,
+      "incomeTaxExpense": 75579000.0,
+      "netIncome": 948838000.0,
+      "weightedAverageShsOutDil": 309065000.0,
+      "weightedAverageShsOut": 298603000.0,
+      "sharesOutstanding": 291157152.0,
+      "sellingGeneralAndAdministrativeExpense": 449056000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "revenue": 4691834000.0,
+      "operatingIncome": 589968000.0,
+      "incomeTaxExpense": 31550000.0,
+      "netIncome": 377684000.0,
+      "weightedAverageShsOutDil": 297919000.0,
+      "weightedAverageShsOut": 286334000.0,
+      "sharesOutstanding": 284469103.0,
+      "sellingGeneralAndAdministrativeExpense": 422167000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "revenue": 4427882000.0,
+      "operatingIncome": 694009000.0,
+      "incomeTaxExpense": 72799000.0,
+      "netIncome": 1709259000.0,
+      "weightedAverageShsOutDil": 283222000.0,
+      "weightedAverageShsOut": 282475000.0,
+      "sharesOutstanding": 281121062.0,
+      "sellingGeneralAndAdministrativeExpense": 400654000.0
+    }
+  ],
+  "balance_sheet": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "totalAssets": 49410468000.0,
+      "cashAndCashEquivalents": 3451647000.0,
+      "totalLiabilities": 24564494000.0,
+      "totalShareholderEquity": 22925663000.0,
+      "retainedEarnings": -6690722000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "totalAssets": 45283616000.0,
+      "cashAndCashEquivalents": 3870891000.0,
+      "totalLiabilities": 22107836000.0,
+      "totalShareholderEquity": 21340397000.0,
+      "retainedEarnings": -6292085000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "totalAssets": 44113258000.0,
+      "cashAndCashEquivalents": 1625495000.0,
+      "totalLiabilities": 23116937000.0,
+      "totalShareholderEquity": 19601507000.0,
+      "retainedEarnings": -5262648000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "totalAssets": 41484998000.0,
+      "cashAndCashEquivalents": 150696000.0,
+      "totalLiabilities": 21862854000.0,
+      "totalShareholderEquity": 18107465000.0,
+      "retainedEarnings": -4698313000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "totalAssets": 36369560000.0,
+      "cashAndCashEquivalents": 151485000.0,
+      "totalLiabilities": 17845778000.0,
+      "totalShareholderEquity": 18476787000.0,
+      "retainedEarnings": -3631929000.0
+    }
+  ],
+  "cash_flow": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "operatingCashFlow": 2412136000.0,
+      "dividendsPaid": 1728466000.0,
+      "depreciationAndAmortization": 1894636000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "operatingCashFlow": 2261477000.0,
+      "dividendsPaid": 1633247000.0,
+      "depreciationAndAmortization": 1771797000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "operatingCashFlow": 1634780000.0,
+      "dividendsPaid": 1520644000.0,
+      "depreciationAndAmortization": 1694859000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "operatingCashFlow": 1659388000.0,
+      "dividendsPaid": 1450637000.0,
+      "depreciationAndAmortization": 1577933000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "operatingCashFlow": 1702228000.0,
+      "dividendsPaid": 1379198000.0,
+      "depreciationAndAmortization": 1486632000.0
+    }
+  ],
+  "profile": {
+    "companyName": "DIGITAL REALTY TRUST, INC.",
+    "symbol": "DLR"
+  },
+  "price_target_consensus": null,
+  "_data_source": "edgar_primary"
+}

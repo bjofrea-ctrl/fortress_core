@@ -1,0 +1,235 @@
+{
+  "symbol": "PTC",
+  "ingested_at": "2026-09-10T01:51:32.424345+00:00",
+  "income_statement": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "revenue": 2739226000.0,
+      "grossProfit": 2294243000.0,
+      "operatingIncome": 982385000.0,
+      "incomeTaxExpense": 186180000.0,
+      "netIncome": 733997000.0,
+      "weightedAverageShsOutDil": 120777000.0,
+      "weightedAverageShsOut": 120005000.0,
+      "sellingGeneralAndAdministrativeExpense": 226058000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "revenue": 2298472000.0,
+      "grossProfit": 1853656000.0,
+      "operatingIncome": 588062000.0,
+      "incomeTaxExpense": 92629000.0,
+      "netIncome": 376333000.0,
+      "weightedAverageShsOutDil": 120742000.0,
+      "weightedAverageShsOut": 119679000.0,
+      "sharesOutstanding": 120129080.0,
+      "sellingGeneralAndAdministrativeExpense": 232377000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "revenue": 2097053000.0,
+      "grossProfit": 1656047000.0,
+      "operatingIncome": 458474000.0,
+      "incomeTaxExpense": 87026000.0,
+      "netIncome": 245540000.0,
+      "weightedAverageShsOutDil": 119334000.0,
+      "weightedAverageShsOut": 118341000.0,
+      "sharesOutstanding": 119244754.0,
+      "sellingGeneralAndAdministrativeExpense": 233516000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "revenue": 1933347000.0,
+      "grossProfit": 1547367000.0,
+      "operatingIncome": 447362000.0,
+      "incomeTaxExpense": 84017000.0,
+      "netIncome": 313081000.0,
+      "weightedAverageShsOutDil": 118233000.0,
+      "weightedAverageShsOut": 117194000.0,
+      "sharesOutstanding": 117471969.0,
+      "sellingGeneralAndAdministrativeExpense": 204732000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "revenue": 1807159000.0,
+      "grossProfit": 1436057000.0,
+      "operatingIncome": 380748000.0,
+      "incomeTaxExpense": -85168000.0,
+      "netIncome": 476923000.0,
+      "weightedAverageShsOutDil": 118367000.0,
+      "weightedAverageShsOut": 116836000.0,
+      "sharesOutstanding": 117871872.0,
+      "sellingGeneralAndAdministrativeExpense": 206006000.0
+    },
+    {
+      "calendarYear": "2020",
+      "period": "FY",
+      "revenue": 1458415000.0,
+      "grossProfit": 1124144000.0,
+      "operatingIncome": 210863000.0,
+      "incomeTaxExpense": 4011000.0,
+      "netIncome": 130695000.0,
+      "weightedAverageShsOutDil": 116267000.0,
+      "weightedAverageShsOut": 115663000.0,
+      "sharesOutstanding": 116662768.0,
+      "sellingGeneralAndAdministrativeExpense": 159826000.0
+    }
+  ],
+  "balance_sheet": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "totalAssets": 6617172000.0,
+      "totalCurrentAssets": 1383367000.0,
+      "cashAndCashEquivalents": 184415000.0,
+      "totalCurrentLiabilities": 1237404000.0,
+      "longTermDebt": 1172434000.0,
+      "longTermDebtCurrent": 25000000.0,
+      "totalLiabilities": 2790943000.0,
+      "totalShareholderEquity": 3826229000.0,
+      "retainedEarnings": 2083607000.0,
+      "propertyPlantEquipmentNet": 60843000.0,
+      "netReceivables": 1001085000.0,
+      "totalDebt": 1197434000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "totalAssets": 6383542000.0,
+      "totalCurrentAssets": 1298705000.0,
+      "cashAndCashEquivalents": 265808000.0,
+      "totalCurrentLiabilities": 1667193000.0,
+      "longTermDebt": 1227105000.0,
+      "longTermDebtCurrent": 521467000.0,
+      "totalLiabilities": 3169144000.0,
+      "totalShareholderEquity": 3214398000.0,
+      "retainedEarnings": 1349610000.0,
+      "propertyPlantEquipmentNet": 75187000.0,
+      "netReceivables": 861953000.0,
+      "totalDebt": 1748572000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "totalAssets": 6288842000.0,
+      "totalCurrentAssets": 1277366000.0,
+      "cashAndCashEquivalents": 288798000.0,
+      "totalCurrentLiabilities": 1671185000.0,
+      "longTermDebt": 1686410000.0,
+      "longTermDebtCurrent": 9375000.0,
+      "totalLiabilities": 3611552000.0,
+      "totalShareholderEquity": 2677290000.0,
+      "retainedEarnings": 973277000.0,
+      "propertyPlantEquipmentNet": 88391000.0,
+      "netReceivables": 811398000.0,
+      "totalDebt": 1695785000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "totalAssets": 4687268000.0,
+      "totalCurrentAssets": 1068657000.0,
+      "cashAndCashEquivalents": 272888000.0,
+      "totalCurrentLiabilities": 792258000.0,
+      "longTermDebt": 1350628000.0,
+      "longTermDebtCurrent": 0.0,
+      "totalLiabilities": 2391234000.0,
+      "totalShareholderEquity": 2296034000.0,
+      "retainedEarnings": 727737000.0,
+      "propertyPlantEquipmentNet": 98101000.0,
+      "netReceivables": 636556000.0,
+      "totalDebt": 1350628000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "totalAssets": 4507560000.0,
+      "totalCurrentAssets": 1073010000.0,
+      "cashAndCashEquivalents": 327047000.0,
+      "totalCurrentLiabilities": 779282000.0,
+      "longTermDebt": 1439471000.0,
+      "totalLiabilities": 2469092000.0,
+      "totalShareholderEquity": 2038468000.0,
+      "retainedEarnings": 414656000.0,
+      "propertyPlantEquipmentNet": 100237000.0,
+      "netReceivables": 541072000.0,
+      "totalDebt": 1439471000.0
+    },
+    {
+      "calendarYear": "2020",
+      "period": "FY",
+      "totalAssets": 3382738000.0,
+      "totalCurrentAssets": 833447000.0,
+      "cashAndCashEquivalents": 275960000.0,
+      "totalCurrentLiabilities": 680760000.0,
+      "longTermDebt": 1005314000.0,
+      "totalLiabilities": 1944490000.0,
+      "totalShareholderEquity": 1438248000.0,
+      "retainedEarnings": -62267000.0,
+      "propertyPlantEquipmentNet": 101499000.0,
+      "netReceivables": 415221000.0,
+      "totalDebt": 1005314000.0
+    }
+  ],
+  "cash_flow": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "operatingCashFlow": 867696000.0,
+      "capitalExpenditure": 11008000.0,
+      "commonStockRepurchased": 299998000.0,
+      "depreciationAndAmortization": 102504000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "operatingCashFlow": 749984000.0,
+      "capitalExpenditure": 14378000.0,
+      "commonStockRepurchased": 0.0,
+      "depreciationAndAmortization": 108119000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "operatingCashFlow": 610861000.0,
+      "capitalExpenditure": 23814000.0,
+      "commonStockRepurchased": 0.0,
+      "depreciationAndAmortization": 104760000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "operatingCashFlow": 435326000.0,
+      "capitalExpenditure": 19496000.0,
+      "commonStockRepurchased": 125000000.0,
+      "depreciationAndAmortization": 87694000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "operatingCashFlow": 368809000.0,
+      "capitalExpenditure": 24713000.0,
+      "commonStockRepurchased": 30000000.0,
+      "depreciationAndAmortization": 85239000.0
+    },
+    {
+      "calendarYear": "2020",
+      "period": "FY",
+      "operatingCashFlow": 233808000.0,
+      "capitalExpenditure": 20196000.0,
+      "commonStockRepurchased": 0.0,
+      "depreciationAndAmortization": 80817000.0
+    }
+  ],
+  "profile": {
+    "companyName": "PTC Inc.",
+    "symbol": "PTC"
+  },
+  "price_target_consensus": null,
+  "_data_source": "edgar_primary"
+}

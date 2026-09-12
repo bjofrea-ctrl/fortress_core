@@ -1,0 +1,17 @@
+============================================================
+Corrida 2026-09-01T19:45:56
+Universo: 102 símbolos (100 con earnings, 2 ETF excluidos: SPY, QQQ)
+Símbolos procesados: 91 — AAPL, ABBV, ACN, ADBE, ALGN, AMAT, AMD, AMGN, AMZN, AVGO, AXP, BAC, BIIB, BLK, BR, BRK-B, CAT, CHKP, CHTR, CMCSA, COST, CRM, CSCO, CVX, DE, DIS, DLR, DRI, DXCM, EBAY, EQIX, ETN, FCX, GE, GOOGL, HD, IBM, INTU, ISRG, JNJ, JPM, KO, LIN, LLY, LRCX, MA, MAR, MCD, META, MPWR, MRK, MRVL, MSFT, NEM, NFLX, NVDA, OKE, ORCL, PEP, PFE, PG, PH, PLD, PM, PYPL, QCOM, RCL, REGN, SBUX, SCHW, SLB, SNPS, SPGI, STAG, SWKS, TMO, TMUS, TSLA, TXN, UNH, UNP, UPS, V, VEEV, VLO, WELL, WM, WMT, XEL, XOM, ZTS
+8-Ks nuevos: 332
+Total en store: 727
+ERRORES (9):
+  CDNS: Fallo EDGAR tras 3 intentos para https://www.sec.gov/Archives/edgar/data/813672/000081367225000016/index.html: 503 Server Error: Service Unavailable for url: https://www.sec.gov/Archives/edgar/data/813672/000081367225000016/index.html
+  TYL: Fallo EDGAR tras 3 intentos para https://www.sec.gov/Archives/edgar/data/860731/000086073126000048/index.html: 503 Server Error: Service Unavailable for url: https://www.sec.gov/Archives/edgar/data/860731/000086073126000048/index.html
+  PTC: Fallo EDGAR tras 3 intentos para https://www.sec.gov/Archives/edgar/data/857005/000119312525266865/index.html: 503 Server Error: Service Unavailable for url: https://www.sec.gov/Archives/edgar/data/857005/000119312525266865/index.html
+  AKAM: Fallo EDGAR tras 3 intentos para https://www.sec.gov/Archives/edgar/data/1086222/000108622226000083/index.html: 503 Server Error: Service Unavailable for url: https://www.sec.gov/Archives/edgar/data/1086222/000108622226000083/index.html
+  FFIV: Fallo EDGAR tras 3 intentos para https://www.sec.gov/Archives/edgar/data/1048695/000104869526000063/index.html: 503 Server Error: Service Unavailable for url: https://www.sec.gov/Archives/edgar/data/1048695/000104869526000063/index.html
+  EPAM: Fallo EDGAR tras 3 intentos para https://www.sec.gov/Archives/edgar/data/1352010/000135201026000010/index.html: 503 Server Error: Service Unavailable for url: https://www.sec.gov/Archives/edgar/data/1352010/000135201026000010/index.html
+  PANW: Fallo EDGAR tras 3 intentos para https://www.sec.gov/Archives/edgar/data/1327567/000132756726000012/index.html: 503 Server Error: Service Unavailable for url: https://www.sec.gov/Archives/edgar/data/1327567/000132756726000012/index.html
+  QLYS: Fallo EDGAR tras 3 intentos para https://www.sec.gov/Archives/edgar/data/1107843/000110784325000015/index.html: 503 Server Error: Service Unavailable for url: https://www.sec.gov/Archives/edgar/data/1107843/000110784325000015/index.html
+  QRVO: Fallo EDGAR tras 3 intentos para https://www.sec.gov/Archives/edgar/data/1604778/000160477825000064/index.html: 503 Server Error: Service Unavailable for url: https://www.sec.gov/Archives/edgar/data/1604778/000160477825000064/index.html
+============================================================

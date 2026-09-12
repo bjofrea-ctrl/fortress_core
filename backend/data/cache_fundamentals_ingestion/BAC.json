@@ -1,0 +1,170 @@
+{
+  "symbol": "BAC",
+  "ingested_at": "2026-09-10T01:50:55.627737+00:00",
+  "income_statement": [
+    {
+      "calendarYear": "2026",
+      "period": "FY",
+      "sharesOutstanding": 7176682170.0
+    },
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "revenue": 113097000000.0,
+      "incomeTaxExpense": 7186000000.0,
+      "netIncome": 30509000000.0,
+      "weightedAverageShsOutDil": 7680900000.0,
+      "weightedAverageShsOut": 7521900000.0,
+      "sharesOutstanding": 7604677274.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "revenue": 105856000000.0,
+      "incomeTaxExpense": 6250000000.0,
+      "netIncome": 26973000000.0,
+      "weightedAverageShsOutDil": 7935800000.0,
+      "weightedAverageShsOut": 7855500000.0,
+      "sharesOutstanding": 7872657542.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "revenue": 102769000000.0,
+      "incomeTaxExpense": 6225000000.0,
+      "netIncome": 26305000000.0,
+      "weightedAverageShsOutDil": 8080500000.0,
+      "weightedAverageShsOut": 8028600000.0,
+      "sharesOutstanding": 8003839222.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "revenue": 94950000000.0,
+      "incomeTaxExpense": 3441000000.0,
+      "netIncome": 27528000000.0,
+      "weightedAverageShsOutDil": 8167500000.0,
+      "weightedAverageShsOut": 8113700000.0,
+      "sharesOutstanding": 8069801301.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "revenue": 89113000000.0,
+      "incomeTaxExpense": 1998000000.0,
+      "netIncome": 31978000000.0,
+      "weightedAverageShsOutDil": 8558400000.0,
+      "weightedAverageShsOut": 8493300000.0,
+      "sharesOutstanding": 8633185862.0
+    }
+  ],
+  "balance_sheet": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "totalAssets": 3411738000000.0,
+      "cashAndCashEquivalents": 231845000000.0,
+      "longTermDebt": 317816000000.0,
+      "shortTermBorrowings": 20400000000.0,
+      "totalLiabilities": 3108495000000.0,
+      "totalShareholderEquity": 303243000000.0,
+      "retainedEarnings": 261693000000.0,
+      "propertyPlantEquipmentNet": 12516000000.0,
+      "totalDebt": 338216000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "totalAssets": 3261299000000.0,
+      "cashAndCashEquivalents": 290114000000.0,
+      "longTermDebt": 283279000000.0,
+      "shortTermBorrowings": 24200000000.0,
+      "totalLiabilities": 2967336000000.0,
+      "totalShareholderEquity": 293963000000.0,
+      "retainedEarnings": 240753000000.0,
+      "propertyPlantEquipmentNet": 12168000000.0,
+      "totalDebt": 307479000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "totalAssets": 3180151000000.0,
+      "cashAndCashEquivalents": 333073000000.0,
+      "longTermDebt": 302204000000.0,
+      "shortTermBorrowings": 13100000000.0,
+      "totalLiabilities": 2888505000000.0,
+      "totalShareholderEquity": 290209000000.0,
+      "retainedEarnings": 224672000000.0,
+      "propertyPlantEquipmentNet": 11855000000.0,
+      "totalDebt": 315304000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "totalAssets": 3051375000000.0,
+      "cashAndCashEquivalents": 230203000000.0,
+      "longTermDebt": 275982000000.0,
+      "shortTermBorrowings": 9900000000.0,
+      "totalLiabilities": 2778178000000.0,
+      "totalShareholderEquity": 273197000000.0,
+      "retainedEarnings": 207003000000.0,
+      "propertyPlantEquipmentNet": 11510000000.0,
+      "totalDebt": 285882000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "totalAssets": 3169495000000.0,
+      "cashAndCashEquivalents": 348221000000.0,
+      "longTermDebt": 280117000000.0,
+      "totalLiabilities": 2899429000000.0,
+      "totalShareholderEquity": 270066000000.0,
+      "retainedEarnings": 188064000000.0,
+      "propertyPlantEquipmentNet": 10833000000.0,
+      "totalDebt": 280117000000.0
+    }
+  ],
+  "cash_flow": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "operatingCashFlow": 12613000000.0,
+      "commonStockRepurchased": 21433000000.0,
+      "depreciationAndAmortization": 2314000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "operatingCashFlow": -8805000000.0,
+      "commonStockRepurchased": 13104000000.0,
+      "depreciationAndAmortization": 2189000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "operatingCashFlow": 44982000000.0,
+      "commonStockRepurchased": 4576000000.0,
+      "depreciationAndAmortization": 2057000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "operatingCashFlow": -6327000000.0,
+      "commonStockRepurchased": 5073000000.0,
+      "depreciationAndAmortization": 1978000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "operatingCashFlow": -7193000000.0,
+      "commonStockRepurchased": 25126000000.0,
+      "depreciationAndAmortization": 1898000000.0
+    }
+  ],
+  "profile": {
+    "companyName": "BofA Finance LLC",
+    "symbol": "BAC"
+  },
+  "price_target_consensus": null,
+  "_data_source": "edgar_primary"
+}

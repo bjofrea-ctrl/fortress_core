@@ -1,0 +1,206 @@
+{
+  "symbol": "ABBV",
+  "ingested_at": "2026-09-10T01:50:55.180151+00:00",
+  "income_statement": [
+    {
+      "calendarYear": "2026",
+      "period": "FY",
+      "sharesOutstanding": 1768169012.0
+    },
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "revenue": 61160000000.0,
+      "grossProfit": 12066000000.0,
+      "operatingIncome": 15075000000.0,
+      "incomeTaxExpense": 2364000000.0,
+      "netIncome": 4226000000.0,
+      "weightedAverageShsOutDil": 1773000000.0,
+      "weightedAverageShsOut": 1769000000.0,
+      "sharesOutstanding": 1765354859.0,
+      "sellingGeneralAndAdministrativeExpense": 14010000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "revenue": 56334000000.0,
+      "grossProfit": 10706000000.0,
+      "operatingIncome": 9137000000.0,
+      "incomeTaxExpense": -570000000.0,
+      "netIncome": 4278000000.0,
+      "weightedAverageShsOutDil": 1773000000.0,
+      "weightedAverageShsOut": 1769000000.0,
+      "sharesOutstanding": 1766473359.0,
+      "sellingGeneralAndAdministrativeExpense": 14752000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "revenue": 54318000000.0,
+      "grossProfit": 8597000000.0,
+      "operatingIncome": 12757000000.0,
+      "incomeTaxExpense": 1377000000.0,
+      "netIncome": 4863000000.0,
+      "weightedAverageShsOutDil": 1773000000.0,
+      "weightedAverageShsOut": 1768000000.0,
+      "sharesOutstanding": 1769399971.0,
+      "sellingGeneralAndAdministrativeExpense": 12872000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "revenue": 58054000000.0,
+      "grossProfit": 10951000000.0,
+      "operatingIncome": 18117000000.0,
+      "incomeTaxExpense": 1632000000.0,
+      "netIncome": 11836000000.0,
+      "weightedAverageShsOutDil": 1778000000.0,
+      "weightedAverageShsOut": 1771000000.0,
+      "sharesOutstanding": 1768753829.0,
+      "sellingGeneralAndAdministrativeExpense": 15260000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "revenue": 56197000000.0,
+      "grossProfit": 10566000000.0,
+      "operatingIncome": 17924000000.0,
+      "incomeTaxExpense": 1440000000.0,
+      "netIncome": 11542000000.0,
+      "weightedAverageShsOutDil": 1777000000.0,
+      "weightedAverageShsOut": 1770000000.0,
+      "sharesOutstanding": 1765881690.0,
+      "sellingGeneralAndAdministrativeExpense": 12349000000.0
+    }
+  ],
+  "balance_sheet": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "totalAssets": 133960000000.0,
+      "totalCurrentAssets": 29062000000.0,
+      "cashAndCashEquivalents": 5229000000.0,
+      "shortTermInvestments": 28000000.0,
+      "totalCurrentLiabilities": 43289000000.0,
+      "longTermDebt": 64503000000.0,
+      "shortTermBorrowings": 2499000000.0,
+      "totalShareholderEquity": -3270000000.0,
+      "retainedEarnings": -15493000000.0,
+      "propertyPlantEquipmentNet": 5628000000.0,
+      "netReceivables": 12589000000.0,
+      "totalDebt": 67002000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "totalAssets": 135161000000.0,
+      "totalCurrentAssets": 25582000000.0,
+      "cashAndCashEquivalents": 5524000000.0,
+      "shortTermInvestments": 31000000.0,
+      "totalCurrentLiabilities": 38749000000.0,
+      "longTermDebt": 66841000000.0,
+      "shortTermBorrowings": 0.0,
+      "totalShareholderEquity": 3325000000.0,
+      "retainedEarnings": -7900000000.0,
+      "propertyPlantEquipmentNet": 5134000000.0,
+      "netReceivables": 10919000000.0,
+      "totalDebt": 66841000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "totalAssets": 134711000000.0,
+      "totalCurrentAssets": 33002000000.0,
+      "cashAndCashEquivalents": 12814000000.0,
+      "shortTermInvestments": 2000000.0,
+      "totalCurrentLiabilities": 37841000000.0,
+      "longTermDebt": 59245000000.0,
+      "shortTermBorrowings": 0.0,
+      "totalShareholderEquity": 10397000000.0,
+      "retainedEarnings": -1000000000.0,
+      "propertyPlantEquipmentNet": 4989000000.0,
+      "netReceivables": 11155000000.0,
+      "totalDebt": 59245000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "totalAssets": 138805000000.0,
+      "totalCurrentAssets": 28463000000.0,
+      "cashAndCashEquivalents": 9201000000.0,
+      "shortTermInvestments": 28000000.0,
+      "totalCurrentLiabilities": 29538000000.0,
+      "longTermDebt": 63128000000.0,
+      "shortTermBorrowings": 1000000.0,
+      "totalShareholderEquity": 17287000000.0,
+      "retainedEarnings": 4784000000.0,
+      "propertyPlantEquipmentNet": 4935000000.0,
+      "netReceivables": 11254000000.0,
+      "totalDebt": 63129000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "totalAssets": 146529000000.0,
+      "totalCurrentAssets": 27928000000.0,
+      "cashAndCashEquivalents": 9746000000.0,
+      "shortTermInvestments": 84000000.0,
+      "totalCurrentLiabilities": 35194000000.0,
+      "longTermDebt": 75962000000.0,
+      "shortTermBorrowings": 14000000.0,
+      "totalShareholderEquity": 15436000000.0,
+      "retainedEarnings": 3127000000.0,
+      "propertyPlantEquipmentNet": 5110000000.0,
+      "netReceivables": 9977000000.0,
+      "totalDebt": 75976000000.0
+    }
+  ],
+  "cash_flow": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "operatingCashFlow": 19030000000.0,
+      "capitalExpenditure": 1214000000.0,
+      "commonStockRepurchased": 980000000.0,
+      "dividendsPaid": 11657000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "operatingCashFlow": 18806000000.0,
+      "capitalExpenditure": 974000000.0,
+      "commonStockRepurchased": 1708000000.0,
+      "dividendsPaid": 11025000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "operatingCashFlow": 22839000000.0,
+      "capitalExpenditure": 777000000.0,
+      "commonStockRepurchased": 1972000000.0,
+      "dividendsPaid": 10539000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "operatingCashFlow": 24943000000.0,
+      "capitalExpenditure": 695000000.0,
+      "commonStockRepurchased": 1487000000.0,
+      "dividendsPaid": 10043000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "operatingCashFlow": 22777000000.0,
+      "capitalExpenditure": 787000000.0,
+      "commonStockRepurchased": 934000000.0,
+      "dividendsPaid": 9261000000.0
+    }
+  ],
+  "profile": {
+    "companyName": "AbbVie Inc.",
+    "symbol": "ABBV"
+  },
+  "price_target_consensus": null,
+  "_data_source": "edgar_primary"
+}

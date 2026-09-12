@@ -41,6 +41,97 @@
       "context": "Triad=MANTENER, Controller=MANTENER, Professor=APPROVE",
       "outcome": "Juez emiti\u00f3 veredicto final",
       "timestamp": "2026-08-26 07:56:02.590878"
+    },
+    {
+      "agent": "SYSTEM",
+      "lesson": "Conflicto resuelto en SPY: MANTENER",
+      "context": "Triad=COMPRAR_LEVE, Controller=MANTENER, Professor=APPROVE",
+      "outcome": "Juez emiti\u00f3 veredicto final",
+      "timestamp": "2026-09-09 16:22:06.964434"
+    },
+    {
+      "agent": "SYSTEM",
+      "lesson": "Conflicto resuelto en SPY: MANTENER",
+      "context": "Triad=COMPRAR_LEVE, Controller=MANTENER, Professor=APPROVE",
+      "outcome": "Juez emiti\u00f3 veredicto final",
+      "timestamp": "2026-09-09 16:37:58.031500"
+    },
+    {
+      "agent": "SYSTEM",
+      "lesson": "Conflicto resuelto en SPY: MANTENER",
+      "context": "Triad=COMPRAR_LEVE, Controller=MANTENER, Professor=APPROVE",
+      "outcome": "Juez emiti\u00f3 veredicto final",
+      "timestamp": "2026-09-09 17:07:03.832744"
+    },
+    {
+      "agent": "SYSTEM",
+      "lesson": "Conflicto resuelto en SPY: MANTENER",
+      "context": "Triad=COMPRAR, Controller=MANTENER, Professor=APPROVE",
+      "outcome": "Juez emiti\u00f3 veredicto final",
+      "timestamp": "2026-09-09 17:26:42.654464"
+    },
+    {
+      "agent": "SYSTEM",
+      "lesson": "Conflicto resuelto en SPY: MANTENER",
+      "context": "Triad=COMPRAR, Controller=MANTENER, Professor=APPROVE",
+      "outcome": "Juez emiti\u00f3 veredicto final",
+      "timestamp": "2026-09-09 17:37:40.355279"
+    },
+    {
+      "agent": "SYSTEM",
+      "lesson": "Conflicto resuelto en SPY: MANTENER",
+      "context": "Triad=COMPRAR, Controller=MANTENER, Professor=APPROVE",
+      "outcome": "Juez emiti\u00f3 veredicto final",
+      "timestamp": "2026-09-09 17:39:18.927669"
+    },
+    {
+      "agent": "SYSTEM",
+      "lesson": "Conflicto resuelto en SPY: MANTENER",
+      "context": "Triad=COMPRAR, Controller=MANTENER, Professor=APPROVE",
+      "outcome": "Juez emiti\u00f3 veredicto final",
+      "timestamp": "2026-09-10 12:05:10.176477"
+    },
+    {
+      "agent": "SYSTEM",
+      "lesson": "Conflicto resuelto en SPY: MANTENER",
+      "context": "Triad=COMPRAR, Controller=MANTENER, Professor=APPROVE",
+      "outcome": "Juez emiti\u00f3 veredicto final",
+      "timestamp": "2026-09-10 12:52:20.416108"
+    },
+    {
+      "agent": "SYSTEM",
+      "lesson": "Conflicto resuelto en SPY: MANTENER",
+      "context": "Triad=MANTENER, Controller=MANTENER, Professor=APPROVE",
+      "outcome": "Juez emiti\u00f3 veredicto final",
+      "timestamp": "2026-09-10 14:20:50.409907"
+    },
+    {
+      "agent": "SYSTEM",
+      "lesson": "Conflicto resuelto en SPY: MANTENER",
+      "context": "Triad=MANTENER, Controller=MANTENER, Professor=APPROVE",
+      "outcome": "Juez emiti\u00f3 veredicto final",
+      "timestamp": "2026-09-10 14:29:11.213573"
+    },
+    {
+      "agent": "SYSTEM",
+      "lesson": "Conflicto resuelto en SPY: MANTENER",
+      "context": "Triad=MANTENER, Controller=MANTENER, Professor=APPROVE",
+      "outcome": "Juez emiti\u00f3 veredicto final",
+      "timestamp": "2026-09-10 14:30:10.163645"
+    },
+    {
+      "agent": "SYSTEM",
+      "lesson": "Conflicto resuelto en SPY: MANTENER",
+      "context": "Triad=COMPRAR_LEVE, Controller=MANTENER, Professor=APPROVE",
+      "outcome": "Juez emiti\u00f3 veredicto final",
+      "timestamp": "2026-09-10 14:39:28.068938"
+    },
+    {
+      "agent": "SYSTEM",
+      "lesson": "Conflicto resuelto en SPY: MANTENER",
+      "context": "Triad=COMPRAR, Controller=MANTENER, Professor=APPROVE",
+      "outcome": "Juez emiti\u00f3 veredicto final",
+      "timestamp": "2026-09-10 14:39:31.632137"
     }
   ],
   "agent_knowledge": {
@@ -48,6 +139,19 @@
       "Conflicto resuelto en AAPL: COMPRAR",
       "Conflicto resuelto en AAPL: COMPRAR",
       "Conflicto resuelto en AAPL: COMPRAR",
+      "Conflicto resuelto en SPY: MANTENER",
+      "Conflicto resuelto en SPY: MANTENER",
+      "Conflicto resuelto en SPY: MANTENER",
+      "Conflicto resuelto en SPY: MANTENER",
+      "Conflicto resuelto en SPY: MANTENER",
+      "Conflicto resuelto en SPY: MANTENER",
+      "Conflicto resuelto en SPY: MANTENER",
+      "Conflicto resuelto en SPY: MANTENER",
+      "Conflicto resuelto en SPY: MANTENER",
+      "Conflicto resuelto en SPY: MANTENER",
+      "Conflicto resuelto en SPY: MANTENER",
+      "Conflicto resuelto en SPY: MANTENER",
+      "Conflicto resuelto en SPY: MANTENER",
       "Conflicto resuelto en SPY: MANTENER",
       "Conflicto resuelto en SPY: MANTENER",
       "Conflicto resuelto en SPY: MANTENER"
