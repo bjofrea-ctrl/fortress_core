@@ -1,5 +1,7 @@
 import json
 import os
+from datetime import datetime
+from typing import Any, Dict
 
 from fastapi import APIRouter
 
@@ -20,6 +22,41 @@ async def get_backtest_results():
     return data
 
 
+def _artifact_meta(data: Dict[str, Any]) -> Dict[str, Any]:
+    """Metadatos DERIVADOS del artefacto real para el vintage de la UI (Slice 1 UX).
+
+    Regla de la casa: nada inventado. Todo sale del JSON ya leído: ventana de la
+    equity_curve, símbolos y cantidad de trades, y el mtime del archivo (cuándo se
+    generó el baseline). Si falta algo, la clave queda en None y la UI lo omite.
+    """
+    meta: Dict[str, Any] = {
+        "window_start": None,
+        "window_end": None,
+        "universe": [],
+        "n_trades": 0,
+        "generated_at": None,
+    }
+    try:
+        curve = data.get("equity_curve") or []
+        if curve:
+            first = curve[0] or {}
+            last = curve[-1] or {}
+            meta["window_start"] = str(first.get("date", ""))[:10] or None
+            meta["window_end"] = str(last.get("date", ""))[:10] or None
+        trades = data.get("trades") or []
+        meta["n_trades"] = len(trades)
+        meta["universe"] = sorted({t.get("symbol") for t in trades if t.get("symbol")})
+        try:
+            meta["generated_at"] = datetime.fromtimestamp(
+                os.path.getmtime(RESULTS_FILE)
+            ).strftime("%Y-%m-%d")
+        except OSError:
+            meta["generated_at"] = None
+    except Exception:
+        pass
+    return meta
+
+
 @router.get("/metrics")
 async def get_backtest_metrics():
     """Retorna solo las métricas del backtest."""
@@ -29,7 +66,9 @@ async def get_backtest_metrics():
     with open(RESULTS_FILE, "r") as f:
         data = json.load(f)
 
-    return data.get("metrics", {})
+    out = dict(data.get("metrics", {}))
+    out["meta"] = _artifact_meta(data)
+    return out
 
 
 @router.get("/equity-curve")

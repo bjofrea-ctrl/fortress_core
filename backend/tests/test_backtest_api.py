@@ -58,7 +58,41 @@ def test_metrics_sin_archivo(monkeypatch, tmp_path):
 def test_metrics_devuelve_solo_metrics(monkeypatch, results_file):
     _set_file(monkeypatch, results_file)
     body = asyncio.run(backtest.get_backtest_metrics())
-    assert set(body) == {"total_return_pct", "sharpe", "max_drawdown_pct"}
+    assert set(body) == {"total_return_pct", "sharpe", "max_drawdown_pct", "meta"}
+
+
+def test_metrics_meta_derivado_del_artefacto(monkeypatch, results_file):
+    """El vintage se DERIVA del JSON sintético (ventana, universo, n_trades).
+
+    Nada inventado: ventana de la equity_curve, símbolos de los trades, y el
+    mtime del archivo. Sin mock del helper: se prueba contra el fixture real.
+    """
+    import time
+
+    _set_file(monkeypatch, results_file)
+    body = asyncio.run(backtest.get_backtest_metrics())
+    meta = body["meta"]
+    assert meta["window_start"] == "2024-01-02"
+    assert meta["window_end"] == "2024-01-03"
+    assert meta["universe"] == ["TESTA", "TESTB"]
+    assert meta["n_trades"] == 2
+    # generated_at = mtime del archivo (fiable a ±1 día por zona horaria).
+    assert isinstance(meta["generated_at"], str) and len(meta["generated_at"]) == 10
+    assert abs(time.time() - __import__("os").path.getmtime(results_file)) < 60
+
+
+def test_metrics_meta_inocuo_sin_equity_ni_trades(monkeypatch, tmp_path):
+    """Archivo con metrics pero sin curva/trades: meta degradado, no crash."""
+    import json
+
+    thin = tmp_path / "thin.json"
+    thin.write_text(json.dumps({"metrics": {"total_return_pct": 1.0}}))
+    _set_file(monkeypatch, str(thin))
+    body = asyncio.run(backtest.get_backtest_metrics())
+    assert body["total_return_pct"] == 1.0
+    assert body["meta"]["universe"] == []
+    assert body["meta"]["n_trades"] == 0
+    assert body["meta"]["window_start"] is None
 
 
 def test_equity_curve_formatea_fechas_str(monkeypatch, results_file):

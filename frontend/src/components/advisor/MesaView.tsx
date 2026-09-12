@@ -166,6 +166,30 @@ function FragmentRow({
                 <p className="text-tv-dim mb-1">Razón del veredicto</p>
                 <p className="text-tv-text">{t.reason}</p>
                 <p className="text-tv-dim mt-1">Score: {t.score ?? "—"} · Payoff: {t.payoff_ratio ?? "—"}R · ATR: {t.atr ?? "—"}</p>
+                {t.factors && (
+                  <div className="mt-2">
+                    <p className="text-tv-dim mb-1" title="Componentes que se combinan ponderados por régimen (contrato §29) para dar Score = momentum·w₁ + rsi·w₂">
+                      Factores del Score
+                    </p>
+                    <div className="space-y-1">
+                      {Object.entries(t.factors).map(([k, v]) => {
+                        const pct = Math.max(0, Math.min(1, v)) * 100
+                        return (
+                          <div key={k} className="flex items-center gap-2">
+                            <span className="w-16 text-tv-dim capitalize">{k}</span>
+                            <span className="flex-1 h-1.5 bg-dark-border rounded overflow-hidden">
+                              <span
+                                className="block h-full bg-accent-green"
+                                style={{ width: `${pct.toFixed(0)}%` }}
+                              />
+                            </span>
+                            <span className="w-10 text-right font-mono num text-tv-text">{pct.toFixed(0)}%</span>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
               <div>
                 <p className="text-tv-dim mb-1">Gates técnicos</p>

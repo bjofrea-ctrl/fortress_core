@@ -4,6 +4,14 @@ interface KPICardsProps {
   apiUrl: string
 }
 
+interface ArtifactMeta {
+  window_start: string | null
+  window_end: string | null
+  universe: string[]
+  n_trades: number
+  generated_at: string | null
+}
+
 interface Metrics {
   cagr: number
   sharpe_ratio: number
@@ -14,6 +22,7 @@ interface Metrics {
   profit_factor: number
   total_trades: number
   deflated_sharpe: number
+  meta?: ArtifactMeta
 }
 
 export default function KPICards({ apiUrl }: KPICardsProps) {
@@ -90,17 +99,40 @@ export default function KPICards({ apiUrl }: KPICardsProps) {
     },
   ]
 
+  const m = metrics.meta
   return (
-    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-      {cards.map((card) => (
-        <div key={card.label} className="bg-dark-card border border-dark-border rounded-lg p-4 hover:border-accent-green transition-colors">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-gray-400">{card.label}</span>
-            <span className="text-lg">{card.icon}</span>
+    <>
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+        {cards.map((card) => (
+          <div key={card.label} className="bg-dark-card border border-dark-border rounded-lg p-4 hover:border-accent-green transition-colors">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs text-gray-400">{card.label}</span>
+              <span className="text-lg">{card.icon}</span>
+            </div>
+            <p className={`text-2xl font-mono font-bold ${card.color}`}>{card.value}</p>
           </div>
-          <p className={`text-2xl font-mono font-bold ${card.color}`}>{card.value}</p>
-        </div>
-      ))}
-    </div>
+        ))}
+      </div>
+
+      {/* Vintage del artefacto: que el KPI no se lea como operativa viva.
+          Todo lo mostrable está DERIVADO por el backend del JSON real. */}
+      <div className="mt-2 flex items-start gap-2 text-[11px] leading-tight text-tv-dim">
+        <span aria-hidden>ⓘ</span>
+        <span>
+          {m ? (
+            <>
+              Baseline de <span className="text-accent-yellow font-semibold">investigación</span>
+              {m.window_start && m.window_end ? <> · ventana {m.window_start} → {m.window_end}</> : null}
+              {m.universe && m.universe.length ? <> · {m.universe.length} activos ({m.universe.join(", ")})</> : null}
+              {m.n_trades ? <> · {m.n_trades} trades</> : null}
+              {m.generated_at ? <> · generado {m.generated_at}</> : null}
+              {" · no es cartera operativa validada (DSR/PBO sin cruzar)."}
+            </>
+          ) : (
+            <>Baseline de <span className="text-accent-yellow font-semibold">investigación</span> — no es cartera operativa validada.</>
+          )}
+        </span>
+      </div>
+    </>
   )
 }
