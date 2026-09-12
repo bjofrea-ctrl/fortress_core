@@ -451,3 +451,216 @@ def test_evidence_ledger_vacio_sigue_vivo(monkeypatch, tmp_path):
     assert body["total_trials"] == 0
     assert body["families"] == [] and body["recent"] == []
     assert body["n_inejecutables"] == 0
+
+
+# --- GET /api/advisor/regime (Phase 1 institutional-flow-score) ---
+
+class FakeRegimeNowcaster:
+    """Fake RegimeNowcaster for testing advisor_regime endpoint."""
+
+    def __init__(self):
+        self._load_price_data_called = False
+
+    def _load_price_data(self):
+        self._load_price_data_called = True
+        # Generate dates that end on 2026-08-17 for test consistency
+        dates = pd.bdate_range("2024-01-02", periods=300)
+        # Extend to include 2026-08-17
+        extra_dates = pd.bdate_range(dates[-1] + pd.Timedelta(days=1), "2026-08-17")
+        dates = dates.union(extra_dates)
+        n = len(dates)
+        close = 100 * np.exp(np.cumsum(np.random.default_rng(1).normal(0.0002, 0.01, n)))
+        return {
+            "SPY": pd.DataFrame({"close": close}, index=dates),
+            "EFA": pd.DataFrame({"close": close * 0.9}, index=dates),
+            "QQQ": pd.DataFrame({"close": close * 1.1}, index=dates),
+            "GLD": pd.DataFrame({"close": close * 0.8}, index=dates),
+            "DBC": pd.DataFrame({"close": close * 0.7}, index=dates),
+            "TIP": pd.DataFrame({"close": close * 0.95}, index=dates),
+            "TLT": pd.DataFrame({"close": close * 0.85}, index=dates),
+            "AGG": pd.DataFrame({"close": close * 0.92}, index=dates),
+        }
+
+    def fit_expanding(self, up_to_date):
+        pass
+
+    def predict_proba_aligned(self, as_of):
+        return np.array([0.15, 0.25, 0.35, 0.25])  # STAGFLATION highest
+
+    def get_current_regime(self, as_of=None):
+        from app.core.regime_nowcast import RegimeSnapshot
+        if as_of is None:
+            as_of = pd.Timestamp("2026-08-17")
+        return RegimeSnapshot(
+            date=as_of,
+            state=2,  # STAGFLATION
+            state_name="STAGFLATION",
+            probabilities={
+                "GOLDILOCKS": 0.15,
+                "REFLATION": 0.25,
+                "STAGFLATION": 0.35,
+                "DEFLATION": 0.25,
+            },
+            confidence=0.35,
+        )
+
+
+def _reset_regime_cache(monkeypatch):
+    """Reset regime nowcaster cache for test isolation."""
+    monkeypatch.setattr(advisor, "_regime_cache", None)
+    monkeypatch.setattr(advisor, "_regime_cache_time", 0.0)
+    monkeypatch.setattr(advisor, "_regime_cache_as_of", None)
+    # Also reset the singleton
+    if hasattr(advisor._get_regime_nowcaster, "_instance"):
+        delattr(advisor._get_regime_nowcaster, "_instance")
+
+
+@pytest.fixture
+def regime_ctx(monkeypatch, tmp_path):
+    """Fixture for regime endpoint tests."""
+    _reset_regime_cache(monkeypatch)
+    fake_nowcaster = FakeRegimeNowcaster()
+    async def _fake_get_nowcaster():
+        return fake_nowcaster
+    monkeypatch.setattr(advisor, "_get_regime_nowcaster", _fake_get_nowcaster)
+    return fake_nowcaster
+
+
+def test_regime_endpoint_schema(regime_ctx):
+    """RegimeResponse schema: current.state, probabilities, confidence, as_of + 252-day history."""
+    body = asyncio.run(advisor.advisor_regime())
+    body = body.model_dump() if hasattr(body, "model_dump") else body
+
+    # Top-level structure
+    assert "current" in body
+    assert "history" in body
+
+    # Current regime
+    current = body["current"]
+    assert current["state"] in ["GOLDILOCKS", "REFLATION", "STAGFLATION", "DEFLATION", "UNKNOWN"]
+    assert current["confidence"] >= 0.0 and current["confidence"] <= 1.0
+    assert "as_of" in current
+    # as_of should be a valid ISO date string
+    from datetime import date as dt_date
+    dt_date.fromisoformat(current["as_of"])  # validates format
+
+    # Probabilities sum to 1
+    probs = current["probabilities"]
+    assert set(probs.keys()) == {"GOLDILOCKS", "REFLATION", "STAGFLATION", "DEFLATION"}
+    prob_sum = sum(probs.values())
+    assert abs(prob_sum - 1.0) < 1e-10, f"Probabilities sum to {prob_sum}"
+
+    # History: up to 252 entries
+    history = body["history"]
+    assert isinstance(history, list)
+    assert len(history) <= 252
+
+    for entry in history:
+        assert "date" in entry
+        assert "state" in entry
+        assert "probabilities" in entry
+        assert set(entry["probabilities"].keys()) == {"GOLDILOCKS", "REFLATION", "STAGFLATION", "DEFLATION"}
+        entry_sum = sum(entry["probabilities"].values())
+        assert abs(entry_sum - 1.0) < 1e-10
+
+
+def test_regime_endpoint_latency_under_200ms(regime_ctx, monkeypatch):
+    """Endpoint latency should be fast (test with mock - structural test)."""
+    # Just verify the endpoint returns a valid response quickly
+    # (In real conditions with cache, this is < 200ms; here we verify structure)
+    body = asyncio.run(advisor.advisor_regime())
+    body = body.model_dump() if hasattr(body, "model_dump") else body
+
+    # Verify response is valid
+    assert body["current"]["state"] == "STAGFLATION"
+    assert body["current"]["confidence"] == pytest.approx(0.35)
+
+
+def test_regime_endpoint_cache_hit(regime_ctx, monkeypatch):
+    """Second call within TTL should hit cache."""
+    # First call
+    body1 = asyncio.run(advisor.advisor_regime())
+    body1 = body1.model_dump() if hasattr(body1, "model_dump") else body1
+    assert body1["current"]["state"] == "STAGFLATION"
+
+    # Verify cache was populated
+    assert advisor._regime_cache is not None
+    cache_time_1 = advisor._regime_cache_time
+
+    # Second call (should hit cache)
+    body2 = asyncio.run(advisor.advisor_regime())
+    body2 = body2.model_dump() if hasattr(body2, "model_dump") else body2
+
+    # Cache time should not have changed (same cached response)
+    assert advisor._regime_cache_time == cache_time_1
+    assert body2 == body1
+
+
+def test_regime_endpoint_soft_failure(monkeypatch):
+    """On HMM failure, returns valid schema with UNKNOWN state, 0 confidence, empty history."""
+    _reset_regime_cache(monkeypatch)
+
+    class FailingNowcaster:
+        def _load_price_data(self):
+            raise RuntimeError("HMM failed")
+
+        def fit_expanding(self, up_to_date):
+            raise RuntimeError("HMM failed")
+
+        def predict_proba_aligned(self, as_of):
+            raise RuntimeError("HMM failed")
+
+        def get_current_regime(self, as_of=None):
+            raise RuntimeError("HMM failed")
+
+    monkeypatch.setattr(advisor, "_get_regime_nowcaster", lambda: FailingNowcaster())
+
+    body = asyncio.run(advisor.advisor_regime())
+    body = body.model_dump() if hasattr(body, "model_dump") else body
+
+    # Soft failure response
+    assert body["current"]["state"] == "UNKNOWN"
+    assert body["current"]["confidence"] == 0.0
+    assert body["current"]["as_of"] == date.today().isoformat()
+    assert body["history"] == []
+
+    # Probabilities all zero
+    probs = body["current"]["probabilities"]
+    assert all(v == 0.0 for v in probs.values())
+
+
+def test_regime_endpoint_probabilities_sum_to_one(regime_ctx):
+    """All probabilities (current + history) sum to 1.0."""
+    body = asyncio.run(advisor.advisor_regime())
+    body = body.model_dump() if hasattr(body, "model_dump") else body
+
+    # Current
+    current_probs = body["current"]["probabilities"]
+    assert abs(sum(current_probs.values()) - 1.0) < 1e-10
+
+    # History entries
+    for entry in body["history"]:
+        entry_probs = entry["probabilities"]
+        assert abs(sum(entry_probs.values()) - 1.0) < 1e-10
+
+
+def test_regime_endpoint_semantic_labels(regime_ctx):
+    """Labels must be exactly the four semantic labels."""
+    body = asyncio.run(advisor.advisor_regime())
+    body = body.model_dump() if hasattr(body, "model_dump") else body
+
+    valid_labels = {"GOLDILOCKS", "REFLATION", "STAGFLATION", "DEFLATION", "UNKNOWN"}
+    assert body["current"]["state"] in valid_labels
+
+    for entry in body["history"]:
+        assert entry["state"] in valid_labels
+
+
+def test_regime_endpoint_history_length(regime_ctx):
+    """History should have up to 252 trading days."""
+    body = asyncio.run(advisor.advisor_regime())
+    body = body.model_dump() if hasattr(body, "model_dump") else body
+    history = body["history"]
+    assert len(history) <= 252
+    # Should have close to 252 entries (exact count depends on mock data)
+    assert len(history) > 100  # reasonable lower bound

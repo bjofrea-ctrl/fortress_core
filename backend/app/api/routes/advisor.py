@@ -22,17 +22,20 @@ GET /api/advisor/{symbol} — detalle: OHLCV EOD, overlays, exit plan, M2,
                             fundamentals (EDGAR o null honesto).
 GET /api/advisor/theses   — Exit Thesis Monitor (tesis de entrada vs hoy).
 GET /api/advisor/evidence — footer de confianza: ledger de trials.
+GET /api/advisor/regime   — régimen actual + historial 252d (Phase 1 institutional-flow-score).
 """
 
 import asyncio
 import json
 import os
 import time
+from datetime import date, timedelta
 from typing import Dict, List, Optional
 
 import numpy as np
 import pandas as pd
 from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel, Field
 from starlette.concurrency import run_in_threadpool
 
 from app.api.routes.decision import (
@@ -54,6 +57,7 @@ from app.core import trial_registry
 from app.core.edgar_fundamentals import get_edgar_fundamentals
 from app.core.indicators import calculate_all_indicators, ema
 from app.utils.logging import logger
+from app.core.regime_nowcast import SEMANTIC_LABELS, RegimeNowcaster, RegimeSnapshot
 
 router = APIRouter(prefix="/api/advisor", tags=["advisor"])
 
@@ -133,6 +137,125 @@ def _staleness(today: pd.Timestamp, last_cache: Optional[pd.Timestamp]) -> Dict:
         "last_cache": last_cache.date().isoformat(),
         "business_days_behind": int(bd_behind),
     }
+
+
+# --- Regime Endpoint Models (Phase 1 institutional-flow-score) ---
+
+class RegimeProbabilities(BaseModel):
+    GOLDILOCKS: float = Field(..., ge=0.0, le=1.0)
+    REFLATION: float = Field(..., ge=0.0, le=1.0)
+    STAGFLATION: float = Field(..., ge=0.0, le=1.0)
+    DEFLATION: float = Field(..., ge=0.0, le=1.0)
+
+
+class RegimeCurrent(BaseModel):
+    state: str
+    probabilities: RegimeProbabilities
+    confidence: float = Field(..., ge=0.0, le=1.0)
+    as_of: str
+
+
+class RegimeHistoryEntry(BaseModel):
+    date: str
+    state: str
+    probabilities: RegimeProbabilities
+
+
+class RegimeResponse(BaseModel):
+    current: RegimeCurrent
+    history: List[RegimeHistoryEntry]
+
+
+# Regime nowcaster cache (TTL 1h, thread-safe)
+_REGIME_CACHE_TTL_SECONDS = 3600
+_regime_lock = asyncio.Lock()
+_regime_cache: Optional[RegimeResponse] = None
+_regime_cache_time: float = 0.0
+_regime_cache_as_of: Optional[pd.Timestamp] = None
+
+
+def _snapshot_to_response(snapshot: RegimeSnapshot) -> RegimeCurrent:
+    """Convert RegimeSnapshot to RegimeCurrent response model."""
+    return RegimeCurrent(
+        state=snapshot.state_name,
+        probabilities=RegimeProbabilities(**snapshot.probabilities),
+        confidence=snapshot.confidence,
+        as_of=snapshot.date.strftime("%Y-%m-%d"),
+    )
+
+
+async def _get_regime_nowcaster() -> RegimeNowcaster:
+    """Get or create RegimeNowcaster instance (singleton pattern)."""
+    # Simple module-level singleton
+    if not hasattr(_get_regime_nowcaster, "_instance"):
+        _get_regime_nowcaster._instance = RegimeNowcaster()
+    return _get_regime_nowcaster._instance
+
+
+async def _build_regime_response() -> RegimeResponse:
+    """Build regime response with current state and 252-day history."""
+    nowcaster = await _get_regime_nowcaster()
+    price_data = nowcaster._load_price_data()
+
+    if not price_data or "SPY" not in price_data:
+        raise ValueError("No SPY price data available")
+
+    spy_dates = price_data["SPY"].index
+    if len(spy_dates) == 0:
+        raise ValueError("No price dates available")
+
+    # Current date = latest available
+    as_of = spy_dates.max()
+
+    # Get current regime
+    current_snapshot = nowcaster.get_current_regime(as_of)
+    current = _snapshot_to_response(current_snapshot)
+
+    # Build 252-day history (walk-forward)
+    start_date = as_of - timedelta(days=252 * 2)  # buffer for business days
+    date_range = pd.date_range(start=start_date, end=as_of, freq="B")  # business days
+    valid_dates = [d for d in date_range if d in spy_dates][-252:]  # last 252 trading days
+
+    history = []
+    for hist_date in valid_dates:
+        try:
+            nowcaster.fit_expanding(hist_date)
+            probs = nowcaster.predict_proba_aligned(hist_date)
+            state_idx = int(np.argmax(probs))
+            entry = RegimeHistoryEntry(
+                date=hist_date.strftime("%Y-%m-%d"),
+                state=SEMANTIC_LABELS[state_idx],
+                probabilities=RegimeProbabilities(
+                    GOLDILOCKS=float(probs[0]),
+                    REFLATION=float(probs[1]),
+                    STAGFLATION=float(probs[2]),
+                    DEFLATION=float(probs[3]),
+                ),
+            )
+            history.append(entry)
+        except Exception:
+            # Soft failure: skip this date
+            continue
+
+    return RegimeResponse(current=current, history=history)
+
+
+async def _get_cached_regime_response() -> RegimeResponse:
+    """Get cached regime response with 1h TTL."""
+    global _regime_cache, _regime_cache_time, _regime_cache_as_of
+
+    async with _regime_lock:
+        now = time.monotonic()
+        if (
+            _regime_cache is not None
+            and (now - _regime_cache_time) < _REGIME_CACHE_TTL_SECONDS
+        ):
+            return _regime_cache
+
+        # Build fresh response
+        _regime_cache = await _build_regime_response()
+        _regime_cache_time = now
+        return _regime_cache
 
 
 def _load_context_sync():
@@ -684,3 +807,29 @@ def _evaluate_thesis(symbol: str, th: Dict, cur: Dict) -> Dict:
         "current_last_close": last_close,
         "reasons": reasons,
     }
+
+
+# --- GET /api/advisor/regime (Phase 1 institutional-flow-score) ---
+
+@router.get("/regime", response_model=RegimeResponse)
+async def advisor_regime():
+    """Régimen actual + historial 252 días (walk-forward causal).
+
+    Cache TTL 1 hora. Falla blanda: si HMM falla -> probabilidades null,
+    state=UNKNOWN, confidence=0.
+    """
+    try:
+        return await _get_cached_regime_response()
+    except Exception:
+        # Soft failure: return valid schema with null/unknown values
+        as_of = date.today().isoformat()
+        probs = RegimeProbabilities(GOLDILOCKS=0.0, REFLATION=0.0, STAGFLATION=0.0, DEFLATION=0.0)
+        return RegimeResponse(
+            current=RegimeCurrent(
+                state="UNKNOWN",
+                probabilities=probs,
+                confidence=0.0,
+                as_of=as_of,
+            ),
+            history=[],
+        )
