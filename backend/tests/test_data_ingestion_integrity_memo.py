@@ -190,3 +190,107 @@ def test_memo_returns_copy_no_aliasing(sandbox):
     assert out1["close"].iloc[0] != 9.99, "mutar el df entregado no contamina el memo"
     out3 = di._integrity_hook("FOO", df, path)   # memo hit otra vez
     assert out3["close"].iloc[0] == before, "el memo sigue sano tras mutar una copia"
+
+
+# ------------------------------------------------------- Concurrencia (load_universe)
+#
+# `load_universe` corre `download_data` en ThreadPoolExecutor (10 workers). Bajo el
+# GIL, dict.get/setitem son atomicos, pero eso no prueba por si solo que el path
+# memoizado sea seguro: hay que medir (a) que lecturas concurrentes del memo devuelven
+# copias INDEPENDIENTES (que N hilos no contaminan el memo ni se ven entre si al mutar
+# lo que cada uno recibe) y (b) que un bulto concurrente sobre memo VACIO (thundering
+# herd) no corrompe: todas las salidas correctas, cero red, memo coherente.
+#
+# Se evita adrede cualquier assert sobre un contador exacto de descargas bajo hilos:
+# `calls["download"] += 1` no es atomico y un count seria flaky. Se prueba el INVARIANTE
+# (cero red en el path limpio, independencia de copias), no el count.
+
+
+def test_concurrent_memo_reads_return_independent_copies(sandbox):
+    import threading
+
+    di, calls, tmp_path = sandbox
+    df = _flat_frame(n=40, jump_at=39)
+    path = _write(di, tmp_path, "FOO", df)
+
+    # 1) calentar el memo en un hilo (full una vez, con red), y cerrar la cuenta.
+    di._integrity_hook("FOO", df, path)
+    assert calls["download"] >= 1
+    calls["download"] = 0
+
+    results = []
+    errors = []
+    lock = threading.Lock()
+    barrier = threading.Barrier(8)
+
+    def worker():
+        try:
+            barrier.wait()
+            outs = [di._integrity_hook("FOO", df, path) for _ in range(50)]
+            # mutar TODAS las copias entregadas: si alguna compartiera referencia con
+            # el memo o con otra, esta contaminacion se propagaria.
+            for o in outs:
+                o.loc[o.index[0], "close"] = -12345.0
+            with lock:
+                results.extend(outs)
+        except Exception as e:  # noqa: BLE001
+            with lock:
+                errors.append(e)
+
+    threads = [threading.Thread(target=worker) for _ in range(8)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+
+    assert not errors, f"errors bajo concurrencia: {errors}"
+    assert calls["download"] == 0, "el hot path memoizado no reconcilia bajo concurrencia"
+    # todas las copias retenidas estan vivas: id() distintos => ninguna es el frame del
+    # memo ni alias de otra (si el wrapper devolviera memo[2] directo, colapsaria aqui).
+    ids = [id(o) for o in results]
+    assert len(ids) == len(set(ids)), "un frame devuelto es alias de otro o del memo"
+    # el memo sigue sano tras mutar 400 copias: lectura posterior trae el valor original
+    check = di._integrity_hook("FOO", df, path)
+    assert check["close"].iloc[0] == float(df["close"].iloc[0]), \
+        "mutar copias entregadas no contamina el memo"
+
+
+def test_concurrent_cold_start_thundering_herd_is_benign(sandbox):
+    import threading
+
+    di, calls, tmp_path = sandbox
+    df = _flat_frame(n=40)  # sin flags ni huecos: full corre, cero red, memoiza
+    path = _write(di, tmp_path, "FOO", df)
+
+    outs = []
+    errors = []
+    lock = threading.Lock()
+    barrier = threading.Barrier(8)
+
+    def worker():
+        try:
+            barrier.wait()  # todas arrancan con el memo VACIO -> solapan el miss
+            o = di._integrity_hook("FOO", df, path)
+            with lock:
+                outs.append(o)
+        except Exception as e:  # noqa: BLE001
+            with lock:
+                errors.append(e)
+
+    threads = [threading.Thread(target=worker) for _ in range(8)]
+    for t in threads:
+        t.start()
+    for t in threads:
+        t.join()
+
+    assert not errors, f"errors bajo concurrencia: {errors}"
+    assert calls["download"] == 0, "path limpio: el bulto duplica CPU, no red"
+    for o in outs:
+        assert len(o) == len(df), "toda salida concurrente es correcta"
+    # memo coherente tras la carrera: el bulto converge a una entrada valida
+    assert path in di._INTEGRITY_MEMO
+    st = os.stat(path)
+    memo = di._INTEGRITY_MEMO[path]
+    assert memo[0] == st.st_mtime and memo[1] == st.st_size, \
+        "el memo guarda un stat coherente con el parquet tras la carrera"
+
