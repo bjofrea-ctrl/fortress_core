@@ -46,6 +46,15 @@ from app.api.routes.opportunities_universe import SYMBOLS
 from app.core.indicators import calculate_all_indicators
 from app.core.probabilistic_engine import circular_block_bootstrap_ci
 from app.core.signal_engine import SignalEngine
+from app.core.signal_contract import (
+    ENTRY_THRESHOLD,
+    RSI_SCORE_BAND,
+    RSI_GATE,
+    ADX_MIN,
+    VR_MIN,
+    compute_score_series,
+    compute_factor_frame,
+)
 from app.core.trial_registry import consumed_budget, register_trial
 from scipy.stats import norm
 
@@ -55,11 +64,6 @@ OUT_DIR = os.path.join("data", "cache")
 IS_OOS_CUTOFF = pd.Period("2023-12", freq="M")   # IS termina acá (baseline lockeado <= corte)
 OOS_FIRST_MONTH = pd.Period("2024-01", freq="M")  # primer mes OOS nominal
 EMBARGO_MONTHS = 1                                # ene-2024 completo: ~21 ruedas >= CALIBRATION_HORIZON_DAYS=20
-ENTRY_THRESHOLD = 0.60                            # signal_engine.py:216
-RSI_SCORE_BAND = (45, 70)                         # rsi_score=0.8 (estricto)
-RSI_GATE = (40, 75)                               # gate duro (estricto)
-ADX_MIN = 20                                      # gate duro >=
-VR_MIN = 1.0                                      # volume_ratio >=
 PARTIAL_MONTH_TOL_DAYS = 5                        # margen para declarar "mes incompleto"
 MIN_T_MONTHS = 24                                 # F6: no correr con menos
 MIN_COVERAGE = 0.30                               # F4
@@ -88,27 +92,25 @@ def load_symbol(symbol):
     return df, ind
 
 
-def vectorized_score(ind, w_mom, w_rsi):
-    """Score compuesto EXACTO de _factor_scores/compute_score_series (diario)."""
-    mom = ind["momentum_12_1"]
-    ms = ((mom + 50.0) / 150.0).clip(0.0, 1.0)
-    ms = ms.where(mom.notna(), 0.5)
-    rsi_v = ind["rsi14"]
-    rs = pd.Series(
-        np.where(rsi_v.between(RSI_SCORE_BAND[0], RSI_SCORE_BAND[1], inclusive="neither"), 0.8, 0.4),
-        index=ind.index,
-    )
-    rs = rs.where(rsi_v.notna(), 0.5)
-    return ms * w_mom + rs * w_rsi
+def compute_oos_signal(panels, regime_state: int = 0):
+    """Señal mensual OOS usando el CONTRATO DE SEÑAL ÚNICA (app.core.signal_contract).
 
+    Construye un frame largo (ym, symbol) con los indicadores del panel y delega
+    scoring + elegibilidad al contrato. No redefine lógica ni umbrales localmente
+    (B6: el contrato es la única fuente de verdad).
+    """
+    cols = ["momentum_12_1", "rsi14", "close", "ema50", "ema200", "adx14", "volume_ratio"]
+    long_parts = [panels[c].stack().rename(c) for c in cols]
+    long_df = pd.concat(long_parts, axis=1)
+    long_df.index = pd.MultiIndex.from_tuples(long_df.index, names=["ym", "symbol"])
 
-def vectorized_eligible(ind):
-    """Gates duros EXACTOS de generate_signal/compute_factor_frame (diario)."""
-    trend_ok = (ind["close"] > ind["ema50"]) & (ind["ema50"] > ind["ema200"])
-    adx_ok = ind["adx14"] >= ADX_MIN
-    rsi_ok = (ind["rsi14"] > RSI_GATE[0]) & (ind["rsi14"] < RSI_GATE[1])
-    vr_ok = ind["volume_ratio"] >= VR_MIN
-    return (trend_ok & adx_ok & rsi_ok & vr_ok).fillna(False)
+    score = compute_score_series(long_df, regime_state=regime_state)
+    elig = compute_factor_frame(long_df)["eligible"]
+
+    overall = score.unstack()
+    eligible = elig.unstack()
+    signal = (eligible & (overall >= ENTRY_THRESHOLD)).fillna(False)
+    return signal, overall, eligible
 
 
 def fidelity_vs_engine(engine, samples):
@@ -116,11 +118,10 @@ def fidelity_vs_engine(engine, samples):
     report = {}
     ok_all = True
     for sym, _, ind in samples:
-        w0 = engine.factor_weights[0]
-        mine = vectorized_score(ind, w0["momentum"], w0["rsi"])
+        mine = compute_score_series(ind, regime_state=0)
         ref = engine.compute_score_series(ind, regime_state=0)
         d_score = float(np.nanmax(np.abs(mine - ref))) if len(mine) else float("nan")
-        mine_e = vectorized_eligible(ind)
+        mine_e = compute_factor_frame(ind)["eligible"]
         ref_e = engine.compute_factor_frame(ind)["eligible"]
         mism = int((mine_e != ref_e.fillna(False)).sum())
         ok = bool(d_score < 1e-12 and mism == 0)
@@ -276,22 +277,7 @@ def main():
     print("  simbolos cargados: %d/%d | meses en panel: %d (%s -> %s)"
           % (n_symbols_loaded, len(SYMBOLS), len(months_idx), months_idx[0], months_idx[-1]))
 
-    momentum_score = ((mom + 50.0) / 150.0).clip(0.0, 1.0)
-    momentum_score = momentum_score.where(mom.notna(), 0.5)
-    rsi_score = pd.DataFrame(
-        np.where((rsi_v > RSI_SCORE_BAND[0]) & (rsi_v < RSI_SCORE_BAND[1]), 0.8, 0.4),
-        index=rsi_v.index, columns=rsi_v.columns,
-    )
-    rsi_score = rsi_score.where(rsi_v.notna(), 0.5)
-    overall = w_mom * momentum_score + w_rsi * rsi_score
-
-    eligible = (
-        (close > ema50) & (ema50 > ema200)
-        & (adx >= ADX_MIN)
-        & (rsi_v > RSI_GATE[0]) & (rsi_v < RSI_GATE[1])
-        & (vr >= VR_MIN)
-    ).fillna(False)
-    signal = eligible & (overall >= ENTRY_THRESHOLD)
+    signal, overall, eligible = compute_oos_signal(panels)
 
     month_ret = close_last_raw / open_first - 1.0  # open(primer habil m+... ) -> close(ultimo habil m): horizonte mensual lag-1
     cost_per_rebalance = 2.0 * (0.0005 + 0.0005)
