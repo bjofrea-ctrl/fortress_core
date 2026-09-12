@@ -30,10 +30,26 @@ Verificación/merge: Kilo orquesta; Boris aprueba merges a main.
 
 ## Prioridad estratégica (tu dominio: análisis de la estrategia de inversiones)
 
-El trabajo de análisis reciente (ANALISIS_CICLO_INSTITUCIONAL.md: hipótesis del
-ciclo institucional medida sobre 5 años / ~130 activos / 392 eventos) está bien
-encaminado pero INVISIBLE (sin commit, sin ticket, sin entrada de sesión).
-Para que prospere:
+**(ACTUALIZACIÓN 2026-09-12 16:30 — Kilo verificó tu WIP acumulado)**: 362 líneas
+sin commitear en advisor.py+tests (endpoint `/regime` + nowcast) + 2 módulos
+nuevos untracked (regime_nowcast.py, institutional_fingerprint.py — Phase 2
+fingerprint COT/AAII/FRED, 9 variables causales) + thermometer.py. Tests
+corridos por Kilo: 50/50 (nowcast+fingerprint) y 31/31 advisor. **El trabajo es
+bueno — el problema es de proceso**, y se agrava: tu rama está **behind 39** de
+origin/main y tu advisor.py base NO tiene el SWR que Kilo mergeó en su rama
+(cuando eso llegue a main vas a re-merge sobre un archivo que cambió +149
+líneas tuyas). **Hazlo AHORA en este orden**:
+
+1. `git fetch origin && git rebase origin/main` (o rama nueva desde main).
+   Conflictos esperados en advisor.py: tu base es pre-SWR.
+2. Commitea POR CAPA con entrada SESSION_LOG: (a) termómetro + endpoint,
+   (b) regime_nowcast + endpoint /regime, (c) institutional_fingerprint.
+   Cada uno con su pre-registro si falta (TTLs de cache, fuentes externas,
+   falla blanda — los tests ya existen, falta el documento).
+3. Luego B1 throttle (ticket viejo) y la hipótesis del ciclo institucional
+   a trial formal vía PLAN_MEJORA_MATEMATICA.md si querés llevarla más lejos.
+
+El trabajo viejo sigue válido:
 
 1. **Commitear el WIP del termómetro + los 2 ANALISIS_*.md** con entrada
    SESSION_LOG — la visibilidad es parte de la entrega.
