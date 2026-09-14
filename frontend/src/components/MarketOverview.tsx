@@ -18,6 +18,15 @@ interface SymbolOverview {
   volume: number
 }
 
+/**
+ * Resumen EOD del universo. MONTADO solo en Gobernanza (`views/GovernancePage.tsx`).
+ *
+ * Antes mostraba también el precio en grande, duplicado con `LiveTicker` (que se
+ * monta globalmente en `Layout.tsx`): en la pantalla de Gobernanza convivían dos
+ * precios distintos del mismo símbolo, uno EOD y otro en vivo, sin jerarquía.
+ * Se sacó el precio de acá y quedó explícito qué ventana es esta
+ * (pre-registro Slice 2, ítem B / auditoría G2-4).
+ */
 export default function MarketOverview({ apiUrl, onSelectSymbol }: MarketOverviewProps) {
   const [symbols, setSymbols] = useState<SymbolOverview[]>([])
   const [loading, setLoading] = useState(true)
@@ -44,7 +53,7 @@ export default function MarketOverview({ apiUrl, onSelectSymbol }: MarketOvervie
 
   return (
     <div className="bg-dark-card border border-dark-border rounded-lg p-6">
-      <div className="flex items-center justify-between mb-4">
+      <div className="flex items-center justify-between mb-1">
         <h3 className="text-lg font-bold">📊 Market Overview</h3>
         <div className="flex gap-2">
           <button onClick={() => setSortBy("total_return_pct")} className={`px-2 py-1 rounded text-xs ${sortBy === "total_return_pct" ? "bg-accent-green text-dark-bg" : "bg-dark-bg text-gray-400"}`}>Total</button>
@@ -52,6 +61,10 @@ export default function MarketOverview({ apiUrl, onSelectSymbol }: MarketOvervie
           <button onClick={() => setSortBy("volatility_pct")} className={`px-2 py-1 rounded text-xs ${sortBy === "volatility_pct" ? "bg-accent-green text-dark-bg" : "bg-dark-bg text-gray-400"}`}>Vol</button>
         </div>
       </div>
+      <p className="text-[11px] text-gray-500 mb-4">
+        Cierres del cache EOD propio, sobre historia completa desde 2015: rendimientos,
+        volatilidad y posición dentro del rango de 52 semanas. No es precio en vivo.
+      </p>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
         {sorted.map((s) => (
@@ -66,7 +79,6 @@ export default function MarketOverview({ apiUrl, onSelectSymbol }: MarketOvervie
                 {s.total_return_pct > 0 ? "+" : ""}{s.total_return_pct.toFixed(1)}%
               </span>
             </div>
-            <p className="text-lg font-mono font-bold mb-1">${s.price.toFixed(2)}</p>
             <div className="flex justify-between text-xs text-gray-400 mb-2">
               <span>30D: <span className={s.return_30d_pct > 0 ? "text-accent-green" : "text-accent-red"}>{s.return_30d_pct > 0 ? "+" : ""}{s.return_30d_pct.toFixed(1)}%</span></span>
               <span>Vol: <span className="text-accent-yellow">{s.volatility_pct.toFixed(0)}%</span></span>
@@ -78,6 +90,7 @@ export default function MarketOverview({ apiUrl, onSelectSymbol }: MarketOvervie
                 style={{ width: "100%" }}
               ></div>
               <div
+                data-testid="range-marker"
                 className="absolute h-3 w-1 bg-white rounded-full -top-0.5"
                 style={{ left: `${s.range_position}%` }}
               ></div>
