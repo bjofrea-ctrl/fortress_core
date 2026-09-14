@@ -119,4 +119,20 @@ describe("MesaPage — contrato universo + tesis", () => {
     expect(rota.compareDocumentPosition(vigente) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(screen.getByText(/win_prob bajo piso · perdió EMA50/)).toBeInTheDocument();
   });
+
+  it("universo sin tickets → estado vacío que explica (no solo 'sin datos')", async () => {
+    route({ ...UNIVERSE, states: [] });
+    renderWithClient(<MesaPage selectedSymbol={null} onSelectSymbol={() => {}} />);
+    expect(await screen.findByText(/universo del advisor está vacío/)).toBeInTheDocument();
+  });
+
+  it("cero INVERTIR (régimen adverso) → banner que explica la abstención", async () => {
+    route({
+      ...UNIVERSE,
+      states: [ticket("MSFT", "VIGILAR", null), ticket("TSLA", "NO_INVERTIR", 0.31)],
+    });
+    renderWithClient(<MesaPage selectedSymbol={null} onSelectSymbol={() => {}} />);
+    // el matcher vive en un text node directo del banner (fuera del <b>)
+    expect(await screen.findByText(/resultado esperado en régimen adverso/)).toBeInTheDocument();
+  });
 });
