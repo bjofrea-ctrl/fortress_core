@@ -4,12 +4,21 @@ import userEvent from "@testing-library/user-event";
 import { DetailView } from "../../components/advisor/DetailView";
 import { AdvisorSymbolResponse, ThesisRow } from "../../api/client";
 
-// Los charts reales usan canvas/TradingView externo — fuera del alcance jsdom.
-vi.mock("../../components/advisor/TradingViewChart", () => ({
-  TradingViewChart: () => <div data-testid="local-chart" />,
-}));
-vi.mock("../../components/advisor/TVWidget", () => ({
-  TVWidget: () => <div data-testid="tv-widget" />,
+// El chart local usa canvas (lightweight-charts) — fuera del alcance de jsdom.
+// Se mockedea devolviendo las props que recibió: así el test puede afirmar que
+// DetailView le pasa la ventana de datos correcta, que es lo que garantizan
+// adentro el sello "al último cierre" y el aviso de datos EOD.
+// No se mockedea ningún widget externo: el de TradingView se fue del proyecto
+// (pre-registro Slice 2, ítem A / auditoría G2-3).
+vi.mock("../../components/advisor/LocalEodChart", () => ({
+  LocalEodChart: (p: { symbol: string; last_close_date: string; entry_price: number | null }) => (
+    <div
+      data-testid="local-chart"
+      data-symbol={p.symbol}
+      data-last-close-date={p.last_close_date}
+      data-entry={String(p.entry_price)}
+    />
+  ),
 }));
 
 function symbolResponse(over: Partial<AdvisorSymbolResponse["state"]> = {}): AdvisorSymbolResponse {
@@ -106,14 +115,27 @@ describe("DetailView — contrato de zonas mecánicas y degradación", () => {
     expect(screen.getByText("cierre < 94")).toBeInTheDocument();
   });
 
-  it("toggle de chart local↔TradingView y botón ← Mesa dispara onBack", async () => {
+  it("un solo chart: el local monta y no queda ninguna puerta a TradingView", async () => {
     const onBack = vi.fn();
     render(<DetailView data={symbolResponse()} thesis={null} onBack={onBack} />);
     expect(screen.getByTestId("local-chart")).toBeInTheDocument();
-    await userEvent.click(screen.getByText("TradingView"));
-    expect(screen.getByTestId("tv-widget")).toBeInTheDocument();
-    expect(screen.queryByTestId("local-chart")).not.toBeInTheDocument();
+    // G2-3: ya no existe el toggle ni el widget externo.
+    expect(screen.queryByText("TradingView")).not.toBeInTheDocument();
+    expect(screen.queryByText("Lightweight (EOD)")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("tv-widget")).not.toBeInTheDocument();
+    // Y el Detalle no inyecta scripts de terceros en el documento.
+    expect(
+      document.querySelector("script[src*='tradingview'], script[src*='s3.tradingview.com']"),
+    ).toBeNull();
     await userEvent.click(screen.getByText("← Mesa"));
     expect(onBack).toHaveBeenCalledTimes(1);
+  });
+
+  it("la carta recibe la ventana de datos que justifica su sello EOD", () => {
+    render(<DetailView data={symbolResponse()} thesis={null} onBack={() => {}} />);
+    const chart = screen.getByTestId("local-chart");
+    expect(chart).toHaveAttribute("data-symbol", "AAPL");
+    expect(chart).toHaveAttribute("data-last-close-date", "2026-08-22");
+    expect(chart).toHaveAttribute("data-entry", "100");
   });
 });

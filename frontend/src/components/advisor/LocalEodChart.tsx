@@ -12,8 +12,14 @@ interface Props {
 }
 
 /**
- * Carta institutional: lightweight-charts (TradingView open-source) con
- * velas EOD + EMA50/200 + líneas de mecánica del motor (entrada/stop/target).
+ * Carta LOCAL de cierre EOD (lightweight-charts, la librería open-source de
+ * TradingView — NO el widget externo de TradingView): velas del cache propio
+ * + EMA50/200 + líneas de mecánica del motor (entrada/stop/target).
+ *
+ * Llamarse "TradingViewChart" confundía la fuente de datos con el widget
+ * externo embebido (s3.tradingview.com), que sí trae precio en vivo de terceros
+ * y no conoce las zonas del motor. Por eso pasó a `LocalEodChart`: el nombre ahora
+ * dice de dónde sale el dato, que es lo que importa al leer un número.
  *
  * Nota de honestidad (regla #4): los niveles dibujados son las zonas
  * mecánicas del motor (entry/stop 2×ATR/target 4×ATR), NO niveles predichos.
@@ -22,7 +28,7 @@ interface Props {
  * Fallback graceful: si lightweight-charts falla por cualquier razón,
  * se muestra un aviso sin romper la página.
  */
-export function TradingViewChart({ symbol, bars, entry_price, stop_loss, take_profit, last_close_date }: Props) {
+export function LocalEodChart({ symbol, bars, entry_price, stop_loss, take_profit, last_close_date }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const chartRef = useRef<IChartApi | null>(null);
   const [chartError, setChartError] = useState<string | null>(null);
