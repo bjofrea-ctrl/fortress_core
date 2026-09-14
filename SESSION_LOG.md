@@ -1,4 +1,62 @@
 # Fortress Core — Memoria de Sesiones (Última sesión resumida)
+## 2026-09-14 — UX Slice 1 cerrado en rama: estados vacíos Mesa + definiciones inline en MesaView (Cline)
+
+**Objetivo**: retomar el handoff (`HANDOFF_UX_SLICE1_20260914.md`) y correr su checklist §7 sin
+volver a romper nada: el shell de `run_commands` había muerto a mitad de verificación y dejó dos
+archivos preparados pero no verificados ni commiteados.
+
+**(1) Shell restablecido y estado confirmado contra el artefacto real.** `run_commands` respondió,
+`git status`/`log` confirmaron el §0 del handoff: rama `ux/dashboard-control-panel` en `ed9bd2c`,
+los dos archivos del §4 Effectivamente sin commit (+35 líneas). MesaView confirmado libre: limpio en
+los **6 worktrees** y con mtime de 2 días — la "disputa con Kilo" del handoff ya no existía, así que
+el ítem de tooltips se pudo destrabar en vez de dejarlo colgado.
+
+**(2) Ítem 3 cerrado (estados vacíos Mesa).** Verificado ANTES de commitear: `vitest run
+src/test/views/MesaPage.test.tsx` → 8 passed, tsc limpio. Commit `38f49d3`. El banner no inventa
+nada: deriva del conteo real de `data.states` y distingue universo vacío (el pipeline no escribió)
+de **cero INVERTIR**, que es el resultado esperado en régimen adverso — la abstención es señal, no falla.
+
+**(3) Ítem 4 cerrado (definiciones donde se mira).** `7c8ff29` en
+`frontend/src/components/advisor/MesaView.tsx` (ojo: vive en `advisor/`, no en `views/`): una tabla
+`TIP` única con la definición de cada columna, cada texto **citado al `file:line` del motor que lo
+produce** — verificado leyendo `decision.py`, `advisor.py`, `signal_contract.py`, `signal_engine.py`:
+Win prob = Platt sobre Score con replay a 20d en ventana móvil ~2 años (n≥20 para ajustar);
+Proyección §29 = ≥0.70 VPP real 87.5% n=8 · ≥0.65 VPP 73.7% n=19 · ≥0.45 NEUTRO sin selectividad ·
+<0.45 RIESGOSA_SIN_APOYO; Dist = cierre/EMA − 1; Stop = order block→sweep→swing low con fallback
+entrada−2·ATR14; Target = candidato estructural MÁS CERCANO, fallback +4·ATR14, y si RR<1.5 (MIN_RR)
+no se genera señal; Δ = `_STATE_RANK` (NO_INVERTIR 0 < VIGILAR 1 < INVERTIR 2) contra el último estado
+persistido; gates duros = cierre>EMA50>EMA200 · ADX14≥20 · RSI14∈(40,75) · Vol≥1.0 · Score≥0.60;
+M2 = split-conformal α=0.10, n≥30, abstención → VIGILAR aunque win_prob≥0.60. Además: leyenda de
+gates **visible sin hover** y `M2 no calibrado (n < 30)` explícito donde antes el hueco se omitía
+en silencio. Test nuevo que assertions sobre los `title` y la leyenda.
+
+**(4) Verificación completa de los criterios del pre-registro (corrida, no declarada).**
+`vitest run` **suite completa: 11 archivos, 66 passed** (supera los 22 parciales de la sesión
+anterior) · `./node_modules/.bin/tsc --noEmit` **exit 0** · `pytest tests/test_backtest_api.py`
+**10 passed** con el venv del repo principal · `npm run build` **exit 0**, 909 módulos, 14.85s.
+**C4 (ver visual en navegador) queda ABIERTO a propósito**: el build prueba que compila, no que se
+vea bien; no se cierra un criterio pre-registrado con un proxy.
+
+**(5) Hallazgo que cambia la decisión de merge.** `git diff --stat main ux/dashboard-control-panel`
+muestra que **`main` ya contiene el contenido de los ítems 1, 2 y 3** (el `meta{vintage}` en
+`backtest.py`, los `factors` en MesaView, el RiskPanel con estados vacíos) aunque ningún commit de
+esta rama es ancestro de `main`. O sea: la superficie viva del merge es chica (MesaPage + tests +
+tooltips + docs), y el riesgo real son las ~4400 líneas que `main` adelantó a la rama. **No se
+mergeó nada** — el pre-registro dice NO merge sin OK de Boris y sigue vigente.
+
+**(6) Limpieza y un suelto cerrado.** Worktree temporal `/tmp/gov500wt` removido y `prune`
+(la rama `fix/governance-500-nonfinite` con su validación de 6 passed intacta). Suelto que el
+propio ROADMAP arrastraba desde el cierre EDGAR del 09-09: `.gitignore` no cubría
+`backend/data/cache_fundamentals_ingestion/` y la cache ensuciaba `git status` de todos los
+agentes → ignorada.
+
+**Trampa operativa encontrada (no es obvia y miente):** `npx tsc --noEmit` en este repo
+**no resuelve el typescript local** y baja el paquete stub `tsc`. Peor: encadenado como
+`npx tsc --noEmit | tail; echo $?`, el exit code que se lee es el de `tail` — así una sesión
+anterior reportó "tsc exit 0" sin que tsc haya corrido. Usar siempre
+`./node_modules/.bin/tsc --noEmit` y revisar el exit code SIN pipe.
+
+
 ## 2026-09-09 — Fetch EDGAR full-universe + soporte 20-F + fetcher en el cron (Cline)
 
 **Objetivo**: cerrar el pendiente real — correr el fetcher endurecido contra el universo
