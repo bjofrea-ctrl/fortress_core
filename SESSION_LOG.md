@@ -4595,3 +4595,27 @@ pasa. Revertí `_cache_date` a `columns=["Close"]` →
 máquina. 3 corridas 29/29 después del cambio.
 
 MERGEADO a main 2026-09-14 (orden Boris) junto al análisis de miedo; pusheado + espejo.
+## 2026-09-14 — Post-merge fix-forward: restart daemon + throttling Yahoo (Kilo)
+
+**Merge+restart ejecutados (orden Boris)**: d19d7e4 pusheado + espejo EMPRESA
+sync. Daemon reiniciado (PID 39745, código nuevo); `/health` 200 en 0.115s
+DURANTE rebuild (startup no-bloqueante verificado en vivo). Corrección a mi
+reporte parcial: mis curls iniciales a `/api/advisor/health` iban al path
+equivocado (cae en el catch-all `/{symbol}` línea 666 y bloquea en el lock
+del rebuild — comportamiento correcto para un símbolo, no bug del health).
+**Throttling Yahoo**: 3 ciclos fallidos seguidos post-restart
+(`Datos insuficientes: 0 días`, 11:02/11:13/11:23 ART) — el fit de régimen
+recibe 0 días porque las descargas masivas en paralelo vuelven vacías.
+Evidencia acumulada: 21.531 líneas de error yfinance en el log; éxito parcial
+temprano (ciclos 862s/1258s a las 08:16/08:42) → fallos totales al mediodía;
+probe de 1 ticker AHORA responde en 1.3s → throttling por ráfaga/concurrencia,
+no caída dura. Contribuyentes: daemon en rebuilds encadenados por días +
+mis 3 batches de verificación de esta mañana + posible actividad de agentes.
+**Decisión**: NO se detiene el daemon (se auto-reintenta cada ~11min; ante
+throttle por ráfaga la recuperación es automática al aflojar la presión) y
+Kilo NO hace más llamadas de red hoy. Si a la tarde sigue fallando, la opción
+sólida es cooldown con daemon detenido + recuperación de cache en ventana
+tranquila (requiere orden explícita: es downtime de producción).
+**Cache**: tripletes confirmados viejos (ACN/PEP 414 filas desde ene-2025) +
+re-persistencia de hoy; espejo Sep-2 casi limpio (2 pares dudosos por
+spot-check). Recuperación en espera de throttle + identificación de escritor.
