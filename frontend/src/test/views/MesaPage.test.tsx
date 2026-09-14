@@ -135,4 +135,29 @@ describe("MesaPage — contrato universo + tesis", () => {
     // el matcher vive en un text node directo del banner (fuera del <b>)
     expect(await screen.findByText(/resultado esperado en régimen adverso/)).toBeInTheDocument();
   });
+
+  it("definiciones de la metodología donde se mira: títulos en columnas + leyenda de gates", async () => {
+    route();
+    renderWithClient(<MesaPage selectedSymbol={null} onSelectSymbol={() => {}} />);
+    await screen.findAllByText("AAPL");
+
+    // El encabezado "Win prob" carga su definición (Platt + umbrales) en el <th>.
+    // getAllByText: el <select> de orden tiene una opción con el mismo rótulo.
+    const winProbEnTh = screen
+      .getAllByText("Win prob")
+      .map((el) => el.closest("th"))
+      .find(Boolean);
+    expect(winProbEnTh?.getAttribute("title")).toMatch(/Platt/);
+    expect(winProbEnTh?.getAttribute("title")).toMatch(/0\.60/);
+
+    // La regla del gate es visible sin hover (memorable sin manual).
+    expect(screen.getByText(/Gate técnico \(los 5/)).toBeInTheDocument();
+
+    // Al expandir la fila, los gates y el M2 traen su umbral citado en el título.
+    await userEvent.click(screen.getByText("TSLA"));
+    const gates = await screen.findByText("Gates técnicos");
+    expect(gates.parentElement?.getAttribute("title")).toMatch(/ADX14 ≥ 20/);
+    // ticket de test con m2 null → el hueco se explica, no se omite en silencio
+    expect(screen.getByText(/M2 no calibrado \(n < 30\)/)).toBeInTheDocument();
+  });
 });
