@@ -1,6 +1,21 @@
 import { useEffect, useState } from "react"
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine, BarChart, Bar, Cell } from "recharts"
 
+/**
+ * ⚠️ NO MONTADO en ninguna pantalla (verificado 2026-09-14: nadie importa este
+ * módulo). Se conserva a propósito como referencia para el ítem G3 de la
+ * auditoría de dashboard, y es el ÚNICO componente muerto de su tanda que no se
+ * borró (pre-registro Slice 2, §1-C).
+ *
+ * Por qué no se monta tal cual: llama a `/api/market/indicators/{symbol}`, que
+ * por request hace `download_data(symbol, "2015-01-01")` — con el cache de
+ * precios atrás de la fecha, eso dispara refresh contra Yahoo, hoy en pausa.
+ *
+ * Lo que G3 debería hacer: consumir los indicadores que el Detalle YA computa
+ * en memoria (`advisor.py:687` calcula todo el set y solo usa ema50/ema200),
+ * mostrar solo los que entran al gate/score, y reescribir esta tabla chica
+ * sobre ese payload. Al hacerlo, este archivo se borra.
+ */
 interface TechnicalIndicatorsProps {
   apiUrl: string
   symbol: string

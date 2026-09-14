@@ -1,4 +1,6 @@
-// Hooks de datos del advisor — patrón idéntico a hooks/useDecision.ts del repo.
+// Hooks de datos del advisor. El patrón estaba duplicado en hooks/useDecision.ts,
+// borrado el 2026-09-14 por no tener ningún consumidor en el dashboard
+// (pre-registro Slice 2, §1-C).
 //
 // Cache compartido vía TanStack Query (pre-registro DASH_TABS_PREREGISTRO.md):
 // el cache vive en el QueryClient del provider (main.tsx), así el cambio de
