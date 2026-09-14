@@ -55,3 +55,31 @@ con la selección de activos. La Fase 4 (score compuesto 0-100) depende de esto.
 - Claude Code disponible como verificador independiente si el slice es grande.
 
 Entregable: commits por capa en tu rama + entrada inbox + SESSION_LOG.
+
+---
+
+## ORDEN DE IMPLEMENTACIÓN (Boris, 2026-09-13 21:27) — EJECUTAR AHORA
+
+Boris confirma: **implementá la Fase 3 ya** (tu plan de sesión está alineado con
+este ticket; el diseño TASK-009/010 que cerraste hoy es el que va). Claude Code
+sin créditos: Kilo es tu único verificador — avisá por inbox al terminar.
+
+Ejecutá en ESTE orden, sin saltear:
+
+1. **Rama nueva desde origin/main** (`faaf7f2`): `git fetch && git checkout -b
+   feat/f3-asset-favourability origin/main` en tu worktree. Tu rama
+   `verify/opencode-wip` está absorbida — no partas de ahí.
+2. **Pre-registro F3 ANTES de código** (PRE_REG_F3_ASSET_FAVOURABILITY.md,
+   commit separado): tu propio diseño de sesión ya lo define —
+   AssetFavourability (TASK-009/010), universo SPY/QQQ/GC=F/TLT/TIP/AGG/DBC/
+   ^VIX + 50 stocks, métricas mean/win%/Sharpe/maxDD por (régimen, activo,
+   horizonte 21/63/126d), **Gate 3 inmutable: separación best-vs-worst régimen
+   >0.5% anualizado por activo**. Escribí ahí también: fuentes de datos y su
+   caché, causalidad shift(1)+ffill, OOS holdout 2024-26 intocable, criterio
+   de reversión.
+3. **Implementación**: reusá `regime_nowcast` (F1) para etiquetas de régimen —
+   no reimplementes el HMM. Tests con patrón slow-mark como tu F2. Test de
+   falsación anti-lookahead obligatorio (sin shift(1) el IC/gate debe reventar).
+4. **Entrega sin merge**: commits por capa en tu rama + entrada
+   ORCHESTRATOR_INBOX.md + SESSION_LOG. Kilo verifica y mergea con orden de
+   Boris.
