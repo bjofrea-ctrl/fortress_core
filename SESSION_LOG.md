@@ -1,4 +1,63 @@
 # Fortress Core — Memoria de Sesiones (Última sesión resumida)
+## 2026-09-14 — Cierre del Slice 2 (G2): limpieza de UI muerta + la causa real del "0 días" (Cline)
+
+**Objetivo**: terminar y verificar la limpieza G2 aprobada en la rama `cline/ux-slice2-g2-cleanup`
+(solo UI local EOD y flujos activos; fuera la duplicación externa) y dejar documentado el bloqueo de
+backend que impide cerrarla en navegador.
+
+**(1) G2 cerrada en código, con gates verdes.** 5 commits: `b009011` pre-registro, `0f436e6`
+`.gitignore` del cache de ingesta de fundamentals (48 `.json` de proveedor que estaban a un `git add -A`
+de publicarse en repo público — ningún patrón existente los cubría), `126bdb7` Detalle con un solo
+gráfico (`TradingViewChart`→`LocalEodChart`, fuera `TVWidget` y el toggle), `00cdaa0` `MarketOverview`
+deja de duplicar el precio de la cinta, `45242fd` fuera 6 módulos muertos (1113 líneas:
+`SystemStatus`, `PriceChart`, `SymbolSummary`, `UniverseTable`, `DecisionPanel`, `useDecision`).
+Gates: `tsc --noEmit` 0, **73/73 tests en 12 archivos** (baseline 66/11), build 908 módulos.
+**La rama no está mergeada** — decide Boris/Kilo.
+
+**(2) La premisa del bundle era falsa y quedó escrita.** Los 6 componentes borrados **nunca pesaron**
+en el bundle: no se importaban, Vite nunca los incluyó. El ahorro real es **2.8 kB** (`DetailPage`
+−1.90, CSS −0.92, `GovernancePage` +0.16 por la caption nueva) y vienen del Detalle y de la card, no
+de los muertos. El peso de G2-1/2/5 era cognitivo y de mantenimiento. Quien justifique esta limpieza
+por bundle size está contando un ahorro inexistente.
+
+**(3) Causa raíz del "Datos insuficientes: 0 días" — y no era la que yo había escrito.** El §4 del
+pre-registro decía "daemon en fail-loop + cache contaminado (28 grupos / 66 tickers con colas
+idénticas al centavo)". Eso venía del handoff de Kilo, sin abrir el artefacto. Verificado hoy: el
+backend estaba arriba y sano de proceso. El bug real, reproducido en solo lectura:
+`data/cache/fundamentals_panel.parquet` tiene índice `MultiIndex(date, symbol)`;
+`data_ingestion.py:89-91` arma la lista de símbolos con un glob ciego de `*.parquet`;
+`cache_integrity.py:587` hace `pd.DatetimeIndex(df.index)` y revienta; sube por `_integrity_hook`
+dentro de `download_data`; `_safe_download:384` lo atrapa **por ticker** y devuelve `None`;
+`load_universe` → vacío → warmup del advisor muerto. **Un archivo que no es un ticker tumba los 170.**
+Aislado: CON ese archivo = TypeError en los 109 símbolos del log, SIN él = 5961 días OK.
+Fix de una línea (saltar y reportar el frame cuyo índice no sea de fechas) — **no lo toqué**, el
+backend está fuera del alcance pre-registrado del slice (§3). Registrado como P0 en la tabla maestra.
+La fragilidad de fondo es doble y merece leerse dos veces: el guardián de integridad muere con input
+inesperado en vez de reportarlo, y el `except` por ticker traduce eso a "este ticker no anda" —
+el mensaje nombra a la víctima, no al culpable. Así es como un bug de un archivo se leyó, durante
+semanas, como contaminación de 66.
+
+**(4) Medido para C6:** `GET /api/advisor/AAPL` **no respondió en 10 minutos** (cortado a los ~600 s),
+`GET /api/advisor/universe` devolvió cuerpo vacío en 8 s. Sin payload no hay Detalle que mirar →
+**C6 queda abierto**, no se simula con un build verde. Este workspace además es *worktree*: su
+`backend/data/` tiene 4 parquet (los futuros de la cinta); `data/` no viaja con el worktree, así que
+un server arrancado desde acá daría `0 días` por otra razón (faltan datos, no es el bug).
+
+**(5) Hallazgo operativo (Roadmap P1 nuevo).** `/api/market/live/overview` hace **102 pedidos a Yahoo
+seriales por request** (`live.py:40-42` sobre `sorted(SYMBOLS)`, 102 símbolos en
+`opportunities_universe.py:44`) y el TTL del server es **30 s** (`live.py:13-14`) contra un
+`LiveTicker` que consulta cada **30 s** (`LiveTicker.tsx:37`) — están al canto, y el ticker está
+montado global en `Layout.tsx` así que se multiplica por pestaña abierta. Candidato serio a quemar la
+cuota que después aparece como "pausa de descargas". Fix mínimo: TTL > intervalo de consulta, o un
+solo `yf.Tickers(...)` batcheado. Slice 3 natural, con pre-registro propio.
+
+**Artefactos**: `PRE_REG_UX_SLICE2_G2_LIMPIEZA_20260914.md` (§4 corregido dejando la versión original
+literal abajo, §7 resultados con la salida real pegada, §8 las 6 desviaciones declaradas),
+`ROADMAP.md` (bloque G1/G2/G3 actualizado + 2 filas nuevas en la tabla maestra).
+Tests nuevos: `src/test/MarketOverview.test.tsx` (6) y 3 asserts en `DetailView.test.tsx` (chart
+local monta, toggle/widget/script externo no existen).
+
+
 ## 2026-09-09 — Fetch EDGAR full-universe + soporte 20-F + fetcher en el cron (Cline)
 
 **Objetivo**: cerrar el pendiente real — correr el fetcher endurecido contra el universo

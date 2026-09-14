@@ -761,6 +761,8 @@ gantt
 
 | Área | Ítem | Estado | Bloqueado por | Próxima acción |
 |---|---|---|---|---|
+| Código **P0 nuevo** | Un archivo que no es ticker tumba los 170 símbolos del cache | 🔴 ABIERTO — causa probada, fix de 1 línea | — | `data/cache/fundamentals_panel.parquet` tiene índice `MultiIndex(date, symbol)`. `data_ingestion.py:89-91` arma la lista de símbolos con un glob ciego de `*.parquet` → `cache_integrity.py:587` hace `pd.DatetimeIndex(df.index)` y revienta → sube por `_integrity_hook` dentro de `download_data` → `_safe_download:384` lo atrapa **por ticker** y devuelve `None` → `load_universe` vacío → `Datos insuficientes: 0 días` (`regime_classifier.py:147`) → warmup del advisor muerto y el Detalle sin payload (medido: `/api/advisor/AAPL` no respondió en 10 min). Reproducido en solo lectura: CON ese archivo = TypeError en los 109 símbolos del log; SIN él = 5961 días OK. Fix: saltar y reportar el frame cuyo índice no sea de fechas (`cache_integrity.py:586-588`) o filtrar el glob a nombres tipo ticker. Doble fragilidad real: el guardián muere con input inesperado y el mensaje de error nombra a la víctima, no al culpable — así es como se leyó "cache contaminado". **No lo toqué**: el backend está fuera del pre-registro del slice UX (`PRE_REG_UX_SLICE2_G2_LIMPIEZA_20260914.md` §3). Bloquea la verificación visual de G2 |
+| Operación **P1 nuevo** | `/api/market/live/overview` hace 102 pedidos a Yahoo seriales por request | 🔴 ABIERTO (descubierto 2026-09-14 al cerrar G2) | — | `live.py:40-42` itera `sorted(SYMBOLS)` (102 símbolos: 7 base + 95 expandidos, `opportunities_universe.py:44`) con `yf.Ticker(symbol).fast_info`, sin batchear. TTL del server **30 s** (`live.py:13-14`) e intervalo de consulta del cliente **30 s** (`LiveTicker.tsx:37`) — están al canto, así que un poll que llega tarde dispara los 102 pedidos; el ticker está montado global en `Layout.tsx`, así que se multiplica por pestaña abierta. Candidato serio a quemar la cuota que después aparece como "pausa de descargas". Fix mínimo: TTL del server mayor que el intervalo de consulta (120 s vs 30 s), o un solo `yf.Tickers(...)` batcheado. Merece pre-registro propio (Slice 3) |
 | Integración indicAgent | PLAN_INTEGRACION_INDICAGENT.md — Fase 1 tickets T1.1/T1.2/T1.3 + Fase 2 T2.1 (Kilo Code) | 🟢 cerrados (2026-08-20) | — | **T2.1**: el corte train/test era contiguo sin purga → `purge_bars` en `WalkForwardValidator.validate()` (default=horizon, =0 reproduce pre-fix); 7 tests. **T1.1 OFI**: `ofi_*` en indicators.py + trial §37 → **NO_CUMPLE** 0/3 (TOTAL t −1.66); ledger signal_diagnosis 19→20. **T1.2 CVD**: `cvd_*` en indicators.py (decisión rolling-20d documentada en vez del reset intradía inaplicable) + trial §38 → **NO_CUMPLE** 0/3 (TOTAL t −0.73); ledger 20→21. **T1.3 market_structure**: module new with 4 detectors SMC + `analyze_market_structure` (18 tests, smoke real AAPL 0.17s) — descriptivo disponible, NO es señal (requiere trial propio si se usa). Suite 315 passed.
 **Plan T1.1-T1.6 y T2.1-T2.3 COMPLETO** — T1.4, T1.5, T1.6, T2.2, T2.3 ver filas propias; ninguna integración al motor promovida a default (todas quedan disponibles/no promovidas hasta trial walk-forward). |
 | Investigación | §13 gap-reversion: backtest con costos reales | 🟢 cerrado (2026-08-12) | — | NO CUMPLE: bruto ~0 (t-NW −0.20), neto −11.53 → §13 CERRADO (PLAN §13.1, artefacto backtest_gap_costs_20260812_173951.txt) |
@@ -923,8 +925,26 @@ costos medidos; Fundamentos = motor canónico Greenblatt/Piotroski/Altman/Beneis
 CONTEXTO (no de fuente; sincronía backend↔frontend verificada campo por campo, cero huérfanos):
 - G1 · Portfolio muestra el BASELINE de 6 large-cap (`backtest_results.json`) sin vintage/caveat.
 - G1 · `factors` del ticket sin lector vivo (UniverseTable/DecisionPanel muertos).
+  → **2026-09-14: los dos consumidores murieron del todo** — `UniverseTable`/`DecisionPanel`
+  borrados en la rama `cline/ux-slice2-g2-cleanup`. El dato sigue sin lector; ahora la
+  pregunta de G1 es distinta: o se le da lector en la Mesa, o se deja de computar.
 - G2 · Widget TV externo + MarketOverview/LiveTicker solapados + 3 componentes muertos.
+  → **CERRADO en rama (código + tests), verificación visual ABIERTA** — pre-registro
+  `PRE_REG_UX_SLICE2_G2_LIMPIEZA_20260914.md` (§7 resultados, §8 desviaciones). Detalle quedó con un
+  solo gráfico local (`TradingViewChart`→`LocalEodChart`), fuera el widget de `s3.tradingview.com`,
+  `MarketOverview` sin el precio que duplicaba la cinta, y 6 módulos muertos afuera (1113 líneas).
+  Gates: tsc 0, 73/73 tests (baseline 66), build 908 módulos. La rama **no está mergeada**: decide
+  Boris/Kilo. Lo que bloquea el último gate (C6, mirar el dashboard servido) es el P0 de la tabla
+  maestra de arriba: `fundamentals_panel.parquet` con `MultiIndex` tumba `load_universe` entero, así
+  que el Detalle no tiene payload que mostrar. No es "cache contaminado" ni "pausa de descargas" —
+  causa probada y fix de una línea, escrito en el §4 corregido del pre-registro.
+  Nota que desordena la premisa del slice: **los 6 componentes borrados no pesaban en el bundle**
+  (nunca se importaron). El ahorro real es 2.8 kB y vienen del Detalle y de la card; el resto era
+  peso cognitivo, no de bytes. Quien justifique esta limpieza por bundle size cuenta un ahorro falso.
 - G3 · 16 indicadores calculados no visualizados; `final_decision` gobernanza no alimenta tickets (A9 por diseño).
+  → **Hay contrato roto que ninguna pantalla muestra** (pre-registro §5): `client.ts` declara
+  `state.indicators` pero `advisor.py` nunca lo puebla. No montar `TechnicalIndicators` tal cual:
+  su endpoint hace `download_data` por request.
 Casos verificados: Gobernanza lee el flag A9 exacto (100% sinc.); screening con backfill 47/47 coherente.
 Para implementar SOLO con decisión explícita (son recomendaciones, no fixes).
 
