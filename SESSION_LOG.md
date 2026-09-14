@@ -4521,3 +4521,27 @@ aísla fallos por ticker; logs por lote (inicio/fin/duración/fallos);
 - Tests: warmup 4/4, cleandays 25/25, execution_costs 24/24, nyse 18/18,
   iv 14/14+1skip. Nota: TestClient roto en venv (starlette/httpx mismatch);
   criterio 1 verificado vía startup()+health() directos.
+
+## 2026-09-14 — INCIDENTE datos: cache de precios contaminado + daemon API en loop patológico (Kilo)
+
+**Detección**: verificando niveles para el análisis de miedo, el cache vivo
+contradice 3 fuentes independientes (yfinance en vivo ×2 lecturas, espejo
+EMPRESA Sep-2, SESSION_LOG $771.33).
+**Evidencia**: 28 grupos / 66 tickers con colas idénticas al centavo
+(SPY=AAPL=TSLA=510.37 vs 764.29/332.27/365.44 live; vols 13x); ACN vs PEP
+comparten 414 filas (divergen 2025-01-16); vs espejo Sep-2 el 100% de filas
+comunes difiere (ratio a la deriva 0.85→0.66, inconsistente con ajuste de
+dividendos que converge); VIX cache 96 vs 18.02 live. 108 parquets reescritos
+08:23-08:32 en tandas de 6-9/min. Escritor exacto NO identificado (descartados:
+hook integridad solo memoiza; tests usan tmp; dataupdater corre 22:00; sin
+procesos Python de datos vivos al inspeccionar).
+**Loop patológico en producción CONFIRMADO**: api_server.log muestra ciclos
+warmup de 862s/1258s + hits 0.0s back-to-back, daemon al 82% CPU sostenido
+desde el jueves, 453 líneas advisor_warmup_complete, cache_date null en vivo.
+Es el loop sin piso de main (dd89f7c) ante rebuilds > intervalo: delay 0
+permanente. El fix-forward con piso 60s (fix/warmup-criterio2-20260911)
+mitiga el spin — pendiente orden de merge (Boris dijo NO mergear sin aviso).
+**Impacto**: ningún artefacto que lea backend/data/cache/*.parquet es
+confiable (backtests, tickets, HMM, screens). Gauges externos (futuros, VIX
+live, AAII, titulares) sí sostienen análisis. Recuperación disponible:
+espejo Sep-2 (escala correcta) + re-descarga limpia tras identificar escritor.
