@@ -51,3 +51,12 @@ Verificación/merge de TODO lo que siga: Kilo orquesta; Boris aprueba merges a m
 - Pre-registro ANTES de código para cualquier cambio con criterio de aceptación.
 - Sin merge a main sin orden explícita de Boris (vía Kilo).
 - Todo lo tuyo pasa verificación independiente (Kilo u OpenCode) antes de merge.
+
+## Coordinación (2026-09-14, Kilo orquestador)
+
+- Rige PROTOCOLO_COORDINACION_AGENTES.md (raíz del repo): tu worktree es
+  exclusivo, prohibido `git stash` (stack compartido del repo), push solo de
+  tus ramas (las backup/data NO van a origin público), suites focalizadas
+  (la completa la corre Kilo al verificar).
+- Tu entrega RiskPanel G2 quedó commiteada en tu rama `ux/dashboard-control-panel`
+  (63ad36c, tsc verificado por Kilo) — SIN merge a main, espera orden de Boris.

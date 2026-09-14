@@ -83,3 +83,11 @@ Ejecutá en ESTE orden, sin saltear:
 4. **Entrega sin merge**: commits por capa en tu rama + entrada
    ORCHESTRATOR_INBOX.md + SESSION_LOG. Kilo verifica y mergea con orden de
    Boris.
+
+## Coordinación (2026-09-14, Kilo orquestador)
+
+- Rige PROTOCOLO_COORDINACION_AGENTES.md (raíz del repo): tu worktree es
+  exclusivo, prohibido `git stash` (stack compartido del repo), push solo de
+  tus ramas, suites focalizadas durante desarrollo (la completa la corre Kilo
+  al verificar). No toques el worktree de Cline ni el de Kilo: leé su código
+  vía origin después de fetch.
