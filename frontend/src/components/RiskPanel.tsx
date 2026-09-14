@@ -23,10 +23,25 @@ export default function RiskPanel({ apiUrl }: RiskPanelProps) {
       .then(setRisk)
   }, [apiUrl])
 
-  if (!risk || risk.status === "no_data") {
+  // Estado vacío honesto: distinguir "aún consultando/fallo de red" de
+  // "el pipeline no escribió snapshot". El riesgo operativo vive en
+  // PortfolioSnapshot (fortress.db), NO en el baseline de investigación.
+  if (!risk) {
     return (
       <div className="bg-dark-card border border-dark-border rounded-lg p-6 text-gray-400">
-        Sin datos de riesgo aún.
+        Consultando el monitor de riesgo…
+      </div>
+    )
+  }
+  if (risk.status === "no_data") {
+    return (
+      <div className="bg-dark-card border border-dark-border rounded-lg p-6 text-gray-400 text-sm leading-relaxed">
+        <p className="text-gray-300 mb-1">Sin snapshot de cartera todavía.</p>
+        <p>
+          El riesgo operativo se alimenta de <code className="text-accent-green">PortfolioSnapshot</code>{" "}
+          (escrito por el pipeline/operación en <code className="text-accent-green">fortress.db</code>),
+          no del baseline de investigación. Aparecerá cuando la cartera real tenga posición.
+        </p>
       </div>
     )
   }
