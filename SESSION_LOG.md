@@ -51,6 +51,17 @@ montado global en `Layout.tsx` así que se multiplica por pestaña abierta. Cand
 cuota que después aparece como "pausa de descargas". Fix mínimo: TTL > intervalo de consulta, o un
 solo `yf.Tickers(...)` batcheado. Slice 3 natural, con pre-registro propio.
 
+**(6) El P0 quedó arreglado, en rama aparte** (`cline/fix-cache-calendar` @ `1d4b67d`, base `main`):
+la conversión de índice se saltea y se reporta. La lectura del parquet queda **fuera** del `try` a
+propósito — `ArrowInvalid` es subclase de `ValueError`, así que el primer borrador del parche habría
+silenciado parquet corruptos dentro del mismo `except` que tapa el panel. Eso se detectó escribiendo
+el test "parquet corrupto sigue gritando" antes de dar el fix por bueno: un fail-open que arregla otro
+fail-open es peor que el bug. A/B con red deshabilitada sobre copia del cache: sin fix **0/30**
+símbolos cargados, con fix **30/30** (119.336 filas); calendario sobre el cache real completo:
+`TypeError` → **5961 días**. 3 tests nuevos, 82 passed en los 6 archivos vecinos, ruff limpio. No se
+mergeó ni se reinició el server: eso implica aceptar ~2 llamadas a Yahoo por símbolo contra un cache
+que está al 2026-09-11, y esa es una decisión de Boris, no un paso técnico más.
+
 **Artefactos**: `PRE_REG_UX_SLICE2_G2_LIMPIEZA_20260914.md` (§4 corregido dejando la versión original
 literal abajo, §7 resultados con la salida real pegada, §8 las 6 desviaciones declaradas),
 `ROADMAP.md` (bloque G1/G2/G3 actualizado + 2 filas nuevas en la tabla maestra).

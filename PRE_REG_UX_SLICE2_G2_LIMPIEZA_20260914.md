@@ -169,6 +169,20 @@ sin consumidor en el dashboard.
 > **No lo toco acá**: §3 declara el backend fuera de alcance de este slice y tiene su propio
 > pre-registro. Queda como el P0 más barato del repo: está bloqueando la verificación de todo lo
 > demás, incluido este G2.
+>
+> **Actualizado 20:58 — el fix existe, en rama aparte.** `cline/fix-cache-calendar` @ `1d4b67d`
+> (base `main`, no G2): la conversión de índice se saltea y se reporta, y la lectura del parquet
+> queda **fuera** del `try` porque `ArrowInvalid` es subclase de `ValueError` — perdonarla dentro del
+> `except` habría convertido un parquet corrupto en otro skip silencioso, o sea un fail-open peor que
+> el bug. 3 tests nuevos, 82 passed en los 6 archivos vecinos, ruff limpio. A/B con red deshabilitada
+> sobre copia del cache (sin escribir en el real): **sin fix 0/30 símbolos cargados; con fix 30/30,
+> 119.336 filas**. Sobre el cache completo: `TypeError` → 5961 días. No lo mergeé: la decisión es de
+> Boris, y mezclarlo en G2 habría roto el alcance §3 y el relato de rollback.
+>
+> Lo que el fix **no** resuelve y conviene saber antes de reiniciar: el cache está al 2026-09-11, así
+> que el primer `load_universe` llama a Yahoo ~2 veces por símbolo (medido con downloader stubbeado:
+> 63 llamadas para 30 símbolos). Es el mismo gasto seriado del que habla el §9. Reiniciar el server es
+> decidir que ese gasto corre hoy.
 
 Lo escrito al pre-registrar, literal y sin retocar, para que la corrección sea auditable:
 
