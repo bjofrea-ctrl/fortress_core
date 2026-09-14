@@ -19,6 +19,7 @@ import pandas as pd
 import pytest
 from app.core.cache_integrity import (
     MOSAIC_MIN_SEGMENT,
+    _market_days_present_in_cache,
     attach_cache_snapshot,
     cache_snapshot_for_trial,
     detect_cross_contamination,
@@ -529,3 +530,68 @@ def test_download_data_serie_sana_no_toca_nada(monkeypatch, tmp_path, capsys):
     out = capsys.readouterr().out
     assert "SANIDAD" not in out
     assert "HUECOS" not in out
+
+
+# ------------------------------------------- calendario del cache (P0 2026-09-14)
+
+
+def _panel_no_ticker(path):
+    """Réplica chiquita de `fundamentals_panel.parquet`: vive en `data/cache/`
+    pero su índice es `MultiIndex(date, symbol)`, no una serie de fechas."""
+    pd.DataFrame(
+        {"ROIC": [0.1, 0.2, 0.3]},
+        index=pd.MultiIndex.from_tuples(
+            [
+                (pd.Timestamp("2026-08-04"), "AAPL"),
+                (pd.Timestamp("2026-08-04"), "MSFT"),
+                (pd.Timestamp("2026-08-11"), "AAPL"),
+            ],
+            names=["date", "symbol"],
+        ),
+    ).to_parquet(path)
+
+
+def test_calendario_sobrevive_a_un_panel_no_ticker(tmp_path, capsys):
+    """`data/cache/` mezcla precios y paneles. Antes, `pd.DatetimeIndex` sobre el
+    `MultiIndex` del panel lanzaba TypeError, `_safe_download` lo atrapaba por ticker
+    y devolvía None: `load_universe` quedaba vacío y todo el mundo veía "Datos
+    insuficientes: 0 días" con el nombre de un ticker en el traceback. El panel no es
+    el culpable y ahora no puede tumbar el calendario de los que sí lo son."""
+    days = _market_days(pd.Timestamp("2026-08-03").date(), pd.Timestamp("2026-08-14").date())
+    _ohlcv(days).to_parquet(tmp_path / "AAPL.parquet")
+    _ohlcv(days[1:], base=50.0).to_parquet(tmp_path / "MSFT.parquet")
+    _panel_no_ticker(tmp_path / "fundamentals_panel.parquet")
+
+    present = _market_days_present_in_cache(
+        str(tmp_path), ["AAPL", "MSFT", "fundamentals_panel"]
+    )
+
+    assert present == {d.date() for d in days}
+    assert len(days) >= 8  # el fixture tiene que cubrir más de un puñado, si no el assert es vacuo
+    out = capsys.readouterr().out
+    assert "fundamentals_panel.parquet no es una serie de fechas" in out
+    assert "se saltea" in out
+    assert "AAPL" not in out and "MSFT" not in out  # no ensucia los símbolos sanos
+
+
+def test_calendario_sin_panel_es_igual_que_con_panel(tmp_path):
+    """El panel no agrega ni quita un solo día: lo que se saltea no era calendario.
+    Sin este assert, un fix que "skippea" de más pasaría igual de verde."""
+    days = _market_days(pd.Timestamp("2026-08-03").date(), pd.Timestamp("2026-08-14").date())
+    _ohlcv(days).to_parquet(tmp_path / "AAPL.parquet")
+    _panel_no_ticker(tmp_path / "fundamentals_panel.parquet")
+
+    solo_precios = _market_days_present_in_cache(str(tmp_path), ["AAPL"])
+    con_panel = _market_days_present_in_cache(str(tmp_path), ["AAPL", "fundamentals_panel"])
+    assert solo_precios == con_panel
+
+
+def test_parquet_corrupto_no_se_silencia(tmp_path):
+    """El `except` nuevo no puede volverse papelera: `ArrowInvalid` es subclase de
+    `ValueError`, así que la lectura tiene que quedar fuera del try. Un archivo que
+    dice ser un ticker y está ilegible tiene que gritar, no sumarse al skip."""
+    (tmp_path / "BROKEN.parquet").write_bytes(b"esto no es un parquet")
+    with pytest.raises(Exception) as ei:
+        _market_days_present_in_cache(str(tmp_path), ["BROKEN"])
+    assert "DatetimeArray" not in str(ei.value)  # es el parseo, no la conversión de índice
+

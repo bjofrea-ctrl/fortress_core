@@ -577,14 +577,34 @@ def repair_gap_range(
 def _market_days_present_in_cache(cache_dir: str, symbols: List[str]) -> set:
     """Fechas que AL MENOS UN símbolo del cache tiene (auto-corrección del
     calendario para cierres no programables: si el mercado entero cerró,
-    ningún símbolo tiene la fecha y no es hueco de nadie)."""
+    ningún símbolo tiene la fecha y no es hueco de nadie).
+
+    `cache_dir` NO es exclusivo de precios: ahí vive `fundamentals_panel.parquet`
+    (índice `MultiIndex(date, symbol)`; lo escribe `scripts/build_fundamentals_panel.py`
+    y lo lee `app/core/edgar_fundamentals.py`). Un archivo cuyo índice no sea de fechas
+    se saltea y se reporta en vez de propagar: dejar que ese detalle de layout tumbe el
+    calendario de TODO el universo convierte un archivo suelto en un
+    "Datos insuficientes: 0 días" general, y el rastro del fallo queda apuntando al
+    ticker equivocado (Roadmap P0, 2026-09-14). Un parquet corrupto NO se perdona acá:
+    ese sí tiene que gritar.
+    """
     present = set()
     for sym in symbols:
         path = os.path.join(cache_dir, f"{sym}.parquet")
         if not os.path.exists(path):
             continue
-        df = pd.read_parquet(path)
-        for d in pd.DatetimeIndex(df.index):
+        # La lectura va AFUERA del try: un parquet corrupto lanza `ArrowInvalid`,
+        # que es subclase de ValueError, y perdonarlo acá sería esconder un problema
+        # real detrás del mismo cartel que tapa un panel no-ticker. Solo se tolera
+        # el desajuste de forma del índice.
+        idx = pd.read_parquet(path).index
+        try:
+            days = pd.DatetimeIndex(idx)
+        except (TypeError, ValueError) as exc:  # MultiIndex u otro índice no-fechas
+            print(f"[cache_integrity] {sym}.parquet no es una serie de fechas "
+                  f"({type(exc).__name__}: {exc}) -> se saltea del calendario")
+            continue
+        for d in days:
             present.add(pd.Timestamp(d).date())
     return present
 
