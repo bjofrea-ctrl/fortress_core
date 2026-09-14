@@ -4619,3 +4619,23 @@ tranquila (requiere orden explícita: es downtime de producción).
 **Cache**: tripletes confirmados viejos (ACN/PEP 414 filas desde ene-2025) +
 re-persistencia de hoy; espejo Sep-2 casi limpio (2 pares dudosos por
 spot-check). Recuperación en espera de throttle + identificación de escritor.
+
+## 2026-09-14 — Corrección registro suite + estado daemon (Kilo)
+
+**Corrección**: la suite completa en main post-merge dio **1055 passed,
+0 failed** (41 min, exit 0) — INCLUIDOS los 16 "preexistentes" que fallaban
+en el worktree (paper_trading/predict_cache/intraday/config_registry).
+Hipótesis honesta: o los estabilizaron merges intermedios, o son flaky de
+red/entorno (un re-run aislado de esos 4 archivos colgó 15 min por
+throttling+carga, sin output). El registro de "16 FAILED preexistentes"
+queda como observado-en-worktree-pre-merge, NO vigente en main.
+**Daemon**: health 200 en 0.09s (sirve), pero warmup sigue fallando cada
+~6 min ("Datos insuficientes: 0 días", Yahoo throttlando masivo). El loop
+nuevo reintenta solo (piso 60s); la recuperación es automática al aflojar
+Yahoo. Sin más llamadas de red desde acá.
+**Tripletas**: valores compartidos SÍ existen en historias reales de otros
+tickers del espejo (27.72 en BAC/CMCSA/GOOGL/KO/NEM/NVDA; 262.4 en
+ADBE/RCL/SPY/V) → hipótesis líder: misasignación por lote/columna en el
+path de descarga/merge (no fixture sintético), a confirmar con el orden de
+universo vs grupos. Escritor exacto sigue abierto; el gate propuesto lo
+vuelve irrelevante hacia adelante.
