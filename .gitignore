@@ -80,6 +80,12 @@ nohup.out
 # los produce el job diario en backend/data/cache_fundamentals_screen/.
 backend/data/cache_fundamentals_screen/
 
+# Caché de la ingesta de fundamentals (app/core/fundamentals_ingestion.py:44).
+# Mismo criterio que el screen: es regenerable y son datos de proveedor (Yahoo),
+# que no van a un repo público. No lo cubría ningún patrón de arriba: son .json
+# en subdirectorio, no en backend/data/ ni backend/data/cache/ raíz.
+backend/data/cache_fundamentals_ingestion/
+
 # Fixture de paridad de Fase 3 (export real de InvestingPro, ~1.28MB) — no se
 # trackea en el repo por peso; se regenera desde el screener. El test de paridad
 # falla ruidoso si falta (ver tests/test_fundamentals_screen.py::canon_xlsx).
