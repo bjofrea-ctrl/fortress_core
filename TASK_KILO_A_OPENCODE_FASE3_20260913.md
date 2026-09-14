@@ -91,3 +91,29 @@ Ejecutá en ESTE orden, sin saltear:
   tus ramas, suites focalizadas durante desarrollo (la completa la corre Kilo
   al verificar). No toques el worktree de Cline ni el de Kilo: leé su código
   vía origin después de fetch.
+
+## Verificación Kilo 2026-09-14 14:00 — F3/F4 en progreso, 3 desvíos + 1 incidente
+
+**Progreso real verificado** (sin tocar tu worktree): `asset_favourability.py`
+(282 L, horizontes [21,63,126] + `regime_separation` anualizada best-vs-worst
+— coincide con tu plan), `institutional_score.py` (542 L, Bonferroni 0.05/9),
+`test_institutional_score.py` (236 L, DGP offline con seed, Gate 4 DSR≥0.90).
+Dirección correcta.
+
+**Desvío 1 — SIN pre-registro F3**: el ticket lo exige ANTES del código.
+Escribilo ahora (criterios Gate 3 + fuentes + causalidad + reversión) —
+sin esto no hay merge posible, por más verde que esté el código.
+
+**Desvío 2 — rama vieja**: seguís en `verify/opencode-wip` (behind 13,
+pre-SWR). Tu próxima entrega debe partir de rama `feat/f3-*` desde
+origin/main actual, como ordena el ticket.
+
+**Desvío 3 — test colgado 48 min**: tu corrida de `test_institutional_score.py`
+(iniciada 13:02) seguía viva a las 13:50 con 1 FAIL ya registrado y sin
+terminar (suite que debería tardar minutos). Kilo la terminó al inspeccionar
+— avisado para que la re-corras con diagnóstico: si el hang es red (fetchers
+reales en tests pese al DGP offline declarado) o walk-forward pesado, el test
+miente sobre ser offline. `cot_2023.parquet` tocado 12:30 en tu worktree:
+si fue tu fetcher validando contra datos reales, documentalo (COT/AAII/FRED
+no entran en la pausa de Yahoo, pero la ventana de throttle general sigue
+vigente — minimizá red hasta aviso).
