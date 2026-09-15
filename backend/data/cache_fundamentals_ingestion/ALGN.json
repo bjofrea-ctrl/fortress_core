@@ -1,0 +1,191 @@
+{
+  "symbol": "ALGN",
+  "ingested_at": "2026-09-10T01:51:50.268690+00:00",
+  "income_statement": [
+    {
+      "calendarYear": "2026",
+      "period": "FY",
+      "sharesOutstanding": 71282132.0
+    },
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "revenue": 4034964000.0,
+      "grossProfit": 2711013000.0,
+      "operatingIncome": 545755000.0,
+      "incomeTaxExpense": 174936000.0,
+      "netIncome": 410351000.0,
+      "weightedAverageShsOutDil": 72588000.0,
+      "weightedAverageShsOut": 72542000.0,
+      "sharesOutstanding": 73597648.0,
+      "sellingGeneralAndAdministrativeExpense": 1755791000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "revenue": 3999012000.0,
+      "grossProfit": 2799159000.0,
+      "operatingIncome": 607628000.0,
+      "incomeTaxExpense": 187597000.0,
+      "netIncome": 421362000.0,
+      "weightedAverageShsOutDil": 74993000.0,
+      "weightedAverageShsOut": 74877000.0,
+      "sharesOutstanding": 75104132.0,
+      "sellingGeneralAndAdministrativeExpense": 1763193000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "revenue": 3862260000.0,
+      "grossProfit": 2706863000.0,
+      "operatingIncome": 643338000.0,
+      "incomeTaxExpense": 196151000.0,
+      "netIncome": 445053000.0,
+      "weightedAverageShsOutDil": 76568000.0,
+      "weightedAverageShsOut": 76426000.0,
+      "sharesOutstanding": 76610319.0,
+      "sellingGeneralAndAdministrativeExpense": 1703379000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "revenue": 3734635000.0,
+      "grossProfit": 2633775000.0,
+      "operatingIncome": 642595000.0,
+      "incomeTaxExpense": 237484000.0,
+      "netIncome": 361573000.0,
+      "weightedAverageShsOutDil": 78420000.0,
+      "weightedAverageShsOut": 78190000.0,
+      "sharesOutstanding": 78795494.0,
+      "sellingGeneralAndAdministrativeExpense": 1674469000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "revenue": 3952584000.0,
+      "grossProfit": 2935355000.0,
+      "operatingIncome": 976400000.0,
+      "incomeTaxExpense": 240403000.0,
+      "netIncome": 772020000.0,
+      "weightedAverageShsOutDil": 79670000.0,
+      "weightedAverageShsOut": 78917000.0,
+      "sharesOutstanding": 79132723.0,
+      "sellingGeneralAndAdministrativeExpense": 1708640000.0
+    }
+  ],
+  "balance_sheet": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "totalAssets": 6233693000.0,
+      "totalCurrentAssets": 2616562000.0,
+      "cashAndCashEquivalents": 1094908000.0,
+      "totalCurrentLiabilities": 1920015000.0,
+      "totalLiabilities": 2184546000.0,
+      "totalShareholderEquity": 4049147000.0,
+      "retainedEarnings": 2464157000.0,
+      "propertyPlantEquipmentNet": 1131453000.0,
+      "netReceivables": 1101757000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "totalAssets": 6214600000.0,
+      "totalCurrentAssets": 2492441000.0,
+      "cashAndCashEquivalents": 1043887000.0,
+      "totalCurrentLiabilities": 2038027000.0,
+      "totalLiabilities": 2362615000.0,
+      "totalShareholderEquity": 3851985000.0,
+      "retainedEarnings": 2483766000.0,
+      "propertyPlantEquipmentNet": 1271134000.0,
+      "netReceivables": 995685000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "totalAssets": 6083877000.0,
+      "totalCurrentAssets": 2446618000.0,
+      "cashAndCashEquivalents": 938519000.0,
+      "totalCurrentLiabilities": 2066611000.0,
+      "totalLiabilities": 2453388000.0,
+      "totalShareholderEquity": 3630489000.0,
+      "retainedEarnings": 2447174000.0,
+      "propertyPlantEquipmentNet": 1290863000.0,
+      "netReceivables": 903424000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "totalAssets": 5947947000.0,
+      "totalCurrentAssets": 2424391000.0,
+      "cashAndCashEquivalents": 942355000.0,
+      "totalCurrentLiabilities": 1925887000.0,
+      "totalLiabilities": 2346589000.0,
+      "totalShareholderEquity": 3601358000.0,
+      "retainedEarnings": 2566688000.0,
+      "propertyPlantEquipmentNet": 1231855000.0,
+      "netReceivables": 859685000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "totalAssets": 5942110000.0,
+      "totalCurrentAssets": 2494075000.0,
+      "cashAndCashEquivalents": 1100139000.0,
+      "totalCurrentLiabilities": 1924071000.0,
+      "totalLiabilities": 2319396000.0,
+      "totalShareholderEquity": 3622714000.0,
+      "retainedEarnings": 2619374000.0,
+      "propertyPlantEquipmentNet": 1081926000.0,
+      "netReceivables": 897198000.0
+    }
+  ],
+  "cash_flow": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "operatingCashFlow": 593223000.0,
+      "capitalExpenditure": 102445000.0,
+      "commonStockRepurchased": 465939000.0,
+      "depreciationAndAmortization": 237436000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "operatingCashFlow": 738231000.0,
+      "capitalExpenditure": 115580000.0,
+      "commonStockRepurchased": 352878000.0,
+      "depreciationAndAmortization": 145034000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "operatingCashFlow": 785776000.0,
+      "capitalExpenditure": 177716000.0,
+      "commonStockRepurchased": 592360000.0,
+      "depreciationAndAmortization": 142401000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "operatingCashFlow": 568732000.0,
+      "capitalExpenditure": 291900000.0,
+      "commonStockRepurchased": 435036000.0,
+      "depreciationAndAmortization": 125793000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "operatingCashFlow": 1172544000.0,
+      "capitalExpenditure": 401098000.0,
+      "commonStockRepurchased": 375038000.0,
+      "depreciationAndAmortization": 108729000.0
+    }
+  ],
+  "profile": {
+    "companyName": "ALIGN TECHNOLOGY,\u00a0INC.",
+    "symbol": "ALGN"
+  },
+  "price_target_consensus": null,
+  "_data_source": "edgar_primary"
+}

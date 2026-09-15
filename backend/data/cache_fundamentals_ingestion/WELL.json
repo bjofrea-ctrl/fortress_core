@@ -1,0 +1,163 @@
+{
+  "symbol": "WELL",
+  "ingested_at": "2026-09-10T01:52:25.810039+00:00",
+  "income_statement": [
+    {
+      "calendarYear": "2026",
+      "period": "FY",
+      "sharesOutstanding": 697752530.0
+    },
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "revenue": 8452996000.0,
+      "incomeTaxExpense": -7116000.0,
+      "weightedAverageShsOutDil": 679521000.0,
+      "weightedAverageShsOut": 665639000.0,
+      "sharesOutstanding": 641308062.0,
+      "sellingGeneralAndAdministrativeExpense": 1748435000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "revenue": 6027149000.0,
+      "incomeTaxExpense": 2700000.0,
+      "weightedAverageShsOutDil": 608750000.0,
+      "weightedAverageShsOut": 602975000.0,
+      "sharesOutstanding": 568878059.0,
+      "sellingGeneralAndAdministrativeExpense": 235491000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "revenue": 4753804000.0,
+      "incomeTaxExpense": 6364000.0,
+      "weightedAverageShsOutDil": 518701000.0,
+      "weightedAverageShsOut": 515629000.0,
+      "sharesOutstanding": 490643990.0,
+      "sellingGeneralAndAdministrativeExpense": 179091000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "revenue": 4173711000.0,
+      "incomeTaxExpense": 7247000.0,
+      "weightedAverageShsOutDil": 465158000.0,
+      "weightedAverageShsOut": 462185000.0,
+      "sharesOutstanding": 447279642.0,
+      "sellingGeneralAndAdministrativeExpense": 150390000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "revenue": 3197223000.0,
+      "incomeTaxExpense": 8713000.0,
+      "weightedAverageShsOutDil": 426841000.0,
+      "weightedAverageShsOut": 424976000.0,
+      "sharesOutstanding": 417383039.0,
+      "sellingGeneralAndAdministrativeExpense": 126727000.0
+    }
+  ],
+  "balance_sheet": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "totalAssets": 67303047000.0,
+      "cashAndCashEquivalents": 5033678000.0,
+      "longTermDebt": 19197302000.0,
+      "totalLiabilities": 24100108000.0,
+      "totalShareholderEquity": 42129498000.0,
+      "retainedEarnings": 11033569000.0,
+      "totalDebt": 19197302000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "totalAssets": 51044308000.0,
+      "cashAndCashEquivalents": 3506586000.0,
+      "longTermDebt": 15500257000.0,
+      "totalLiabilities": 18471722000.0,
+      "totalShareholderEquity": 31956208000.0,
+      "retainedEarnings": 10096724000.0,
+      "totalDebt": 15500257000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "totalAssets": 44012166000.0,
+      "cashAndCashEquivalents": 2076083000.0,
+      "longTermDebt": 15735549000.0,
+      "totalLiabilities": 17640439000.0,
+      "totalShareholderEquity": 26081122000.0,
+      "retainedEarnings": 9145044000.0,
+      "totalDebt": 15735549000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "totalAssets": 37893233000.0,
+      "cashAndCashEquivalents": 722292000.0,
+      "longTermDebt": 14714483000.0,
+      "totalLiabilities": 16499237000.0,
+      "totalShareholderEquity": 21009553000.0,
+      "retainedEarnings": 8804950000.0,
+      "totalDebt": 14714483000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "totalAssets": 34910325000.0,
+      "cashAndCashEquivalents": 346755000.0,
+      "longTermDebt": 13910273000.0,
+      "totalLiabilities": 15912452000.0,
+      "totalShareholderEquity": 18596579000.0,
+      "retainedEarnings": 8663736000.0,
+      "totalDebt": 13910273000.0
+    }
+  ],
+  "cash_flow": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "operatingCashFlow": 2881677000.0,
+      "dividendsPaid": 1877959000.0,
+      "depreciationAndAmortization": 2084868000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "operatingCashFlow": 2256421000.0,
+      "dividendsPaid": 1545275000.0,
+      "depreciationAndAmortization": 1632093000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "operatingCashFlow": 1601861000.0,
+      "dividendsPaid": 1260578000.0,
+      "depreciationAndAmortization": 1401101000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "operatingCashFlow": 1328708000.0,
+      "commonStockRepurchased": 0.0,
+      "dividendsPaid": 1131527000.0,
+      "depreciationAndAmortization": 1310368000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "operatingCashFlow": 1275325000.0,
+      "commonStockRepurchased": 0.0,
+      "dividendsPaid": 1035906000.0,
+      "depreciationAndAmortization": 1037566000.0
+    }
+  ],
+  "profile": {
+    "companyName": "WELLTOWER INC.",
+    "symbol": "WELL"
+  },
+  "price_target_consensus": null,
+  "_data_source": "edgar_primary"
+}

@@ -1,0 +1,216 @@
+{
+  "symbol": "QRVO",
+  "ingested_at": "2026-09-10T01:51:43.745888+00:00",
+  "income_statement": [
+    {
+      "calendarYear": "2026",
+      "period": "FY",
+      "netIncome": 338989000.0,
+      "sharesOutstanding": 88013673.0
+    },
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "revenue": 3678517000.0,
+      "grossProfit": 1688102000.0,
+      "operatingIncome": 411424000.0,
+      "incomeTaxExpense": 59284000.0,
+      "netIncome": 55615000.0,
+      "weightedAverageShsOutDil": 93547000.0,
+      "weightedAverageShsOut": 92592000.0,
+      "sharesOutstanding": 93025179.0,
+      "sellingGeneralAndAdministrativeExpense": 165189000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "revenue": 3718971000.0,
+      "grossProfit": 1535589000.0,
+      "operatingIncome": 95527000.0,
+      "incomeTaxExpense": 10284000.0,
+      "netIncome": -70322000.0,
+      "weightedAverageShsOutDil": 95450000.0,
+      "weightedAverageShsOut": 94586000.0,
+      "sharesOutstanding": 95629095.0,
+      "sellingGeneralAndAdministrativeExpense": 171712000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "revenue": 3769506000.0,
+      "grossProfit": 1488495000.0,
+      "operatingIncome": 91701000.0,
+      "incomeTaxExpense": 143882000.0,
+      "netIncome": 103152000.0,
+      "weightedAverageShsOutDil": 97557000.0,
+      "weightedAverageShsOut": 97557000.0,
+      "sharesOutstanding": 98736229.0,
+      "sellingGeneralAndAdministrativeExpense": 171867000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "revenue": 3569399000.0,
+      "grossProfit": 1296942000.0,
+      "operatingIncome": 183168000.0,
+      "incomeTaxExpense": 21477000.0,
+      "netIncome": 1033353000.0,
+      "weightedAverageShsOutDil": 103019000.0,
+      "weightedAverageShsOut": 102206000.0,
+      "sharesOutstanding": 106027384.0,
+      "sellingGeneralAndAdministrativeExpense": 148100000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "revenue": 4645714000.0,
+      "grossProfit": 2286168000.0,
+      "operatingIncome": 1226069000.0,
+      "incomeTaxExpense": 147731000.0,
+      "weightedAverageShsOutDil": 111546000.0,
+      "weightedAverageShsOut": 110196000.0,
+      "sharesOutstanding": 112586812.0,
+      "sellingGeneralAndAdministrativeExpense": 349718000.0
+    }
+  ],
+  "balance_sheet": [
+    {
+      "calendarYear": "2026",
+      "period": "FY",
+      "totalAssets": 5825590000.0,
+      "totalCurrentAssets": 2306314000.0,
+      "cashAndCashEquivalents": 1219015000.0,
+      "totalCurrentLiabilities": 712757000.0,
+      "longTermDebt": 1549154000.0,
+      "totalLiabilities": 2481291000.0,
+      "totalShareholderEquity": 3344299000.0,
+      "retainedEarnings": 38788000.0,
+      "propertyPlantEquipmentNet": 710392000.0,
+      "netReceivables": 382509000.0,
+      "totalDebt": 1549154000.0
+    },
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "totalAssets": 5933131000.0,
+      "totalCurrentAssets": 2167275000.0,
+      "cashAndCashEquivalents": 1021176000.0,
+      "totalCurrentLiabilities": 783182000.0,
+      "longTermDebt": 1549215000.0,
+      "longTermDebtCurrent": 0.0,
+      "totalLiabilities": 2540819000.0,
+      "totalShareholderEquity": 3392312000.0,
+      "retainedEarnings": -33983000.0,
+      "propertyPlantEquipmentNet": 801895000.0,
+      "netReceivables": 386719000.0,
+      "totalDebt": 1549215000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "totalAssets": 6554635000.0,
+      "totalCurrentAssets": 2446034000.0,
+      "cashAndCashEquivalents": 1029258000.0,
+      "totalCurrentLiabilities": 1230087000.0,
+      "longTermDebt": 1549272000.0,
+      "longTermDebtCurrent": 438740000.0,
+      "totalLiabilities": 2998263000.0,
+      "totalShareholderEquity": 3556372000.0,
+      "retainedEarnings": -89598000.0,
+      "propertyPlantEquipmentNet": 870982000.0,
+      "netReceivables": 412960000.0,
+      "totalDebt": 1988012000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "totalAssets": 6691903000.0,
+      "totalCurrentAssets": 2029794000.0,
+      "cashAndCashEquivalents": 808943000.0,
+      "totalCurrentLiabilities": 555763000.0,
+      "longTermDebt": 2048073000.0,
+      "longTermDebtCurrent": 310000.0,
+      "totalLiabilities": 2789109000.0,
+      "totalShareholderEquity": 3902794000.0,
+      "retainedEarnings": 84495000.0,
+      "propertyPlantEquipmentNet": 1149806000.0,
+      "netReceivables": 304519000.0,
+      "totalDebt": 2048383000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "totalAssets": 7509072000.0,
+      "totalCurrentAssets": 2449865000.0,
+      "cashAndCashEquivalents": 972805000.0,
+      "totalCurrentLiabilities": 675127000.0,
+      "longTermDebt": 2047098000.0,
+      "longTermDebtCurrent": 791000.0,
+      "totalLiabilities": 2955854000.0,
+      "totalShareholderEquity": 4553218000.0,
+      "retainedEarnings": 512137000.0,
+      "propertyPlantEquipmentNet": 1253591000.0,
+      "netReceivables": 568850000.0,
+      "totalDebt": 2047889000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "totalAssets": 7221470000.0,
+      "totalCurrentAssets": 2483804000.0,
+      "cashAndCashEquivalents": 1398309000.0,
+      "totalCurrentLiabilities": 681581000.0,
+      "longTermDebt": 1742550000.0,
+      "longTermDebtCurrent": 5092000.0,
+      "totalLiabilities": 2592045000.0,
+      "totalShareholderEquity": 4629425000.0,
+      "retainedEarnings": 355036000.0,
+      "propertyPlantEquipmentNet": 1266031000.0,
+      "netReceivables": 457431000.0,
+      "totalDebt": 1747642000.0
+    }
+  ],
+  "cash_flow": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "operatingCashFlow": 808631000.0,
+      "capitalExpenditure": 129070000.0,
+      "commonStockRepurchased": 532552000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "operatingCashFlow": 622202000.0,
+      "capitalExpenditure": 137600000.0,
+      "commonStockRepurchased": 356336000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "operatingCashFlow": 833189000.0,
+      "capitalExpenditure": 127230000.0,
+      "commonStockRepurchased": 400054000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "operatingCashFlow": 843231000.0,
+      "capitalExpenditure": 158953000.0,
+      "commonStockRepurchased": 861751000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "operatingCashFlow": 1049243000.0,
+      "capitalExpenditure": 213466000.0,
+      "commonStockRepurchased": 1152287000.0
+    }
+  ],
+  "profile": {
+    "companyName": "Qorvo, Inc.",
+    "symbol": "QRVO"
+  },
+  "price_target_consensus": null,
+  "_data_source": "edgar_primary"
+}

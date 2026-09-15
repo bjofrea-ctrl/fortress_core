@@ -1,0 +1,191 @@
+{
+  "symbol": "QLYS",
+  "ingested_at": "2026-09-10T01:51:38.347793+00:00",
+  "income_statement": [
+    {
+      "calendarYear": "2026",
+      "period": "FY",
+      "sharesOutstanding": 35675926.0
+    },
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "revenue": 669125000.0,
+      "grossProfit": 554357000.0,
+      "operatingIncome": 221952000.0,
+      "incomeTaxExpense": 48508000.0,
+      "netIncome": 198320000.0,
+      "weightedAverageShsOutDil": 36453000.0,
+      "weightedAverageShsOut": 36142000.0,
+      "sharesOutstanding": 36477672.0,
+      "sellingGeneralAndAdministrativeExpense": 71616000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "revenue": 607571000.0,
+      "grossProfit": 496089000.0,
+      "operatingIncome": 187196000.0,
+      "incomeTaxExpense": 36142000.0,
+      "netIncome": 173680000.0,
+      "weightedAverageShsOutDil": 37353000.0,
+      "weightedAverageShsOut": 36799000.0,
+      "sharesOutstanding": 36977259.0,
+      "sellingGeneralAndAdministrativeExpense": 68738000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "revenue": 554458000.0,
+      "grossProfit": 446973000.0,
+      "operatingIncome": 163069000.0,
+      "incomeTaxExpense": 27056000.0,
+      "netIncome": 151595000.0,
+      "weightedAverageShsOutDil": 37602000.0,
+      "weightedAverageShsOut": 36879000.0,
+      "sharesOutstanding": 37009478.0,
+      "sellingGeneralAndAdministrativeExpense": 61741000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "revenue": 489723000.0,
+      "grossProfit": 386935000.0,
+      "operatingIncome": 130547000.0,
+      "incomeTaxExpense": 25708000.0,
+      "netIncome": 107992000.0,
+      "weightedAverageShsOutDil": 39344000.0,
+      "weightedAverageShsOut": 38453000.0,
+      "sharesOutstanding": 39029415.0,
+      "sellingGeneralAndAdministrativeExpense": 57981000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "revenue": 411172000.0,
+      "grossProfit": 321733000.0,
+      "operatingIncome": 87683000.0,
+      "incomeTaxExpense": 18437000.0,
+      "netIncome": 70960000.0,
+      "weightedAverageShsOutDil": 40118000.0,
+      "weightedAverageShsOut": 39030000.0,
+      "sharesOutstanding": 39207735.0,
+      "sellingGeneralAndAdministrativeExpense": 76274000.0
+    }
+  ],
+  "balance_sheet": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "totalAssets": 1095081000.0,
+      "totalCurrentAssets": 657616000.0,
+      "cashAndCashEquivalents": 250258000.0,
+      "totalCurrentLiabilities": 467338000.0,
+      "totalLiabilities": 533928000.0,
+      "totalShareholderEquity": 561153000.0,
+      "retainedEarnings": -166659000.0,
+      "propertyPlantEquipmentNet": 23166000.0,
+      "netReceivables": 170991000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "totalAssets": 973537000.0,
+      "totalCurrentAssets": 585691000.0,
+      "cashAndCashEquivalents": 232182000.0,
+      "totalCurrentLiabilities": 428390000.0,
+      "totalLiabilities": 496421000.0,
+      "totalShareholderEquity": 477116000.0,
+      "retainedEarnings": -189217000.0,
+      "propertyPlantEquipmentNet": 30349000.0,
+      "netReceivables": 164551000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "totalAssets": 812618000.0,
+      "totalCurrentAssets": 599998000.0,
+      "cashAndCashEquivalents": 203665000.0,
+      "totalCurrentLiabilities": 389208000.0,
+      "totalLiabilities": 444444000.0,
+      "totalShareholderEquity": 368174000.0,
+      "retainedEarnings": -228080000.0,
+      "propertyPlantEquipmentNet": 32599000.0,
+      "netReceivables": 146226000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "totalAssets": 700941000.0,
+      "totalCurrentAssets": 473338000.0,
+      "cashAndCashEquivalents": 173719000.0,
+      "totalCurrentLiabilities": 352188000.0,
+      "totalLiabilities": 411812000.0,
+      "totalShareholderEquity": 289129000.0,
+      "retainedEarnings": -221447000.0,
+      "propertyPlantEquipmentNet": 47428000.0,
+      "netReceivables": 121795000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "totalAssets": 814559000.0,
+      "totalCurrentAssets": 546398000.0,
+      "cashAndCashEquivalents": 137328000.0,
+      "totalCurrentLiabilities": 304280000.0,
+      "totalLiabilities": 377845000.0,
+      "totalShareholderEquity": 436714000.0,
+      "retainedEarnings": -41655000.0,
+      "propertyPlantEquipmentNet": 61854000.0,
+      "netReceivables": 108998000.0
+    }
+  ],
+  "cash_flow": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "operatingCashFlow": 309400000.0,
+      "capitalExpenditure": 4990000.0,
+      "commonStockRepurchased": 183425000.0,
+      "depreciationAndAmortization": 14491000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "operatingCashFlow": 244094000.0,
+      "capitalExpenditure": 12334000.0,
+      "commonStockRepurchased": 139875000.0,
+      "depreciationAndAmortization": 18513000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "operatingCashFlow": 244605000.0,
+      "capitalExpenditure": 8786000.0,
+      "commonStockRepurchased": 170800000.0,
+      "depreciationAndAmortization": 26991000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "operatingCashFlow": 198854000.0,
+      "capitalExpenditure": 15361000.0,
+      "commonStockRepurchased": 317344000.0,
+      "depreciationAndAmortization": 34622000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "operatingCashFlow": 200616000.0,
+      "capitalExpenditure": 24424000.0,
+      "commonStockRepurchased": 129977000.0,
+      "depreciationAndAmortization": 35897000.0
+    }
+  ],
+  "profile": {
+    "companyName": "Qualys, Inc.",
+    "symbol": "QLYS"
+  },
+  "price_target_consensus": null,
+  "_data_source": "edgar_primary"
+}

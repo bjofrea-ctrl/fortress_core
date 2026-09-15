@@ -1,0 +1,195 @@
+{
+  "symbol": "MCD",
+  "ingested_at": "2026-09-10T01:51:08.921881+00:00",
+  "income_statement": [
+    {
+      "calendarYear": "2026",
+      "period": "FY",
+      "sharesOutstanding": 710398642.0
+    },
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "revenue": 26885000000.0,
+      "operatingIncome": 12393000000.0,
+      "incomeTaxExpense": 2334000000.0,
+      "netIncome": 8563000000.0,
+      "weightedAverageShsOutDil": 716.4,
+      "weightedAverageShsOut": 713.4,
+      "sharesOutstanding": 714461139.0,
+      "sellingGeneralAndAdministrativeExpense": 3039000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "revenue": 25920000000.0,
+      "operatingIncome": 11712000000.0,
+      "incomeTaxExpense": 2121000000.0,
+      "netIncome": 8223000000.0,
+      "weightedAverageShsOutDil": 721.9,
+      "weightedAverageShsOut": 718.3,
+      "sharesOutstanding": 722051488.0,
+      "sellingGeneralAndAdministrativeExpense": 2858000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "revenue": 25494000000.0,
+      "operatingIncome": 11647000000.0,
+      "incomeTaxExpense": 2053000000.0,
+      "netIncome": 8469000000.0,
+      "weightedAverageShsOutDil": 732.3,
+      "weightedAverageShsOut": 727.9,
+      "sharesOutstanding": 731496951.0,
+      "sellingGeneralAndAdministrativeExpense": 2817000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "revenue": 23183000000.0,
+      "operatingIncome": 9371000000.0,
+      "incomeTaxExpense": 1648000000.0,
+      "netIncome": 6177000000.0,
+      "weightedAverageShsOutDil": 741.3,
+      "weightedAverageShsOut": 736.5,
+      "sharesOutstanding": 743584718.0,
+      "sellingGeneralAndAdministrativeExpense": 2863000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "revenue": 23222900000.0,
+      "operatingIncome": 10356000000.0,
+      "incomeTaxExpense": 1582700000.0,
+      "netIncome": 7545200000.0,
+      "weightedAverageShsOutDil": 751.8,
+      "weightedAverageShsOut": 746.3,
+      "sharesOutstanding": 745572145.0
+    }
+  ],
+  "balance_sheet": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "totalAssets": 59515000000.0,
+      "totalCurrentAssets": 4163000000.0,
+      "cashAndCashEquivalents": 774000000.0,
+      "totalCurrentLiabilities": 4361000000.0,
+      "longTermDebt": 39973000000.0,
+      "longTermDebtCurrent": 725000000.0,
+      "shortTermBorrowings": 798000000.0,
+      "totalShareholderEquity": -1791000000.0,
+      "retainedEarnings": 70282000000.0,
+      "propertyPlantEquipmentNet": 28241000000.0,
+      "totalDebt": 41496000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "totalAssets": 55182000000.0,
+      "totalCurrentAssets": 4599000000.0,
+      "cashAndCashEquivalents": 1085000000.0,
+      "totalCurrentLiabilities": 3861000000.0,
+      "longTermDebt": 38424000000.0,
+      "shortTermBorrowings": 790000000.0,
+      "totalShareholderEquity": -3797000000.0,
+      "retainedEarnings": 66834000000.0,
+      "propertyPlantEquipmentNet": 25295000000.0,
+      "totalDebt": 39214000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "totalAssets": 56147000000.0,
+      "totalCurrentAssets": 7986000000.0,
+      "cashAndCashEquivalents": 4579000000.0,
+      "totalCurrentLiabilities": 6859000000.0,
+      "longTermDebt": 37153000000.0,
+      "shortTermBorrowings": 348000000.0,
+      "totalShareholderEquity": -4707000000.0,
+      "retainedEarnings": 63480000000.0,
+      "propertyPlantEquipmentNet": 24908000000.0,
+      "totalDebt": 37501000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "totalAssets": 50436000000.0,
+      "totalCurrentAssets": 5424200000.0,
+      "cashAndCashEquivalents": 2584000000.0,
+      "totalCurrentLiabilities": 3802100000.0,
+      "longTermDebt": 35903500000.0,
+      "totalShareholderEquity": -6003000000.0,
+      "retainedEarnings": 59543900000.0,
+      "propertyPlantEquipmentNet": 23773600000.0,
+      "totalDebt": 35903500000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "totalAssets": 53854300000.0,
+      "totalCurrentAssets": 7148500000.0,
+      "cashAndCashEquivalents": 4709000000.0,
+      "totalCurrentLiabilities": 4020000000.0,
+      "longTermDebt": 35622700000.0,
+      "longTermDebtCurrent": 0.0,
+      "totalShareholderEquity": -4601000000.0,
+      "retainedEarnings": 57534700000.0,
+      "propertyPlantEquipmentNet": 24720600000.0,
+      "totalDebt": 35622700000.0
+    }
+  ],
+  "cash_flow": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "operatingCashFlow": 10551000000.0,
+      "capitalExpenditure": 3365000000.0,
+      "commonStockRepurchased": 2056000000.0,
+      "dividendsPaid": 5115000000.0,
+      "depreciationAndAmortization": 457000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "operatingCashFlow": 9447000000.0,
+      "capitalExpenditure": 2775000000.0,
+      "commonStockRepurchased": 2824000000.0,
+      "dividendsPaid": 4870000000.0,
+      "depreciationAndAmortization": 447000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "operatingCashFlow": 9612000000.0,
+      "capitalExpenditure": 2357000000.0,
+      "commonStockRepurchased": 3054000000.0,
+      "dividendsPaid": 4533000000.0,
+      "depreciationAndAmortization": 382000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "operatingCashFlow": 7387000000.0,
+      "capitalExpenditure": 1899000000.0,
+      "commonStockRepurchased": 3896000000.0,
+      "dividendsPaid": 4168000000.0,
+      "depreciationAndAmortization": 370000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "operatingCashFlow": 9141500000.0,
+      "capitalExpenditure": 2040000000.0,
+      "commonStockRepurchased": 845500000.0,
+      "dividendsPaid": 3918600000.0,
+      "depreciationAndAmortization": 329700000.0
+    }
+  ],
+  "profile": {
+    "companyName": "McDONALD\u2019S CORPORATION",
+    "symbol": "MCD"
+  },
+  "price_target_consensus": null,
+  "_data_source": "edgar_primary"
+}

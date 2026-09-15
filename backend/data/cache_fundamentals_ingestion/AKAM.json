@@ -1,0 +1,186 @@
+{
+  "symbol": "AKAM",
+  "ingested_at": "2026-09-10T01:51:32.613679+00:00",
+  "income_statement": [
+    {
+      "calendarYear": "2026",
+      "period": "FY",
+      "sharesOutstanding": 144888114.0
+    },
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "revenue": 4208175000.0,
+      "operatingIncome": 566944000.0,
+      "incomeTaxExpense": 150374000.0,
+      "netIncome": 452031000.0,
+      "weightedAverageShsOutDil": 147023000.0,
+      "weightedAverageShsOut": 145402000.0,
+      "sharesOutstanding": 150317536.0,
+      "sellingGeneralAndAdministrativeExpense": 656739000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "revenue": 3991168000.0,
+      "operatingIncome": 533411000.0,
+      "incomeTaxExpense": 82095000.0,
+      "netIncome": 504918000.0,
+      "weightedAverageShsOutDil": 154346000.0,
+      "weightedAverageShsOut": 151392000.0,
+      "sharesOutstanding": 151530300.0,
+      "sellingGeneralAndAdministrativeExpense": 621785000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "revenue": 3811920000.0,
+      "operatingIncome": 637338000.0,
+      "incomeTaxExpense": 106373000.0,
+      "netIncome": 547629000.0,
+      "weightedAverageShsOutDil": 155397000.0,
+      "weightedAverageShsOut": 152510000.0,
+      "sharesOutstanding": 156275794.0,
+      "sellingGeneralAndAdministrativeExpense": 600851000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "revenue": 3616654000.0,
+      "operatingIncome": 676274000.0,
+      "incomeTaxExpense": 126696000.0,
+      "netIncome": 523672000.0,
+      "weightedAverageShsOutDil": 160467000.0,
+      "weightedAverageShsOut": 159089000.0,
+      "sharesOutstanding": 160346656.0,
+      "sellingGeneralAndAdministrativeExpense": 584206000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "revenue": 3461223000.0,
+      "operatingIncome": 783148000.0,
+      "incomeTaxExpense": 62571000.0,
+      "netIncome": 651642000.0,
+      "weightedAverageShsOutDil": 165804000.0,
+      "weightedAverageShsOut": 162665000.0,
+      "sharesOutstanding": 163220270.0,
+      "sellingGeneralAndAdministrativeExpense": 553024000.0
+    }
+  ],
+  "balance_sheet": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "totalAssets": 11479643000.0,
+      "totalCurrentAssets": 2286680000.0,
+      "cashAndCashEquivalents": 930231000.0,
+      "totalCurrentLiabilities": 967518000.0,
+      "totalLiabilities": 6502272000.0,
+      "totalShareholderEquity": 4977371000.0,
+      "retainedEarnings": 3424929000.0,
+      "propertyPlantEquipmentNet": 2333462000.0,
+      "netReceivables": 793666000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "totalAssets": 10368785000.0,
+      "totalCurrentAssets": 2578097000.0,
+      "cashAndCashEquivalents": 517707000.0,
+      "totalCurrentLiabilities": 2091323000.0,
+      "totalLiabilities": 5490428000.0,
+      "totalShareholderEquity": 4878357000.0,
+      "retainedEarnings": 2972898000.0,
+      "propertyPlantEquipmentNet": 1995071000.0,
+      "netReceivables": 727687000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "totalAssets": 9900037000.0,
+      "totalCurrentAssets": 1804855000.0,
+      "cashAndCashEquivalents": 489468000.0,
+      "totalCurrentLiabilities": 836038000.0,
+      "totalLiabilities": 5302882000.0,
+      "totalShareholderEquity": 4597155000.0,
+      "retainedEarnings": 2467980000.0,
+      "propertyPlantEquipmentNet": 1825944000.0,
+      "netReceivables": 724302000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "totalAssets": 8303400000.0,
+      "totalCurrentAssets": 1969562000.0,
+      "cashAndCashEquivalents": 543022000.0,
+      "totalCurrentLiabilities": 818868000.0,
+      "totalLiabilities": 3943213000.0,
+      "totalShareholderEquity": 4360187000.0,
+      "retainedEarnings": 1920351000.0,
+      "propertyPlantEquipmentNet": 1540182000.0,
+      "netReceivables": 679206000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "totalAssets": 8138673000.0,
+      "totalCurrentAssets": 1920434000.0,
+      "cashAndCashEquivalents": 537751000.0,
+      "totalCurrentLiabilities": 790341000.0,
+      "totalLiabilities": 3608659000.0,
+      "totalShareholderEquity": 4530014000.0,
+      "retainedEarnings": 1256692000.0,
+      "propertyPlantEquipmentNet": 1534329000.0,
+      "netReceivables": 675926000.0
+    }
+  ],
+  "cash_flow": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "operatingCashFlow": 1518765000.0,
+      "capitalExpenditure": 507786000.0,
+      "commonStockRepurchased": 799963000.0,
+      "depreciationAndAmortization": 708611000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "operatingCashFlow": 1519171000.0,
+      "capitalExpenditure": 390433000.0,
+      "commonStockRepurchased": 557468000.0,
+      "depreciationAndAmortization": 648410000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "operatingCashFlow": 1348439000.0,
+      "capitalExpenditure": 457909000.0,
+      "commonStockRepurchased": 654046000.0,
+      "depreciationAndAmortization": 570776000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "operatingCashFlow": 1274676000.0,
+      "capitalExpenditure": 241266000.0,
+      "commonStockRepurchased": 608010000.0,
+      "depreciationAndAmortization": 592754000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "operatingCashFlow": 1404563000.0,
+      "capitalExpenditure": 328969000.0,
+      "commonStockRepurchased": 522255000.0,
+      "depreciationAndAmortization": 550632000.0
+    }
+  ],
+  "profile": {
+    "companyName": "Akamai Technologies, Inc",
+    "symbol": "AKAM"
+  },
+  "price_target_consensus": null,
+  "_data_source": "edgar_primary"
+}

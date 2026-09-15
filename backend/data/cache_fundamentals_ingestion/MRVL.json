@@ -1,0 +1,226 @@
+{
+  "symbol": "MRVL",
+  "ingested_at": "2026-09-10T01:51:38.401155+00:00",
+  "income_statement": [
+    {
+      "calendarYear": "2026",
+      "period": "FY",
+      "netIncome": 2670100000.0,
+      "sharesOutstanding": 874300000.0
+    },
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "revenue": 8194600000.0,
+      "grossProfit": 4180700000.0,
+      "operatingIncome": 1322900000.0,
+      "incomeTaxExpense": 376500000.0,
+      "netIncome": -885000000.0,
+      "weightedAverageShsOutDil": 869700000.0,
+      "weightedAverageShsOut": 861000000.0,
+      "sharesOutstanding": 866100000.0,
+      "sellingGeneralAndAdministrativeExpense": 767100000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "revenue": 5767300000.0,
+      "grossProfit": 2382200000.0,
+      "operatingIncome": -720300000.0,
+      "incomeTaxExpense": -9700000.0,
+      "netIncome": -933400000.0,
+      "weightedAverageShsOutDil": 865500000.0,
+      "weightedAverageShsOut": 865500000.0,
+      "sharesOutstanding": 866000000.0,
+      "sellingGeneralAndAdministrativeExpense": 798200000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "revenue": 5507700000.0,
+      "grossProfit": 2293600000.0,
+      "operatingIncome": -567700000.0,
+      "incomeTaxExpense": 174700000.0,
+      "netIncome": -163500000.0,
+      "weightedAverageShsOutDil": 861300000.0,
+      "weightedAverageShsOut": 861300000.0,
+      "sharesOutstanding": 856900000.0,
+      "sellingGeneralAndAdministrativeExpense": 834000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "revenue": 5919600000.0,
+      "grossProfit": 2987500000.0,
+      "operatingIncome": 238000000.0,
+      "incomeTaxExpense": 248600000.0,
+      "netIncome": -421000000.0,
+      "weightedAverageShsOutDil": 851400000.0,
+      "weightedAverageShsOut": 851400000.0,
+      "sharesOutstanding": 847800000.0,
+      "sellingGeneralAndAdministrativeExpense": 843600000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "revenue": 4462400000.0,
+      "grossProfit": 2064200000.0,
+      "operatingIncome": -347700000.0,
+      "incomeTaxExpense": -62500000.0,
+      "weightedAverageShsOutDil": 796900000.0,
+      "weightedAverageShsOut": 796900000.0,
+      "sellingGeneralAndAdministrativeExpense": 955300000.0
+    }
+  ],
+  "balance_sheet": [
+    {
+      "calendarYear": "2026",
+      "period": "FY",
+      "totalAssets": 22285300000.0,
+      "totalCurrentAssets": 6460600000.0,
+      "cashAndCashEquivalents": 2638800000.0,
+      "totalCurrentLiabilities": 3220500000.0,
+      "longTermDebt": 3970800000.0,
+      "shortTermBorrowings": 499800000.0,
+      "totalLiabilities": 7976900000.0,
+      "totalShareholderEquity": 14308400000.0,
+      "retainedEarnings": 1355800000.0,
+      "propertyPlantEquipmentNet": 935000000.0,
+      "netReceivables": 2186600000.0,
+      "totalDebt": 4470600000.0
+    },
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "totalAssets": 20204500000.0,
+      "totalCurrentAssets": 3120300000.0,
+      "cashAndCashEquivalents": 948300000.0,
+      "totalCurrentLiabilities": 2026800000.0,
+      "longTermDebt": 3934300000.0,
+      "shortTermBorrowings": 129500000.0,
+      "totalLiabilities": 6777500000.0,
+      "totalShareholderEquity": 13427000000.0,
+      "retainedEarnings": -1109200000.0,
+      "propertyPlantEquipmentNet": 790500000.0,
+      "netReceivables": 1028400000.0,
+      "totalDebt": 4063800000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "totalAssets": 21228500000.0,
+      "totalCurrentAssets": 3062700000.0,
+      "cashAndCashEquivalents": 950800000.0,
+      "totalCurrentLiabilities": 1814200000.0,
+      "longTermDebt": 4058600000.0,
+      "shortTermBorrowings": 107300000.0,
+      "totalLiabilities": 6397100000.0,
+      "totalShareholderEquity": 14831400000.0,
+      "retainedEarnings": -16700000.0,
+      "propertyPlantEquipmentNet": 756000000.0,
+      "netReceivables": 1121600000.0,
+      "totalDebt": 4165900000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "totalAssets": 22522100000.0,
+      "totalCurrentAssets": 3281100000.0,
+      "cashAndCashEquivalents": 911000000.0,
+      "totalCurrentLiabilities": 2386700000.0,
+      "longTermDebt": 3907700000.0,
+      "longTermDebtCurrent": 584400000.0,
+      "shortTermBorrowings": 584400000.0,
+      "totalLiabilities": 6884900000.0,
+      "totalShareholderEquity": 15637200000.0,
+      "retainedEarnings": 1123500000.0,
+      "propertyPlantEquipmentNet": 577400000.0,
+      "netReceivables": 1192200000.0,
+      "totalDebt": 5076500000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "totalAssets": 22108600000.0,
+      "totalCurrentAssets": 2493400000.0,
+      "cashAndCashEquivalents": 613500000.0,
+      "totalCurrentLiabilities": 1388600000.0,
+      "longTermDebt": 4484800000.0,
+      "longTermDebtCurrent": 63200000.0,
+      "shortTermBorrowings": 63200000.0,
+      "totalLiabilities": 6406500000.0,
+      "totalShareholderEquity": 15702100000.0,
+      "retainedEarnings": 1491400000.0,
+      "propertyPlantEquipmentNet": 462800000.0,
+      "netReceivables": 1048600000.0,
+      "totalDebt": 4611200000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "totalAssets": 10764924000.0,
+      "totalCurrentAssets": 1617145000.0,
+      "cashAndCashEquivalents": 748500000.0,
+      "totalCurrentLiabilities": 1077097000.0,
+      "longTermDebt": 993170000.0,
+      "longTermDebtCurrent": 199641000.0,
+      "shortTermBorrowings": 199641000.0,
+      "totalLiabilities": 2329120000.0,
+      "totalShareholderEquity": 8435800000.0,
+      "retainedEarnings": 2103441000.0,
+      "propertyPlantEquipmentNet": 326125000.0,
+      "netReceivables": 536668000.0,
+      "totalDebt": 1392452000.0
+    }
+  ],
+  "cash_flow": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "operatingCashFlow": 1750500000.0,
+      "capitalExpenditure": 354100000.0,
+      "commonStockRepurchased": 2040100000.0,
+      "dividendsPaid": 205100000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "operatingCashFlow": 1681200000.0,
+      "capitalExpenditure": 284600000.0,
+      "commonStockRepurchased": 725000000.0,
+      "dividendsPaid": 207500000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "operatingCashFlow": 1370500000.0,
+      "capitalExpenditure": 336300000.0,
+      "commonStockRepurchased": 150000000.0,
+      "dividendsPaid": 206800000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "operatingCashFlow": 1288800000.0,
+      "capitalExpenditure": 206200000.0,
+      "commonStockRepurchased": 115000000.0,
+      "dividendsPaid": 204400000.0,
+      "depreciationAndAmortization": 304900000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "operatingCashFlow": 819300000.0,
+      "capitalExpenditure": 169200000.0,
+      "commonStockRepurchased": 0.0,
+      "dividendsPaid": 191000000.0,
+      "depreciationAndAmortization": 265900000.0
+    }
+  ],
+  "profile": {
+    "companyName": "MARVELL TECHNOLOGY, INC",
+    "symbol": "MRVL"
+  },
+  "price_target_consensus": null,
+  "_data_source": "edgar_primary"
+}
