@@ -1,0 +1,216 @@
+{
+  "symbol": "TXN",
+  "ingested_at": "2026-09-10T01:51:20.881552+00:00",
+  "income_statement": [
+    {
+      "calendarYear": "2026",
+      "period": "FY",
+      "sharesOutstanding": 907550774.0
+    },
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "revenue": 17682000000.0,
+      "grossProfit": 10083000000.0,
+      "operatingIncome": 6023000000.0,
+      "incomeTaxExpense": 709000000.0,
+      "netIncome": 5001000000.0,
+      "weightedAverageShsOutDil": 913000000.0,
+      "weightedAverageShsOut": 909000000.0,
+      "sharesOutstanding": 910332971.0,
+      "sellingGeneralAndAdministrativeExpense": 1860000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "revenue": 15641000000.0,
+      "grossProfit": 9094000000.0,
+      "operatingIncome": 5465000000.0,
+      "incomeTaxExpense": 654000000.0,
+      "netIncome": 4799000000.0,
+      "weightedAverageShsOutDil": 919000000.0,
+      "weightedAverageShsOut": 912000000.0,
+      "sharesOutstanding": 909287673.0,
+      "sellingGeneralAndAdministrativeExpense": 1794000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "revenue": 17519000000.0,
+      "grossProfit": 11019000000.0,
+      "operatingIncome": 7331000000.0,
+      "incomeTaxExpense": 908000000.0,
+      "netIncome": 6510000000.0,
+      "weightedAverageShsOutDil": 916000000.0,
+      "weightedAverageShsOut": 908000000.0,
+      "sharesOutstanding": 906205795.0,
+      "sellingGeneralAndAdministrativeExpense": 1825000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "revenue": 20028000000.0,
+      "grossProfit": 13771000000.0,
+      "operatingIncome": 10140000000.0,
+      "incomeTaxExpense": 1283000000.0,
+      "netIncome": 8749000000.0,
+      "weightedAverageShsOutDil": 926000000.0,
+      "weightedAverageShsOut": 916000000.0,
+      "sharesOutstanding": 923547062.0,
+      "sellingGeneralAndAdministrativeExpense": 1704000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "revenue": 18344000000.0,
+      "grossProfit": 12376000000.0,
+      "operatingIncome": 8960000000.0,
+      "incomeTaxExpense": 1150000000.0,
+      "netIncome": 7769000000.0,
+      "weightedAverageShsOutDil": 936000000.0,
+      "weightedAverageShsOut": 923000000.0,
+      "sharesOutstanding": 920239191.0,
+      "sellingGeneralAndAdministrativeExpense": 1666000000.0
+    }
+  ],
+  "balance_sheet": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "totalAssets": 34585000000.0,
+      "totalCurrentAssets": 13750000000.0,
+      "cashAndCashEquivalents": 3225000000.0,
+      "shortTermInvestments": 1656000000.0,
+      "totalCurrentLiabilities": 3159000000.0,
+      "longTermDebt": 13548000000.0,
+      "longTermDebtCurrent": 500000000.0,
+      "shortTermBorrowings": 0.0,
+      "totalLiabilities": 18312000000.0,
+      "totalShareholderEquity": 16273000000.0,
+      "retainedEarnings": 52236000000.0,
+      "propertyPlantEquipmentNet": 12320000000.0,
+      "netReceivables": 1963000000.0,
+      "totalDebt": 14048000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "totalAssets": 35509000000.0,
+      "totalCurrentAssets": 15026000000.0,
+      "cashAndCashEquivalents": 3200000000.0,
+      "shortTermInvestments": 4380000000.0,
+      "totalCurrentLiabilities": 3643000000.0,
+      "longTermDebt": 12846000000.0,
+      "longTermDebtCurrent": 750000000.0,
+      "shortTermBorrowings": 0.0,
+      "totalLiabilities": 18606000000.0,
+      "totalShareholderEquity": 16903000000.0,
+      "retainedEarnings": 52262000000.0,
+      "propertyPlantEquipmentNet": 11347000000.0,
+      "netReceivables": 1719000000.0,
+      "totalDebt": 13596000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "totalAssets": 32348000000.0,
+      "totalCurrentAssets": 15122000000.0,
+      "cashAndCashEquivalents": 2964000000.0,
+      "shortTermInvestments": 5611000000.0,
+      "totalCurrentLiabilities": 3320000000.0,
+      "longTermDebt": 10624000000.0,
+      "longTermDebtCurrent": 599000000.0,
+      "shortTermBorrowings": 0.0,
+      "totalLiabilities": 15451000000.0,
+      "totalShareholderEquity": 16897000000.0,
+      "retainedEarnings": 52283000000.0,
+      "propertyPlantEquipmentNet": 9999000000.0,
+      "netReceivables": 1787000000.0,
+      "totalDebt": 11223000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "totalAssets": 27207000000.0,
+      "totalCurrentAssets": 14021000000.0,
+      "cashAndCashEquivalents": 3050000000.0,
+      "shortTermInvestments": 6017000000.0,
+      "totalCurrentLiabilities": 2985000000.0,
+      "longTermDebt": 8235000000.0,
+      "longTermDebtCurrent": 500000000.0,
+      "shortTermBorrowings": 0.0,
+      "totalLiabilities": 12630000000.0,
+      "totalShareholderEquity": 14577000000.0,
+      "retainedEarnings": 50353000000.0,
+      "propertyPlantEquipmentNet": 6876000000.0,
+      "netReceivables": 1895000000.0,
+      "totalDebt": 8735000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "totalAssets": 24676000000.0,
+      "totalCurrentAssets": 13685000000.0,
+      "cashAndCashEquivalents": 4631000000.0,
+      "shortTermInvestments": 5108000000.0,
+      "totalCurrentLiabilities": 2569000000.0,
+      "longTermDebt": 7241000000.0,
+      "longTermDebtCurrent": 500000000.0,
+      "shortTermBorrowings": 0.0,
+      "totalLiabilities": 11343000000.0,
+      "totalShareholderEquity": 13333000000.0,
+      "retainedEarnings": 45919000000.0,
+      "propertyPlantEquipmentNet": 5141000000.0,
+      "netReceivables": 1701000000.0,
+      "totalDebt": 7741000000.0
+    }
+  ],
+  "cash_flow": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "operatingCashFlow": 7153000000.0,
+      "capitalExpenditure": 4550000000.0,
+      "commonStockRepurchased": 1477000000.0,
+      "dividendsPaid": 4999000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "operatingCashFlow": 6318000000.0,
+      "capitalExpenditure": 4820000000.0,
+      "commonStockRepurchased": 929000000.0,
+      "dividendsPaid": 4795000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "operatingCashFlow": 6420000000.0,
+      "capitalExpenditure": 5071000000.0,
+      "commonStockRepurchased": 293000000.0,
+      "dividendsPaid": 4557000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "operatingCashFlow": 8720000000.0,
+      "capitalExpenditure": 2797000000.0,
+      "commonStockRepurchased": 3615000000.0,
+      "dividendsPaid": 4297000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "operatingCashFlow": 8756000000.0,
+      "capitalExpenditure": 2462000000.0,
+      "commonStockRepurchased": 527000000.0,
+      "dividendsPaid": 3886000000.0
+    }
+  ],
+  "profile": {
+    "companyName": "TEXAS INSTRUMENTS INCORPORATED",
+    "symbol": "TXN"
+  },
+  "price_target_consensus": null,
+  "_data_source": "edgar_primary"
+}

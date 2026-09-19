@@ -1,0 +1,195 @@
+{
+  "symbol": "LLY",
+  "ingested_at": "2026-09-10T01:50:33.643373+00:00",
+  "income_statement": [
+    {
+      "calendarYear": "2026",
+      "period": "FY",
+      "sharesOutstanding": 943357420.0
+    },
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "revenue": 65179000000.0,
+      "incomeTaxExpense": 5091000000.0,
+      "netIncome": 20640000000.0,
+      "weightedAverageShsOutDil": 899300000.0,
+      "weightedAverageShsOut": 897300000.0,
+      "sharesOutstanding": 948169999.0,
+      "sellingGeneralAndAdministrativeExpense": 11094000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "revenue": 45043000000.0,
+      "incomeTaxExpense": 2090000000.0,
+      "netIncome": 10590000000.0,
+      "weightedAverageShsOutDil": 904100000.0,
+      "weightedAverageShsOut": 900600000.0,
+      "sharesOutstanding": 950164452.0,
+      "sellingGeneralAndAdministrativeExpense": 8594000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "revenue": 34124000000.0,
+      "incomeTaxExpense": 1314000000.0,
+      "netIncome": 5240000000.0,
+      "weightedAverageShsOutDil": 903300000.0,
+      "weightedAverageShsOut": 900200000.0,
+      "sharesOutstanding": 950296118.0,
+      "sellingGeneralAndAdministrativeExpense": 7404000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "revenue": 28541400000.0,
+      "incomeTaxExpense": 561600000.0,
+      "netIncome": 6244800000.0,
+      "weightedAverageShsOutDil": 904619000.0,
+      "weightedAverageShsOut": 901736000.0,
+      "sharesOutstanding": 952347126.0,
+      "sellingGeneralAndAdministrativeExpense": 6440400000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "revenue": 28318400000.0,
+      "incomeTaxExpense": 573800000.0,
+      "netIncome": 5581700000.0,
+      "weightedAverageShsOutDil": 911681000.0,
+      "weightedAverageShsOut": 906963000.0,
+      "sharesOutstanding": 958425693.0,
+      "sellingGeneralAndAdministrativeExpense": 6431600000.0
+    }
+  ],
+  "balance_sheet": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "totalAssets": 112476000000.0,
+      "totalCurrentAssets": 55629000000.0,
+      "cashAndCashEquivalents": 7268000000.0,
+      "totalCurrentLiabilities": 35228000000.0,
+      "longTermDebt": 40868000000.0,
+      "shortTermBorrowings": 0.0,
+      "totalShareholderEquity": 26535000000.0,
+      "retainedEarnings": 24470000000.0,
+      "propertyPlantEquipmentNet": 24675000000.0,
+      "netReceivables": 17760000000.0,
+      "totalDebt": 40868000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "totalAssets": 78715000000.0,
+      "totalCurrentAssets": 32740000000.0,
+      "cashAndCashEquivalents": 3268000000.0,
+      "shortTermInvestments": 154800000.0,
+      "totalCurrentLiabilities": 28376000000.0,
+      "longTermDebt": 28527000000.0,
+      "shortTermBorrowings": 4338000000.0,
+      "totalShareholderEquity": 14272000000.0,
+      "retainedEarnings": 13545000000.0,
+      "propertyPlantEquipmentNet": 17102000000.0,
+      "netReceivables": 11006000000.0,
+      "totalDebt": 32865000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "totalAssets": 64006300000.0,
+      "totalCurrentAssets": 25727000000.0,
+      "cashAndCashEquivalents": 2818600000.0,
+      "shortTermInvestments": 109100000.0,
+      "totalCurrentLiabilities": 27293200000.0,
+      "longTermDebt": 18320800000.0,
+      "shortTermBorrowings": 6189400000.0,
+      "totalShareholderEquity": 10771900000.0,
+      "retainedEarnings": 10312300000.0,
+      "propertyPlantEquipmentNet": 12913600000.0,
+      "netReceivables": 9090500000.0,
+      "totalDebt": 24510200000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "totalAssets": 49489800000.0,
+      "totalCurrentAssets": 18034500000.0,
+      "cashAndCashEquivalents": 2067000000.0,
+      "shortTermInvestments": 144800000.0,
+      "totalCurrentLiabilities": 17138200000.0,
+      "longTermDebt": 14737500000.0,
+      "shortTermBorrowings": 1498000000.0,
+      "totalShareholderEquity": 10649800000.0,
+      "retainedEarnings": 10042600000.0,
+      "propertyPlantEquipmentNet": 10144000000.0,
+      "netReceivables": 6896000000.0,
+      "totalDebt": 16235500000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "totalAssets": 48806000000.0,
+      "totalCurrentAssets": 18452400000.0,
+      "cashAndCashEquivalents": 3818500000.0,
+      "shortTermInvestments": 90100000.0,
+      "totalCurrentLiabilities": 15052700000.0,
+      "longTermDebt": 15346400000.0,
+      "shortTermBorrowings": 0.0,
+      "totalShareholderEquity": 8979200000.0,
+      "retainedEarnings": 8958500000.0,
+      "propertyPlantEquipmentNet": 8985100000.0,
+      "netReceivables": 6672800000.0,
+      "totalDebt": 15346400000.0
+    }
+  ],
+  "cash_flow": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "operatingCashFlow": 16813000000.0,
+      "commonStockRepurchased": 4108000000.0,
+      "dividendsPaid": 5384000000.0,
+      "depreciationAndAmortization": 1997000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "operatingCashFlow": 8818000000.0,
+      "commonStockRepurchased": 2500000000.0,
+      "dividendsPaid": 4680000000.0,
+      "depreciationAndAmortization": 1767000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "operatingCashFlow": 4240000000.0,
+      "commonStockRepurchased": 750000000.0,
+      "dividendsPaid": 4069000000.0,
+      "depreciationAndAmortization": 1527000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "operatingCashFlow": 7585700000.0,
+      "commonStockRepurchased": 1500000000.0,
+      "dividendsPaid": 3535800000.0,
+      "depreciationAndAmortization": 1522500000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "operatingCashFlow": 7365900000.0,
+      "commonStockRepurchased": 1250000000.0,
+      "dividendsPaid": 3086800000.0,
+      "depreciationAndAmortization": 1547600000.0
+    }
+  ],
+  "profile": {
+    "companyName": "ELI LILLY AND COMPANY",
+    "symbol": "LLY"
+  },
+  "price_target_consensus": null,
+  "_data_source": "edgar_primary"
+}

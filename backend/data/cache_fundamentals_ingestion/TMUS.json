@@ -1,0 +1,203 @@
+{
+  "symbol": "TMUS",
+  "ingested_at": "2026-09-10T01:52:26.287720+00:00",
+  "income_statement": [
+    {
+      "calendarYear": "2026",
+      "period": "FY",
+      "sharesOutstanding": 1101862739.0
+    },
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "revenue": 88309000000.0,
+      "operatingIncome": 18279000000.0,
+      "incomeTaxExpense": 3289000000.0,
+      "netIncome": 10992000000.0,
+      "weightedAverageShsOutDil": 1131076251.0,
+      "weightedAverageShsOut": 1127984348.0,
+      "sharesOutstanding": 1141744952.0,
+      "sellingGeneralAndAdministrativeExpense": 23470000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "revenue": 81400000000.0,
+      "operatingIncome": 18010000000.0,
+      "incomeTaxExpense": 3373000000.0,
+      "netIncome": 11339000000.0,
+      "weightedAverageShsOutDil": 1173213898.0,
+      "weightedAverageShsOut": 1169195373.0,
+      "sharesOutstanding": 1186867575.0,
+      "sellingGeneralAndAdministrativeExpense": 20818000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "revenue": 78558000000.0,
+      "operatingIncome": 14266000000.0,
+      "incomeTaxExpense": 2682000000.0,
+      "netIncome": 8317000000.0,
+      "weightedAverageShsOutDil": 1200286264.0,
+      "weightedAverageShsOut": 1185121562.0,
+      "sharesOutstanding": 1219383110.0,
+      "sellingGeneralAndAdministrativeExpense": 21311000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "revenue": 79571000000.0,
+      "operatingIncome": 6543000000.0,
+      "incomeTaxExpense": 556000000.0,
+      "netIncome": 2590000000.0,
+      "weightedAverageShsOutDil": 1255376769.0,
+      "weightedAverageShsOut": 1249763934.0,
+      "sharesOutstanding": 1249289954.0,
+      "sellingGeneralAndAdministrativeExpense": 21607000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "revenue": 80118000000.0,
+      "operatingIncome": 6892000000.0,
+      "incomeTaxExpense": 327000000.0,
+      "netIncome": 3024000000.0,
+      "weightedAverageShsOutDil": 1254769926.0,
+      "weightedAverageShsOut": 1247154988.0,
+      "sharesOutstanding": 1242804085.0,
+      "sellingGeneralAndAdministrativeExpense": 20238000000.0
+    }
+  ],
+  "balance_sheet": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "totalAssets": 219237000000.0,
+      "totalCurrentAssets": 24461000000.0,
+      "cashAndCashEquivalents": 5598000000.0,
+      "totalCurrentLiabilities": 24500000000.0,
+      "longTermDebt": 81147000000.0,
+      "shortTermBorrowings": 5135000000.0,
+      "totalShareholderEquity": 59203000000.0,
+      "retainedEarnings": 21136000000.0,
+      "propertyPlantEquipmentNet": 38333000000.0,
+      "netReceivables": 4874000000.0,
+      "totalDebt": 86282000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "totalAssets": 208035000000.0,
+      "totalCurrentAssets": 18404000000.0,
+      "cashAndCashEquivalents": 5409000000.0,
+      "totalCurrentLiabilities": 20174000000.0,
+      "longTermDebt": 74197000000.0,
+      "shortTermBorrowings": 4068000000.0,
+      "totalShareholderEquity": 61741000000.0,
+      "retainedEarnings": 14384000000.0,
+      "propertyPlantEquipmentNet": 38533000000.0,
+      "netReceivables": 4276000000.0,
+      "totalDebt": 78265000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "totalAssets": 207682000000.0,
+      "totalCurrentAssets": 19015000000.0,
+      "cashAndCashEquivalents": 5307000000.0,
+      "totalCurrentLiabilities": 20928000000.0,
+      "longTermDebt": 71399000000.0,
+      "shortTermBorrowings": 3619000000.0,
+      "totalShareholderEquity": 64715000000.0,
+      "retainedEarnings": 7347000000.0,
+      "propertyPlantEquipmentNet": 40432000000.0,
+      "netReceivables": 4692000000.0,
+      "totalDebt": 75018000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "totalAssets": 211338000000.0,
+      "totalCurrentAssets": 19067000000.0,
+      "cashAndCashEquivalents": 4674000000.0,
+      "totalCurrentLiabilities": 24742000000.0,
+      "longTermDebt": 66796000000.0,
+      "longTermDebtCurrent": 5164000000.0,
+      "shortTermBorrowings": 5164000000.0,
+      "totalShareholderEquity": 69656000000.0,
+      "retainedEarnings": -223000000.0,
+      "propertyPlantEquipmentNet": 42086000000.0,
+      "netReceivables": 4445000000.0,
+      "totalDebt": 77124000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "totalAssets": 206563000000.0,
+      "totalCurrentAssets": 20891000000.0,
+      "cashAndCashEquivalents": 6703000000.0,
+      "totalCurrentLiabilities": 23499000000.0,
+      "longTermDebt": 67076000000.0,
+      "longTermDebtCurrent": 3378000000.0,
+      "shortTermBorrowings": 3378000000.0,
+      "totalShareholderEquity": 69102000000.0,
+      "retainedEarnings": -2812000000.0,
+      "propertyPlantEquipmentNet": 39803000000.0,
+      "netReceivables": 4194000000.0,
+      "totalDebt": 73832000000.0
+    }
+  ],
+  "cash_flow": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "operatingCashFlow": 27950000000.0,
+      "capitalExpenditure": 9955000000.0,
+      "commonStockRepurchased": 9974000000.0,
+      "dividendsPaid": 4121000000.0,
+      "depreciationAndAmortization": 13508000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "operatingCashFlow": 22293000000.0,
+      "capitalExpenditure": 8840000000.0,
+      "commonStockRepurchased": 11228000000.0,
+      "dividendsPaid": 3300000000.0,
+      "depreciationAndAmortization": 12919000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "operatingCashFlow": 18559000000.0,
+      "capitalExpenditure": 9801000000.0,
+      "commonStockRepurchased": 13074000000.0,
+      "dividendsPaid": 747000000.0,
+      "depreciationAndAmortization": 12818000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "operatingCashFlow": 16781000000.0,
+      "capitalExpenditure": 13970000000.0,
+      "commonStockRepurchased": 3000000000.0,
+      "dividendsPaid": 0.0,
+      "depreciationAndAmortization": 13651000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "operatingCashFlow": 13917000000.0,
+      "capitalExpenditure": 12326000000.0,
+      "commonStockRepurchased": 0.0,
+      "dividendsPaid": 0.0,
+      "depreciationAndAmortization": 16383000000.0
+    }
+  ],
+  "profile": {
+    "companyName": "T-MOBILE US, INC.",
+    "symbol": "TMUS"
+  },
+  "price_target_consensus": null,
+  "_data_source": "edgar_primary"
+}

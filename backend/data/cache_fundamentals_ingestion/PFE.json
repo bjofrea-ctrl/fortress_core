@@ -1,0 +1,200 @@
+{
+  "symbol": "PFE",
+  "ingested_at": "2026-09-10T01:51:26.631294+00:00",
+  "income_statement": [
+    {
+      "calendarYear": "2026",
+      "period": "FY",
+      "sharesOutstanding": 5686267431.0
+    },
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "revenue": 62579000000.0,
+      "incomeTaxExpense": -266000000.0,
+      "netIncome": 7771000000.0,
+      "weightedAverageShsOutDil": 5713000000.0,
+      "weightedAverageShsOut": 5683000000.0,
+      "sharesOutstanding": 5667340414.0,
+      "sellingGeneralAndAdministrativeExpense": 13794000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "revenue": 63627000000.0,
+      "incomeTaxExpense": -28000000.0,
+      "netIncome": 8031000000.0,
+      "weightedAverageShsOutDil": 5700000000.0,
+      "weightedAverageShsOut": 5664000000.0,
+      "sharesOutstanding": 5646778425.0,
+      "sellingGeneralAndAdministrativeExpense": 14730000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "revenue": 59553000000.0,
+      "incomeTaxExpense": -1115000000.0,
+      "netIncome": 2119000000.0,
+      "weightedAverageShsOutDil": 5709000000.0,
+      "weightedAverageShsOut": 5643000000.0,
+      "sharesOutstanding": 5619074621.0,
+      "sellingGeneralAndAdministrativeExpense": 14771000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "revenue": 101175000000.0,
+      "incomeTaxExpense": 3328000000.0,
+      "netIncome": 31372000000.0,
+      "weightedAverageShsOutDil": 5733000000.0,
+      "weightedAverageShsOut": 5608000000.0,
+      "sharesOutstanding": 5623346471.0,
+      "sellingGeneralAndAdministrativeExpense": 13677000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "revenue": 73636000000.0,
+      "incomeTaxExpense": 1852000000.0,
+      "netIncome": 21979000000.0,
+      "weightedAverageShsOutDil": 5708000000.0,
+      "weightedAverageShsOut": 5601000000.0,
+      "sharesOutstanding": 5577629491.0,
+      "sellingGeneralAndAdministrativeExpense": 12703000000.0
+    }
+  ],
+  "balance_sheet": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "totalAssets": 208160000000.0,
+      "totalCurrentAssets": 42898000000.0,
+      "cashAndCashEquivalents": 1142000000.0,
+      "totalCurrentLiabilities": 36984000000.0,
+      "longTermDebt": 61641000000.0,
+      "longTermDebtCurrent": 2997000000.0,
+      "shortTermBorrowings": 0.0,
+      "totalLiabilities": 121385000000.0,
+      "totalShareholderEquity": 86476000000.0,
+      "retainedEarnings": 114610000000.0,
+      "propertyPlantEquipmentNet": 19317000000.0,
+      "netReceivables": 11874000000.0,
+      "totalDebt": 64638000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "totalAssets": 213396000000.0,
+      "totalCurrentAssets": 50358000000.0,
+      "cashAndCashEquivalents": 1043000000.0,
+      "totalCurrentLiabilities": 42995000000.0,
+      "longTermDebt": 57405000000.0,
+      "longTermDebtCurrent": 3747000000.0,
+      "shortTermBorrowings": 2453000000.0,
+      "totalLiabilities": 124899000000.0,
+      "totalShareholderEquity": 88203000000.0,
+      "retainedEarnings": 116725000000.0,
+      "propertyPlantEquipmentNet": 18393000000.0,
+      "netReceivables": 11463000000.0,
+      "totalDebt": 63605000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "totalAssets": 226501000000.0,
+      "totalCurrentAssets": 43333000000.0,
+      "cashAndCashEquivalents": 2917000000.0,
+      "totalCurrentLiabilities": 47794000000.0,
+      "longTermDebt": 61538000000.0,
+      "longTermDebtCurrent": 2254000000.0,
+      "shortTermBorrowings": 7965000000.0,
+      "totalLiabilities": 137213000000.0,
+      "totalShareholderEquity": 89288000000.0,
+      "retainedEarnings": 118353000000.0,
+      "propertyPlantEquipmentNet": 18940000000.0,
+      "netReceivables": 11566000000.0,
+      "totalDebt": 71757000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "totalAssets": 197205000000.0,
+      "totalCurrentAssets": 51259000000.0,
+      "cashAndCashEquivalents": 468000000.0,
+      "totalCurrentLiabilities": 42138000000.0,
+      "longTermDebt": 32884000000.0,
+      "longTermDebtCurrent": 2560000000.0,
+      "shortTermBorrowings": 0.0,
+      "totalLiabilities": 101288000000.0,
+      "totalShareholderEquity": 95916000000.0,
+      "retainedEarnings": 125656000000.0,
+      "propertyPlantEquipmentNet": 16274000000.0,
+      "netReceivables": 10952000000.0,
+      "totalDebt": 35444000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "totalAssets": 181476000000.0,
+      "totalCurrentAssets": 59693000000.0,
+      "cashAndCashEquivalents": 1983000000.0,
+      "totalCurrentLiabilities": 42671000000.0,
+      "longTermDebt": 36195000000.0,
+      "longTermDebtCurrent": 1636000000.0,
+      "shortTermBorrowings": 0.0,
+      "totalLiabilities": 104013000000.0,
+      "totalShareholderEquity": 77462000000.0,
+      "retainedEarnings": 103394000000.0,
+      "propertyPlantEquipmentNet": 14882000000.0,
+      "netReceivables": 11479000000.0,
+      "totalDebt": 37831000000.0
+    }
+  ],
+  "cash_flow": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "operatingCashFlow": 11704000000.0,
+      "capitalExpenditure": 2629000000.0,
+      "depreciationAndAmortization": 6592000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "operatingCashFlow": 12744000000.0,
+      "capitalExpenditure": 2909000000.0,
+      "commonStockRepurchased": 0.0,
+      "depreciationAndAmortization": 7013000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "operatingCashFlow": 8700000000.0,
+      "capitalExpenditure": 3907000000.0,
+      "commonStockRepurchased": 0.0,
+      "depreciationAndAmortization": 6290000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "operatingCashFlow": 29267000000.0,
+      "capitalExpenditure": 3236000000.0,
+      "commonStockRepurchased": 2000000000.0,
+      "depreciationAndAmortization": 5064000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "operatingCashFlow": 32580000000.0,
+      "capitalExpenditure": 2711000000.0,
+      "commonStockRepurchased": 0.0,
+      "depreciationAndAmortization": 5191000000.0
+    }
+  ],
+  "profile": {
+    "companyName": "PFIZER INC",
+    "symbol": "PFE"
+  },
+  "price_target_consensus": null,
+  "_data_source": "edgar_primary"
+}

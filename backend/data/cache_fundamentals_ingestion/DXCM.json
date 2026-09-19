@@ -1,0 +1,187 @@
+{
+  "symbol": "DXCM",
+  "ingested_at": "2026-09-10T01:51:44.646005+00:00",
+  "income_statement": [
+    {
+      "calendarYear": "2026",
+      "period": "FY",
+      "sharesOutstanding": 384864842.0
+    },
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "revenue": 4662000000.0,
+      "grossProfit": 2801900000.0,
+      "operatingIncome": 911800000.0,
+      "incomeTaxExpense": 252100000.0,
+      "netIncome": 836300000.0,
+      "weightedAverageShsOutDil": 405500000.0,
+      "weightedAverageShsOut": 390200000.0,
+      "sharesOutstanding": 390772018.0,
+      "sellingGeneralAndAdministrativeExpense": 1291000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "revenue": 4033000000.0,
+      "grossProfit": 2438200000.0,
+      "operatingIncome": 600000000.0,
+      "incomeTaxExpense": 132800000.0,
+      "netIncome": 576200000.0,
+      "weightedAverageShsOutDil": 412700000.0,
+      "weightedAverageShsOut": 393600000.0,
+      "sharesOutstanding": 385515421.0,
+      "sellingGeneralAndAdministrativeExpense": 1285800000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "revenue": 3622300000.0,
+      "grossProfit": 2288900000.0,
+      "operatingIncome": 597700000.0,
+      "incomeTaxExpense": 168900000.0,
+      "netIncome": 541500000.0,
+      "weightedAverageShsOutDil": 425500000.0,
+      "weightedAverageShsOut": 386000000.0,
+      "sharesOutstanding": 386413690.0,
+      "sellingGeneralAndAdministrativeExpense": 1185400000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "revenue": 2909800000.0,
+      "grossProfit": 1883100000.0,
+      "operatingIncome": 391200000.0,
+      "incomeTaxExpense": 49600000.0,
+      "netIncome": 341200000.0,
+      "weightedAverageShsOutDil": 427500000.0,
+      "weightedAverageShsOut": 389400000.0,
+      "sharesOutstanding": 97065634.0,
+      "sellingGeneralAndAdministrativeExpense": 1007700000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "revenue": 2448500000.0,
+      "grossProfit": 1680500000.0,
+      "operatingIncome": 265800000.0,
+      "incomeTaxExpense": 39900000.0,
+      "netIncome": 216900000.0,
+      "weightedAverageShsOutDil": 428800000.0,
+      "weightedAverageShsOut": 386900000.0,
+      "sharesOutstanding": 96177363.0,
+      "sellingGeneralAndAdministrativeExpense": 810500000.0
+    }
+  ],
+  "balance_sheet": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "totalAssets": 6339900000.0,
+      "totalCurrentAssets": 4033300000.0,
+      "cashAndCashEquivalents": 917700000.0,
+      "totalCurrentLiabilities": 2142500000.0,
+      "totalLiabilities": 3593900000.0,
+      "totalShareholderEquity": 2746000000.0,
+      "retainedEarnings": 2433900000.0,
+      "netReceivables": 1216100000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "totalAssets": 6484500000.0,
+      "totalCurrentAssets": 4301400000.0,
+      "cashAndCashEquivalents": 606100000.0,
+      "totalCurrentLiabilities": 2932000000.0,
+      "totalLiabilities": 4381900000.0,
+      "totalShareholderEquity": 2102600000.0,
+      "retainedEarnings": 1597600000.0,
+      "netReceivables": 1005700000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "totalAssets": 6264500000.0,
+      "totalCurrentAssets": 4425900000.0,
+      "cashAndCashEquivalents": 566300000.0,
+      "totalCurrentLiabilities": 1556000000.0,
+      "totalLiabilities": 4195900000.0,
+      "totalShareholderEquity": 2068600000.0,
+      "retainedEarnings": 1021400000.0,
+      "netReceivables": 973900000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "totalAssets": 5391700000.0,
+      "totalCurrentAssets": 3668800000.0,
+      "cashAndCashEquivalents": 643300000.0,
+      "totalCurrentLiabilities": 1839300000.0,
+      "totalLiabilities": 3259900000.0,
+      "totalShareholderEquity": 2131800000.0,
+      "retainedEarnings": 479900000.0,
+      "netReceivables": 713300000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "totalAssets": 4933300000.0,
+      "totalCurrentAssets": 3684400000.0,
+      "cashAndCashEquivalents": 1053600000.0,
+      "totalCurrentLiabilities": 720800000.0,
+      "totalLiabilities": 2891200000.0,
+      "totalShareholderEquity": 2042100000.0,
+      "retainedEarnings": 138700000.0,
+      "propertyPlantEquipmentNet": 801800000.0,
+      "netReceivables": 514300000.0
+    }
+  ],
+  "cash_flow": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "operatingCashFlow": 1440700000.0,
+      "capitalExpenditure": 363500000.0,
+      "commonStockRepurchased": 500000000.0,
+      "depreciationAndAmortization": 251800000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "operatingCashFlow": 989500000.0,
+      "capitalExpenditure": 358800000.0,
+      "commonStockRepurchased": 750000000.0,
+      "depreciationAndAmortization": 217700000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "operatingCashFlow": 748500000.0,
+      "capitalExpenditure": 236600000.0,
+      "commonStockRepurchased": 688700000.0,
+      "depreciationAndAmortization": 186000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "operatingCashFlow": 669500000.0,
+      "capitalExpenditure": 364800000.0,
+      "commonStockRepurchased": 557700000.0,
+      "depreciationAndAmortization": 155900000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "operatingCashFlow": 442500000.0,
+      "capitalExpenditure": 389200000.0,
+      "commonStockRepurchased": 0.0,
+      "depreciationAndAmortization": 102000000.0
+    }
+  ],
+  "profile": {
+    "companyName": "DEXCOM, INC.",
+    "symbol": "DXCM"
+  },
+  "price_target_consensus": null,
+  "_data_source": "edgar_primary"
+}

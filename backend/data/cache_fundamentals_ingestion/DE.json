@@ -1,0 +1,200 @@
+{
+  "symbol": "DE",
+  "ingested_at": "2026-09-10T01:52:02.466600+00:00",
+  "income_statement": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "revenue": 45684000000.0,
+      "incomeTaxExpense": 1259000000.0,
+      "netIncome": 5027000000.0,
+      "weightedAverageShsOutDil": 271700000.0,
+      "weightedAverageShsOut": 270900000.0,
+      "sharesOutstanding": 270445437.0,
+      "sellingGeneralAndAdministrativeExpense": 4663000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "revenue": 51716000000.0,
+      "operatingIncome": 9039000000.0,
+      "incomeTaxExpense": 2094000000.0,
+      "netIncome": 7100000000.0,
+      "weightedAverageShsOutDil": 277100000.0,
+      "weightedAverageShsOut": 276000000.0,
+      "sharesOutstanding": 271575282.0,
+      "sellingGeneralAndAdministrativeExpense": 4840000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "revenue": 61251000000.0,
+      "operatingIncome": 12958000000.0,
+      "incomeTaxExpense": 2871000000.0,
+      "netIncome": 10166000000.0,
+      "weightedAverageShsOutDil": 293600000.0,
+      "weightedAverageShsOut": 292200000.0,
+      "sharesOutstanding": 280255442.0,
+      "sellingGeneralAndAdministrativeExpense": 4595000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "revenue": 52577000000.0,
+      "operatingIncome": 9508000000.0,
+      "incomeTaxExpense": 2007000000.0,
+      "netIncome": 7131000000.0,
+      "weightedAverageShsOutDil": 306300000.0,
+      "weightedAverageShsOut": 304500000.0,
+      "sharesOutstanding": 298237257.0,
+      "sellingGeneralAndAdministrativeExpense": 3863000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "revenue": 44024000000.0,
+      "operatingIncome": 8012000000.0,
+      "incomeTaxExpense": 1658000000.0,
+      "netIncome": 5963000000.0,
+      "weightedAverageShsOutDil": 314000000.0,
+      "weightedAverageShsOut": 311600000.0,
+      "sharesOutstanding": 307407282.0,
+      "sellingGeneralAndAdministrativeExpense": 3383000000.0
+    },
+    {
+      "calendarYear": "2020",
+      "period": "FY",
+      "revenue": 35540000000.0,
+      "grossProfit": 1452000000.0,
+      "operatingIncome": 4305000000.0,
+      "incomeTaxExpense": 1082000000.0,
+      "netIncome": 2751000000.0,
+      "weightedAverageShsOutDil": 316600000.0,
+      "weightedAverageShsOut": 313500000.0,
+      "sharesOutstanding": 313361302.0,
+      "sellingGeneralAndAdministrativeExpense": 3477000000.0
+    }
+  ],
+  "balance_sheet": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "totalAssets": 105996000000.0,
+      "cashAndCashEquivalents": 8276000000.0,
+      "totalLiabilities": 79989000000.0,
+      "totalShareholderEquity": 25950000000.0,
+      "retainedEarnings": 59676000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "totalAssets": 107320000000.0,
+      "cashAndCashEquivalents": 7324000000.0,
+      "totalLiabilities": 84395000000.0,
+      "totalShareholderEquity": 22836000000.0,
+      "retainedEarnings": 56402000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "totalAssets": 104087000000.0,
+      "cashAndCashEquivalents": 7458000000.0,
+      "totalLiabilities": 82201000000.0,
+      "totalShareholderEquity": 21789000000.0,
+      "retainedEarnings": 50931000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "totalAssets": 90030000000.0,
+      "cashAndCashEquivalents": 4941000000.0,
+      "totalLiabilities": 69673000000.0,
+      "totalShareholderEquity": 20265000000.0,
+      "retainedEarnings": 42247000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "totalAssets": 84114000000.0,
+      "cashAndCashEquivalents": 8125000000.0,
+      "longTermDebt": 32888000000.0,
+      "totalLiabilities": 65680000000.0,
+      "totalShareholderEquity": 18434000000.0,
+      "retainedEarnings": 36449000000.0,
+      "totalDebt": 32888000000.0
+    },
+    {
+      "calendarYear": "2020",
+      "period": "FY",
+      "totalAssets": 75091000000.0,
+      "cashAndCashEquivalents": 7172000000.0,
+      "longTermDebt": 32734000000.0,
+      "totalLiabilities": 62147000000.0,
+      "totalShareholderEquity": 12944000000.0,
+      "retainedEarnings": 31646000000.0,
+      "totalDebt": 32734000000.0
+    }
+  ],
+  "cash_flow": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "operatingCashFlow": 7459000000.0,
+      "capitalExpenditure": 1360000000.0,
+      "commonStockRepurchased": 1138000000.0,
+      "dividendsPaid": 1720000000.0,
+      "depreciationAndAmortization": 2229000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "operatingCashFlow": 9231000000.0,
+      "capitalExpenditure": 1640000000.0,
+      "commonStockRepurchased": 4007000000.0,
+      "dividendsPaid": 1605000000.0,
+      "depreciationAndAmortization": 2118000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "operatingCashFlow": 8589000000.0,
+      "capitalExpenditure": 1498000000.0,
+      "commonStockRepurchased": 7216000000.0,
+      "dividendsPaid": 1427000000.0,
+      "depreciationAndAmortization": 2004000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "operatingCashFlow": 4699000000.0,
+      "capitalExpenditure": 1134000000.0,
+      "commonStockRepurchased": 3597000000.0,
+      "dividendsPaid": 1313000000.0,
+      "depreciationAndAmortization": 1895000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "operatingCashFlow": 7726000000.0,
+      "capitalExpenditure": 848000000.0,
+      "commonStockRepurchased": 2538000000.0,
+      "dividendsPaid": 1040000000.0,
+      "depreciationAndAmortization": 2050000000.0
+    },
+    {
+      "calendarYear": "2020",
+      "period": "FY",
+      "operatingCashFlow": 7483000000.0,
+      "capitalExpenditure": 820000000.0,
+      "commonStockRepurchased": 750000000.0,
+      "dividendsPaid": 956000000.0,
+      "depreciationAndAmortization": 2118000000.0
+    }
+  ],
+  "profile": {
+    "companyName": "DEERE & CO",
+    "symbol": "DE"
+  },
+  "price_target_consensus": null,
+  "_data_source": "edgar_primary"
+}

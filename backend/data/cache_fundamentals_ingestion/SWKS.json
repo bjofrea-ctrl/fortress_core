@@ -1,0 +1,201 @@
+{
+  "symbol": "SWKS",
+  "ingested_at": "2026-09-10T01:51:38.609554+00:00",
+  "income_statement": [
+    {
+      "calendarYear": "2026",
+      "period": "FY",
+      "sharesOutstanding": 149935620.0
+    },
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "revenue": 4086900000.0,
+      "grossProfit": 1682100000.0,
+      "operatingIncome": 500000000.0,
+      "incomeTaxExpense": 49600000.0,
+      "netIncome": 477100000.0,
+      "weightedAverageShsOutDil": 155100000.0,
+      "weightedAverageShsOut": 154400000.0,
+      "sharesOutstanding": 148679767.0,
+      "sellingGeneralAndAdministrativeExpense": 371500000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "revenue": 4178000000.0,
+      "grossProfit": 1720800000.0,
+      "operatingIncome": 637400000.0,
+      "incomeTaxExpense": 40400000.0,
+      "netIncome": 596000000.0,
+      "weightedAverageShsOutDil": 161500000.0,
+      "weightedAverageShsOut": 160100000.0,
+      "sharesOutstanding": 159920649.0,
+      "sellingGeneralAndAdministrativeExpense": 300800000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "revenue": 4772400000.0,
+      "grossProfit": 2107300000.0,
+      "operatingIncome": 1125000000.0,
+      "incomeTaxExpense": 96000000.0,
+      "netIncome": 982800000.0,
+      "weightedAverageShsOutDil": 160300000.0,
+      "weightedAverageShsOut": 159400000.0,
+      "sharesOutstanding": 159954867.0,
+      "sellingGeneralAndAdministrativeExpense": 314000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "revenue": 5485500000.0,
+      "grossProfit": 2604300000.0,
+      "operatingIncome": 1527000000.0,
+      "incomeTaxExpense": 201400000.0,
+      "netIncome": 1275200000.0,
+      "weightedAverageShsOutDil": 163300000.0,
+      "weightedAverageShsOut": 162400000.0,
+      "sharesOutstanding": 160161064.0,
+      "sellingGeneralAndAdministrativeExpense": 329800000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "revenue": 5109100000.0,
+      "grossProfit": 2512400000.0,
+      "operatingIncome": 1612700000.0,
+      "incomeTaxExpense": 100400000.0,
+      "netIncome": 1498300000.0,
+      "weightedAverageShsOutDil": 167000000.0,
+      "weightedAverageShsOut": 165200000.0,
+      "sharesOutstanding": 166691622.0,
+      "sellingGeneralAndAdministrativeExpense": 322500000.0
+    }
+  ],
+  "balance_sheet": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "totalAssets": 7917000000.0,
+      "totalCurrentAssets": 3077000000.0,
+      "cashAndCashEquivalents": 1161300000.0,
+      "totalCurrentLiabilities": 1323200000.0,
+      "longTermDebt": 496400000.0,
+      "totalLiabilities": 2159900000.0,
+      "totalShareholderEquity": 5757100000.0,
+      "retainedEarnings": 5656900000.0,
+      "propertyPlantEquipmentNet": 1194600000.0,
+      "netReceivables": 598100000.0,
+      "totalDebt": 496400000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "totalAssets": 8283300000.0,
+      "totalCurrentAssets": 3341000000.0,
+      "cashAndCashEquivalents": 1368600000.0,
+      "totalCurrentLiabilities": 602700000.0,
+      "longTermDebt": 994300000.0,
+      "totalLiabilities": 1946600000.0,
+      "totalShareholderEquity": 6336700000.0,
+      "retainedEarnings": 6032900000.0,
+      "propertyPlantEquipmentNet": 1280300000.0,
+      "netReceivables": 508800000.0,
+      "totalDebt": 994300000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "totalAssets": 8426700000.0,
+      "totalCurrentAssets": 3179500000.0,
+      "cashAndCashEquivalents": 718800000.0,
+      "totalCurrentLiabilities": 955700000.0,
+      "longTermDebt": 992900000.0,
+      "totalLiabilities": 2344000000.0,
+      "totalShareholderEquity": 6082700000.0,
+      "retainedEarnings": 5876000000.0,
+      "propertyPlantEquipmentNet": 1390100000.0,
+      "netReceivables": 864300000.0,
+      "totalDebt": 992900000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "totalAssets": 8873800000.0,
+      "totalCurrentAssets": 3229900000.0,
+      "cashAndCashEquivalents": 566000000.0,
+      "totalCurrentLiabilities": 1226900000.0,
+      "longTermDebt": 1689900000.0,
+      "totalLiabilities": 3404800000.0,
+      "totalShareholderEquity": 5469000000.0,
+      "retainedEarnings": 5421900000.0,
+      "propertyPlantEquipmentNet": 1604800000.0,
+      "netReceivables": 1094000000.0,
+      "totalDebt": 1689900000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "totalAssets": 8590700000.0,
+      "totalCurrentAssets": 2865400000.0,
+      "cashAndCashEquivalents": 882900000.0,
+      "totalCurrentLiabilities": 658500000.0,
+      "longTermDebt": 2235600000.0,
+      "totalLiabilities": 3293600000.0,
+      "totalShareholderEquity": 5297100000.0,
+      "retainedEarnings": 5185800000.0,
+      "propertyPlantEquipmentNet": 1501600000.0,
+      "netReceivables": 756200000.0,
+      "totalDebt": 2235600000.0
+    }
+  ],
+  "cash_flow": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "operatingCashFlow": 1300800000.0,
+      "capitalExpenditure": 195000000.0,
+      "commonStockRepurchased": 830200000.0,
+      "dividendsPaid": 110600000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "operatingCashFlow": 1824700000.0,
+      "capitalExpenditure": 157000000.0,
+      "commonStockRepurchased": 77300000.0,
+      "dividendsPaid": 109100000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "operatingCashFlow": 1856400000.0,
+      "capitalExpenditure": 210300000.0,
+      "commonStockRepurchased": 175300000.0,
+      "dividendsPaid": 108900000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "operatingCashFlow": 1424600000.0,
+      "capitalExpenditure": 489400000.0,
+      "commonStockRepurchased": 886800000.0,
+      "dividendsPaid": 99400000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "operatingCashFlow": 1772000000.0,
+      "capitalExpenditure": 637800000.0,
+      "commonStockRepurchased": 195600000.0,
+      "dividendsPaid": 92500000.0
+    }
+  ],
+  "profile": {
+    "companyName": "SKYWORKS SOLUTIONS, INC.",
+    "symbol": "SWKS"
+  },
+  "price_target_consensus": null,
+  "_data_source": "edgar_primary"
+}

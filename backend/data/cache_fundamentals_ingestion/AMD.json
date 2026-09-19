@@ -1,0 +1,204 @@
+{
+  "symbol": "AMD",
+  "ingested_at": "2026-09-10T01:51:02.342344+00:00",
+  "income_statement": [
+    {
+      "calendarYear": "2026",
+      "period": "FY",
+      "sharesOutstanding": 1630410843.0
+    },
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "revenue": 34639000000.0,
+      "grossProfit": 17152000000.0,
+      "operatingIncome": 3694000000.0,
+      "incomeTaxExpense": -103000000.0,
+      "netIncome": 4335000000.0,
+      "weightedAverageShsOutDil": 1636000000.0,
+      "weightedAverageShsOut": 1624000000.0,
+      "sharesOutstanding": 1620477962.0,
+      "sellingGeneralAndAdministrativeExpense": 4144000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "revenue": 25785000000.0,
+      "grossProfit": 12725000000.0,
+      "operatingIncome": 1900000000.0,
+      "incomeTaxExpense": 381000000.0,
+      "netIncome": 1641000000.0,
+      "weightedAverageShsOutDil": 1637000000.0,
+      "weightedAverageShsOut": 1620000000.0,
+      "sharesOutstanding": 1615786841.0,
+      "sellingGeneralAndAdministrativeExpense": 2735000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "revenue": 22680000000.0,
+      "grossProfit": 10460000000.0,
+      "operatingIncome": 401000000.0,
+      "incomeTaxExpense": -346000000.0,
+      "netIncome": 854000000.0,
+      "weightedAverageShsOutDil": 1625000000.0,
+      "weightedAverageShsOut": 1614000000.0,
+      "sharesOutstanding": 1611388217.0,
+      "sellingGeneralAndAdministrativeExpense": 2318000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "revenue": 23601000000.0,
+      "grossProfit": 10603000000.0,
+      "operatingIncome": 1264000000.0,
+      "incomeTaxExpense": -122000000.0,
+      "netIncome": 1320000000.0,
+      "weightedAverageShsOutDil": 1571000000.0,
+      "weightedAverageShsOut": 1561000000.0,
+      "sharesOutstanding": 1199303422.0,
+      "sellingGeneralAndAdministrativeExpense": 2336000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "revenue": 16434000000.0,
+      "grossProfit": 7929000000.0,
+      "operatingIncome": 3648000000.0,
+      "incomeTaxExpense": 513000000.0,
+      "netIncome": 3162000000.0,
+      "weightedAverageShsOutDil": 1229000000.0,
+      "weightedAverageShsOut": 1213000000.0,
+      "sharesOutstanding": 1211280009.0,
+      "sellingGeneralAndAdministrativeExpense": 1448000000.0
+    }
+  ],
+  "balance_sheet": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "totalAssets": 76926000000.0,
+      "totalCurrentAssets": 26947000000.0,
+      "cashAndCashEquivalents": 5539000000.0,
+      "shortTermInvestments": 5013000000.0,
+      "totalCurrentLiabilities": 9455000000.0,
+      "longTermDebt": 2348000000.0,
+      "longTermDebtCurrent": 874000000.0,
+      "shortTermBorrowings": 874000000.0,
+      "totalShareholderEquity": 62999000000.0,
+      "retainedEarnings": 6699000000.0,
+      "propertyPlantEquipmentNet": 2312000000.0,
+      "netReceivables": 6315000000.0,
+      "totalDebt": 4096000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "totalAssets": 69226000000.0,
+      "totalCurrentAssets": 19049000000.0,
+      "cashAndCashEquivalents": 3787000000.0,
+      "shortTermInvestments": 1345000000.0,
+      "totalCurrentLiabilities": 7281000000.0,
+      "longTermDebt": 1721000000.0,
+      "longTermDebtCurrent": 0.0,
+      "shortTermBorrowings": 0.0,
+      "totalShareholderEquity": 57568000000.0,
+      "retainedEarnings": 2364000000.0,
+      "propertyPlantEquipmentNet": 1802000000.0,
+      "netReceivables": 6192000000.0,
+      "totalDebt": 1721000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "totalAssets": 67885000000.0,
+      "totalCurrentAssets": 16768000000.0,
+      "cashAndCashEquivalents": 3933000000.0,
+      "shortTermInvestments": 1840000000.0,
+      "totalCurrentLiabilities": 6689000000.0,
+      "longTermDebt": 1717000000.0,
+      "longTermDebtCurrent": 751000000.0,
+      "shortTermBorrowings": 751000000.0,
+      "totalShareholderEquity": 55892000000.0,
+      "retainedEarnings": 723000000.0,
+      "propertyPlantEquipmentNet": 1589000000.0,
+      "netReceivables": 4323000000.0,
+      "totalDebt": 3219000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "totalAssets": 67580000000.0,
+      "totalCurrentAssets": 15019000000.0,
+      "cashAndCashEquivalents": 4835000000.0,
+      "shortTermInvestments": 1020000000.0,
+      "totalCurrentLiabilities": 6369000000.0,
+      "longTermDebt": 2467000000.0,
+      "shortTermBorrowings": 0.0,
+      "totalShareholderEquity": 54750000000.0,
+      "retainedEarnings": -131000000.0,
+      "propertyPlantEquipmentNet": 1513000000.0,
+      "netReceivables": 4126000000.0,
+      "totalDebt": 2467000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "totalAssets": 12419000000.0,
+      "totalCurrentAssets": 8583000000.0,
+      "cashAndCashEquivalents": 2535000000.0,
+      "shortTermInvestments": 1073000000.0,
+      "totalCurrentLiabilities": 4240000000.0,
+      "longTermDebt": 1000000.0,
+      "shortTermBorrowings": 312000000.0,
+      "totalShareholderEquity": 7497000000.0,
+      "retainedEarnings": -1451000000.0,
+      "propertyPlantEquipmentNet": 702000000.0,
+      "netReceivables": 2706000000.0,
+      "totalDebt": 313000000.0
+    }
+  ],
+  "cash_flow": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "operatingCashFlow": 7709000000.0,
+      "capitalExpenditure": 974000000.0,
+      "commonStockRepurchased": 1316000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "operatingCashFlow": 3041000000.0,
+      "capitalExpenditure": 636000000.0,
+      "commonStockRepurchased": 862000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "operatingCashFlow": 1667000000.0,
+      "capitalExpenditure": 546000000.0,
+      "commonStockRepurchased": 985000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "operatingCashFlow": 3565000000.0,
+      "capitalExpenditure": 450000000.0,
+      "commonStockRepurchased": 3702000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "operatingCashFlow": 3521000000.0,
+      "capitalExpenditure": 301000000.0,
+      "commonStockRepurchased": 1762000000.0
+    }
+  ],
+  "profile": {
+    "companyName": "ADVANCED MICRO DEVICES INC",
+    "symbol": "AMD"
+  },
+  "price_target_consensus": null,
+  "_data_source": "edgar_primary"
+}

@@ -1,0 +1,206 @@
+{
+  "symbol": "JNJ",
+  "ingested_at": "2026-09-10T01:50:55.000813+00:00",
+  "income_statement": [
+    {
+      "calendarYear": "2026",
+      "period": "FY",
+      "sharesOutstanding": 2409898936.0
+    },
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "revenue": 94193000000.0,
+      "grossProfit": 63937000000.0,
+      "incomeTaxExpense": 5777000000.0,
+      "netIncome": 26804000000.0,
+      "weightedAverageShsOutDil": 2429400000.0,
+      "weightedAverageShsOut": 2407400000.0,
+      "sharesOutstanding": 2407616693.0,
+      "sellingGeneralAndAdministrativeExpense": 23676000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "revenue": 88821000000.0,
+      "grossProfit": 61350000000.0,
+      "incomeTaxExpense": 2621000000.0,
+      "netIncome": 14066000000.0,
+      "weightedAverageShsOutDil": 2429400000.0,
+      "weightedAverageShsOut": 2407300000.0,
+      "sharesOutstanding": 2408767228.0,
+      "sellingGeneralAndAdministrativeExpense": 22869000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "revenue": 85159000000.0,
+      "grossProfit": 58606000000.0,
+      "incomeTaxExpense": 1736000000.0,
+      "netIncome": 35153000000.0,
+      "weightedAverageShsOutDil": 2560400000.0,
+      "weightedAverageShsOut": 2533500000.0,
+      "sharesOutstanding": 2604286303.0,
+      "sellingGeneralAndAdministrativeExpense": 21512000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "revenue": 79990000000.0,
+      "grossProfit": 55394000000.0,
+      "incomeTaxExpense": 2989000000.0,
+      "netIncome": 17941000000.0,
+      "weightedAverageShsOutDil": 2663900000.0,
+      "weightedAverageShsOut": 2625200000.0,
+      "sharesOutstanding": 2629268158.0,
+      "sellingGeneralAndAdministrativeExpense": 20246000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "revenue": 78740000000.0,
+      "grossProfit": 55338000000.0,
+      "incomeTaxExpense": 1377000000.0,
+      "netIncome": 20878000000.0,
+      "weightedAverageShsOutDil": 2674000000.0,
+      "weightedAverageShsOut": 2632100000.0,
+      "sharesOutstanding": 2628679824.0,
+      "sellingGeneralAndAdministrativeExpense": 20118000000.0
+    }
+  ],
+  "balance_sheet": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "totalAssets": 199210000000.0,
+      "totalCurrentAssets": 55624000000.0,
+      "cashAndCashEquivalents": 19709000000.0,
+      "totalCurrentLiabilities": 54126000000.0,
+      "longTermDebt": 39438000000.0,
+      "longTermDebtCurrent": 2000000000.0,
+      "shortTermBorrowings": 8495000000.0,
+      "totalLiabilities": 117666000000.0,
+      "totalShareholderEquity": 81544000000.0,
+      "retainedEarnings": 168978000000.0,
+      "propertyPlantEquipmentNet": 23169000000.0,
+      "netReceivables": 17178000000.0,
+      "totalDebt": 49933000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "totalAssets": 180104000000.0,
+      "totalCurrentAssets": 55893000000.0,
+      "cashAndCashEquivalents": 24105000000.0,
+      "totalCurrentLiabilities": 50321000000.0,
+      "longTermDebt": 30651000000.0,
+      "longTermDebtCurrent": 1749000000.0,
+      "shortTermBorrowings": 5983000000.0,
+      "totalLiabilities": 108614000000.0,
+      "totalShareholderEquity": 71490000000.0,
+      "retainedEarnings": 155791000000.0,
+      "propertyPlantEquipmentNet": 20518000000.0,
+      "netReceivables": 14842000000.0,
+      "totalDebt": 38383000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "totalAssets": 167558000000.0,
+      "totalCurrentAssets": 53495000000.0,
+      "cashAndCashEquivalents": 14127000000.0,
+      "totalCurrentLiabilities": 46282000000.0,
+      "longTermDebt": 25881000000.0,
+      "longTermDebtCurrent": 1469000000.0,
+      "shortTermBorrowings": 3451000000.0,
+      "totalLiabilities": 98784000000.0,
+      "totalShareholderEquity": 76804000000.0,
+      "retainedEarnings": 153843000000.0,
+      "propertyPlantEquipmentNet": 19898000000.0,
+      "netReceivables": 14873000000.0,
+      "totalDebt": 30801000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "totalAssets": 182018000000.0,
+      "totalCurrentAssets": 60979000000.0,
+      "cashAndCashEquivalents": 14487000000.0,
+      "totalCurrentLiabilities": 45226000000.0,
+      "longTermDebt": 29985000000.0,
+      "longTermDebtCurrent": 2131000000.0,
+      "shortTermBorrowings": 3766000000.0,
+      "totalLiabilities": 107995000000.0,
+      "totalShareholderEquity": 74023000000.0,
+      "retainedEarnings": 123060000000.0,
+      "propertyPlantEquipmentNet": 18962000000.0,
+      "netReceivables": 15283000000.0,
+      "totalDebt": 35882000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "totalAssets": 174894000000.0,
+      "totalCurrentAssets": 51237000000.0,
+      "cashAndCashEquivalents": 13985000000.0,
+      "totalCurrentLiabilities": 42493000000.0,
+      "longTermDebt": 32635000000.0,
+      "longTermDebtCurrent": 1799000000.0,
+      "shortTermBorrowings": 2631000000.0,
+      "totalLiabilities": 111616000000.0,
+      "totalShareholderEquity": 63278000000.0,
+      "retainedEarnings": 113890000000.0,
+      "propertyPlantEquipmentNet": 18766000000.0,
+      "netReceivables": 13576000000.0,
+      "totalDebt": 37065000000.0
+    }
+  ],
+  "cash_flow": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "operatingCashFlow": 24530000000.0,
+      "capitalExpenditure": 4832000000.0,
+      "commonStockRepurchased": 5953000000.0,
+      "depreciationAndAmortization": 7503000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "operatingCashFlow": 24266000000.0,
+      "capitalExpenditure": 4424000000.0,
+      "commonStockRepurchased": 2432000000.0,
+      "depreciationAndAmortization": 7339000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "operatingCashFlow": 22791000000.0,
+      "capitalExpenditure": 4543000000.0,
+      "commonStockRepurchased": 5054000000.0,
+      "depreciationAndAmortization": 7486000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "operatingCashFlow": 21194000000.0,
+      "capitalExpenditure": 4009000000.0,
+      "commonStockRepurchased": 6035000000.0,
+      "depreciationAndAmortization": 6970000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "operatingCashFlow": 23410000000.0,
+      "capitalExpenditure": 3652000000.0,
+      "commonStockRepurchased": 3456000000.0,
+      "depreciationAndAmortization": 7390000000.0
+    }
+  ],
+  "profile": {
+    "companyName": "Johnson & Johnson",
+    "symbol": "JNJ"
+  },
+  "price_target_consensus": null,
+  "_data_source": "edgar_primary"
+}

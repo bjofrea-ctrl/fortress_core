@@ -1,0 +1,10 @@
+Pipeline HEALTH
+========================================
+Cache: ultimo habil hace 3 dias -> OK
+[kill-switch] pnl diario: sin cierres hoy — abstención (abstencion)
+[kill-switch] fill rate: sin órdenes hoy — abstención (abstencion)
+[kill-switch] cache 1 rueda(s) atrás
+Estado: 0 OPEN / 2 CLOSED / 0 ERROR | meses: ['202608']
+Hoy: 2026-09-07 | fase auto sugerida: health
+Reconcile: orphan_closed=1 unexplained=0
+[HASH-GUARD] DRIFT DETECTADO: 2 módulo(s) del motor cambiaron desde el manifiesto (commit=6b162b9ea9de). Paths: ['backend/app/core/signal_engine.py', 'backend/app/core/adaptive_risk.py']. Día NO limpio por definición del gate (A4). Para declarar: python -m scripts.motor_manifest --bump "<motivo>"

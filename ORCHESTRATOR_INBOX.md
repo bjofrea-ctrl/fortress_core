@@ -52,3 +52,59 @@
 - **2026-09-14 11:11** — POSIBLE FIN: OpenCode quieto 15min (HEAD=d8e589f1e0560cd66117c8ccf64c93e287f3411b [verify/opencode-wip], WIP=440 archivos, lista en scripts/agent_wip_OpenCode.txt) — revisar entrega
 - **2026-09-14 11:20** — Kilo a TODOS los agentes: PAUSA de descargas masivas a Yahoo (yfinance) hasta nuevo aviso. El proveedor está throttlando (21k+ errores en log, rebuilds devolviendo vacío 11:02/11:13/11:23). Nada de backfills, re-descargas completas ni suites que toquen red hasta que Kilo levante la pausa. Tests con stubs/sandbox como siempre.
 - **2026-09-14 14:00** — Kilo VERIFICÓ terminales: Cline quieto 3h+ (último commit ed9bd2c 08:10: PRE_REG restaurado idéntico + claims pytest10/tsc0/vitest22; G2 código solo RiskPanel ya mergeado, resto G2 + propuesta G3 sin empezar). OpenCode activo en F3/F4 (asset_favourability 282L + institutional_score 542L + test 236L, horizontes/gates coinciden con plan) PERO: sin pre-registro F3, rama vieja behind 13, y su suite colgada 48min con 1 FAIL (Kilo la terminó al inspeccionar — re-correr con diagnóstico). Ticket F3 actualizado con los 3 desvíos. Watcher v2 operativo (heartbeat fresco, sin falsos tras fix de migración).
+- **2026-09-14 18:57** — Cline entregó [ux/dashboard-control-panel]: `feat(ux-slice1): estado vacío MesaPage (cero INVERTIR / universo vacío) + test` (38f49d368949c72b3266a13f183676af291b4f83) — PENDIENTE VERIFICAR+MERGEAR
+- **2026-09-14 19:16** — Cline entregó [ux/dashboard-control-panel]: `feat(ux-slice1): definiciones de la metodologia donde se mira (MesaView, item 4 ` (7c8ff292aa491906b553f5c400adc4ebfebb1d05) — PENDIENTE VERIFICAR+MERGEAR
+- **2026-09-14 19:17** — POSIBLE FIN: OpenCode quieto 15min (HEAD=d8e589f1e0560cd66117c8ccf64c93e287f3411b [verify/opencode-wip], WIP=441 archivos, lista en scripts/agent_wip_OpenCode.txt) — revisar entrega
+- **2026-09-14 19:21** — Cline entregó [ux/dashboard-control-panel]: `docs(ux-slice1): cierre verificado en PRE-REG + ROADMAP + SESSION_LOG + handoff ` (ef3e3bda3e867a286d7d3b6d3fffe7e46c888039) — PENDIENTE VERIFICAR+MERGEAR
+- **2026-09-14 19:36** — POSIBLE FIN: Cline quieto 15min (HEAD=ef3e3bda3e867a286d7d3b6d3fffe7e46c888039 [ux/dashboard-control-panel], WIP=0 archivos, lista en scripts/agent_wip_Cline.txt) — revisar entrega
+- **2026-09-14 19:52** — RAMA NUEVA en repo compartido: `audit/dashboard-utilidad` (07bffa8): `audit(dashboard): utilidad seccion por seccion, dato por dato (09-11, entregable`
+- **2026-09-14 19:52** — RAMA NUEVA en repo compartido: `auto-backup-safety-net` (c10b717): `auto-backup-safety-net: 2026-09-14 19:51:46`
+- **2026-09-14 19:52** — RAMA NUEVA en repo compartido: `bjofrea-ctrl/b3-feature-store` (04ee3db): `feat(b3): feature store versionado con hash + manifest (I6)`
+- **2026-09-14 19:52** — RAMA NUEVA en repo compartido: `bjofrea-ctrl/b6-signal-contract-align` (2dd7781): `docs: SESSION_LOG entrada B6 2/3 alineacion contrato senal unica`
+- **2026-09-14 19:52** — RAMA NUEVA en repo compartido: `bjofrea-ctrl/fundamentales-automatizado` (966ca17): `Frente 2: diagnóstico en vivo de causa FMP + cross-check Finnhub real`
+- **2026-09-14 19:52** — RAMA NUEVA en repo compartido: `bjofrea-ctrl/gate-c1-diciembre` (4f952a9): `docs(C1): re-especifica criterio gate diciembre — DSR sobre OOS histórico, pa`
+- **2026-09-14 19:52** — RAMA NUEVA en repo compartido: `bjofrea-ctrl/test-kilo-orca` (91b367c): `docs(session): re-verificación independiente del SWR revertido en worktree`
+- **2026-09-14 19:52** — RAMA NUEVA en repo compartido: `bjofrea-ctrl/test-opencode-orca` (66d48ff): `docs(plist-tz+latido): auditoría TZ-DOC en 14 plists y cableo de session-log en`
+- **2026-09-14 19:52** — RAMA NUEVA en repo compartido: `edgar-fundamentals-adapter` (6fb6efa): `docs(session): confirmacion LIVE post-merge full-universe en main 080fa63 (fetch`
+- **2026-09-14 19:52** — RAMA NUEVA en repo compartido: `fix/b3-feature-store-missing-files` (7de8b57): `fix(b3): feature store versionado + manifest — módulo faltante del merge aeba`
+- **2026-09-14 19:52** — RAMA NUEVA en repo compartido: `fix/fundamentals-profile-backfill` (ec52e6d): `fix(fundamentals): backfill de foto de mercado en el path EDGAR (0 Deep Dive) + `
+- **2026-09-14 19:52** — RAMA NUEVA en repo compartido: `fix/governance-500-nonfinite` (1f43381): `fix(governance): robustecer /analyze a no-finitos (capa 1) + revert SPY reconcil`
+- **2026-09-14 19:52** — RAMA NUEVA en repo compartido: `frontend-tabs-cache-fix` (41ea349): `fix(dash-tabs): cache compartido (TanStack Query) + keep-alive de tabs`
+- **2026-09-14 19:52** — RAMA NUEVA en repo compartido: `main` (1789841): `docs(handoff): estado completo para retomar sin contexto previo (Kilo pre-restar`
+- **2026-09-14 19:52** — RAMA NUEVA en repo compartido: `perf/rebuild-integrity-memoize` (a881d7a): `test(rebuild): concurrencia del memo del hook de integridad`
+- **2026-09-14 19:52** — RAMA NUEVA en repo compartido: `respaldo-tests-frontend` (5edfe6e): `docs(auditoria): sincronización 2026-08-23 contra el código real (cerrados ver`
+- **2026-09-14 19:52** — RAMA NUEVA en repo compartido: `tmp-merge-check` (d95ef72): `fix(merge): corrige 3 bugs reales atrapados en verificacion post-merge`
+- **2026-09-14 19:52** — RAMA NUEVA en repo compartido: `ux/dashboard-control-panel` (ef3e3bd): `docs(ux-slice1): cierre verificado en PRE-REG + ROADMAP + SESSION_LOG + handoff `
+- **2026-09-14 19:52** — RAMA NUEVA en repo compartido: `verify/opencode-wip` (d8e589f): `feat(fingerprint): institutional fingerprint Phase 2 — COT/AAII/FRED + 9 varia`
+- **2026-09-14 20:06** — POSIBLE FIN: OpenCode quieto 15min (HEAD=d8e589f1e0560cd66117c8ccf64c93e287f3411b [verify/opencode-wip], WIP=441 archivos, lista en scripts/agent_wip_OpenCode.txt) — revisar entrega
+- **2026-09-14 20:11** — RAMA NUEVA en repo compartido: `cline/ux-slice2-g2-cleanup` (e456efb): `feat(ux-slice1): definiciones de la metodologia donde se mira (MesaView, item 4 `
+- **2026-09-14 20:11** — Cline entregó [cline/ux-slice2-g2-cleanup]: `feat(ux-slice1): definiciones de la metodologia donde se mira (MesaView, item 4 ` (e456efb8ce6b5dcf58ffa5e726e512c5a34aa31d) — PENDIENTE VERIFICAR+MERGEAR
+- **2026-09-14 20:20** — Cline entregó [cline/ux-slice2-g2-cleanup]: `docs(ux): pre-registro Slice 2 (G2) con criterios de cierre C1-C6 medidos antes ` (b0090116e4b814d626ed9fb36936574dbddf349b) — PENDIENTE VERIFICAR+MERGEAR
+- **2026-09-14 20:32** — Cline entregó [cline/ux-slice2-g2-cleanup]: `fix(frontend): G2-4 - MarketOverview deja de duplicar el precio en vivo` (00cdaa01b6c36dbce56f5d638ca01be5d94c5d26) — PENDIENTE VERIFICAR+MERGEAR
+- **2026-09-14 20:33** — Cline entregó [cline/ux-slice2-g2-cleanup]: `chore(frontend): G2-1/2/5/6 - fuera 6 modulos muertos, 1113 lineas sin consumido` (45242fd6a466230f550e2b63af968b43fd117348) — PENDIENTE VERIFICAR+MERGEAR
+- **2026-09-14 20:49** — Cline entregó [cline/ux-slice2-g2-cleanup]: `docs(ux): G2 resultados medidos, desviaciones declaradas y la causa real del "0 ` (ab38f20b5844f9092ee3a2e58d494ef0334b3213) — PENDIENTE VERIFICAR+MERGEAR
+- **2026-09-14 20:50** — RAMA NUEVA en repo compartido: `cline/fix-cache-calendar` (1789841): `docs(handoff): estado completo para retomar sin contexto previo (Kilo pre-restar`
+- **2026-09-14 20:59** — Cline entregó [cline/ux-slice2-g2-cleanup]: `docs(ux): el P0 del calendario tiene fix en rama aparte, con A/B 0/30 -> 30/30` (15f77f4132da348fab8519f08d153c608644efdc) — PENDIENTE VERIFICAR+MERGEAR
+- **2026-09-14 21:14** — POSIBLE FIN: Cline quieto 15min (HEAD=15f77f4132da348fab8519f08d153c608644efdc [cline/ux-slice2-g2-cleanup], WIP=0 archivos, lista en scripts/agent_wip_Cline.txt) — revisar entrega
+- **2026-09-18 16:54** — RAMA NUEVA en repo compartido: `audit/dashboard-utilidad` (07bffa8): `audit(dashboard): utilidad seccion por seccion, dato por dato (09-11, entregable`
+- **2026-09-18 16:54** — RAMA NUEVA en repo compartido: `auto-backup-safety-net` (e144901): `auto-backup-safety-net: 2026-09-18 16:53:16`
+- **2026-09-18 16:54** — RAMA NUEVA en repo compartido: `bjofrea-ctrl/b3-feature-store` (04ee3db): `feat(b3): feature store versionado con hash + manifest (I6)`
+- **2026-09-18 16:54** — RAMA NUEVA en repo compartido: `bjofrea-ctrl/b6-signal-contract-align` (2dd7781): `docs: SESSION_LOG entrada B6 2/3 alineacion contrato senal unica`
+- **2026-09-18 16:54** — RAMA NUEVA en repo compartido: `bjofrea-ctrl/fundamentales-automatizado` (966ca17): `Frente 2: diagnóstico en vivo de causa FMP + cross-check Finnhub real`
+- **2026-09-18 16:54** — RAMA NUEVA en repo compartido: `bjofrea-ctrl/gate-c1-diciembre` (4f952a9): `docs(C1): re-especifica criterio gate diciembre — DSR sobre OOS histórico, pa`
+- **2026-09-18 16:54** — RAMA NUEVA en repo compartido: `bjofrea-ctrl/test-kilo-orca` (91b367c): `docs(session): re-verificación independiente del SWR revertido en worktree`
+- **2026-09-18 16:54** — RAMA NUEVA en repo compartido: `bjofrea-ctrl/test-opencode-orca` (66d48ff): `docs(plist-tz+latido): auditoría TZ-DOC en 14 plists y cableo de session-log en`
+- **2026-09-18 16:54** — RAMA NUEVA en repo compartido: `cline/fix-cache-calendar` (1d4b67d): `fix(ingesta): un panel que no es ticker no puede tumbar el calendario de todo el`
+- **2026-09-18 16:54** — RAMA NUEVA en repo compartido: `cline/ux-slice2-g2-cleanup` (15f77f4): `docs(ux): el P0 del calendario tiene fix en rama aparte, con A/B 0/30 -> 30/30`
+- **2026-09-18 16:54** — RAMA NUEVA en repo compartido: `edgar-fundamentals-adapter` (6fb6efa): `docs(session): confirmacion LIVE post-merge full-universe en main 080fa63 (fetch`
+- **2026-09-18 16:54** — RAMA NUEVA en repo compartido: `fix/b3-feature-store-missing-files` (7de8b57): `fix(b3): feature store versionado + manifest — módulo faltante del merge aeba`
+- **2026-09-18 16:54** — RAMA NUEVA en repo compartido: `fix/fundamentals-profile-backfill` (ec52e6d): `fix(fundamentals): backfill de foto de mercado en el path EDGAR (0 Deep Dive) + `
+- **2026-09-18 16:54** — RAMA NUEVA en repo compartido: `fix/governance-500-nonfinite` (1f43381): `fix(governance): robustecer /analyze a no-finitos (capa 1) + revert SPY reconcil`
+- **2026-09-18 16:54** — RAMA NUEVA en repo compartido: `frontend-tabs-cache-fix` (41ea349): `fix(dash-tabs): cache compartido (TanStack Query) + keep-alive de tabs`
+- **2026-09-18 16:54** — RAMA NUEVA en repo compartido: `main` (1d4b67d): `fix(ingesta): un panel que no es ticker no puede tumbar el calendario de todo el`
+- **2026-09-18 16:54** — RAMA NUEVA en repo compartido: `perf/rebuild-integrity-memoize` (a881d7a): `test(rebuild): concurrencia del memo del hook de integridad`
+- **2026-09-18 16:54** — RAMA NUEVA en repo compartido: `respaldo-tests-frontend` (5edfe6e): `docs(auditoria): sincronización 2026-08-23 contra el código real (cerrados ver`
+- **2026-09-18 16:54** — RAMA NUEVA en repo compartido: `tmp-merge-check` (d95ef72): `fix(merge): corrige 3 bugs reales atrapados en verificacion post-merge`
+- **2026-09-18 16:54** — RAMA NUEVA en repo compartido: `ux/dashboard-control-panel` (ef3e3bd): `docs(ux-slice1): cierre verificado en PRE-REG + ROADMAP + SESSION_LOG + handoff `
+- **2026-09-18 16:54** — RAMA NUEVA en repo compartido: `verify/opencode-wip` (d8e589f): `feat(fingerprint): institutional fingerprint Phase 2 — COT/AAII/FRED + 9 varia`
+- **2026-09-18 17:08** — POSIBLE FIN: OpenCode quieto 15min (HEAD=d8e589f1e0560cd66117c8ccf64c93e287f3411b [verify/opencode-wip], WIP=441 archivos, lista en scripts/agent_wip_OpenCode.txt) — revisar entrega

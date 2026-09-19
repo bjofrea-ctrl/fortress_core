@@ -1,0 +1,190 @@
+{
+  "symbol": "VEEV",
+  "ingested_at": "2026-09-10T01:51:50.058940+00:00",
+  "income_statement": [
+    {
+      "calendarYear": "2026",
+      "period": "FY",
+      "netIncome": 908906000.0,
+      "sharesOutstanding": 163330933.0
+    },
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "revenue": 3195311000.0,
+      "grossProfit": 2413292000.0,
+      "operatingIncome": 916369000.0,
+      "incomeTaxExpense": 285602000.0,
+      "netIncome": 714138000.0,
+      "weightedAverageShsOutDil": 166995000.0,
+      "weightedAverageShsOut": 163667000.0,
+      "sharesOutstanding": 162696040.0,
+      "sellingGeneralAndAdministrativeExpense": 300739000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "revenue": 2746619000.0,
+      "grossProfit": 2046983000.0,
+      "operatingIncome": 691435000.0,
+      "incomeTaxExpense": 205243000.0,
+      "netIncome": 525705000.0,
+      "weightedAverageShsOutDil": 165232000.0,
+      "weightedAverageShsOut": 161879000.0,
+      "sharesOutstanding": 161316597.0,
+      "sellingGeneralAndAdministrativeExpense": 265744000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "revenue": 2363673000.0,
+      "grossProfit": 1686382000.0,
+      "operatingIncome": 429334000.0,
+      "incomeTaxExpense": 62318000.0,
+      "netIncome": 487706000.0,
+      "weightedAverageShsOutDil": 163486000.0,
+      "weightedAverageShsOut": 160532000.0,
+      "sellingGeneralAndAdministrativeExpense": 246545000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "revenue": 2155060000.0,
+      "grossProfit": 1545655000.0,
+      "operatingIncome": 459091000.0,
+      "incomeTaxExpense": 21390000.0,
+      "netIncome": 427390000.0,
+      "weightedAverageShsOutDil": 162437000.0,
+      "weightedAverageShsOut": 155385000.0,
+      "sellingGeneralAndAdministrativeExpense": 217595000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "revenue": 1850777000.0,
+      "grossProfit": 1347099000.0,
+      "operatingIncome": 505496000.0,
+      "incomeTaxExpense": 84921000.0,
+      "netIncome": 102918000.0,
+      "weightedAverageShsOutDil": 162277000.0,
+      "weightedAverageShsOut": 153251000.0,
+      "sellingGeneralAndAdministrativeExpense": 171507000.0
+    }
+  ],
+  "balance_sheet": [
+    {
+      "calendarYear": "2026",
+      "period": "FY",
+      "totalAssets": 8979343000.0,
+      "totalCurrentAssets": 7997630000.0,
+      "cashAndCashEquivalents": 1421233000.0,
+      "totalCurrentLiabilities": 1637056000.0,
+      "totalLiabilities": 1764591000.0,
+      "totalShareholderEquity": 7214752000.0,
+      "retainedEarnings": 4363501000.0,
+      "propertyPlantEquipmentNet": 70261000.0,
+      "netReceivables": 1259737000.0
+    },
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "totalAssets": 7339756000.0,
+      "totalCurrentAssets": 6308802000.0,
+      "cashAndCashEquivalents": 1118785000.0,
+      "totalCurrentLiabilities": 1398404000.0,
+      "totalLiabilities": 1507383000.0,
+      "totalShareholderEquity": 5832373000.0,
+      "retainedEarnings": 3454595000.0,
+      "propertyPlantEquipmentNet": 55912000.0,
+      "netReceivables": 1016356000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "totalAssets": 5910920000.0,
+      "totalCurrentAssets": 5003211000.0,
+      "cashAndCashEquivalents": 703487000.0,
+      "totalCurrentLiabilities": 1178883000.0,
+      "totalLiabilities": 1266096000.0,
+      "totalShareholderEquity": 4644824000.0,
+      "retainedEarnings": 2740457000.0,
+      "propertyPlantEquipmentNet": 58532000.0,
+      "netReceivables": 852172000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "totalAssets": 4804296000.0,
+      "totalCurrentAssets": 3969313000.0,
+      "cashAndCashEquivalents": 889650000.0,
+      "totalCurrentLiabilities": 1006803000.0,
+      "totalLiabilities": 1088044000.0,
+      "totalShareholderEquity": 3716252000.0,
+      "retainedEarnings": 2214752000.0,
+      "propertyPlantEquipmentNet": 49817000.0,
+      "netReceivables": 703055000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "totalAssets": 3816465000.0,
+      "totalCurrentAssets": 3107183000.0,
+      "cashAndCashEquivalents": 1141225000.0,
+      "totalCurrentLiabilities": 840779000.0,
+      "totalLiabilities": 904828000.0,
+      "totalShareholderEquity": 2911637000.0,
+      "retainedEarnings": 1727046000.0,
+      "propertyPlantEquipmentNet": 54495000.0,
+      "netReceivables": 631134000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "totalAssets": 3046067000.0,
+      "totalCurrentAssets": 2310826000.0,
+      "cashAndCashEquivalents": 731711000.0,
+      "totalCurrentLiabilities": 715952000.0,
+      "totalLiabilities": 779747000.0,
+      "totalShareholderEquity": 2266320000.0,
+      "retainedEarnings": 1299656000.0,
+      "propertyPlantEquipmentNet": 53650000.0,
+      "netReceivables": 564387000.0
+    }
+  ],
+  "cash_flow": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "operatingCashFlow": 1415225000.0,
+      "commonStockRepurchased": 169949000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "operatingCashFlow": 1090051000.0,
+      "commonStockRepurchased": 0.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "operatingCashFlow": 911339000.0,
+      "commonStockRepurchased": 0.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "operatingCashFlow": 780470000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "operatingCashFlow": 764463000.0
+    }
+  ],
+  "profile": {
+    "companyName": "Veeva Systems Inc.",
+    "symbol": "VEEV"
+  },
+  "price_target_consensus": null,
+  "_data_source": "edgar_primary"
+}

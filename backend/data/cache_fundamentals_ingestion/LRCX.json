@@ -1,0 +1,210 @@
+{
+  "symbol": "LRCX",
+  "ingested_at": "2026-09-10T01:51:44.416016+00:00",
+  "income_statement": [
+    {
+      "calendarYear": "2026",
+      "period": "FY",
+      "sharesOutstanding": 1251321000.0
+    },
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "revenue": 23232690000.0,
+      "grossProfit": 11725308000.0,
+      "operatingIncome": 8199795000.0,
+      "incomeTaxExpense": 997077000.0,
+      "netIncome": 7265396000.0,
+      "weightedAverageShsOutDil": 1261102000.0,
+      "weightedAverageShsOut": 1255079000.0,
+      "sharesOutstanding": 1265621000.0,
+      "sellingGeneralAndAdministrativeExpense": 1149640000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "revenue": 14905386000.0,
+      "grossProfit": 7052791000.0,
+      "operatingIncome": 4263913000.0,
+      "incomeTaxExpense": 532450000.0,
+      "netIncome": 3827772000.0,
+      "weightedAverageShsOutDil": 1319949000.0,
+      "weightedAverageShsOut": 1314102000.0,
+      "sharesOutstanding": 129876000.0,
+      "sellingGeneralAndAdministrativeExpense": 868247000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "sharesOutstanding": 132511701.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "revenue": 17428516000.0,
+      "grossProfit": 7776925000.0,
+      "operatingIncome": 5174860000.0,
+      "incomeTaxExpense": 598279000.0,
+      "netIncome": 4510931000.0,
+      "weightedAverageShsOutDil": 1358336000.0,
+      "weightedAverageShsOut": 1354715000.0,
+      "sharesOutstanding": 136987792.0,
+      "sellingGeneralAndAdministrativeExpense": 832753000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "revenue": 17227039000.0,
+      "grossProfit": 7871807000.0,
+      "operatingIncome": 5381822000.0,
+      "incomeTaxExpense": 587828000.0,
+      "netIncome": 4605286000.0,
+      "weightedAverageShsOutDil": 140628000.0,
+      "weightedAverageShsOut": 139899000.0,
+      "sharesOutstanding": 141953681.0,
+      "sellingGeneralAndAdministrativeExpense": 885737000.0
+    }
+  ],
+  "balance_sheet": [
+    {
+      "calendarYear": "2026",
+      "period": "FY",
+      "totalAssets": 23529743000.0,
+      "totalCurrentAssets": 15610705000.0,
+      "cashAndCashEquivalents": 5579171000.0,
+      "totalCurrentLiabilities": 5937249000.0,
+      "longTermDebt": 3721914000.0,
+      "longTermDebtCurrent": 147000.0,
+      "totalLiabilities": 11058822000.0,
+      "totalShareholderEquity": 12470921000.0,
+      "retainedEarnings": 34950254000.0,
+      "propertyPlantEquipmentNet": 2936003000.0,
+      "netReceivables": 5339682000.0,
+      "totalDebt": 3722061000.0
+    },
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "totalAssets": 21345260000.0,
+      "totalCurrentAssets": 14516995000.0,
+      "cashAndCashEquivalents": 6390659000.0,
+      "totalCurrentLiabilities": 6568425000.0,
+      "longTermDebt": 3719694000.0,
+      "longTermDebtCurrent": 749670000.0,
+      "totalLiabilities": 11483641000.0,
+      "totalShareholderEquity": 9861619000.0,
+      "retainedEarnings": 28988914000.0,
+      "propertyPlantEquipmentNet": 2405522000.0,
+      "netReceivables": 3378071000.0,
+      "totalDebt": 4469364000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "totalAssets": 18744728000.0,
+      "totalCurrentAssets": 12883220000.0,
+      "cashAndCashEquivalents": 5847856000.0,
+      "totalCurrentLiabilities": 4338438000.0,
+      "longTermDebt": 4466045000.0,
+      "longTermDebtCurrent": 501316000.0,
+      "totalLiabilities": 10205274000.0,
+      "totalShareholderEquity": 8539454000.0,
+      "retainedEarnings": 24811315000.0,
+      "propertyPlantEquipmentNet": 2129982000.0,
+      "netReceivables": 2519250000.0,
+      "totalDebt": 4967361000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "totalAssets": 18781643000.0,
+      "totalCurrentAssets": 13228412000.0,
+      "cashAndCashEquivalents": 5587372000.0,
+      "totalCurrentLiabilities": 4184918000.0,
+      "longTermDebt": 4964944000.0,
+      "longTermDebtCurrent": 421000.0,
+      "totalLiabilities": 10571471000.0,
+      "totalShareholderEquity": 8210172000.0,
+      "retainedEarnings": 22032096000.0,
+      "propertyPlantEquipmentNet": 1802951000.0,
+      "netReceivables": 2823376000.0,
+      "totalDebt": 4965365000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "totalAssets": 17195632000.0,
+      "totalCurrentAssets": 12285235000.0,
+      "cashAndCashEquivalents": 3773535000.0,
+      "totalCurrentLiabilities": 4564759000.0,
+      "longTermDebt": 4962459000.0,
+      "longTermDebtCurrent": 0.0,
+      "totalLiabilities": 10917266000.0,
+      "totalShareholderEquity": 6278366000.0,
+      "retainedEarnings": 18454724000.0,
+      "propertyPlantEquipmentNet": 1605434000.0,
+      "netReceivables": 4313818000.0,
+      "totalDebt": 4962459000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "totalAssets": 15892152000.0,
+      "totalCurrentAssets": 11652387000.0,
+      "cashAndCashEquivalents": 4670750000.0,
+      "totalCurrentLiabilities": 3527867000.0,
+      "longTermDebt": 4960935000.0,
+      "longTermDebtCurrent": 0.0,
+      "totalLiabilities": 9864964000.0,
+      "totalShareholderEquity": 6027188000.0,
+      "retainedEarnings": 14684912000.0,
+      "propertyPlantEquipmentNet": 1259425000.0,
+      "netReceivables": 3026430000.0,
+      "totalDebt": 4960935000.0
+    }
+  ],
+  "cash_flow": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "operatingCashFlow": 5857657000.0,
+      "capitalExpenditure": 966405000.0,
+      "commonStockRepurchased": 3851343000.0,
+      "dividendsPaid": 1270635000.0,
+      "depreciationAndAmortization": 441533000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "operatingCashFlow": 4652269000.0,
+      "capitalExpenditure": 396670000.0,
+      "commonStockRepurchased": 2842807000.0,
+      "dividendsPaid": 1018915000.0,
+      "depreciationAndAmortization": 359699000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "operatingCashFlow": 5178938000.0,
+      "capitalExpenditure": 501568000.0,
+      "commonStockRepurchased": 2017012000.0,
+      "dividendsPaid": 907907000.0,
+      "depreciationAndAmortization": 342432000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "operatingCashFlow": 3099674000.0,
+      "capitalExpenditure": 546034000.0,
+      "commonStockRepurchased": 3865663000.0,
+      "dividendsPaid": 815290000.0,
+      "depreciationAndAmortization": 333739000.0
+    }
+  ],
+  "profile": {
+    "companyName": "LAM RESEARCH CORPORATION",
+    "symbol": "LRCX"
+  },
+  "price_target_consensus": null,
+  "_data_source": "edgar_primary"
+}
