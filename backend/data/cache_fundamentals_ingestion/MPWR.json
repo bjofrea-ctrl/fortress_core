@@ -1,0 +1,201 @@
+{
+  "symbol": "MPWR",
+  "ingested_at": "2026-09-10T01:51:43.925274+00:00",
+  "income_statement": [
+    {
+      "calendarYear": "2026",
+      "period": "FY",
+      "sharesOutstanding": 49118000.0
+    },
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "revenue": 637554000.0,
+      "grossProfit": 353230000.0,
+      "operatingIncome": 168759000.0,
+      "incomeTaxExpense": 38838000.0,
+      "netIncome": 135052000.0,
+      "weightedAverageShsOutDil": 48006000.0,
+      "weightedAverageShsOut": 47851000.0,
+      "sharesOutstanding": 47866000.0,
+      "sellingGeneralAndAdministrativeExpense": 92244000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "revenue": 2207100000.0,
+      "grossProfit": 1220870000.0,
+      "operatingIncome": 539358000.0,
+      "incomeTaxExpense": -1019146000.0,
+      "netIncome": 1592058000.0,
+      "weightedAverageShsOutDil": 48835000.0,
+      "weightedAverageShsOut": 48599000.0,
+      "sharesOutstanding": 48661000.0,
+      "sellingGeneralAndAdministrativeExpense": 356764000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "revenue": 1821072000.0,
+      "grossProfit": 1021119000.0,
+      "operatingIncome": 481736000.0,
+      "incomeTaxExpense": 78467000.0,
+      "netIncome": 427374000.0,
+      "weightedAverageShsOutDil": 48771000.0,
+      "weightedAverageShsOut": 47610000.0,
+      "sharesOutstanding": 47305000.0,
+      "sellingGeneralAndAdministrativeExpense": 275740000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "revenue": 1794148000.0,
+      "grossProfit": 1048552000.0,
+      "operatingIncome": 526785000.0,
+      "incomeTaxExpense": 87265000.0,
+      "netIncome": 437672000.0,
+      "weightedAverageShsOutDil": 48358000.0,
+      "weightedAverageShsOut": 46727000.0,
+      "sharesOutstanding": 46509000.0,
+      "sellingGeneralAndAdministrativeExpense": 281596000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "revenue": 1207798000.0,
+      "grossProfit": 685459000.0,
+      "operatingIncome": 262417000.0,
+      "incomeTaxExpense": 30196000.0,
+      "netIncome": 242023000.0,
+      "weightedAverageShsOutDil": 47889000.0,
+      "weightedAverageShsOut": 45851000.0,
+      "sharesOutstanding": 45621000.0,
+      "sellingGeneralAndAdministrativeExpense": 232415000.0
+    }
+  ],
+  "balance_sheet": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "totalAssets": 3705143000.0,
+      "totalCurrentAssets": 1788386000.0,
+      "cashAndCashEquivalents": 637354000.0,
+      "shortTermInvestments": 389310000.0,
+      "totalCurrentLiabilities": 363401000.0,
+      "totalLiabilities": 631514000.0,
+      "totalShareholderEquity": 3073629000.0,
+      "retainedEarnings": 2351994000.0,
+      "propertyPlantEquipmentNet": 527348000.0,
+      "netReceivables": 214866000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "totalAssets": 3515822000.0,
+      "totalCurrentAssets": 1565053000.0,
+      "cashAndCashEquivalents": 691816000.0,
+      "shortTermInvestments": 171130000.0,
+      "totalCurrentLiabilities": 294567000.0,
+      "totalLiabilities": 564697000.0,
+      "totalShareholderEquity": 2951125000.0,
+      "retainedEarnings": 2292819000.0,
+      "propertyPlantEquipmentNet": 494945000.0,
+      "netReceivables": 172518000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "totalAssets": 2434353000.0,
+      "totalCurrentAssets": 1819499000.0,
+      "cashAndCashEquivalents": 527843000.0,
+      "shortTermInvestments": 580633000.0,
+      "totalCurrentLiabilities": 235035000.0,
+      "totalLiabilities": 384414000.0,
+      "totalShareholderEquity": 2049939000.0,
+      "retainedEarnings": 947064000.0,
+      "propertyPlantEquipmentNet": 368952000.0,
+      "netReceivables": 179858000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "totalAssets": 2058885000.0,
+      "totalCurrentAssets": 1410619000.0,
+      "cashAndCashEquivalents": 288729000.0,
+      "shortTermInvestments": 449266000.0,
+      "totalCurrentLiabilities": 263400000.0,
+      "totalLiabilities": 390283000.0,
+      "totalShareholderEquity": 1668602000.0,
+      "retainedEarnings": 716403000.0,
+      "propertyPlantEquipmentNet": 357157000.0,
+      "netReceivables": 182714000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "totalAssets": 1585825000.0,
+      "totalCurrentAssets": 1124852000.0,
+      "cashAndCashEquivalents": 189389000.0,
+      "shortTermInvestments": 535817000.0,
+      "totalCurrentLiabilities": 226944000.0,
+      "totalLiabilities": 341840000.0,
+      "totalShareholderEquity": 1243985000.0,
+      "retainedEarnings": 424879000.0,
+      "propertyPlantEquipmentNet": 362962000.0,
+      "netReceivables": 104813000.0
+    }
+  ],
+  "cash_flow": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "operatingCashFlow": 838202000.0,
+      "capitalExpenditure": 172013000.0,
+      "commonStockRepurchased": 6600000.0,
+      "dividendsPaid": 284797000.0,
+      "depreciationAndAmortization": 52513000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "operatingCashFlow": 788410000.0,
+      "capitalExpenditure": 146118000.0,
+      "commonStockRepurchased": 636200000.0,
+      "dividendsPaid": 240623000.0,
+      "depreciationAndAmortization": 36430000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "operatingCashFlow": 638213000.0,
+      "capitalExpenditure": 57578000.0,
+      "commonStockRepurchased": 3700000.0,
+      "dividendsPaid": 185844000.0,
+      "depreciationAndAmortization": 40168000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "operatingCashFlow": 246674000.0,
+      "capitalExpenditure": 58843000.0,
+      "commonStockRepurchased": 0.0,
+      "dividendsPaid": 137965000.0,
+      "depreciationAndAmortization": 37114000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "operatingCashFlow": 320010000.0,
+      "capitalExpenditure": 94420000.0,
+      "commonStockRepurchased": 0.0,
+      "dividendsPaid": 109364000.0,
+      "depreciationAndAmortization": 28699000.0
+    }
+  ],
+  "profile": {
+    "companyName": "Monolithic Power Systems, Inc.",
+    "symbol": "MPWR"
+  },
+  "price_target_consensus": null,
+  "_data_source": "edgar_primary"
+}

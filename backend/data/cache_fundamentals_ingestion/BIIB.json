@@ -1,0 +1,191 @@
+{
+  "symbol": "BIIB",
+  "ingested_at": "2026-09-10T01:51:50.600401+00:00",
+  "income_statement": [
+    {
+      "calendarYear": "2026",
+      "period": "FY",
+      "sharesOutstanding": 146758528.0
+    },
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "revenue": 9890600000.0,
+      "incomeTaxExpense": 263600000.0,
+      "netIncome": 1292900000.0,
+      "weightedAverageShsOutDil": 147100000.0,
+      "weightedAverageShsOut": 146500000.0,
+      "sharesOutstanding": 146374937.0,
+      "sellingGeneralAndAdministrativeExpense": 2433600000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "revenue": 9675900000.0,
+      "incomeTaxExpense": 273800000.0,
+      "netIncome": 1632200000.0,
+      "weightedAverageShsOutDil": 145900000.0,
+      "weightedAverageShsOut": 145600000.0,
+      "sharesOutstanding": 145360798.0,
+      "sellingGeneralAndAdministrativeExpense": 2403700000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "revenue": 9835600000.0,
+      "incomeTaxExpense": 135300000.0,
+      "netIncome": 1161100000.0,
+      "weightedAverageShsOutDil": 145600000.0,
+      "weightedAverageShsOut": 144700000.0,
+      "sharesOutstanding": 144485646.0,
+      "sellingGeneralAndAdministrativeExpense": 2549700000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "revenue": 10173400000.0,
+      "incomeTaxExpense": 632800000.0,
+      "netIncome": 3046900000.0,
+      "weightedAverageShsOutDil": 146000000.0,
+      "weightedAverageShsOut": 145300000.0,
+      "sharesOutstanding": 146962793.0,
+      "sellingGeneralAndAdministrativeExpense": 2403600000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "revenue": 10981700000.0,
+      "operatingIncome": 2840700000.0,
+      "incomeTaxExpense": 52500000.0,
+      "netIncome": 1556100000.0,
+      "weightedAverageShsOutDil": 149600000.0,
+      "weightedAverageShsOut": 149100000.0,
+      "sharesOutstanding": 152335731.0,
+      "sellingGeneralAndAdministrativeExpense": 2674300000.0
+    }
+  ],
+  "balance_sheet": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "totalAssets": 29439500000.0,
+      "totalCurrentAssets": 8974100000.0,
+      "cashAndCashEquivalents": 3008500000.0,
+      "totalCurrentLiabilities": 3349400000.0,
+      "longTermDebt": 6286800000.0,
+      "totalLiabilities": 11182700000.0,
+      "totalShareholderEquity": 18256800000.0,
+      "retainedEarnings": 20552700000.0,
+      "propertyPlantEquipmentNet": 3055400000.0,
+      "netReceivables": 1342400000.0,
+      "totalDebt": 6286800000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "totalAssets": 28049300000.0,
+      "totalCurrentAssets": 7456800000.0,
+      "cashAndCashEquivalents": 2375000000.0,
+      "totalCurrentLiabilities": 5528800000.0,
+      "longTermDebt": 6295800000.0,
+      "totalLiabilities": 11333300000.0,
+      "totalShareholderEquity": 16716000000.0,
+      "retainedEarnings": 19259800000.0,
+      "propertyPlantEquipmentNet": 3181300000.0,
+      "netReceivables": 1404800000.0,
+      "totalDebt": 6295800000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "totalAssets": 26844800000.0,
+      "totalCurrentAssets": 6859300000.0,
+      "cashAndCashEquivalents": 1049900000.0,
+      "totalCurrentLiabilities": 3434300000.0,
+      "longTermDebt": 6938200000.0,
+      "totalLiabilities": 12045400000.0,
+      "totalShareholderEquity": 14799400000.0,
+      "retainedEarnings": 17627600000.0,
+      "propertyPlantEquipmentNet": 3309700000.0,
+      "netReceivables": 1664100000.0,
+      "totalDebt": 6938200000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "totalAssets": 24554100000.0,
+      "totalCurrentAssets": 9791200000.0,
+      "cashAndCashEquivalents": 3419300000.0,
+      "totalCurrentLiabilities": 3272800000.0,
+      "longTermDebt": 6281000000.0,
+      "totalLiabilities": 11165700000.0,
+      "totalShareholderEquity": 13388400000.0,
+      "retainedEarnings": 16466500000.0,
+      "propertyPlantEquipmentNet": 3298600000.0,
+      "netReceivables": 1705000000.0,
+      "totalDebt": 6281000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "totalAssets": 23877300000.0,
+      "totalCurrentAssets": 7856500000.0,
+      "cashAndCashEquivalents": 2261400000.0,
+      "totalCurrentLiabilities": 4298200000.0,
+      "longTermDebt": 6274000000.0,
+      "totalLiabilities": 12917600000.0,
+      "totalShareholderEquity": 10959700000.0,
+      "retainedEarnings": 13911700000.0,
+      "propertyPlantEquipmentNet": 3416400000.0,
+      "netReceivables": 1549400000.0,
+      "totalDebt": 6274000000.0
+    }
+  ],
+  "cash_flow": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "operatingCashFlow": 2204600000.0,
+      "capitalExpenditure": 153800000.0,
+      "depreciationAndAmortization": 779900000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "operatingCashFlow": 2875500000.0,
+      "capitalExpenditure": 153700000.0,
+      "commonStockRepurchased": 0.0,
+      "depreciationAndAmortization": 673200000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "operatingCashFlow": 1547200000.0,
+      "capitalExpenditure": 277000000.0,
+      "commonStockRepurchased": 0.0,
+      "depreciationAndAmortization": 494800000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "operatingCashFlow": 1384300000.0,
+      "capitalExpenditure": 240300000.0,
+      "commonStockRepurchased": 750000000.0,
+      "depreciationAndAmortization": 518400000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "operatingCashFlow": 3639900000.0,
+      "capitalExpenditure": 258100000.0,
+      "commonStockRepurchased": 1800000000.0,
+      "depreciationAndAmortization": 487700000.0
+    }
+  ],
+  "profile": {
+    "companyName": "BIOGEN INC.",
+    "symbol": "BIIB"
+  },
+  "price_target_consensus": null,
+  "_data_source": "edgar_primary"
+}

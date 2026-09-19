@@ -1,0 +1,214 @@
+{
+  "symbol": "EBAY",
+  "ingested_at": "2026-09-10T01:52:26.817871+00:00",
+  "income_statement": [
+    {
+      "calendarYear": "2026",
+      "period": "FY",
+      "sharesOutstanding": 448000000.0
+    },
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "revenue": 11100000000.0,
+      "grossProfit": 7931000000.0,
+      "operatingIncome": 2277000000.0,
+      "incomeTaxExpense": 311000000.0,
+      "netIncome": 2031000000.0,
+      "weightedAverageShsOutDil": 468000000.0,
+      "weightedAverageShsOut": 459000000.0,
+      "sharesOutstanding": 461000000.0,
+      "sellingGeneralAndAdministrativeExpense": 1198000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "revenue": 10283000000.0,
+      "grossProfit": 7403000000.0,
+      "operatingIncome": 2318000000.0,
+      "incomeTaxExpense": 297000000.0,
+      "netIncome": 1975000000.0,
+      "weightedAverageShsOutDil": 501000000.0,
+      "weightedAverageShsOut": 496000000.0,
+      "sharesOutstanding": 502000000.0,
+      "sellingGeneralAndAdministrativeExpense": 914000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "revenue": 10112000000.0,
+      "grossProfit": 7279000000.0,
+      "operatingIncome": 1941000000.0,
+      "incomeTaxExpense": 932000000.0,
+      "netIncome": 2767000000.0,
+      "weightedAverageShsOutDil": 533000000.0,
+      "weightedAverageShsOut": 530000000.0,
+      "sharesOutstanding": 534736900.0,
+      "sellingGeneralAndAdministrativeExpense": 1196000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "revenue": 9795000000.0,
+      "grossProfit": 7115000000.0,
+      "operatingIncome": 2350000000.0,
+      "incomeTaxExpense": -327000000.0,
+      "netIncome": -1269000000.0,
+      "weightedAverageShsOutDil": 558000000.0,
+      "weightedAverageShsOut": 558000000.0,
+      "sharesOutstanding": 559842135.0,
+      "sellingGeneralAndAdministrativeExpense": 963000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "revenue": 10420000000.0,
+      "grossProfit": 7770000000.0,
+      "operatingIncome": 2923000000.0,
+      "incomeTaxExpense": 146000000.0,
+      "netIncome": 13608000000.0,
+      "weightedAverageShsOutDil": 663000000.0,
+      "weightedAverageShsOut": 652000000.0,
+      "sharesOutstanding": 680445767.0,
+      "sellingGeneralAndAdministrativeExpense": 921000000.0
+    }
+  ],
+  "balance_sheet": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "totalAssets": 17610000000.0,
+      "totalCurrentAssets": 5086000000.0,
+      "cashAndCashEquivalents": 1867000000.0,
+      "totalCurrentLiabilities": 4637000000.0,
+      "longTermDebtCurrent": 750000000.0,
+      "totalLiabilities": 12995000000.0,
+      "totalShareholderEquity": 4615000000.0,
+      "retainedEarnings": 39428000000.0,
+      "propertyPlantEquipmentNet": 1338000000.0,
+      "netReceivables": 135000000.0,
+      "totalDebt": 750000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "totalAssets": 19365000000.0,
+      "totalCurrentAssets": 7567000000.0,
+      "cashAndCashEquivalents": 2433000000.0,
+      "totalCurrentLiabilities": 6098000000.0,
+      "longTermDebtCurrent": 1225000000.0,
+      "totalLiabilities": 14207000000.0,
+      "totalShareholderEquity": 5158000000.0,
+      "retainedEarnings": 37951000000.0,
+      "propertyPlantEquipmentNet": 1263000000.0,
+      "netReceivables": 108000000.0,
+      "totalDebt": 1225000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "totalAssets": 21620000000.0,
+      "totalCurrentAssets": 11016000000.0,
+      "cashAndCashEquivalents": 1985000000.0,
+      "totalCurrentLiabilities": 4520000000.0,
+      "longTermDebt": 6973000000.0,
+      "longTermDebtCurrent": 750000000.0,
+      "shortTermBorrowings": 750000000.0,
+      "totalLiabilities": 15224000000.0,
+      "totalShareholderEquity": 6396000000.0,
+      "retainedEarnings": 36531000000.0,
+      "propertyPlantEquipmentNet": 1243000000.0,
+      "netReceivables": 94000000.0,
+      "totalDebt": 8473000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "totalAssets": 20850000000.0,
+      "totalCurrentAssets": 9290000000.0,
+      "cashAndCashEquivalents": 2154000000.0,
+      "shortTermInvestments": 2625000000.0,
+      "totalCurrentLiabilities": 4271000000.0,
+      "longTermDebt": 7721000000.0,
+      "longTermDebtCurrent": 1150000000.0,
+      "shortTermBorrowings": 1150000000.0,
+      "totalLiabilities": 15697000000.0,
+      "totalShareholderEquity": 5153000000.0,
+      "retainedEarnings": 34315000000.0,
+      "propertyPlantEquipmentNet": 1238000000.0,
+      "netReceivables": 90000000.0,
+      "totalDebt": 10021000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "totalAssets": 26626000000.0,
+      "totalCurrentAssets": 9111000000.0,
+      "cashAndCashEquivalents": 1379000000.0,
+      "shortTermInvestments": 5944000000.0,
+      "totalCurrentLiabilities": 4622000000.0,
+      "longTermDebt": 7727000000.0,
+      "longTermDebtCurrent": 1355000000.0,
+      "shortTermBorrowings": 1355000000.0,
+      "totalLiabilities": 16848000000.0,
+      "totalShareholderEquity": 9778000000.0,
+      "retainedEarnings": 36090000000.0,
+      "propertyPlantEquipmentNet": 1236000000.0,
+      "netReceivables": 98000000.0,
+      "totalDebt": 10437000000.0
+    }
+  ],
+  "cash_flow": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "operatingCashFlow": 1959000000.0,
+      "capitalExpenditure": 525000000.0,
+      "commonStockRepurchased": 2500000000.0,
+      "dividendsPaid": 531000000.0,
+      "depreciationAndAmortization": 421000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "operatingCashFlow": 2414000000.0,
+      "capitalExpenditure": 458000000.0,
+      "commonStockRepurchased": 3149000000.0,
+      "dividendsPaid": 533000000.0,
+      "depreciationAndAmortization": 370000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "operatingCashFlow": 2426000000.0,
+      "capitalExpenditure": 456000000.0,
+      "commonStockRepurchased": 1401000000.0,
+      "dividendsPaid": 528000000.0,
+      "depreciationAndAmortization": 441000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "operatingCashFlow": 2254000000.0,
+      "capitalExpenditure": 449000000.0,
+      "commonStockRepurchased": 3143000000.0,
+      "dividendsPaid": 489000000.0,
+      "depreciationAndAmortization": 442000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "operatingCashFlow": 2657000000.0,
+      "capitalExpenditure": 444000000.0,
+      "commonStockRepurchased": 7055000000.0,
+      "dividendsPaid": 466000000.0,
+      "depreciationAndAmortization": 485000000.0
+    }
+  ],
+  "profile": {
+    "companyName": "eBay Inc.",
+    "symbol": "EBAY"
+  },
+  "price_target_consensus": null,
+  "_data_source": "edgar_primary"
+}

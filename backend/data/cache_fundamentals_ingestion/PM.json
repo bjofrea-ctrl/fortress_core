@@ -1,0 +1,195 @@
+{
+  "symbol": "PM",
+  "ingested_at": "2026-09-10T01:51:20.368053+00:00",
+  "income_statement": [
+    {
+      "calendarYear": "2026",
+      "period": "FY",
+      "sharesOutstanding": 1556679579.0
+    },
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "revenue": 40648000000.0,
+      "grossProfit": 27282000000.0,
+      "operatingIncome": 14892000000.0,
+      "incomeTaxExpense": 2737000000.0,
+      "netIncome": 11348000000.0,
+      "weightedAverageShsOutDil": 1558000000.0,
+      "weightedAverageShsOut": 1556000000.0,
+      "sharesOutstanding": 1554857221.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "revenue": 37878000000.0,
+      "grossProfit": 24549000000.0,
+      "operatingIncome": 13402000000.0,
+      "incomeTaxExpense": 3017000000.0,
+      "netIncome": 7057000000.0,
+      "weightedAverageShsOutDil": 1556000000.0,
+      "weightedAverageShsOut": 1554000000.0,
+      "sharesOutstanding": 1552456597.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "revenue": 35174000000.0,
+      "grossProfit": 22281000000.0,
+      "operatingIncome": 11556000000.0,
+      "incomeTaxExpense": 2339000000.0,
+      "netIncome": 7813000000.0,
+      "weightedAverageShsOutDil": 1553000000.0,
+      "weightedAverageShsOut": 1552000000.0,
+      "sharesOutstanding": 1550232895.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "revenue": 31762000000.0,
+      "grossProfit": 20360000000.0,
+      "operatingIncome": 12246000000.0,
+      "incomeTaxExpense": 2244000000.0,
+      "netIncome": 9048000000.0,
+      "weightedAverageShsOutDil": 1552000000.0,
+      "weightedAverageShsOut": 1550000000.0,
+      "sharesOutstanding": 1549827817.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "revenue": 31405000000.0,
+      "grossProfit": 21375000000.0,
+      "operatingIncome": 12975000000.0,
+      "incomeTaxExpense": 2671000000.0,
+      "netIncome": 9109000000.0,
+      "weightedAverageShsOutDil": 1559000000.0,
+      "weightedAverageShsOut": 1558000000.0,
+      "sharesOutstanding": 1557451856.0
+    }
+  ],
+  "balance_sheet": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "totalAssets": 69185000000.0,
+      "totalCurrentAssets": 24363000000.0,
+      "cashAndCashEquivalents": 4872000000.0,
+      "totalCurrentLiabilities": 25427000000.0,
+      "shortTermBorrowings": 168000000.0,
+      "totalLiabilities": 77213000000.0,
+      "totalShareholderEquity": -9994000000.0,
+      "retainedEarnings": 35400000000.0,
+      "netReceivables": 4572000000.0,
+      "totalDebt": 168000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "totalAssets": 61784000000.0,
+      "totalCurrentAssets": 20170000000.0,
+      "cashAndCashEquivalents": 4216000000.0,
+      "totalCurrentLiabilities": 22915000000.0,
+      "shortTermBorrowings": 137000000.0,
+      "totalLiabilities": 71654000000.0,
+      "totalShareholderEquity": -11750000000.0,
+      "retainedEarnings": 32869000000.0,
+      "netReceivables": 3789000000.0,
+      "totalDebt": 137000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "totalAssets": 65304000000.0,
+      "totalCurrentAssets": 19755000000.0,
+      "cashAndCashEquivalents": 3146000000.0,
+      "totalCurrentLiabilities": 26383000000.0,
+      "shortTermBorrowings": 1968000000.0,
+      "totalLiabilities": 74750000000.0,
+      "totalShareholderEquity": -9446000000.0,
+      "retainedEarnings": 34090000000.0,
+      "netReceivables": 3461000000.0,
+      "totalDebt": 1968000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "totalAssets": 61681000000.0,
+      "totalCurrentAssets": 19619000000.0,
+      "cashAndCashEquivalents": 3217000000.0,
+      "totalCurrentLiabilities": 27336000000.0,
+      "shortTermBorrowings": 5637000000.0,
+      "totalLiabilities": 67992000000.0,
+      "totalShareholderEquity": -6311000000.0,
+      "retainedEarnings": 34289000000.0,
+      "netReceivables": 3850000000.0,
+      "totalDebt": 5637000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "totalAssets": 41290000000.0,
+      "totalCurrentAssets": 17717000000.0,
+      "cashAndCashEquivalents": 4500000000.0,
+      "totalCurrentLiabilities": 19255000000.0,
+      "shortTermBorrowings": 225000000.0,
+      "totalLiabilities": 49498000000.0,
+      "totalShareholderEquity": -8208000000.0,
+      "retainedEarnings": 33082000000.0,
+      "netReceivables": 3123000000.0,
+      "totalDebt": 225000000.0
+    }
+  ],
+  "cash_flow": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "operatingCashFlow": 12233000000.0,
+      "capitalExpenditure": 1569000000.0,
+      "dividendsPaid": 8624000000.0,
+      "depreciationAndAmortization": 1996000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "operatingCashFlow": 12217000000.0,
+      "capitalExpenditure": 1444000000.0,
+      "commonStockRepurchased": 0.0,
+      "dividendsPaid": 8197000000.0,
+      "depreciationAndAmortization": 1787000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "operatingCashFlow": 9204000000.0,
+      "capitalExpenditure": 1321000000.0,
+      "commonStockRepurchased": 0.0,
+      "dividendsPaid": 7964000000.0,
+      "depreciationAndAmortization": 1398000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "operatingCashFlow": 10803000000.0,
+      "capitalExpenditure": 1077000000.0,
+      "commonStockRepurchased": 209000000.0,
+      "dividendsPaid": 7812000000.0,
+      "depreciationAndAmortization": 1077000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "operatingCashFlow": 11967000000.0,
+      "capitalExpenditure": 748000000.0,
+      "commonStockRepurchased": 775000000.0,
+      "dividendsPaid": 7580000000.0,
+      "depreciationAndAmortization": 998000000.0
+    }
+  ],
+  "profile": {
+    "companyName": "Philip Morris International Inc.",
+    "symbol": "PM"
+  },
+  "price_target_consensus": null,
+  "_data_source": "edgar_primary"
+}

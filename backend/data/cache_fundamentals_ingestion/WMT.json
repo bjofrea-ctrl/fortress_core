@@ -1,0 +1,217 @@
+{
+  "symbol": "WMT",
+  "ingested_at": "2026-09-10T01:50:39.362952+00:00",
+  "income_statement": [
+    {
+      "calendarYear": "2026",
+      "period": "FY",
+      "netIncome": 21893000000.0,
+      "sharesOutstanding": 7972402501.0
+    },
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "revenue": 706413000000.0,
+      "operatingIncome": 29825000000.0,
+      "incomeTaxExpense": 7199000000.0,
+      "netIncome": 19436000000.0,
+      "weightedAverageShsOutDil": 8022000000.0,
+      "weightedAverageShsOut": 7983000000.0,
+      "sharesOutstanding": 8016849444.0,
+      "sellingGeneralAndAdministrativeExpense": 147943000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "revenue": 674538000000.0,
+      "operatingIncome": 29348000000.0,
+      "incomeTaxExpense": 6152000000.0,
+      "netIncome": 15511000000.0,
+      "weightedAverageShsOutDil": 8081000000.0,
+      "weightedAverageShsOut": 8041000000.0,
+      "sharesOutstanding": 8058048674.0,
+      "sellingGeneralAndAdministrativeExpense": 139884000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "revenue": 642637000000.0,
+      "operatingIncome": 27012000000.0,
+      "incomeTaxExpense": 5578000000.0,
+      "netIncome": 11680000000.0,
+      "weightedAverageShsOutDil": 8108000000.0,
+      "weightedAverageShsOut": 8077000000.0,
+      "sharesOutstanding": 2695655933.0,
+      "sellingGeneralAndAdministrativeExpense": 130971000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "revenue": 605881000000.0,
+      "operatingIncome": 20428000000.0,
+      "incomeTaxExpense": 5724000000.0,
+      "netIncome": 13673000000.0,
+      "weightedAverageShsOutDil": 8202000000.0,
+      "weightedAverageShsOut": 8171000000.0,
+      "sharesOutstanding": 2751779629.0,
+      "sellingGeneralAndAdministrativeExpense": 127140000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "revenue": 567762000000.0,
+      "operatingIncome": 25942000000.0,
+      "incomeTaxExpense": 4756000000.0,
+      "weightedAverageShsOutDil": 8415000000.0,
+      "weightedAverageShsOut": 8376000000.0,
+      "sharesOutstanding": 2817071695.0,
+      "sellingGeneralAndAdministrativeExpense": 117812000000.0
+    }
+  ],
+  "balance_sheet": [
+    {
+      "calendarYear": "2026",
+      "period": "FY",
+      "totalAssets": 284668000000.0,
+      "totalCurrentAssets": 84874000000.0,
+      "cashAndCashEquivalents": 10727000000.0,
+      "totalCurrentLiabilities": 107469000000.0,
+      "longTermDebt": 34624000000.0,
+      "longTermDebtCurrent": 3542000000.0,
+      "shortTermBorrowings": 6596000000.0,
+      "totalShareholderEquity": 99617000000.0,
+      "retainedEarnings": 104774000000.0,
+      "propertyPlantEquipmentNet": 136083000000.0,
+      "netReceivables": 11172000000.0,
+      "totalDebt": 44762000000.0
+    },
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "totalAssets": 260823000000.0,
+      "totalCurrentAssets": 79458000000.0,
+      "cashAndCashEquivalents": 9037000000.0,
+      "totalCurrentLiabilities": 96584000000.0,
+      "longTermDebt": 33401000000.0,
+      "longTermDebtCurrent": 2598000000.0,
+      "shortTermBorrowings": 3068000000.0,
+      "totalShareholderEquity": 91013000000.0,
+      "retainedEarnings": 98313000000.0,
+      "propertyPlantEquipmentNet": 119993000000.0,
+      "netReceivables": 9975000000.0,
+      "totalDebt": 39067000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "totalAssets": 252399000000.0,
+      "totalCurrentAssets": 76877000000.0,
+      "cashAndCashEquivalents": 9935000000.0,
+      "totalCurrentLiabilities": 92415000000.0,
+      "longTermDebt": 36132000000.0,
+      "longTermDebtCurrent": 3447000000.0,
+      "shortTermBorrowings": 878000000.0,
+      "totalShareholderEquity": 90349000000.0,
+      "retainedEarnings": 89814000000.0,
+      "propertyPlantEquipmentNet": 110810000000.0,
+      "netReceivables": 8796000000.0,
+      "totalDebt": 40457000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "totalAssets": 243197000000.0,
+      "totalCurrentAssets": 75655000000.0,
+      "cashAndCashEquivalents": 8841000000.0,
+      "totalCurrentLiabilities": 92198000000.0,
+      "longTermDebt": 34649000000.0,
+      "longTermDebtCurrent": 4191000000.0,
+      "shortTermBorrowings": 372000000.0,
+      "totalShareholderEquity": 83754000000.0,
+      "retainedEarnings": 83135000000.0,
+      "propertyPlantEquipmentNet": 100760000000.0,
+      "netReceivables": 7933000000.0,
+      "totalDebt": 39212000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "totalAssets": 244860000000.0,
+      "totalCurrentAssets": 81070000000.0,
+      "cashAndCashEquivalents": 14834000000.0,
+      "totalCurrentLiabilities": 87379000000.0,
+      "longTermDebt": 34864000000.0,
+      "longTermDebtCurrent": 2803000000.0,
+      "shortTermBorrowings": 410000000.0,
+      "totalShareholderEquity": 91891000000.0,
+      "retainedEarnings": 86904000000.0,
+      "propertyPlantEquipmentNet": 94515000000.0,
+      "netReceivables": 8280000000.0,
+      "totalDebt": 38077000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "totalAssets": 252496000000.0,
+      "totalCurrentAssets": 90067000000.0,
+      "cashAndCashEquivalents": 17788000000.0,
+      "totalCurrentLiabilities": 92645000000.0,
+      "longTermDebt": 41194000000.0,
+      "longTermDebtCurrent": 3115000000.0,
+      "shortTermBorrowings": 224000000.0,
+      "totalShareholderEquity": 87531000000.0,
+      "retainedEarnings": 88763000000.0,
+      "propertyPlantEquipmentNet": 92201000000.0,
+      "netReceivables": 6516000000.0,
+      "totalDebt": 44533000000.0
+    }
+  ],
+  "cash_flow": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "operatingCashFlow": 41565000000.0,
+      "capitalExpenditure": 26642000000.0,
+      "commonStockRepurchased": 8088000000.0,
+      "dividendsPaid": 7507000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "operatingCashFlow": 36443000000.0,
+      "capitalExpenditure": 23783000000.0,
+      "commonStockRepurchased": 4494000000.0,
+      "dividendsPaid": 6688000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "operatingCashFlow": 35726000000.0,
+      "capitalExpenditure": 20606000000.0,
+      "commonStockRepurchased": 2779000000.0,
+      "dividendsPaid": 6140000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "operatingCashFlow": 28841000000.0,
+      "capitalExpenditure": 16857000000.0,
+      "commonStockRepurchased": 9920000000.0,
+      "dividendsPaid": 6114000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "operatingCashFlow": 24181000000.0,
+      "capitalExpenditure": 13106000000.0,
+      "commonStockRepurchased": 9787000000.0,
+      "dividendsPaid": 6152000000.0
+    }
+  ],
+  "profile": {
+    "companyName": "WALMART INC.",
+    "symbol": "WMT"
+  },
+  "price_target_consensus": null,
+  "_data_source": "edgar_primary"
+}

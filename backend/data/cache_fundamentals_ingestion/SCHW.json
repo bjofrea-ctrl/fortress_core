@@ -1,0 +1,166 @@
+{
+  "symbol": "SCHW",
+  "ingested_at": "2026-09-10T01:52:01.983135+00:00",
+  "income_statement": [
+    {
+      "calendarYear": "2026",
+      "period": "FY",
+      "sharesOutstanding": 1752210425.0
+    },
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "revenue": 23921000000.0,
+      "incomeTaxExpense": 2607000000.0,
+      "netIncome": 8852000000.0,
+      "weightedAverageShsOutDil": 1809000000.0,
+      "weightedAverageShsOut": 1804000000.0,
+      "sharesOutstanding": 1813567665.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "revenue": 19606000000.0,
+      "incomeTaxExpense": 1750000000.0,
+      "netIncome": 5942000000.0,
+      "weightedAverageShsOutDil": 1834000000.0,
+      "weightedAverageShsOut": 1828000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "revenue": 18837000000.0,
+      "incomeTaxExpense": 1311000000.0,
+      "netIncome": 5067000000.0,
+      "weightedAverageShsOutDil": 1831000000.0,
+      "weightedAverageShsOut": 1824000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "revenue": 20762000000.0,
+      "incomeTaxExpense": 2205000000.0,
+      "netIncome": 7183000000.0,
+      "weightedAverageShsOutDil": 1894000000.0,
+      "weightedAverageShsOut": 1885000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "revenue": 18520000000.0,
+      "incomeTaxExpense": 1858000000.0,
+      "netIncome": 5855000000.0,
+      "weightedAverageShsOutDil": 1897000000.0,
+      "weightedAverageShsOut": 1887000000.0
+    }
+  ],
+  "balance_sheet": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "totalAssets": 490995000000.0,
+      "cashAndCashEquivalents": 46030000000.0,
+      "shortTermBorrowings": 1900000000.0,
+      "totalLiabilities": 441570000000.0,
+      "totalShareholderEquity": 49425000000.0,
+      "retainedEarnings": 44065000000.0,
+      "totalDebt": 1900000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "totalAssets": 479843000000.0,
+      "cashAndCashEquivalents": 42083000000.0,
+      "shortTermBorrowings": 0.0,
+      "totalLiabilities": 431468000000.0,
+      "totalShareholderEquity": 48375000000.0,
+      "retainedEarnings": 37568000000.0,
+      "totalDebt": 0.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "totalAssets": 493178000000.0,
+      "cashAndCashEquivalents": 43337000000.0,
+      "shortTermBorrowings": 0.0,
+      "totalLiabilities": 452220000000.0,
+      "totalShareholderEquity": 40958000000.0,
+      "retainedEarnings": 33901000000.0,
+      "totalDebt": 0.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "totalAssets": 551772000000.0,
+      "cashAndCashEquivalents": 58720000000.0,
+      "shortTermBorrowings": 250000000.0,
+      "totalLiabilities": 515164000000.0,
+      "totalShareholderEquity": 36608000000.0,
+      "retainedEarnings": 31066000000.0,
+      "totalDebt": 250000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "totalAssets": 667270000000.0,
+      "cashAndCashEquivalents": 93338000000.0,
+      "longTermDebt": 18914000000.0,
+      "shortTermBorrowings": 4855000000.0,
+      "totalLiabilities": 611009000000.0,
+      "totalShareholderEquity": 56261000000.0,
+      "retainedEarnings": 25992000000.0,
+      "totalDebt": 23769000000.0
+    }
+  ],
+  "cash_flow": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "operatingCashFlow": 9311000000.0,
+      "capitalExpenditure": 548000000.0,
+      "commonStockRepurchased": 7346000000.0,
+      "dividendsPaid": 2329000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "operatingCashFlow": 2670000000.0,
+      "capitalExpenditure": 620000000.0,
+      "commonStockRepurchased": 0.0,
+      "dividendsPaid": 2275000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "operatingCashFlow": 19587000000.0,
+      "capitalExpenditure": 700000000.0,
+      "commonStockRepurchased": 2842000000.0,
+      "dividendsPaid": 2276000000.0,
+      "depreciationAndAmortization": 804000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "operatingCashFlow": 2057000000.0,
+      "capitalExpenditure": 971000000.0,
+      "commonStockRepurchased": 3395000000.0,
+      "dividendsPaid": 2110000000.0,
+      "depreciationAndAmortization": 652000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "operatingCashFlow": 2118000000.0,
+      "capitalExpenditure": 916000000.0,
+      "commonStockRepurchased": 0.0,
+      "dividendsPaid": 1822000000.0,
+      "depreciationAndAmortization": 549000000.0
+    }
+  ],
+  "profile": {
+    "companyName": "SCHWAB CHARLES CORP",
+    "symbol": "SCHW"
+  },
+  "price_target_consensus": null,
+  "_data_source": "edgar_primary"
+}

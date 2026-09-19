@@ -1,0 +1,140 @@
+{
+  "symbol": "BLK",
+  "ingested_at": "2026-09-10T01:52:02.020271+00:00",
+  "income_statement": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "revenue": 24216000000.0,
+      "operatingIncome": 7045000000.0,
+      "incomeTaxExpense": 1677000000.0,
+      "netIncome": 5553000000.0,
+      "weightedAverageShsOutDil": 160866521.0,
+      "weightedAverageShsOut": 154984319.0,
+      "sharesOutstanding": 155253443.0,
+      "sellingGeneralAndAdministrativeExpense": 2731000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "revenue": 20407000000.0,
+      "operatingIncome": 7574000000.0,
+      "incomeTaxExpense": 1783000000.0,
+      "netIncome": 6369000000.0,
+      "weightedAverageShsOutDil": 151615085.0,
+      "weightedAverageShsOut": 150042269.0,
+      "sellingGeneralAndAdministrativeExpense": 2257000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "revenue": 17859000000.0,
+      "operatingIncome": 6275000000.0,
+      "incomeTaxExpense": 1479000000.0,
+      "netIncome": 5502000000.0,
+      "weightedAverageShsOutDil": 150706451.0,
+      "weightedAverageShsOut": 149327558.0,
+      "sellingGeneralAndAdministrativeExpense": 2092000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "revenue": 17873000000.0,
+      "operatingIncome": 6385000000.0,
+      "incomeTaxExpense": 1296000000.0,
+      "netIncome": 5178000000.0,
+      "weightedAverageShsOutDil": 152440471.0,
+      "weightedAverageShsOut": 150921161.0,
+      "sellingGeneralAndAdministrativeExpense": 2057000000.0
+    }
+  ],
+  "balance_sheet": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "totalAssets": 169998000000.0,
+      "cashAndCashEquivalents": 11468000000.0,
+      "longTermDebt": 12768000000.0,
+      "totalLiabilities": 108456000000.0,
+      "totalShareholderEquity": 55888000000.0,
+      "propertyPlantEquipmentNet": 1256000000.0,
+      "totalDebt": 12768000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "totalAssets": 138615000000.0,
+      "cashAndCashEquivalents": 12762000000.0,
+      "longTermDebt": 12314000000.0,
+      "totalLiabilities": 89260000000.0,
+      "totalShareholderEquity": 47495000000.0,
+      "propertyPlantEquipmentNet": 1103000000.0,
+      "totalDebt": 12314000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "totalAssets": 123211000000.0,
+      "cashAndCashEquivalents": 8753000000.0,
+      "longTermDebt": 7918000000.0,
+      "totalLiabilities": 81971000000.0,
+      "totalShareholderEquity": 39500000000.0,
+      "propertyPlantEquipmentNet": 1112000000.0,
+      "totalDebt": 7918000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "cashAndCashEquivalents": 7433000000.0,
+      "totalShareholderEquity": 37876000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "cashAndCashEquivalents": 9340000000.0,
+      "totalShareholderEquity": 37806000000.0
+    }
+  ],
+  "cash_flow": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "operatingCashFlow": 3927000000.0,
+      "capitalExpenditure": 375000000.0,
+      "depreciationAndAmortization": 297000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "operatingCashFlow": 4956000000.0,
+      "capitalExpenditure": 255000000.0,
+      "commonStockRepurchased": 1930000000.0,
+      "dividendsPaid": 3101000000.0,
+      "depreciationAndAmortization": 270000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "operatingCashFlow": 4165000000.0,
+      "capitalExpenditure": 344000000.0,
+      "commonStockRepurchased": 1884000000.0,
+      "dividendsPaid": 3035000000.0,
+      "depreciationAndAmortization": 263000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "operatingCashFlow": 4956000000.0,
+      "capitalExpenditure": 533000000.0,
+      "commonStockRepurchased": 2332000000.0,
+      "dividendsPaid": 2990000000.0,
+      "depreciationAndAmortization": 251000000.0
+    }
+  ],
+  "profile": {
+    "companyName": "BlackRock, Inc.",
+    "symbol": "BLK"
+  },
+  "price_target_consensus": null,
+  "_data_source": "edgar_primary"
+}

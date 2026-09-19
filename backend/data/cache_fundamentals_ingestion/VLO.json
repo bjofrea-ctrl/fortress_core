@@ -1,0 +1,190 @@
+{
+  "symbol": "VLO",
+  "ingested_at": "2026-09-10T01:52:14.422385+00:00",
+  "income_statement": [
+    {
+      "calendarYear": "2026",
+      "period": "FY",
+      "sharesOutstanding": 299026226.0
+    },
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "revenue": 122687000000.0,
+      "operatingIncome": 3181000000.0,
+      "incomeTaxExpense": 759000000.0,
+      "netIncome": 2348000000.0,
+      "weightedAverageShsOutDil": 309000000.0,
+      "weightedAverageShsOut": 309000000.0,
+      "sharesOutstanding": 314977519.0,
+      "sellingGeneralAndAdministrativeExpense": 1042000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "revenue": 129881000000.0,
+      "operatingIncome": 3755000000.0,
+      "incomeTaxExpense": 692000000.0,
+      "netIncome": 2770000000.0,
+      "weightedAverageShsOutDil": 322000000.0,
+      "weightedAverageShsOut": 322000000.0,
+      "sharesOutstanding": 332481908.0,
+      "sellingGeneralAndAdministrativeExpense": 961000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "revenue": 144766000000.0,
+      "operatingIncome": 11858000000.0,
+      "incomeTaxExpense": 2619000000.0,
+      "netIncome": 8835000000.0,
+      "weightedAverageShsOutDil": 353000000.0,
+      "weightedAverageShsOut": 353000000.0,
+      "sharesOutstanding": 371150836.0,
+      "sellingGeneralAndAdministrativeExpense": 998000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "revenue": 176383000000.0,
+      "operatingIncome": 15690000000.0,
+      "incomeTaxExpense": 3428000000.0,
+      "netIncome": 11528000000.0,
+      "weightedAverageShsOutDil": 396000000.0,
+      "weightedAverageShsOut": 395000000.0,
+      "sharesOutstanding": 409303630.0,
+      "sellingGeneralAndAdministrativeExpense": 934000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "revenue": 113977000000.0,
+      "operatingIncome": 2130000000.0,
+      "incomeTaxExpense": 255000000.0,
+      "netIncome": 930000000.0,
+      "weightedAverageShsOutDil": 407000000.0,
+      "weightedAverageShsOut": 407000000.0,
+      "sharesOutstanding": 408562891.0,
+      "sellingGeneralAndAdministrativeExpense": 865000000.0
+    }
+  ],
+  "balance_sheet": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "totalAssets": 57988000000.0,
+      "totalCurrentAssets": 23210000000.0,
+      "cashAndCashEquivalents": 4688000000.0,
+      "totalCurrentLiabilities": 14109000000.0,
+      "longTermDebt": 8261000000.0,
+      "totalShareholderEquity": 23725000000.0,
+      "retainedEarnings": 47959000000.0,
+      "netReceivables": 9877000000.0,
+      "totalDebt": 8261000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "totalAssets": 60143000000.0,
+      "totalCurrentAssets": 23737000000.0,
+      "cashAndCashEquivalents": 4657000000.0,
+      "totalCurrentLiabilities": 15495000000.0,
+      "longTermDebt": 8085000000.0,
+      "totalShareholderEquity": 24512000000.0,
+      "retainedEarnings": 47016000000.0,
+      "netReceivables": 10708000000.0,
+      "totalDebt": 8085000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "totalAssets": 63056000000.0,
+      "totalCurrentAssets": 26221000000.0,
+      "cashAndCashEquivalents": 5424000000.0,
+      "totalCurrentLiabilities": 16802000000.0,
+      "longTermDebt": 9218000000.0,
+      "totalShareholderEquity": 28524000000.0,
+      "retainedEarnings": 45630000000.0,
+      "netReceivables": 12525000000.0,
+      "totalDebt": 9218000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "totalAssets": 60982000000.0,
+      "totalCurrentAssets": 24133000000.0,
+      "cashAndCashEquivalents": 4862000000.0,
+      "totalCurrentLiabilities": 17461000000.0,
+      "longTermDebt": 9241000000.0,
+      "totalShareholderEquity": 25468000000.0,
+      "retainedEarnings": 38247000000.0,
+      "netReceivables": 11919000000.0,
+      "totalDebt": 9241000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "totalAssets": 57888000000.0,
+      "totalCurrentAssets": 21165000000.0,
+      "cashAndCashEquivalents": 4122000000.0,
+      "totalCurrentLiabilities": 16851000000.0,
+      "longTermDebt": 11950000000.0,
+      "totalShareholderEquity": 19817000000.0,
+      "retainedEarnings": 28281000000.0,
+      "netReceivables": 10378000000.0,
+      "totalDebt": 11950000000.0
+    }
+  ],
+  "cash_flow": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "operatingCashFlow": 5826000000.0,
+      "commonStockRepurchased": 2598000000.0,
+      "dividendsPaid": 1405000000.0,
+      "depreciationAndAmortization": 63000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "operatingCashFlow": 6683000000.0,
+      "capitalExpenditure": 2057000000.0,
+      "commonStockRepurchased": 2875000000.0,
+      "dividendsPaid": 1384000000.0,
+      "depreciationAndAmortization": 45000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "operatingCashFlow": 9229000000.0,
+      "capitalExpenditure": 1916000000.0,
+      "commonStockRepurchased": 5136000000.0,
+      "dividendsPaid": 1452000000.0,
+      "depreciationAndAmortization": 43000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "operatingCashFlow": 12574000000.0,
+      "capitalExpenditure": 2737000000.0,
+      "commonStockRepurchased": 4577000000.0,
+      "dividendsPaid": 1562000000.0,
+      "depreciationAndAmortization": 45000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "operatingCashFlow": 5859000000.0,
+      "capitalExpenditure": 2458000000.0,
+      "commonStockRepurchased": 27000000.0,
+      "dividendsPaid": 1602000000.0,
+      "depreciationAndAmortization": 47000000.0
+    }
+  ],
+  "profile": {
+    "companyName": "VALERO ENERGY CORP/TX",
+    "symbol": "VLO"
+  },
+  "price_target_consensus": null,
+  "_data_source": "edgar_primary"
+}

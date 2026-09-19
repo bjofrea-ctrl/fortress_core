@@ -1,0 +1,214 @@
+{
+  "symbol": "UPS",
+  "ingested_at": "2026-09-10T01:52:02.127361+00:00",
+  "income_statement": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "revenue": 88661000000.0,
+      "operatingIncome": 7867000000.0,
+      "incomeTaxExpense": 1592000000.0,
+      "netIncome": 5572000000.0,
+      "weightedAverageShsOutDil": 850000000.0,
+      "weightedAverageShsOut": 849000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "revenue": 91070000000.0,
+      "operatingIncome": 8468000000.0,
+      "incomeTaxExpense": 1660000000.0,
+      "netIncome": 5782000000.0,
+      "weightedAverageShsOutDil": 856000000.0,
+      "weightedAverageShsOut": 855000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "revenue": 90958000000.0,
+      "operatingIncome": 9141000000.0,
+      "incomeTaxExpense": 1865000000.0,
+      "netIncome": 6708000000.0,
+      "weightedAverageShsOutDil": 860000000.0,
+      "weightedAverageShsOut": 859000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "revenue": 100338000000.0,
+      "operatingIncome": 13094000000.0,
+      "incomeTaxExpense": 3277000000.0,
+      "netIncome": 11548000000.0,
+      "weightedAverageShsOutDil": 875000000.0,
+      "weightedAverageShsOut": 871000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "revenue": 97287000000.0,
+      "operatingIncome": 12810000000.0,
+      "incomeTaxExpense": 3705000000.0,
+      "netIncome": 12890000000.0,
+      "weightedAverageShsOutDil": 878000000.0,
+      "weightedAverageShsOut": 874000000.0
+    },
+    {
+      "calendarYear": "2020",
+      "period": "FY",
+      "revenue": 84628000000.0,
+      "operatingIncome": 7684000000.0,
+      "incomeTaxExpense": 501000000.0,
+      "netIncome": 1343000000.0,
+      "weightedAverageShsOutDil": 871000000.0,
+      "weightedAverageShsOut": 867000000.0
+    }
+  ],
+  "balance_sheet": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "totalAssets": 73090000000.0,
+      "totalCurrentAssets": 19045000000.0,
+      "cashAndCashEquivalents": 5887000000.0,
+      "totalCurrentLiabilities": 15620000000.0,
+      "longTermDebt": 23585000000.0,
+      "totalShareholderEquity": 16227000000.0,
+      "retainedEarnings": 20151000000.0,
+      "netReceivables": 11209000000.0,
+      "totalDebt": 23585000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "totalAssets": 70070000000.0,
+      "totalCurrentAssets": 19310000000.0,
+      "cashAndCashEquivalents": 6112000000.0,
+      "totalCurrentLiabilities": 16441000000.0,
+      "longTermDebt": 21030000000.0,
+      "totalShareholderEquity": 16718000000.0,
+      "retainedEarnings": 20882000000.0,
+      "netReceivables": 10871000000.0,
+      "totalDebt": 21030000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "totalAssets": 70857000000.0,
+      "totalCurrentAssets": 19413000000.0,
+      "cashAndCashEquivalents": 3206000000.0,
+      "totalCurrentLiabilities": 17676000000.0,
+      "longTermDebt": 21998000000.0,
+      "totalShareholderEquity": 17306000000.0,
+      "retainedEarnings": 21055000000.0,
+      "netReceivables": 11216000000.0,
+      "totalDebt": 21998000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "totalAssets": 71124000000.0,
+      "totalCurrentAssets": 22217000000.0,
+      "cashAndCashEquivalents": 5602000000.0,
+      "totalCurrentLiabilities": 18140000000.0,
+      "longTermDebt": 17321000000.0,
+      "longTermDebtCurrent": 2341000000.0,
+      "totalShareholderEquity": 19786000000.0,
+      "retainedEarnings": 21326000000.0,
+      "propertyPlantEquipmentNet": 34719000000.0,
+      "netReceivables": 12583000000.0,
+      "totalDebt": 19662000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "totalAssets": 69405000000.0,
+      "totalCurrentAssets": 24934000000.0,
+      "cashAndCashEquivalents": 10255000000.0,
+      "totalCurrentLiabilities": 17569000000.0,
+      "longTermDebt": 19784000000.0,
+      "longTermDebtCurrent": 2131000000.0,
+      "totalShareholderEquity": 14253000000.0,
+      "retainedEarnings": 16179000000.0,
+      "propertyPlantEquipmentNet": 33475000000.0,
+      "netReceivables": 12541000000.0,
+      "totalDebt": 21915000000.0
+    },
+    {
+      "calendarYear": "2020",
+      "period": "FY",
+      "totalAssets": 62408000000.0,
+      "totalCurrentAssets": 20216000000.0,
+      "cashAndCashEquivalents": 5910000000.0,
+      "totalCurrentLiabilities": 17016000000.0,
+      "longTermDebt": 22031000000.0,
+      "longTermDebtCurrent": 2623000000.0,
+      "totalShareholderEquity": 657000000.0,
+      "retainedEarnings": 6896000000.0,
+      "propertyPlantEquipmentNet": 32254000000.0,
+      "netReceivables": 10750000000.0,
+      "totalDebt": 24654000000.0
+    }
+  ],
+  "cash_flow": [
+    {
+      "calendarYear": "2025",
+      "period": "FY",
+      "operatingCashFlow": 8450000000.0,
+      "capitalExpenditure": 3685000000.0,
+      "commonStockRepurchased": 1000000000.0,
+      "dividendsPaid": 5398000000.0,
+      "depreciationAndAmortization": 3000000000.0
+    },
+    {
+      "calendarYear": "2024",
+      "period": "FY",
+      "operatingCashFlow": 10122000000.0,
+      "capitalExpenditure": 3909000000.0,
+      "commonStockRepurchased": 500000000.0,
+      "dividendsPaid": 5399000000.0,
+      "depreciationAndAmortization": 3000000000.0
+    },
+    {
+      "calendarYear": "2023",
+      "period": "FY",
+      "operatingCashFlow": 10238000000.0,
+      "capitalExpenditure": 5158000000.0,
+      "commonStockRepurchased": 2250000000.0,
+      "dividendsPaid": 5372000000.0,
+      "depreciationAndAmortization": 2800000000.0
+    },
+    {
+      "calendarYear": "2022",
+      "period": "FY",
+      "operatingCashFlow": 14104000000.0,
+      "capitalExpenditure": 4769000000.0,
+      "commonStockRepurchased": 3500000000.0,
+      "dividendsPaid": 5114000000.0,
+      "depreciationAndAmortization": 3188000000.0
+    },
+    {
+      "calendarYear": "2021",
+      "period": "FY",
+      "operatingCashFlow": 15007000000.0,
+      "capitalExpenditure": 4194000000.0,
+      "commonStockRepurchased": 500000000.0,
+      "dividendsPaid": 3437000000.0,
+      "depreciationAndAmortization": 2953000000.0
+    },
+    {
+      "calendarYear": "2020",
+      "period": "FY",
+      "operatingCashFlow": 10459000000.0,
+      "capitalExpenditure": 5412000000.0,
+      "commonStockRepurchased": 224000000.0,
+      "dividendsPaid": 3374000000.0,
+      "depreciationAndAmortization": 2698000000.0
+    }
+  ],
+  "profile": {
+    "companyName": "UNITED PARCEL SERVICE INC",
+    "symbol": "UPS"
+  },
+  "price_target_consensus": null,
+  "_data_source": "edgar_primary"
+}
