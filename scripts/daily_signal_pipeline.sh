@@ -14,7 +14,7 @@
 # ejecutar según la hora y el calendario de hábiles del mercado (parquet SPY).
 set -u
 
-REPO="/Users/boris/Desktop/fortress_core"
+REPO="$(cd "$(dirname "$0")/.." && pwd)"
 VENV="$REPO/backend/.venv/bin/python"
 LOG="$REPO/scripts/pipeline_diario.log"
 
