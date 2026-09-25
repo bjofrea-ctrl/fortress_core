@@ -16,7 +16,7 @@
 #   - Logs con rotación manual mínima: se append a scripts/data_updater.log.
 #   - El auto-backup git (otro job launchd) captura los datos a los 10 min.
 set -u
-REPO="/Users/boris/Desktop/fortress_core"
+REPO="$(cd "$(dirname "$0")/.." && pwd)"
 VENV="$REPO/backend/.venv/bin/python"
 LOG="$REPO/scripts/data_updater.log"
 
