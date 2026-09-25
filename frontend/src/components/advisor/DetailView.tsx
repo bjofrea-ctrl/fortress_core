@@ -1,7 +1,5 @@
-import { useState } from "react";
 import { AdvisorSymbolResponse, ThesisRow } from "../../api/client";
 import { ProjectedBadge, StateBadge, TransitionArrow, fmtPct, fmtPrice } from "./Badges";
-import { TVWidget } from "./TVWidget";
 import { TradingViewChart } from "./TradingViewChart";
 
 interface Props {
@@ -10,11 +8,9 @@ interface Props {
   onBack: () => void;
 }
 
-type ChartMode = "local" | "tv";
-
 /**
- * Vista DETALLE de un símbolo: chart institutional (Lightweight Charts local o
- * widget TradingView), mecánica de salida, tesis de entrada y fundamentales.
+ * Vista DETALLE de un símbolo: chart institutional (Lightweight Charts local),
+ * mecánica de salida, tesis de entrada y fundamentales.
  *
  * Honestidad (regla #4): entrada/stop/target son ZONAS MECÁNICAS del motor
  * (entry/stop 2×ATR/target 4×ATR), no niveles predichos. Fundamentales sin
@@ -37,20 +33,6 @@ export function DetailView({ data, thesis, onBack }: Props) {
         <StateBadge state={t.state} />
         <ProjectedBadge projected={t.projected} />
         <TransitionArrow transition={t.transition} />
-        <div className="flex-1" />
-        <div className="flex border border-dark-border rounded overflow-hidden">
-          {(["local", "tv"] as ChartMode[]).map((m) => (
-            <button
-              key={m}
-              onClick={() => setChartMode(m)}
-              className={`px-3 py-1 text-xs font-mono ${
-                chartMode === m ? "bg-dark-card text-tv-text" : "bg-dark-bg text-tv-dim hover:text-tv-text"
-              }`}
-            >
-              {m === "local" ? "Lightweight (EOD)" : "TradingView"}
-            </button>
-          ))}
-        </div>
       </div>
 
       {data.blocked_reason && (
@@ -62,7 +44,6 @@ export function DetailView({ data, thesis, onBack }: Props) {
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-3">
         {/* Chart */}
         <div className="xl:col-span-2 bg-dark-card border border-dark-border rounded p-2">
-          {chartMode === "local" ? (
             <TradingViewChart
               symbol={t.symbol}
               bars={t.ohlcv}
@@ -71,9 +52,6 @@ export function DetailView({ data, thesis, onBack }: Props) {
               take_profit={t.take_profit}
               last_close_date={t.last_close_date}
             />
-          ) : (
-            <TVWidget symbol={t.symbol} />
-          )}
         </div>
 
         {/* Panel derecho: decisión + salida */}
