@@ -79,6 +79,9 @@ nohup.out
 # Artefactos regenerables del screening automatizado (Fase 4) — no se trackean:
 # los produce el job diario en backend/data/cache_fundamentals_screen/.
 backend/data/cache_fundamentals_screen/
+# Idem para la cache intermedia de ingesta (queda suelta en `git status` y es
+# regenerable — pendiente menor citado en el cierre EDGAR del 09-09).
+backend/data/cache_fundamentals_ingestion/
 
 # Fixture de paridad de Fase 3 (export real de InvestingPro, ~1.28MB) — no se
 # trackea en el repo por peso; se regenera desde el screener. El test de paridad

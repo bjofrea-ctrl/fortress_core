@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, type ReactNode } from "react";
 import { AdvisorTicket, AdvisorUniverseResponse } from "../../api/client";
 import { ProjectedBadge, StateBadge, TransitionArrow, fmtPct, fmtPrice } from "./Badges";
 
@@ -9,6 +9,58 @@ interface Props {
 }
 
 type SortKey = "order" | "symbol" | "win_prob" | "last_close" | "projected" | "dist_ema50";
+
+/**
+ * Definiciones de la metodología, donde se mira (PRE-REG UX Slice 1, ítem 4).
+ * Cada texto está CITADO al código del motor que lo produce — si el motor cambia,
+ * esta tabla cambia con él. Nada aquí es interpretativo: es la regla escrita en
+ * backend/app/api/routes/{decision,advisor}.py y backend/app/core/{signal_contract,
+ * signal_engine}.py.
+ */
+const TIP = {
+  state:
+    "Veredicto (decision.py:58-74, regla compuesta exacta): régimen 3 bloquea entradas → NO_INVERTIR; " +
+    "sin score (fuera de gate) → NO_INVERTIR; win_prob < 0.50 → NO_INVERTIR; 0.50–0.60 → VIGILAR; " +
+    "win_prob ≥ 0.60 → INVERTIR, salvo que M2 se abstenga (entonces VIGILAR).",
+  close:
+    "Último cierre del cache de datos (advisor.py:309-311). Si hay atraso, arriba aparece el banner de staleness.",
+  winProb:
+    "Win prob: probabilidad de ganar calibrada por Platt sobre el Score, con replay histórico a 20 días en " +
+    "ventana móvil de ~2 años (decision.py:76-95,113-115). '—' = sin score (fuera de gate) o calibrador sin " +
+    "ajustar (n < 20). Umbrales del veredicto: < 0.50 · 0.50–0.60 · ≥ 0.60.",
+  projected:
+    "Proyección §29 (advisor.py:71-95) — mapeo pre-registrado de win_prob a evidencia REAL medida: " +
+    "≥ 0.70 GANANCIA_PROYECTADA_ALTA (VPP 87.5%, n=8) · ≥ 0.65 GANANCIA_PROYECTADA (VPP 73.7%, n=19) · " +
+    "≥ 0.45 NEUTRO (VPP ≈ win_rate global 0.59, sin selectividad medida) · < 0.45 RIESGOSA_SIN_APOYO. " +
+    "El n se muestra siempre: sin n no hay afirmación.",
+  ema:
+    "Dist = cierre / EMA - 1 (advisor.py:325-326), en % sobre la media exponencial. El gate de tendencia " +
+    "exige cierre > EMA50 > EMA200 (signal_contract.py:150).",
+  stop:
+    "Stop: jerarquía estructural order block → liquidity sweep → último swing low; fallback entrada " +
+    "− 2·ATR14 (signal_engine.py:36-62). Es una zona mecánica, no una predicción: con ella se midió el backtest.",
+  target:
+    "Target: candidato estructural MÁS CERCANO (FVG / resistencia más próxima), no el más optimista; " +
+    "fallback entrada + 4·ATR14 (signal_engine.py:65-81). Si el objetivo deja RR < 1.5 (MIN_RR) la señal no se genera.",
+  delta:
+    "Δ de transición (decision.py:55,178-188): compara el estado de hoy con el último estado persistido " +
+    "(decision_states.json) sobre el rango NO_INVERTIR 0 < VIGILAR 1 < INVERTIR 2. " +
+    "↑ MEJORA · ↓ DETERIORO · ✦ NUEVO (sin estado previo) · → SIN_CAMBIO.",
+  gates:
+    "Gates duros de entrada (signal_contract.py:21-23,136-158): cierre > EMA50 > EMA200, ADX14 ≥ 20, " +
+    "RSI14 en (40, 75), volume_ratio ≥ 1.0; y además Score ≥ 0.60 (ENTRY_THRESHOLD). Falla uno y no hay señal.",
+  m2:
+    "M2: intervalo de predicción split-conformal con α = 0.10, calibrado sobre el MISMO set que el " +
+    "calibrador (decision.py:92-95). Necesita n ≥ 30; con menos, M2 no existe. Abstención = intervalo " +
+    "demasiado ancho: el motor se niega a afirmar y el ticket queda en VIGILAR aunque win_prob ≥ 0.60.",
+  factors:
+    "Componentes que se combinan ponderados por régimen (contrato §29) para dar Score = momentum·w₁ + rsi·w₂",
+} as const;
+
+/** Rótulo que admite definición al pasar el cursor (línea punteada sutil). */
+function Dotted({ children }: { children: ReactNode }) {
+  return <span className="cursor-help underline decoration-dotted underline-offset-2">{children}</span>;
+}
 
 /** Vista MESA: el universo completo en una tabla densa, ordenable y filtrable. */
 export function MesaView({ data, selectedSymbol, onSelectSymbol }: Props) {
@@ -90,16 +142,16 @@ export function MesaView({ data, selectedSymbol, onSelectSymbol }: Props) {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-dark-border text-[11px] font-mono text-tv-dim uppercase">
-              <th className="text-left px-3 py-2">Estado</th>
+              <th className="text-left px-3 py-2" title={TIP.state}><Dotted>Estado</Dotted></th>
               <th className="text-left px-3 py-2">Símbolo</th>
-              <th className="text-right px-3 py-2">Cierre</th>
-              <th className="text-right px-3 py-2">Win prob</th>
-              <th className="text-left px-3 py-2">Proyección</th>
-              <th className="text-right px-3 py-2">Dist EMA50</th>
-              <th className="text-right px-3 py-2">Dist EMA200</th>
-              <th className="text-right px-3 py-2">Stop</th>
-              <th className="text-right px-3 py-2">Target</th>
-              <th className="text-center px-3 py-2">Δ</th>
+              <th className="text-right px-3 py-2" title={TIP.close}><Dotted>Cierre</Dotted></th>
+              <th className="text-right px-3 py-2" title={TIP.winProb}><Dotted>Win prob</Dotted></th>
+              <th className="text-left px-3 py-2" title={TIP.projected}><Dotted>Proyección</Dotted></th>
+              <th className="text-right px-3 py-2" title={TIP.ema}><Dotted>Dist EMA50</Dotted></th>
+              <th className="text-right px-3 py-2" title={TIP.ema}><Dotted>Dist EMA200</Dotted></th>
+              <th className="text-right px-3 py-2" title={TIP.stop}><Dotted>Stop</Dotted></th>
+              <th className="text-right px-3 py-2" title={TIP.target}><Dotted>Target</Dotted></th>
+              <th className="text-center px-3 py-2" title={TIP.delta}><Dotted>Δ</Dotted></th>
             </tr>
           </thead>
           <tbody>
@@ -116,6 +168,12 @@ export function MesaView({ data, selectedSymbol, onSelectSymbol }: Props) {
           </tbody>
         </table>
       </div>
+
+      {/* Leyenda visible: la regla del gate escrita donde se opera, no en un manual. */}
+      <p className="text-[10px] text-tv-dim leading-relaxed font-mono">
+        Gate técnico (los 5, falla uno y no hay señal): cierre &gt; EMA50 &gt; EMA200 · ADX14 ≥ 20 ·
+        RSI14 en (40, 75) · Vol ≥ 1.0× · Score ≥ 0.60 — y encima del rótulo de cada columna está su definición.
+      </p>
     </div>
   );
 }
@@ -163,13 +221,15 @@ function FragmentRow({
           <td colSpan={10} className="px-6 py-3">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
               <div>
-                <p className="text-tv-dim mb-1">Razón del veredicto</p>
+                <p className="text-tv-dim mb-1" title={TIP.state}><Dotted>Razón del veredicto</Dotted></p>
                 <p className="text-tv-text">{t.reason}</p>
-                <p className="text-tv-dim mt-1">Score: {t.score ?? "—"} · Payoff: {t.payoff_ratio ?? "—"}R · ATR: {t.atr ?? "—"}</p>
+                <p className="text-tv-dim mt-1" title={TIP.winProb}>
+                  Score: {t.score ?? "—"} · Payoff: {t.payoff_ratio ?? "—"}R · ATR: {t.atr ?? "—"}
+                </p>
                 {t.factors && (
                   <div className="mt-2">
-                    <p className="text-tv-dim mb-1" title="Componentes que se combinan ponderados por régimen (contrato §29) para dar Score = momentum·w₁ + rsi·w₂">
-                      Factores del Score
+                    <p className="text-tv-dim mb-1" title={TIP.factors}>
+                      <Dotted>Factores del Score</Dotted>
                     </p>
                     <div className="space-y-1">
                       {Object.entries(t.factors).map(([k, v]) => {
@@ -192,21 +252,31 @@ function FragmentRow({
                 )}
               </div>
               <div>
-                <p className="text-tv-dim mb-1">Gates técnicos</p>
+                <p className="text-tv-dim mb-1" title={TIP.gates}><Dotted>Gates técnicos</Dotted></p>
                 {t.gates ? (
-                  <p className="font-mono text-tv-text">
+                  <p className="font-mono text-tv-text" title={TIP.gates}>
                     Trend {t.gates.trend_ok ? "✓" : "✗"} · ADX {t.gates.adx.toFixed(1)} · RSI{" "}
                     {t.gates.rsi.toFixed(1)} · Vol {t.gates.volume_ratio.toFixed(2)}
                   </p>
                 ) : (
-                  <p className="text-tv-dim">fuera de gate (sin score)</p>
+                  <p className="text-tv-dim" title={TIP.gates}>fuera de gate (sin score)</p>
                 )}
-                {t.m2 && (
-                  <p className="font-mono text-tv-text mt-1">
-                    M2: {fmtPct(t.m2.point_estimate, 1)} [{fmtPct(t.m2.lower, 1)},{fmtPct(t.m2.upper, 1)}]
-                    {t.m2.abstenerse && <span className="text-accent-yellow"> ⚠ abstención</span>}
+                {t.m2 ? (
+                  <p className="font-mono text-tv-text mt-1" title={TIP.m2}>
+                    <span className="text-tv-dim"><Dotted>M2</Dotted></span>:{" "}
+                    {fmtPct(t.m2.point_estimate, 1)} [{fmtPct(t.m2.lower, 1)},{fmtPct(t.m2.upper, 1)}]
+                    {t.m2.abstenerse && (
+                      <span className="text-accent-yellow"> ⚠ abstención → VIGILAR</span>
+                    )}
+                  </p>
+                ) : (
+                  <p className="text-tv-dim mt-1" title={TIP.m2}>
+                    M2 no calibrado (n &lt; 30): sin garantía conforme, sin intervalo
                   </p>
                 )}
+                <p className="text-tv-dim mt-1" title={`${TIP.stop} ${TIP.target}`}>
+                  <Dotted>Stop/Target</Dotted>: zonas mecánicas 2×/4× ATR, no predicción
+                </p>
               </div>
               <div className="flex items-end justify-end">
                 <button

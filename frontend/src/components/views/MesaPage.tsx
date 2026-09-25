@@ -33,8 +33,27 @@ export default function MesaPage({ selectedSymbol, onSelectSymbol }: Props) {
     );
   }
 
+  // Estado vacío que EXPLICA (G2): distinguir universo sin tickets de "hoy
+  // el motor no marca ninguno como INVERTIR". Ningún dato inventado: solo el
+  // conteo real de data.states por estado.
+  const nTotal = data.states.length;
+  const nInvertir = data.states.filter((s) => s.state === "INVERTIR").length;
+
   return (
     <div className="space-y-4">
+      {nTotal === 0 ? (
+        <div className="bg-dark-card border border-dark-border rounded p-4 text-xs text-tv-dim leading-relaxed">
+          El universo del advisor está vacío: el backend aún no devolvió tickets
+          (no corrió la rueda, o el cache de datos está ausente). Recargá cuando
+          el pipeline haya escrito el estado del día.
+        </div>
+      ) : nInvertir === 0 ? (
+        <div className="bg-accent-yellow/10 border border-accent-yellow/40 rounded p-3 text-xs text-accent-yellow leading-relaxed">
+          Hoy el motor no marca <b>ningún</b> símbolo como INVERTIR ({nTotal} en
+          VIGILAR/NO_INVERTIR). Es el resultado esperado en régimen adverso: la
+          abstención es señal, no falla. Revisá los VIGILAR y sus gates en la mesa.
+        </div>
+      ) : null}
       <MesaView data={data} selectedSymbol={selectedSymbol} onSelectSymbol={onSelectSymbol} />
 
       <div>
