@@ -234,7 +234,8 @@ def nyse_trading_days(year: int) -> List[date]:
     hols.add(_last_weekday(year, 5, 0))       # Memorial: último lunes de mayo
     hols.add(_nth_weekday(year, 9, 0, 1))     # Labor: 1er lunes de septiembre
     hols.add(_nth_weekday(year, 11, 3, 4))    # Thanksgiving: 4to jueves de noviembre
-    observed = set()
+    # Duelos nacionales con NYSE cerrado (ningun simbolo los tiene): Bush 2018-12-05, Carter 2025-01-09
+    observed = {date(year, 12, 5)} if year == 2018 else ({date(year, 1, 9)} if year == 2025 else set())
     for h in hols:
         if h.weekday() == 5:
             observed.add(h - timedelta(days=1))
