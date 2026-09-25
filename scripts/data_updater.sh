@@ -17,6 +17,7 @@
 #   - El auto-backup git (otro job launchd) captura los datos a los 10 min.
 set -u
 REPO="$(cd "$(dirname "$0")/.." && pwd)"
+export FORTRESS_BYPASS_PAUSE=1  # daily incremental bypass PAUSE (solo mass download bloqueado)
 VENV="$REPO/backend/.venv/bin/python"
 LOG="$REPO/scripts/data_updater.log"
 
