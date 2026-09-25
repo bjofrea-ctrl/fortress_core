@@ -24,6 +24,15 @@ reconciler diario deployado: cada día hábil con (a) 3 corridas rc=0 + (b) upda
 PRECIOS: ERROR + (c) reconcile unexplained=0 suma 1. Ver
 `backend/scripts/clean_days_counter.py` y PLAN_REMEDIO_BRECHAS_20260903.md §A2.
 
+**🔴 T4 VERIFY (2026-09-24) — Hallazgos de ramas pendientes (readonly):**
+
+| Rama | Estado | Acción requerida |
+|------|--------|------------------|
+| `origin/ux/dashboard-control-panel` (Slice 1) | ✅ MERGEABLE | Slice 1 cerrado; **TVWidget presente** (8s timeout + degrade graceful) |
+| `origin/cline/ux-slice2-g2-cleanup` (Slice 2/G2) | ⚠️ CONFLICTO | **TVWidget ELIMINADO** en G2 cleanup (diff: `TVWidget.tsx` → `---/dev/null`); 6 módulos muertos borrados (-1113 líneas). **Decisión Boris: ¿recuperar TVWidget o solo Lightweight Charts?** |
+| `origin/bjofrea-ctrl/test-opencode-orca` (F3 latido datos) | ✅ IMPL / ❌ PRE-REG | F3 implementado completo (check_data_freshness.sh, launchd 1h, tests 100%) — **FALTA `PRE_REGISTRO_F3_LATIDO_DATOS.md`** (ONBOARDING regla 1). Edad 20 días vs main. |
+| `origin/bjofrea-ctrl/test-kilo-orca` (SWR /universe) | ✅ LISTO / 🚫 PUERTA BORIS | SWR implementado + 33 tests plausibles (FakeClock, locks reales). **NO MERGEAR sin OK Boris** — endpoint crítico `/universe`. |
+
 
 ## PENDIENTE AHORA — chequear primero, antes de leer el resto
 

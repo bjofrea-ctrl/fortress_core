@@ -225,7 +225,28 @@ def _integrity_hook_full(ticker: str, df: pd.DataFrame, cache_path: str) -> pd.D
     return df
 
 
+PAUSE_FILE = os.path.join(os.path.dirname(__file__), "..", "..", "..", "PAUSE_YAHOO_MASS_DOWNLOAD")
+PAUSE_FILE = os.path.abspath(PAUSE_FILE)
+
+def _is_mass_download_paused() -> bool:
+    return os.path.exists(PAUSE_FILE) or os.path.exists("PAUSE_YAHOO_MASS_DOWNLOAD")
+
 def download_data(ticker: str, start="2010-01-01", end=None) -> pd.DataFrame:
+    if _is_mass_download_paused():
+        # Pausa sólida 2026-09-14 (Kilo): Yahoo throttling 21k errores, cache contaminado.
+        # No se toca red. Si hay cache, se devuelve tal cual; si no, DataFrame vacío.
+        cache_path_paused = f"{CACHE_DIR}/{ticker}.parquet"
+        if os.path.exists(cache_path_paused):
+            try:
+                df_paused = pd.read_parquet(cache_path_paused)
+                df_paused = _flatten_columns(df_paused)
+                df_paused.columns = [str(c).lower() for c in df_paused.columns]
+                print(f"[data_ingestion] PAUSA activa — {ticker} devuelto desde cache sin red ({len(df_paused)} filas)")
+                return df_paused
+            except Exception:
+                pass
+        print(f"[data_ingestion] PAUSA activa — {ticker} sin cache, retorno vacío sin tocar Yahoo")
+        return pd.DataFrame()
     end = end or datetime.today().strftime("%Y-%m-%d")
     os.makedirs(CACHE_DIR, exist_ok=True)
     cache_path = f"{CACHE_DIR}/{ticker}.parquet"

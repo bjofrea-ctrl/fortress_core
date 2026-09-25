@@ -423,24 +423,27 @@ async def warmup_advisor_loop(
 ) -> None:
     """Loop de re-warmup en background (no bloquear startup: create_task).
 
-    Ancla cada ciclo al VENCIMIENTO del cache actual (gen + TTL), no a
-    "intervalo desde el fin del ciclo": `_get_context` respeta el TTL, así
-    que un ciclo que despierta con cache fresco es un hit que no refresca
-    nada. Despertar en el vencimiento hace que el warmup tome el rebuild
-    ANTES que el primer request real (ventana fría ~0).
-
-    `interval_s` es el piso de reintento (patología pre-declarada fuera de
-    alcance: rebuild > TTL — el cache expira mientras se reconstruye; sin
-    este piso dos hits encadenados despiertan cada 0s en spin).
-    Un ciclo fallido se loguea y NO mata el loop (siguiente ciclo reintenta).
-    `max_cycles` solo para tests deterministas (None = infinito en prod).
+    PAUSA 2026-09-23 (Omarchy): si existe PAUSE_YAHOO_MASS_DOWNLOAD en raíz,
+    el loop no toca red ni rebuild: duerme interval_s y loguea. Elimina el
+    auto-retry 6-11min que causó throttling Yahoo 21k errores (handoff 14-sep).
     """
+    # Check de pausa sin importar cwd (raíz del repo o backend)
+    def _is_paused():
+        for p in ["PAUSE_YAHOO_MASS_DOWNLOAD", "../PAUSE_YAHOO_MASS_DOWNLOAD", "../../PAUSE_YAHOO_MASS_DOWNLOAD", os.path.join(os.path.dirname(__file__), "../../../PAUSE_YAHOO_MASS_DOWNLOAD")]:
+            if os.path.exists(p) or os.path.exists(os.path.abspath(p)):
+                return True
+        return os.path.exists(os.path.join(os.path.dirname(__file__), "..", "..", "..", "PAUSE_YAHOO_MASS_DOWNLOAD"))
     cycles = 0
     while True:
+        if _is_paused():
+            logger.info("advisor_warmup_paused", extra={"reason": "PAUSE_YAHOO_MASS_DOWNLOAD presente — sin rebuild ni red"})
+            await asyncio.sleep(interval_s * 5)  # 5x piso = 300s, sin spin
+            cycles += 1
+            if max_cycles is not None and cycles >= max_cycles:
+                return
+            continue
         try:
             await warmup_advisor_once()
-            # Anclar al vencimiento del contexto recién generado/tomado:
-            # despertar antes de gen+TTL es un hit inútil; después es frío.
             delay = (_context_cache_time + _CONTEXT_CACHE_TTL_SECONDS) - time.monotonic()
         except Exception as e:  # noqa: BLE001 — el loop nunca muere
             logger.error("advisor_warmup_failed", extra={"error": str(e)})
