@@ -1,4 +1,57 @@
 # Fortress Core — Memoria de Sesiones (Última sesión resumida)
+## 2026-09-25 — Auditoría de código de TradingAgents (TauricResearch) vs fortress, pedida por Boris (Cline)
+
+**Objetivo**: evaluar en profundidad el repo multi-agente LLM más citado del espacio
+(TradingAgents, 108.6k estrellas) y determinar con evidencia qué es superior, qué es igual y
+qué superamos — y si se puede usar o injertar componentes.
+
+**(1) Método verificado, no lectura de README.** `git clone --depth 1` a `/tmp/TradingAgents`
+(temporal, fuera del repo) → commit `35543d0248bf89fcb92b17a15858ad0c0e940687` = v0.5.1
+(2026-09-24). Todo dato del informe sale del árbol clonado (`find`, `wc -l`, `grep`, `cat`),
+no de resúmenes. **Corrección fáctica**: la licencia es **Apache-2.0**, no MIT (creencia del
+pedido); el repo es de la org TauricResearch — los autores UCLA/MIT son del paper, no del repo.
+
+**(2) Hallazgo decisivo (grep, no lectura selectiva).** Búsqueda de
+`deflated|sharpe|purged|cross-validation|walk-forward|bonferroni|newey|pbo|transaction cost|
+slippage|commission` sobre `*.py`+`*.md`: **0 coincidencias**. Su "backtest" (`backtest.py`,
+208 líneas) corre el grafo completo sobre una grilla ticker×fecha y reporta hit-rate y alpha
+medio por rating **sin costos, sin cartera, sin reproducibilidad** — y su propio docstring lo
+declara fuera de alcance ("not a portfolio simulator, and must not grow one"). El README
+admite que la data de news/social no tiene vintage histórico. Traducción: producen análisis
+razonado, no veredicto falsable.
+
+**(3) Lo que sí es superior, verificado en código.** Orquestación: grafo LangGraph con
+`checkpointer` SQLite por nodo y resume de run caído; `conditional_logic` corta el debate por
+conteo de turnos. Salida estructurada: pydantic con modo nativo por proveedor y reparación de
+campos documentada (`"N/A"`→None, `"$1,234.50"`→número, `"15%"`→descartado a propósito porque
+un % como nivel pondría el stop en $15 sobre una acción de $600). Proveedores: `capabilities.py`
+declara por modelo qué parámetro rechaza cada uno (el 400 de DeepSeek thinking con
+`tool_choice`, el enum de MiniMax M2.x) + retries con backoff y `Retry-After`. Datos: guardas
+point-in-time centralizadas en `date_window.py` (clamp `as_of`, ventana media-abierta en UTC,
+`coverage_gap` que distingue "no hay dato" de "no lo observamos", `withhold_live_profile` para
+perfiles sin vintage). Memoria: liquidación de cada decisión contra retorno realizado **y alpha
+vs benchmark** con ventana de 5d, e inyección de lecciones filtrada por `as_of` (su #1251).
+
+**(4) Lo que superamos, con artefacto del lado nuestro.** Aparato estadístico (DSR, PBO/CSCV,
+purged CV, rank IC intra-día Newey-West, Bonferroni, MDE, RMT, EVT, HMM, copulas, conformal),
+`trial_registry.py` con pre-registro y reversión automática, realismo de ejecución
+(`execution_lag_days=1`, costos medidos contra Alpaca paper, `barrier_labeling`), integridad de
+datos (`cache_integrity`, contador de días limpios, reconciler, PAUSE flags), loop de ejecución
+con contabilidad y kill-switch, producto (18 routers + dashboard + 12 jobs) y densidad de test
+(**1.017** funciones en 82 archivos vs 75 archivos de test allá).
+
+**(5) Veredicto y entrega.** No se adopta el repo como motor, capa de decisión ni backtest —
+refuerza lo ya adjudicado en `RESEARCH_EXTERNA_CRITICA.md` §1 y D1 de la auditoría Simons.
+Se adoptan **5 patrones** (Apache-2.0, con atribución), de los cuales **C1-C3 son aplicables ya
+sin tocar el motor ni el gate**: C1 retry/backoff en `NvidiaNIMClient.generate()` (hoy 429 →
+warning y `None`, línea 300), C2 `PROVIDER_REGISTRY` en lugar de slugs hardcodeados con routing
+por prefijo de string, y C3 —**hallazgo nuevo, no copy-paste**— `RAGMemorySystem.retrieve_agent_memory`
+(`knowledge_repo.py:383-417`) recupera lecciones por Jaccard **sin filtro temporal**: si la
+gobernanza se re-enciende sobre una ventana histórica, entran lecciones del futuro al prompt.
+Riesgo latente (capa apagada por A9), se cierra antes de re-encenderla. Doc completo con tablas
+dimensión-por-dimensión y criterios de éxito por ítem: `ANALISIS_TRADINGAGENTS_VS_FORTRESS.md`.
+Fila agregada a la tabla maestra de `ROADMAP.md`.
+
 ## 2026-09-14 — UX Slice 1 cerrado en rama: estados vacíos Mesa + definiciones inline en MesaView (Cline)
 
 **Objetivo**: retomar el handoff (`HANDOFF_UX_SLICE1_20260914.md`) y correr su checklist §7 sin
