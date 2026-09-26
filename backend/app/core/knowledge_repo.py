@@ -380,30 +380,60 @@ class RAGMemorySystem:
         }
         atomic_write_json(self.memory_file, data)
 
-    def record_lesson(self, agent: str, lesson: str, context: str, outcome: str):
-        """Registra una lección enseña al agente."""
+    def record_lesson(self, agent: str, lesson: str, context: str, outcome: str,
+                      resolution_date: Optional[str] = None):
+        """Registra una lección (C3): guarda resolution_date para filtro as_of (#1251)."""
+        if resolution_date is None:
+            resolution_date = datetime.now().date().isoformat()
         record = {
             "agent": agent,
             "lesson": lesson,
             "context": context,
             "outcome": outcome,
             "timestamp": str(datetime.now()),
+            "resolution_date": resolution_date,
         }
         self.lesson_history.append(record)
         if agent not in self.agent_knowledge:
             self.agent_knowledge[agent] = []
-        self.agent_knowledge[agent].append(lesson)
+        # C3: agent_knowledge guarda objeto con fecha para filtro as_of; mantiene
+        # compatibilidad con formato legacy (str) al leer.
+        entry = {"text": lesson, "resolution_date": resolution_date}
+        # Si el último es legacy str, migrar al nuevo formato al append
+        self.agent_knowledge[agent].append(entry)
         self.agent_knowledge[agent] = self.agent_knowledge[agent][-50:]
         self._save()
 
-    def retrieve_agent_memory(self, agent: str, query: str, top_k: int = 3) -> str:
-        """Recupera memoria relevante para un agente."""
+    def retrieve_agent_memory(self, agent: str, query: str, top_k: int = 3,
+                              as_of: Optional[str] = None) -> str:
+        """Recupera memoria relevante para un agente (C3: filtra por as_of)."""
         if not self.agent_knowledge.get(agent):
+            return ""
+
+        # C3: filtrar por resolution_date <= as_of (patrón TradingAgents decision_log #1251)
+        candidates: List[str] = []
+        for item in self.agent_knowledge[agent]:
+            if isinstance(item, dict):
+                text = item.get("text", "")
+                res_date = item.get("resolution_date")
+            else:
+                # legacy: str sin fecha — se incluye solo sin filtro as_of
+                text = item
+                res_date = None
+            if as_of is not None:
+                if res_date is None:
+                    # lecciones legacy sin fecha se excluyen en vista as_of
+                    continue
+                if res_date > as_of:
+                    continue
+            candidates.append(text)
+
+        if not candidates:
             return ""
 
         query_tokens = set(re.findall(r'\w+', query.lower()))
         scored = []
-        for lesson in self.agent_knowledge[agent]:
+        for lesson in candidates:
             tokens = set(re.findall(r'\w+', lesson.lower()))
             inter = len(query_tokens & tokens)
             union = len(query_tokens | tokens)
@@ -416,10 +446,17 @@ class RAGMemorySystem:
             return ""
         return "[MEMORIA DE ENSEÑANZA PREVIA]\n" + "\n".join(f"- {lesson}" for lesson in relevant)
 
-    def get_memory_context(self, agent: str, query: str) -> str:
-        """Contexto de memoria para prompts LLM."""
-        memory = self.retrieve_agent_memory(agent, query)
-        recent = [h for h in self.lesson_history if h["agent"] == agent][-5:]
+    def get_memory_context(self, agent: str, query: str, as_of: Optional[str] = None) -> str:
+        """Contexto de memoria para prompts LLM (C3: respeta as_of)."""
+        memory = self.retrieve_agent_memory(agent, query, as_of=as_of)
+        # Filtrar lecciones recientes también por as_of
+        if as_of is not None:
+            recent = [h for h in self.lesson_history if h["agent"] == agent and h.get("resolution_date", "") <= as_of][-5:]
+            # fallback: entries sin resolution_date se tratan como legacy y se excluyen en as_of
+            # si no hay resolution_date, comparar timestamp? se excluyen
+            recent = [h for h in recent if h.get("resolution_date") is not None]
+        else:
+            recent = [h for h in self.lesson_history if h["agent"] == agent][-5:]
         lines = []
         if memory:
             lines.append(memory)
