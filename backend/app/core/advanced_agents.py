@@ -15,7 +15,9 @@ Sistema RAG/OKF: repositorio de conocimiento académico + memoria de enseñanza.
 """
 import json
 import os
+import random
 import re
+import time
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Dict, List, Optional
@@ -55,21 +57,74 @@ NVIDIA_MODELS = {
     "glm_5_2": "zhipu/glm-5.2",
 }
 
-# Asignación de modelos LLM a agentes de la tríada
-# Prefijo openrouter/ = sale por OpenRouter (minimax m3 free, glm 5.2 free);
-# el resto por NVIDIA NIM (kimi k3). Slugs a validar en primera llamada viva.
-TRIAD_LLM_MODELS = {
-    "BULL": "moonshotai/kimi-k3",
-    "BEAR": "openrouter/minimax/minimax-m3:free",
-    "CONTRARIAN": "openrouter/z-ai/glm-5.2:free",
+# ============================================================
+# C2 — PROVIDER_REGISTRY (TradingAgents openai_client.OPENAI_COMPATIBLE_PROVIDERS)
+# ============================================================
+# Tabla declarativa nombre -> {base_url, settings_key, structured, wire_id}
+# Reemplaza el parseo por prefijo "openrouter/" y los slugs hardcodeados.
+# - base_url: endpoint sin /chat/completions (se añade en _resolve_provider)
+# - settings_key: atributo de Settings que guarda la API key
+# - structured: si el modelo soporta structured output (para uso futuro)
+# - wire_id: modelo exacto enviado en payload["model"] (sin prefijo openrouter/)
+PROVIDER_REGISTRY: Dict[str, Dict[str, object]] = {
+    "kimi-k3": {
+        "base_url": settings.NVIDIA_NIM_BASE_URL,
+        "settings_key": "NVIDIA_NIM_API_KEY",
+        "structured": True,
+        "wire_id": "moonshotai/kimi-k3",
+    },
+    "minimax-m3": {
+        "base_url": settings.OPENROUTER_BASE_URL,
+        "settings_key": "OPENROUTER_API_KEY",
+        "structured": False,
+        "wire_id": "minimax/minimax-m3:free",
+    },
+    "glm-5.2": {
+        "base_url": settings.OPENROUTER_BASE_URL,
+        "settings_key": "OPENROUTER_API_KEY",
+        "structured": True,
+        "wire_id": "z-ai/glm-5.2:free",
+    },
 }
 
-# Asignación de modelos LLM a agentes de gobernanza
-GOVERNANCE_LLM_MODELS = {
-    "CONTROLLER": "moonshotai/kimi-k3",
-    "PROFESSOR": "openrouter/minimax/minimax-m3:free",
-    "JUDGE": "openrouter/z-ai/glm-5.2:free",
+# Asignación de modelos LLM a agentes de la tríada (claves del registry)
+TRIAD_LLM_MODELS = {
+    "BULL": "kimi-k3",
+    "BEAR": "minimax-m3",
+    "CONTRARIAN": "glm-5.2",
 }
+
+# Asignación de modelos LLM a agentes de gobernanza (claves del registry)
+GOVERNANCE_LLM_MODELS = {
+    "CONTROLLER": "kimi-k3",
+    "PROFESSOR": "minimax-m3",
+    "JUDGE": "glm-5.2",
+}
+
+
+def _validate_provider_registry() -> None:
+    """Validación temprana al importar (C2): slug no registrado o proveedor
+    sin settings_key -> error. Patrón TradingAgents provider registry."""
+    all_models = {**TRIAD_LLM_MODELS, **GOVERNANCE_LLM_MODELS}
+    for agent, slug in all_models.items():
+        if slug not in PROVIDER_REGISTRY:
+            raise ValueError(f"Model slug '{slug}' for agent '{agent}' not in PROVIDER_REGISTRY")
+        spec = PROVIDER_REGISTRY[slug]
+        for k in ("base_url", "settings_key", "structured", "wire_id"):
+            if k not in spec:
+                raise ValueError(f"Provider '{slug}' missing key '{k}' in registry")
+        skey = spec["settings_key"]
+        if not isinstance(skey, str) or not skey:
+            raise ValueError(f"settings_key for provider '{slug}' must be a non-empty string")
+        if not hasattr(settings, skey):
+            raise ValueError(f"settings_key '{skey}' for provider '{slug}' not found in Settings")
+        # base_url debe ser string no vacío
+        burl = spec["base_url"]
+        if not isinstance(burl, str) or not burl.strip():
+            raise ValueError(f"base_url for provider '{slug}' must be a non-empty string")
+
+
+_validate_provider_registry()
 
 
 # ============================================================
@@ -227,8 +282,38 @@ class TriadVerdict:
 # NVIDIA NIM Client
 # ============================================================
 
+def _coerce_max_retries(value) -> int:
+    """Valida llm_max_retries como int >=0 (TradingAgents factory._coerce_max_retries)."""
+    if isinstance(value, bool):
+        raise ValueError(f"llm_max_retries must be an integer, not a boolean: {value!r}")
+    try:
+        n = int(value)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"llm_max_retries must be an integer, got {value!r}") from exc
+    if n < 0:
+        raise ValueError(f"llm_max_retries must be >= 0, got {n}")
+    return n
+
+
+def _get_retry_after(response) -> Optional[float]:
+    """Extrae Retry-After de headers, respeta y capa a 30s (TradingAgents reddit/post_screen)."""
+    try:
+        headers = getattr(response, "headers", {}) or {}
+        # case-insensitive
+        val = None
+        for k, v in headers.items():
+            if k.lower() == "retry-after":
+                val = v
+                break
+        if val is None:
+            return None
+        return min(max(0.0, float(val)), 30.0)
+    except (TypeError, ValueError, AttributeError):
+        return None
+
+
 class NvidiaNIMClient:
-    """Cliente para LLMs gratuitos de NVIDIA NIM."""
+    """Cliente para LLMs gratuitos de NVIDIA NIM (C1 retry/backoff + C2 registry)."""
 
     def __init__(self, model: str = None, api_key: str = None,
                  is_triad_client: bool = False, is_governance_client: bool = False):
@@ -258,12 +343,25 @@ class NvidiaNIMClient:
         return bool(self.api_key)
 
     def _resolve_provider(self, model: str):
-        """Routing por prefijo: 'openrouter/...' usa OpenRouter (key propia);
-        el resto sale por NVIDIA NIM. Patrón medai. Devuelve (url, key, model)."""
-        if model.startswith("openrouter/"):
-            return (settings.OPENROUTER_BASE_URL.rstrip("/") + "/chat/completions",
-                    settings.OPENROUTER_API_KEY, model.split("/", 1)[1])
-        return f"{self.base_url}/chat/completions", self.api_key, model
+        """Resuelve vía PROVIDER_REGISTRY (C2). Reemplaza parseo por prefijo openrouter/.
+        Devuelve (url, key, wire_model). Lanza ValueError si no registrado."""
+        spec = PROVIDER_REGISTRY.get(model)
+        if spec is not None:
+            skey = spec["settings_key"]
+            api_key = getattr(settings, skey, None)
+            # error temprano si settings_key no existe (ya validado al importar)
+            # pero re-chequeamos para mensaje claro si se muta Settings en tests
+            if api_key is None and not hasattr(settings, skey):
+                raise ValueError(f"settings_key '{skey}' for provider '{model}' not found in Settings")
+            base = spec["base_url"].rstrip("/")
+            return f"{base}/chat/completions", api_key or "", spec["wire_id"]
+        # Fallback para model raw no registrado (ej. default llama3) — mantiene
+        # compatibilidad sin reintroducir parseo por prefijo: usa NIM directo.
+        # Si el caller usa TRIAD/GOVERNANCE keys siempre caerá en registry; el
+        # fallback solo aplica a llamadas con wire_id crudo.
+        if isinstance(model, str) and "/" in model:
+            return f"{self.base_url}/chat/completions", self.api_key, model
+        raise ValueError(f"Model '{model}' not registered in PROVIDER_REGISTRY")
 
     def generate(self, system_prompt: str, user_message: str, model: str = None) -> Optional[str]:
         if not self.is_available():
@@ -282,36 +380,59 @@ class NvidiaNIMClient:
         if not api_key:
             logger.warning("provider_key_missing", extra={"model": used_model})
             return None
+        # C1: llm_max_retries configurable (TradingAgents factory)
+        raw_retries = getattr(settings, "LLM_MAX_RETRIES", 2)
         try:
-            headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
-            payload = {
-                "model": wire_model,
-                "messages": [
-                    {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": user_message},
-                ],
-                "temperature": self.temperature,
-                "max_tokens": self.max_tokens,
-            }
-            r = requests.post(url, headers=headers, json=payload, timeout=30)
-            if r.status_code == 200:
-                return r.json()["choices"][0]["message"]["content"]
-            if r.status_code == 429:
-                logger.warning("nim_rate_limited", extra={"model": used_model, "status_code": r.status_code})
-            elif r.status_code in (401, 403):
-                logger.error("nim_auth_failed", extra={"model": used_model, "status_code": r.status_code})
-            else:
-                logger.warning("nim_bad_response", extra={"model": used_model, "status_code": r.status_code})
+            max_retries = _coerce_max_retries(raw_retries)
+        except ValueError as exc:
+            logger.error("invalid_llm_max_retries", extra={"model": used_model, "error": str(exc)})
             return None
-        except requests.exceptions.Timeout:
-            logger.warning("nim_timeout", extra={"model": used_model})
-            return None
-        except requests.exceptions.ConnectionError:
-            logger.warning("nim_connection_error", extra={"model": used_model})
-            return None
-        except Exception as e:
-            logger.error("nim_unexpected_error", extra={"model": used_model, "error": str(e)})
-            return None
+        # max_retries=0 reproduce comportamiento histórico exacto: un intento sin sleep
+        backoff = 1.0
+        for attempt in range(max_retries + 1):
+            try:
+                headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
+                payload = {
+                    "model": wire_model,
+                    "messages": [
+                        {"role": "system", "content": system_prompt},
+                        {"role": "user", "content": user_message},
+                    ],
+                    "temperature": self.temperature,
+                    "max_tokens": self.max_tokens,
+                }
+                r = requests.post(url, headers=headers, json=payload, timeout=30)
+                if r.status_code == 200:
+                    return r.json()["choices"][0]["message"]["content"]
+                if r.status_code == 429:
+                    if attempt >= max_retries:
+                        logger.warning("nim_rate_limited", extra={"model": used_model, "status_code": r.status_code, "attempt": attempt})
+                        return None
+                    retry_after = _get_retry_after(r)
+                    if retry_after is not None:
+                        wait = retry_after
+                    else:
+                        wait = backoff * random.uniform(0.8, 1.2)
+                        wait = min(wait, 30.0)
+                    logger.warning("nim_rate_limited_retry", extra={"model": used_model, "status_code": r.status_code, "attempt": attempt, "wait": round(wait, 2)})
+                    time.sleep(wait)
+                    backoff *= 2
+                    continue
+                elif r.status_code in (401, 403):
+                    logger.error("nim_auth_failed", extra={"model": used_model, "status_code": r.status_code})
+                else:
+                    logger.warning("nim_bad_response", extra={"model": used_model, "status_code": r.status_code})
+                return None
+            except requests.exceptions.Timeout:
+                logger.warning("nim_timeout", extra={"model": used_model})
+                return None
+            except requests.exceptions.ConnectionError:
+                logger.warning("nim_connection_error", extra={"model": used_model})
+                return None
+            except Exception as e:
+                logger.error("nim_unexpected_error", extra={"model": used_model, "error": str(e)})
+                return None
+        return None
 
     def generate_json(self, system_prompt: str, user_message: str, model: str = None) -> Optional[Dict]:
         resp = self.generate(system_prompt, user_message, model=model)

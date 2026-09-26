@@ -89,9 +89,30 @@ class Settings(BaseSettings):
     ALPACA_PAPER_SECRET_KEY: str = ""
     ALPACA_PAPER_BASE_URL: str = "https://paper-api.alpaca.markets"
 
+    # C1 (TradingAgents llm_clients/factory.py): presupuesto de reintentos para
+    # NvidiaNIMClient.generate() ante 429. None deja el default del cliente (2),
+    # 0 reproduce el comportamiento histórico (sin retry, warning+None inmediato).
+    # Configurable vía .env LLM_MAX_RETRIES.
+    LLM_MAX_RETRIES: int = 2
+
     class Config:
         env_file = ".env"
         extra = "ignore"
+
+    @model_validator(mode="after")
+    def _validate_llm_max_retries(self):
+        # C1: valida temprano como TradingAgents factory._coerce_max_retries
+        v = self.LLM_MAX_RETRIES
+        if isinstance(v, bool):
+            raise ValueError(f"LLM_MAX_RETRIES must be an integer, not a boolean: {v!r}")
+        try:
+            n = int(v)
+        except (TypeError, ValueError) as exc:
+            raise ValueError(f"LLM_MAX_RETRIES must be an integer, got {v!r}") from exc
+        if n < 0:
+            raise ValueError(f"LLM_MAX_RETRIES must be >= 0, got {n}")
+        self.LLM_MAX_RETRIES = n
+        return self
 
     @model_validator(mode="after")
     def _require_secure_secret_key(self):
