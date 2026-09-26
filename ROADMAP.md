@@ -36,9 +36,12 @@ PRECIOS: ERROR + (c) reconcile unexplained=0 suma 1. Ver
 
 ## PENDIENTE AHORA — chequear primero, antes de leer el resto
 
-Coordinación multi-agente vía Orca (Claude Code como coordinador; Kilo Code, OpenCode,
-Cline como implementadores). Verificar contra `git log --oneline -10`,
-`ps aux | grep screening_palas` y las ramas de cada worktree antes de asumir estado.
+Coordinación multi-agente vía **Herdr** (OpenCode como orquestador en el pane
+`fortress-opencode` = `w2:p1`; Claude Code, Kilo Code y Cline como implementadores — ver
+`ONBOARDING.md` §Coordinación y `herdr agent list`). Orca era el mecanismo anterior
+(22-23/08): las menciones a `orca` que quedan en este documento son nombres de ramas/worktrees
+históricos, no la herramienta vigente. Antes de asumir estado, verificar contra
+`git log --oneline -10`, `herdr agent list` y las ramas de cada worktree.
 
 0. **REGLA VIGENTE — GATE DE 90 DÍAS (decisión de Boris, 2026-09-02, tras auditoría
    `AUDITORIA_NIVEL_DIOS_20260902.md` + análisis externo GLM 5.3)** — 🔴 la más
