@@ -5,30 +5,42 @@ en `fortress_core`: este archivo existe para que puedas ponerte a trabajar sin r
 investigación ya hecha, sin re-litigar decisiones ya tomadas, y sin romper la disciplina que
 costó semanas construir. Leelo completo antes de tocar código.
 
-Última actualización: 2026-08-23.
+Última actualización: 2026-09-25.
 
-**Coordinación vía Orca (nuevo, 2026-08-22/23)**: el trabajo entre Claude Code, OpenCode y
-Kilo Code se coordina ahora con [Orca](https://www.onorca.dev) (app instalada, CLI
-`orca`) — cada agente corre en su propia terminal/worktree, Claude Code puede crear
-tareas y leer resultados directo (`orca terminal create/send/wait/read`) sin que Boris
-relaye texto entre sesiones. Detalle completo (comandos, gotchas, symlink de `kilo`
-roto, telemetría bloqueada por firewall) en la memoria persistente de Claude Code
-(`reference_orca_orchestrator.md`) — si sos otro agente sin acceso a esa memoria,
-pedile a Boris el resumen o mirá `PLAN_LARGO_PLAZO.md` para el estado de tareas en
-curso. Cline y OpenCode dentro de Orca usan comandos genéricos de terminal (no la
-capa de orquestación "de primera clase", que solo cubre Claude Code/Codex/Cursor/
-OpenCode oficialmente).
+**Coordinación entre agentes: Herdr (2026-09-25)** — el trabajo entre Claude Code, OpenCode,
+Kilo Code y Cline se coordina con [Herdr](https://herdr.dev): app/multiplexor de terminal para
+**orquestar agentes**, con server persistente, panes por agente y una CLI que permite que un
+agente le pase trabajo a otro sin que Boris relaye texto. Binario `herdr` (verificado v0.8.2 en
+esta máquina, `HERDR_ENV=1` cuando corrés dentro). **Reemplaza a Orca** (2026-08-22/23): si
+encontrás referencias a `orca` en documentos viejos, son históricas — no lo busques.
 
-**Dos tareas en curso ahora mismo, dispatchadas por Claude Code vía Orca, sin cerrar
-todavía** (verificar contra `git log` y `data/cache/` antes de asumir que siguen
-corriendo o que ya terminaron):
-- **Tarea M** (KAMA/HMA/Supertrend, `PLAN_LARGO_PLAZO.md`) — Kilo Code, terminal Orca
-  creada 2026-08-23 en worktree `test-kilo-orca`.
-- **PBO/CSCV de fidelidad completa** (reconstruir los 21 trials reales de
-  `signal_diagnosis` con `backtest_engine.run`, no vecinos de parámetros) — OpenCode,
-  terminal Orca en worktree `test-opencode-orca`. Motivo: el PBO de hoy (§40) usó un
-  proxy de parámetros vecinos, declarado como limitación — esta es la versión de
-  fidelidad total que quedó pendiente ahí mismo.
+Cada proyecto es un **workspace** con sus panes. Estado verificado el 2026-09-25:
+
+| Workspace | Agente | Pane |
+|---|---|---|
+| `w2` = fortress | `fortress-opencode` | `w2:p1` |
+| `w3` = medai | `medai-opencode` | `w3:p1` |
+| `w4` = empresa-hibrida | `empresa-opencode` | `w4:p1` |
+
+```bash
+herdr agent list                                   # agentes, panes y estado (working/blocked/done/idle)
+herdr agent prompt <name> "<tarea>"                # encolar trabajo (--wait --timeout N para esperar)
+herdr agent read <name> --source visible --lines 40
+herdr agent wait <name> --until blocked --timeout 120000
+herdr pane run <pane_id> "<comando>"
+```
+
+**Dos gotchas que cuestan tiempo si no se saben**: (1) los agentes full-screen (Claude Code,
+OpenCode) renderizan su transcript en *alternate screen*, así que leer historia larga exige que
+el agente esté `idle` — si está trabajando devuelve `agent_not_idle`; (2) por eso el protocolo
+correcto entre agentes es **pedir que el otro escriba su resultado como Markdown en un archivo
+y responda solo con la ruta**, en lugar de intentar leer el pane. Directorio de trabajo de un
+agente: `herdr agent list` lo trae (`cwd` / `foreground_cwd`) — verificalo, porque el mismo
+agente existe en varios workspaces con repos distintos.
+
+**Tareas en curso: no se listan acá.** Esta lista existió, quedó desactualizada sin aviso y
+generó confusión (decía que había dos tareas vivas del 23-08 cuando el estado real era otro).
+La fuente viva es `ROADMAP.md` §"PENDIENTE AHORA" + `herdr agent list`.
 
 ---
 
