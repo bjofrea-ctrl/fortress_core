@@ -52,6 +52,26 @@ Riesgo latente (capa apagada por A9), se cierra antes de re-encenderla. Doc comp
 dimensión-por-dimensión y criterios de éxito por ítem: `ANALISIS_TRADINGAGENTS_VS_FORTRESS.md`.
 Fila agregada a la tabla maestra de `ROADMAP.md`.
 
+**(6) Continuación — tesis híbrida de Boris y handoff a OpenCode vía Herdr.** Boris propuso la
+arquitectura objetiva + subjetiva. Verificado contra el repo antes de opinar: **la "abstención
+con razón, no silencio" ya está implementada** (`decision.py::_state_rule` devuelve estado +
+razón explícita, incluida `"M2 abstención (intervalo muy ancho)"` → VIGILAR); la pata subjetiva
+está **desconectada en los dos extremos** (A9 apaga el LLM y `professor_memory.json` está
+vacío). Corrección aportada: "¿el mercado lo está comprando?" **no se responde con texto** —
+el propio docstring de `market_sentiment.py` dice que AAII mide ACTITUD, no posiciones (a
+diferencia del COT) → la tesis queda en **tres patas** (objetiva / acción / expectativa), y la
+pata Acción tiene historia gratis (COT por año) que la expectativa no tiene. Huecos medidos:
+`COT_START_YEAR=2019` **trunca la historia por una constante** con cache stale al 04-08,
+`thermometer.py` (F&G) nunca se congeló en el repo, noticias = 0 módulos. **Corrección de un
+dato propio**: el D5 (DSR deflactaba por 5 vs 51 reales) **ya está arreglado por A6**
+(`backtest_engine.py:658`, sentinel + `consumed_budget`). Entregado a OpenCode el handoff
+`HANDOFF_HIBRIDO_OBJETIVO_SUBJETIVO.md` (commit `cb13ce3`) **por Herdr** —
+`herdr agent prompt fortress-opencode` (pane `w2:p1`; Cline en `w2:p3`): agente `idle` →
+`working`, primer acto `→ Read HANDOFF_HIBRIDO_OBJETIVO_SUBJETIVO.md` (verificado con
+`herdr agent read --source visible`). El handoff deja las 7 decisiones abiertas (D1-D7), las 7
+trampas a no repetir (con el caso ridge #13: IC mejor ≠ PnL), el checklist de entrega y el
+protocolo de lectura entre agentes (alternate screen → el archivo, no el pane).
+
 ## 2026-09-14 — UX Slice 1 cerrado en rama: estados vacíos Mesa + definiciones inline en MesaView (Cline)
 
 **Objetivo**: retomar el handoff (`HANDOFF_UX_SLICE1_20260914.md`) y correr su checklist §7 sin
